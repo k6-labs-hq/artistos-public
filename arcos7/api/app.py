@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from arcos7.models.base import Base, engine
-from arcos7.api.routers import artists, earnings, anomalies, claims, billing
+from arcos7.api.routers import artists, earnings, anomalies, claims, billing, recovery
 
 
 @asynccontextmanager
@@ -24,6 +24,7 @@ app.include_router(earnings.router)
 app.include_router(anomalies.router)
 app.include_router(claims.router)
 app.include_router(billing.router)
+app.include_router(recovery.router)
 
 
 @app.get("/health")
