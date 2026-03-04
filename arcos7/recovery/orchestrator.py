@@ -7,6 +7,7 @@ from arcos7.models.anomaly import Anomaly
 from arcos7.models.claim import Claim, ClaimStatus
 from arcos7.models.contract import Contract
 from arcos7.models.event import Event
+from arcos7.billing.engine import BillingEngine
 from arcos7.models.payment import Payment
 
 
@@ -95,7 +96,7 @@ class ClaimsOrchestrator:
             raise ValueError(f"Claim {claim_id} not found")
         claim.recovered_amount = recovered_amount
         claim.currency = currency
-        claim.contingency_fee = round(recovered_amount * 0.10, 2)
+        claim.contingency_fee = round(recovered_amount * BillingEngine.CONTINGENCY_RATE, 2)
         claim.updated_at = datetime.utcnow()
         self.db_session.commit()
         self.db_session.refresh(claim)

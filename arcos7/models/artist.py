@@ -16,7 +16,7 @@ class Artist(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
     stage_names: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
 
 
 class ArtistSchema(BaseModel):

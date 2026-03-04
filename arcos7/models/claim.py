@@ -31,8 +31,8 @@ class Claim(Base):
     currency: Mapped[str] = mapped_column(String, default="USD")
     contingency_fee: Mapped[float | None] = mapped_column(Float, nullable=True)
     evidence: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow(), onupdate=lambda: datetime.utcnow())
 
 
 class ClaimSchema(BaseModel):

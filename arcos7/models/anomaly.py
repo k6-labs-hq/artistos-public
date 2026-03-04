@@ -48,7 +48,7 @@ class Anomaly(Base):
     territory: Mapped[str | None] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(Enum(AnomalyStatus), default=AnomalyStatus.OPEN)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
 
 
 class AnomalySchema(BaseModel):
