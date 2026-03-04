@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "arcos7"
+version = "2.0.0"
+description = "ARCOS7 Engine 2 - Artist Earnings Accuracy Platform"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.100.0",
+    "uvicorn[standard]>=0.23.0",
+    "sqlalchemy>=2.0.0",
+    "pydantic>=2.0.0",
+    "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "httpx>=0.24.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

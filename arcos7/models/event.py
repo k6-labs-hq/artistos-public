@@ -1,0 +1,47 @@
+import enum
+import uuid
+from datetime import datetime
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
+from arcos7.models.base import Base
+
+
+class EventType(str, enum.Enum):
+    STREAM = "STREAM"
+    SHOW = "SHOW"
+    SALE = "SALE"
+    SYNC_USAGE = "SYNC_USAGE"
+    BRAND_IMPRESSION = "BRAND_IMPRESSION"
+    GRANT_AWARD = "GRANT_AWARD"
+
+
+class Event(Base):
+    __tablename__ = "events"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    event_type: Mapped[str] = mapped_column(Enum(EventType), nullable=False)
+    work_id: Mapped[str | None] = mapped_column(String, ForeignKey("works.id"), nullable=True)
+    artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False)
+    platform: Mapped[str | None] = mapped_column(String, nullable=True)
+    territory: Mapped[str | None] = mapped_column(String, nullable=True)
+    timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, default=1)
+    unit_value: Mapped[float] = mapped_column(Float, default=0.0)
+    currency: Mapped[str] = mapped_column(String, default="USD")
+
+
+class EventSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    event_type: EventType
+    work_id: str | None = None
+    artist_id: str
+    platform: str | None = None
+    territory: str | None = None
+    timestamp: datetime
+    quantity: int
+    unit_value: float
+    currency: str
