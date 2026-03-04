@@ -10,9 +10,11 @@ from arcos7.models.base import get_db
 from arcos7.models.claim import Claim
 from arcos7.models.payment import Payment
 from arcos7.models.event import Event
+from arcos7.models.work import Work
 from arcos7.models.contract import Contract
 from arcos7.graph.rights_graph import RightsGraph
 from arcos7.earnings.engine import EarningsEngine
+from arcos7.ml.catalog_scorer import CatalogScorer
 
 router = APIRouter(prefix="/artists", tags=["artists"])
 
@@ -63,3 +65,47 @@ def artist_summary(artist_id: str, db: Session = Depends(get_db)):
         "anomaly_count": anomaly_count,
         "claim_count": claim_count,
     }
+
+
+@router.get("/{artist_id}/ml/catalog-health")
+def catalog_health(artist_id: str, db: Session = Depends(get_db)):
+    """
+    Return an ML-derived catalog health score (0–100) and grade for the artist.
+
+    Combines metadata completeness, payment regularity, anomaly density,
+    recovery rate, and earnings accuracy into a single composite score.
+    """
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    works = [
+        {"id": w.id, "isrc": w.isrc, "iswc": w.iswc}
+        for w in db.query(Work).filter(Work.artist_id == artist_id).all()
+    ]
+    payments = [
+        {"id": p.id, "amount": p.amount, "currency": p.currency, "received_at": p.received_at.isoformat()}
+        for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+    ]
+    anomalies = [
+        {"id": a.id, "status": a.status}
+        for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
+    claims = [
+        {"id": c.id, "status": c.status, "recovered_amount": c.recovered_amount}
+        for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    ]
+    rg = RightsGraph()
+    engine = EarningsEngine(rg)
+    earnings_summary = engine.get_earnings_summary(artist_id, db)
+
+    scorer = CatalogScorer()
+    report = scorer.score(
+        artist_id=artist_id,
+        works=works,
+        payments=payments,
+        anomalies=anomalies,
+        claims=claims,
+        earnings_summary=earnings_summary,
+    )
+    return report.to_dict()

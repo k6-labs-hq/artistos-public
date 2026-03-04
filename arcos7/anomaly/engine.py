@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from arcos7.anomaly.rules import royalties, touring, platforms
 from arcos7.earnings.engine import EarningsEngine
 from arcos7.graph.rights_graph import RightsGraph
+from arcos7.ml.anomaly_detector import MLAnomalyDetector
 from arcos7.models.contract import Contract
 from arcos7.models.event import Event
 from arcos7.models.payment import Payment
@@ -12,6 +13,7 @@ class AnomalyEngine:
     def __init__(self, earnings_engine: EarningsEngine, rights_graph: RightsGraph):
         self.earnings_engine = earnings_engine
         self.rights_graph = rights_graph
+        self._ml_detector = MLAnomalyDetector()
 
     def _events_to_dicts(self, events) -> list[dict]:
         return [
@@ -56,6 +58,7 @@ class AnomalyEngine:
         result.extend(self.detect_royalty_anomalies(artist_id, db_session))
         result.extend(self.detect_touring_anomalies(artist_id, db_session))
         result.extend(self.detect_platform_anomalies(artist_id, db_session))
+        result.extend(self.detect_ml_anomalies(artist_id, db_session))
         return result
 
     def detect_royalty_anomalies(self, artist_id: str, db_session: Session) -> list[dict]:
@@ -84,3 +87,9 @@ class AnomalyEngine:
         result.extend(platforms.check_low_stream_rates(artist_id, events, payments))
         result.extend(platforms.check_missing_platform_payments(artist_id, events, payments))
         return result
+
+    def detect_ml_anomalies(self, artist_id: str, db_session: Session) -> list[dict]:
+        """Run ML-based anomaly detectors (IsolationForest, drift, missingness)."""
+        events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id == artist_id).all())
+        payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id == artist_id).all())
+        return self._ml_detector.detect(artist_id, events=events, payments=payments)
