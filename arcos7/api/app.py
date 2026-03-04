@@ -8,6 +8,7 @@ from arcos7.models.base import Base, engine
 from arcos7.api.routers import artists, earnings, anomalies, claims, billing, recovery, widget
 from arcos7.api.routers import ingestion
 from arcos7.api.routers import celero as celero_router
+from arcos7.api.routers import dashboard as dashboard_router
 
 
 @asynccontextmanager
@@ -68,6 +69,7 @@ app.include_router(recovery.router)
 app.include_router(widget.router)
 app.include_router(ingestion.router)
 app.include_router(celero_router.router)
+app.include_router(dashboard_router.router)
 
 
 @app.get("/health")

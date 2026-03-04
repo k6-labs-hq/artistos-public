@@ -6,6 +6,7 @@ ARCOS7 Engine 2 is a comprehensive platform designed to detect, recover, and pre
 
 | Component | Status | Notes |
 |-----------|--------|-------|
+| **Artist Recovery Dashboard** | ✅ Ready | Single endpoint showing leakage, in-pursuit totals, deposits received, balance outstanding, activity feed |
 | **Royalty Estimator Widget** | ✅ Ready | MFA-gated, lead capture, results email, CTA — no API keys needed |
 | **Earnings Engine** | ✅ Ready | Full historical reconstruction and real-time calculation |
 | **Anomaly Detection** | ✅ Ready | 5-category rule engine; runs automatically after statement upload |
@@ -47,6 +48,102 @@ GET /health/readiness
 ```
 
 Returns the status of every connector and notification service.  Use this endpoint to see exactly which credentials are missing.
+
+---
+
+## Artist Recovery Dashboard
+
+Every artist has a single endpoint that gives them a complete, real-time
+view of their recovery status:
+
+```
+GET /artists/{id}/dashboard
+```
+
+### What the dashboard shows
+
+**1. Leakage discovered** — every anomaly ARCOS7 has ever found for this artist
+```json
+"leakage_discovered": {
+  "total_anomalies": 14,
+  "open_anomalies": 9,
+  "total_estimated_recoverable": 48750.00,
+  "by_category": {
+    "ROYALTY":  {"count": 8, "estimated_recoverable": 32000.00},
+    "TOURING":  {"count": 4, "estimated_recoverable": 12000.00},
+    "SYNC":     {"count": 2, "estimated_recoverable": 4750.00}
+  },
+  "by_severity": { ... },
+  "recent_discoveries": [ ... ]
+}
+```
+
+**2. In pursuit** — active claims being worked right now
+```json
+"in_pursuit": {
+  "active_claim_count": 9,
+  "total_amount_in_pursuit": 43875.00,
+  "total_gross_recovered": 5000.00,
+  "total_net_recovered": 4500.00
+}
+```
+
+**3. Recovered & deposited** — actual money in the artist's account
+```json
+"recovered_and_deposited": {
+  "total_deposited": 4500.00,
+  "deposit_count": 2,
+  "deposits": [
+    {
+      "amount": 2700.00,
+      "currency": "USD",
+      "status": "SETTLED",
+      "celero_transaction_id": "TXN-...",
+      "deposited_at": "2026-03-01T14:23:00Z"
+    }
+  ]
+}
+```
+
+**4. Balance still pursuing** — the headline number
+```json
+"balance_still_pursuing": {
+  "total_in_active_claims": 43875.00,
+  "total_deposited_to_date": 4500.00,
+  "total_pending_deposit": 1350.00,
+  "balance_still_pursuing": 42525.00
+}
+```
+
+**5. Activity feed** — reverse-chronological log of everything that's happened
+```json
+"activity_feed": [
+  {
+    "type": "PAYMENT_DEPOSITED",
+    "timestamp": "2026-03-01T14:23:00Z",
+    "title": "Payment deposited to your account",
+    "detail": "$2,700.00 USD deposited via Celero Commerce — status: SETTLED (ref: TXN-abc123)",
+    "amount": 2700.00
+  },
+  {
+    "type": "CLAIM_ACCEPTED",
+    "timestamp": "2026-02-28T10:00:00Z",
+    "title": "Claim accepted — awaiting payment",
+    "detail": "ROYALTY claim — $3,000.00 USD"
+  },
+  {
+    "type": "LEAKAGE_DISCOVERED",
+    "timestamp": "2026-02-15T09:30:00Z",
+    "title": "Leakage detected: MISSING_PAYMENT",
+    "detail": "ROYALTY anomaly (HIGH) — estimated recoverable: $3,000.00"
+  }
+]
+```
+
+The dashboard updates automatically every time:
+- A new anomaly is detected (statement upload or manual detection)
+- A claim status changes
+- A Celero disbursement is received (webhook `disbursement.settled`)
 
 ---
 
@@ -148,7 +245,7 @@ arcos7/
 ├── ingestion/      # CSV statement parser + connector architecture (PRO, DSP, Ticketing, Platform)
 ├── celero/         # Celero Commerce Merchant of Record (client, webhook handler)
 ├── graph/          # Rights graph (NetworkX DiGraph)
-├── earnings/       # Earnings calculation and historical reconstruction
+├── earnings/       # Earnings calculation, historical reconstruction, artist dashboard engine
 ├── anomaly/        # Anomaly detection engine + rule modules
 ├── recovery/       # Claims lifecycle orchestration
 ├── billing/        # Contingency billing, invoice management, Celero payment methods
@@ -213,6 +310,7 @@ pytest tests/ -v
 | GET | `/health/readiness` | Connector and credential readiness status |
 | POST | `/artists/` | Create artist |
 | GET | `/artists/{id}` | Get artist |
+| **GET** | **`/artists/{id}/dashboard`** | **Artist recovery dashboard — leakage, in pursuit, deposits, balance, activity feed** |
 | GET | `/artists/{id}/summary` | Earnings + anomaly summary |
 | POST | `/artists/{id}/connect` | Check connector credential status |
 | GET | `/artists/{id}/earnings` | Earnings summary |
