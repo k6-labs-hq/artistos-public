@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, DateTime, Enum, Float, ForeignKey, String
@@ -31,8 +31,8 @@ class Claim(Base):
     currency: Mapped[str] = mapped_column(String, default="USD")
     contingency_fee: Mapped[float | None] = mapped_column(Float, nullable=True)
     evidence: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow(), onupdate=lambda: datetime.utcnow())
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
 class ClaimSchema(BaseModel):

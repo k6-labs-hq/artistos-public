@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -48,7 +48,7 @@ class Anomaly(Base):
     territory: Mapped[str | None] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(Enum(AnomalyStatus), default=AnomalyStatus.OPEN)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class AnomalySchema(BaseModel):

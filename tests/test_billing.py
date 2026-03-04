@@ -7,7 +7,7 @@ from arcos7.models.artist import Artist
 from arcos7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from arcos7.models.claim import Claim, ClaimStatus
 from arcos7.billing.engine import BillingEngine
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 @pytest.fixture
@@ -66,8 +66,8 @@ def test_get_artist_billing_summary_structure(db_session):
         recovered_amount=2000.0,
         contingency_fee=200.0,
         currency="USD",
-        created_at=datetime.utcnow(),
-        updated_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
     )
     db_session.add(claim)
     db_session.commit()

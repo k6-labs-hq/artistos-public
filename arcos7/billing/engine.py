@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -26,7 +26,7 @@ class BillingEngine:
             "contingency_fee": contingency_fee,
             "currency": currency,
             "status": "PENDING",
-            "created_at": datetime.utcnow().isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         self._invoices[invoice_id] = invoice
         return invoice

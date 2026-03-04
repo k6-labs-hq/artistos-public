@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -32,7 +32,7 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
         name=artist_in.name,
         ipi_number=artist_in.ipi_number,
         stage_names=artist_in.stage_names,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(timezone.utc),
     )
     db.add(artist)
     db.commit()

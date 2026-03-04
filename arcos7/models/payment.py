@@ -1,6 +1,6 @@
 import enum
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -27,7 +27,7 @@ class Payment(Base):
     period_end: Mapped[date | None] = mapped_column(Date, nullable=True)
     source: Mapped[str | None] = mapped_column(String, nullable=True)
     reference_id: Mapped[str | None] = mapped_column(String, nullable=True)
-    received_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
+    received_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class PaymentSchema(BaseModel):

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
@@ -35,8 +35,8 @@ class ClaimsOrchestrator:
             claim_type=claim_type,
             status=ClaimStatus.IDENTIFIED,
             evidence=evidence or {},
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
         )
         self.db_session.add(claim)
         self.db_session.commit()
@@ -52,7 +52,7 @@ class ClaimsOrchestrator:
         if next_status is None:
             raise ValueError(f"No transition available from status {claim.status}")
         claim.status = next_status
-        claim.updated_at = datetime.utcnow()
+        claim.updated_at = datetime.now(timezone.utc)
         self.db_session.commit()
         self.db_session.refresh(claim)
         return claim
@@ -96,8 +96,8 @@ class ClaimsOrchestrator:
             raise ValueError(f"Claim {claim_id} not found")
         claim.recovered_amount = recovered_amount
         claim.currency = currency
-        claim.contingency_fee = round(recovered_amount * BillingEngine.CONTINGENCY_RATE, 2)
-        claim.updated_at = datetime.utcnow()
+        claim.contingency_fee = BillingEngine(self.db_session).calculate_contingency_fee(recovered_amount)
+        claim.updated_at = datetime.now(timezone.utc)
         self.db_session.commit()
         self.db_session.refresh(claim)
         return claim

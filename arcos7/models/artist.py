@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
@@ -16,7 +16,7 @@ class Artist(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
     stage_names: Mapped[list | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.utcnow())
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class ArtistSchema(BaseModel):

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -33,7 +33,7 @@ def get_earnings_history(artist_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Artist not found")
     engine = get_engine()
     start = datetime(2000, 1, 1)
-    end = datetime.utcnow()
+    end = datetime.now(timezone.utc)
     return engine.reconstruct_historical(artist_id, start, end, db)
 
 
