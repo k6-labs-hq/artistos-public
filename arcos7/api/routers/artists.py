@@ -44,10 +44,57 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/connect")
 def connect_artist(artist_id: str, db: Session = Depends(get_db)):
+    """
+    Check which data connectors are configured for this artist and return
+    their credential status.
+
+    This endpoint validates that the required environment variables are set
+    for each connector.  It does NOT make real API calls — it only confirms
+    that the credentials are present and the connector is ready to use.
+
+    For connectors that are not yet configured, use the statement file upload
+    workflow: POST /artists/{artist_id}/statements/upload
+    """
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
-    return {"status": "scheduled", "artist_id": artist_id, "message": "Historical ingestion job queued."}
+
+    from arcos7.ingestion.connectors.pro import PROConnector
+    from arcos7.ingestion.connectors.dsp import DSPConnector
+    from arcos7.ingestion.connectors.platform import PlatformConnector
+    from arcos7.ingestion.connectors.ticketing import TicketingConnector
+
+    def _check(connector_cls, name: str, **kwargs) -> dict:
+        try:
+            c = connector_cls(config={}, **kwargs)
+            ok = c.connect()
+            return {"source": name, "configured": ok,
+                    "status": "ready" if ok else "missing_credentials"}
+        except Exception as exc:  # noqa: BLE001
+            return {"source": name, "configured": False, "status": f"error: {exc}"}
+
+    sources = (
+        [_check(PROConnector, pro, pro_name=pro) for pro in ("ASCAP", "BMI", "SESAC")]
+        + [_check(DSPConnector, dsp, dsp_name=dsp) for dsp in ("Spotify", "Apple Music")]
+        + [_check(PlatformConnector, p, platform_name=p) for p in ("YouTube", "TikTok")]
+        + [_check(TicketingConnector, t, platform_name=t) for t in ("Ticketmaster", "AXS")]
+    )
+
+    configured_count = sum(1 for s in sources if s["configured"])
+    return {
+        "artist_id": artist_id,
+        "status": "ready" if configured_count > 0 else "no_connectors_configured",
+        "configured_sources": configured_count,
+        "total_sources": len(sources),
+        "sources": sources,
+        "next_steps": (
+            "Configure connector credentials via environment variables (see .env.example), "
+            "then call this endpoint again.  Alternatively, upload royalty statement CSV files "
+            "directly at POST /artists/{artist_id}/statements/upload — no API keys required."
+            if configured_count == 0
+            else "Use POST /artists/{artist_id}/statements/upload to ingest data from configured sources."
+        ),
+    }
 
 
 @router.get("/{artist_id}/summary")

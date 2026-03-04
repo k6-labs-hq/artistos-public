@@ -1,23 +1,73 @@
 # Ticketing Connectors: connects to Ticketmaster, AXS, SeatGeek, Eventbrite, etc.
-# Each platform provides show/event data; this stub simulates the interface.
+#
+# NOTE: Ticketmaster and AXS require an approved partnership/developer agreement
+# for access to artist settlement and payout data.  SeatGeek and Eventbrite have
+# public APIs but do not expose per-artist financial settlement data.
+#
+# Use the statement upload workflow to ingest settlement CSV exports:
+#   POST /artists/{id}/statements/upload
+#
+# Required environment variables for future ticketing API integrations:
+#   TICKETMASTER_API_KEY
+#   AXS_API_KEY
+#   SEATGEEK_CLIENT_ID, SEATGEEK_CLIENT_SECRET
+#   EVENTBRITE_PRIVATE_TOKEN
+import os
 from datetime import datetime
 
 from arcos7.ingestion.connectors.base import BaseConnector
 
+_TICKETING_ENV_VARS = {
+    "Ticketmaster": ("TICKETMASTER_API_KEY",),
+    "AXS":          ("AXS_API_KEY",),
+    "SeatGeek":     ("SEATGEEK_CLIENT_ID", "SEATGEEK_CLIENT_SECRET"),
+    "Eventbrite":   ("EVENTBRITE_PRIVATE_TOKEN",),
+}
+
 
 class TicketingConnector(BaseConnector):
+    """
+    Connector for a ticketing platform (Ticketmaster, AXS, SeatGeek, Eventbrite).
+
+    ``connect()`` checks whether the required credential environment variables
+    are set.  ``fetch_historical()`` and ``fetch_recent()`` raise
+    ``NotImplementedError`` — use settlement CSV exports and the statement
+    upload workflow instead.
+    """
+
     def __init__(self, config: dict, platform_name: str = "Ticketmaster"):
         super().__init__(config)
         self.platform_name = platform_name
 
+    def _required_env_vars(self) -> tuple[str, ...]:
+        return _TICKETING_ENV_VARS.get(
+            self.platform_name,
+            (f"{self.platform_name.upper().replace(' ', '_')}_API_KEY",),
+        )
+
     def connect(self) -> bool:
-        return True
+        """
+        Return ``True`` if all required credential environment variables are set,
+        ``False`` otherwise.  Does NOT make a real network call.
+        """
+        return all(
+            self.config.get(v.lower()) or os.environ.get(v, "")
+            for v in self._required_env_vars()
+        )
 
     def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
-        return []
+        raise NotImplementedError(
+            f"{self.platform_name} API integration is not yet configured.  "
+            f"Required env vars: {', '.join(self._required_env_vars())}.  "
+            f"Alternatively, export your show settlements as CSV and upload via "
+            f"POST /artists/{{artist_id}}/statements/upload."
+        )
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
-        return []
+        raise NotImplementedError(
+            f"{self.platform_name} API integration is not yet configured.  "
+            f"See fetch_historical() for setup instructions."
+        )
 
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []

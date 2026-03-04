@@ -19,9 +19,6 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
 
 import arcos7.auth.otp_service as otp_svc
 from arcos7.auth.otp_service import (
@@ -43,33 +40,8 @@ from arcos7.models.base import Base, get_db
 from arcos7.models.widget_lead import WidgetLead
 from arcos7.api.app import app
 
-# ---------------------------------------------------------------------------
-# In-memory SQLite DB for tests — StaticPool ensures all connections share
-# the same in-memory database instance.
-# ---------------------------------------------------------------------------
-
-TEST_DB_URL = "sqlite://"   # pure in-memory
-
-_test_engine = create_engine(
-    TEST_DB_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-_TestSession = sessionmaker(autocommit=False, autoflush=False, bind=_test_engine)
-
-# Create all tables once at module load
-Base.metadata.create_all(bind=_test_engine)
-
-
-def _override_get_db():
-    db = _TestSession()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-app.dependency_overrides[get_db] = _override_get_db
+# Use the shared test DB defined in conftest.py
+from tests.conftest import TestSession as _TestSession
 
 client = TestClient(app)
 

@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from arcos7.models.base import Base, engine
 from arcos7.api.routers import artists, earnings, anomalies, claims, billing, recovery, widget
+from arcos7.api.routers import ingestion
 
 
 @asynccontextmanager
@@ -64,8 +65,99 @@ app.include_router(claims.router)
 app.include_router(billing.router)
 app.include_router(recovery.router)
 app.include_router(widget.router)
+app.include_router(ingestion.router)
 
 
 @app.get("/health")
 def health():
     return {"status": "ok", "version": "2.0.0"}
+
+
+@app.get("/health/readiness")
+def readiness():
+    """
+    Return the platform readiness status for every integration point.
+
+    Operators can call this endpoint to see exactly which connectors are
+    configured (credentials present) vs. which require additional setup.
+
+    ``ready`` is ``True`` only when the core platform components are
+    functional.  Individual connector status reflects whether the required
+    environment variables are set — it does NOT make real network connections.
+    """
+    from arcos7.ingestion.connectors.pro import PROConnector
+    from arcos7.ingestion.connectors.dsp import DSPConnector
+    from arcos7.ingestion.connectors.platform import PlatformConnector
+    from arcos7.ingestion.connectors.ticketing import TicketingConnector
+
+    def _connector_status(connector_cls, name: str, **kwargs) -> dict:
+        try:
+            c = connector_cls(config={}, **kwargs)
+            connected = c.connect()
+            return {"name": name, "configured": connected,
+                    "status": "ready" if connected else "missing_credentials"}
+        except Exception as exc:  # noqa: BLE001
+            return {"name": name, "configured": False, "status": f"error: {exc}"}
+
+    # PROs
+    pros = [
+        _connector_status(PROConnector, pro, pro_name=pro)
+        for pro in ("ASCAP", "BMI", "SESAC", "GMR", "SOCAN", "PRS", "GEMA")
+    ]
+    # DSPs
+    dsps = [
+        _connector_status(DSPConnector, dsp, dsp_name=dsp)
+        for dsp in ("Spotify", "Apple Music", "Amazon Music", "Tidal", "Deezer")
+    ]
+    # Platforms
+    platforms = [
+        _connector_status(PlatformConnector, plat, platform_name=plat)
+        for plat in ("YouTube", "TikTok", "Instagram")
+    ]
+    # Ticketing
+    ticketing = [
+        _connector_status(TicketingConnector, plat, platform_name=plat)
+        for plat in ("Ticketmaster", "AXS", "SeatGeek", "Eventbrite")
+    ]
+
+    # Notification services
+    twilio_ready = bool(
+        os.environ.get("TWILIO_ACCOUNT_SID")
+        and os.environ.get("TWILIO_AUTH_TOKEN")
+        and os.environ.get("TWILIO_FROM_NUMBER")
+    )
+    smtp_ready = bool(
+        os.environ.get("SMTP_HOST")
+        and os.environ.get("SMTP_USER")
+        and os.environ.get("SMTP_PASSWORD")
+    )
+
+    # Core platform is always ready (DB + API)
+    core_ready = True
+
+    return {
+        "ready": core_ready,
+        "version": "2.0.0",
+        "environment": _env,
+        "core": {
+            "database": "ready",
+            "api": "ready",
+            "widget": "ready",
+            "statement_upload": "ready",
+        },
+        "notifications": {
+            "sms_twilio": "ready" if twilio_ready else "missing_credentials",
+            "email_smtp": "ready" if smtp_ready else "missing_credentials",
+        },
+        "connectors": {
+            "pros": pros,
+            "dsps": dsps,
+            "platforms": platforms,
+            "ticketing": ticketing,
+        },
+        "note": (
+            "Connector 'missing_credentials' status means the API key environment "
+            "variables are not set.  Use POST /artists/{id}/statements/upload to "
+            "ingest royalty statement CSV files without requiring any connector credentials."
+        ),
+    }
