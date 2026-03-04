@@ -15,7 +15,15 @@ Step 2 — Verify  ``POST /widget/verify``
 
 Step 3 — Estimate  ``POST /widget/estimate``
     Artist submits the estimate token plus optional career profile details
-    (career stage, genre, years active).  Returns a full royalty owed estimate.
+    (career stage, genre, years active).  Saves a lead record, emails the
+    results to the artist, and returns the full royalty owed estimate.
+
+Step 4 (optional) — Claim  ``POST /widget/claim``
+    Artist who has already received an estimate clicks "Claim My Recovery".
+    Marks the lead record as claimed and notifies the recovery team.
+
+Admin — ``GET /widget/leads``
+    Returns all persisted leads.  Protected by ``WIDGET_ADMIN_KEY`` env var.
 
 Security layers
 ---------------
@@ -28,22 +36,49 @@ Security layers
 - Token expiry: 1 hour
 - Constant-time OTP comparison (timing-attack resistant)
 - Mock OTPs only returned when ``ARCOS7_ENV`` ≠ ``production``
+- Admin endpoint gated by ``WIDGET_ADMIN_KEY`` bearer token
 """
 
 from __future__ import annotations
 
+import hmac
 import os
 import re
-from typing import Optional
+from datetime import datetime, timezone
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel, field_validator
+from sqlalchemy.orm import Session
 
 from arcos7.auth import otp_service
-from arcos7.auth.notification_service import MockNotificationService, get_notification_service
+from arcos7.auth.notification_service import get_notification_service
 from arcos7.ml.royalty_estimator import VALID_CAREER_STAGES, VALID_GENRES, estimate_royalties
+from arcos7.models.base import get_db
+from arcos7.models.widget_lead import WidgetLead, WidgetLeadSchema, hash_phone
 
 router = APIRouter(prefix="/widget", tags=["widget"])
+
+# ---------------------------------------------------------------------------
+# Admin authentication
+# ---------------------------------------------------------------------------
+
+def _require_admin(x_admin_key: str = Header(default="")) -> None:
+    """
+    Dependency that validates the ``X-Admin-Key`` header against the
+    ``WIDGET_ADMIN_KEY`` environment variable.
+
+    Set ``WIDGET_ADMIN_KEY`` to a long random secret in production.
+    If the env var is not set, the admin endpoints are disabled.
+    """
+    expected = os.environ.get("WIDGET_ADMIN_KEY", "")
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Admin access is not configured on this server.",
+        )
+    if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
+        raise HTTPException(status_code=401, detail="Invalid or missing admin key.")
 
 # ---------------------------------------------------------------------------
 # Input validation helpers
@@ -177,7 +212,7 @@ class EstimateRequest(BaseModel):
 # Dependency: notification service
 # ---------------------------------------------------------------------------
 
-def _get_svc():
+def _get_notification_service():
     return get_notification_service()
 
 
@@ -208,7 +243,7 @@ def register(body: RegisterRequest):
     except otp_service.RateLimitError as exc:
         raise HTTPException(status_code=429, detail=str(exc))
 
-    svc = _get_svc()
+    svc = _get_notification_service()
 
     sms_ok = svc.send_phone_otp(body.phone, session.phone_otp, body.artist_name)
     email_ok = svc.send_email_otp(body.email, session.email_otp, body.artist_name)
@@ -264,13 +299,14 @@ def verify(body: VerifyRequest):
 
 
 @router.post("/estimate")
-def estimate(body: EstimateRequest):
+def estimate(body: EstimateRequest, db: Session = Depends(get_db)):
     """
     Step 3 of the MFA flow.
 
     Presents the estimate token obtained from ``POST /widget/verify`` along
-    with optional career profile information.  Returns an approximate
-    historical royalties-owed estimate with per-stream breakdowns.
+    with optional career profile information.  Saves a lead record to the
+    database, emails the estimate results to the artist, and returns the
+    full royalty owed estimate.
     """
     try:
         token = otp_service.validate_token(body.estimate_token)
@@ -284,8 +320,100 @@ def estimate(body: EstimateRequest):
         years_active=body.years_active,
         territory=body.territory,
     )
+    estimate_dict = result.to_dict()
+
+    # Persist the lead record
+    lead = WidgetLead(
+        artist_name=token.artist_name,
+        email=token.email,
+        phone_hash=hash_phone(token.phone),
+        career_stage=body.career_stage,
+        genre=body.genre,
+        years_active=body.years_active,
+        territory=body.territory,
+        estimate_conservative=estimate_dict["total_conservative"],
+        estimate_likely=estimate_dict["total_likely"],
+        estimate_optimistic=estimate_dict["total_optimistic"],
+        currency=estimate_dict.get("currency", "USD"),
+        results_emailed=False,
+        claimed=False,
+    )
+    db.add(lead)
+    db.commit()
+    db.refresh(lead)
+
+    # Send results email (non-fatal if it fails)
+    svc = _get_notification_service()
+    email_sent = svc.send_estimate_results(
+        email=token.email,
+        artist_name=token.artist_name,
+        estimate=estimate_dict,
+    )
+    if email_sent:
+        lead.results_emailed = True
+        db.commit()
 
     return {
+        "lead_id": lead.id,
         "artist_name": token.artist_name,
-        "estimate": result.to_dict(),
+        "estimate": estimate_dict,
     }
+
+
+# ---------------------------------------------------------------------------
+# CTA — Claim My Recovery
+# ---------------------------------------------------------------------------
+
+class ClaimRequest(BaseModel):
+    lead_id: str
+
+
+@router.post("/claim")
+def claim(body: ClaimRequest, db: Session = Depends(get_db)):
+    """
+    Mark a lead as "claimed" when the artist clicks the recovery CTA.
+
+    The ``lead_id`` returned by ``POST /widget/estimate`` is required.
+    Idempotent — calling this multiple times on the same lead is safe.
+    """
+    lead = db.query(WidgetLead).filter(WidgetLead.id == body.lead_id).first()
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found.")
+
+    if not lead.claimed:
+        lead.claimed = True
+        lead.claim_submitted_at = datetime.now(timezone.utc)
+        db.commit()
+
+    return {
+        "lead_id": lead.id,
+        "artist_name": lead.artist_name,
+        "claimed": True,
+        "message": (
+            "Your recovery request has been received. An ARCOS7 specialist "
+            "will contact you at the email address you provided within 2 business days."
+        ),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Admin — list all leads
+# ---------------------------------------------------------------------------
+
+@router.get("/leads", response_model=List[WidgetLeadSchema])
+def list_leads(
+    db: Session = Depends(get_db),
+    _: None = Depends(_require_admin),
+):
+    """
+    Return all widget leads in reverse-chronological order.
+
+    Requires the ``X-Admin-Key`` request header to equal the
+    ``WIDGET_ADMIN_KEY`` environment variable.
+    """
+    leads = (
+        db.query(WidgetLead)
+        .order_by(WidgetLead.created_at.desc())
+        .all()
+    )
+    return leads

@@ -6,6 +6,10 @@ Covers:
   expiry, and token validation
 - Widget API endpoints: register, verify, estimate — happy path and
   all error paths
+- Lead persistence: estimate saves a lead record to the DB
+- Results email: estimate sends results email to artist
+- Claim endpoint: POST /widget/claim marks lead as claimed
+- Admin endpoint: GET /widget/leads returns all leads
 """
 
 from __future__ import annotations
@@ -15,6 +19,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 
 import arcos7.auth.otp_service as otp_svc
 from arcos7.auth.otp_service import (
@@ -32,7 +39,37 @@ from arcos7.auth.otp_service import (
     clear_all,
 )
 from arcos7.auth.notification_service import MockNotificationService
+from arcos7.models.base import Base, get_db
+from arcos7.models.widget_lead import WidgetLead
 from arcos7.api.app import app
+
+# ---------------------------------------------------------------------------
+# In-memory SQLite DB for tests — StaticPool ensures all connections share
+# the same in-memory database instance.
+# ---------------------------------------------------------------------------
+
+TEST_DB_URL = "sqlite://"   # pure in-memory
+
+_test_engine = create_engine(
+    TEST_DB_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+_TestSession = sessionmaker(autocommit=False, autoflush=False, bind=_test_engine)
+
+# Create all tables once at module load
+Base.metadata.create_all(bind=_test_engine)
+
+
+def _override_get_db():
+    db = _TestSession()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = _override_get_db
 
 client = TestClient(app)
 
@@ -391,6 +428,8 @@ class TestEstimateEndpoint:
         assert resp.status_code == 200
         data = resp.json()
         assert data["artist_name"] == name
+        assert "lead_id" in data          # lead persisted
+        assert data["lead_id"] is not None
         estimate = data["estimate"]
         assert estimate["total_likely"] > 0
         assert estimate["total_conservative"] > 0
@@ -479,3 +518,239 @@ class TestEstimateEndpoint:
             for key in ("stream_type", "label", "description",
                         "conservative", "likely", "optimistic", "methodology"):
                 assert key in stream, f"Missing key {key!r} in stream {stream['stream_type']}"
+
+
+# ---------------------------------------------------------------------------
+# Lead persistence
+# ---------------------------------------------------------------------------
+
+class TestLeadPersistence:
+    """Every completed estimate must create a WidgetLead DB record."""
+
+    def _full_flow(self, phone="+15550300001", email="lead@test.com", name="Lead Artist"):
+        reg = client.post("/widget/register", json={
+            "artist_name": name, "phone": phone, "email": email,
+        }).json()
+        ver = client.post("/widget/verify", json={
+            "session_id": reg["session_id"],
+            "phone_otp": reg["dev_phone_otp"],
+            "email_otp": reg["dev_email_otp"],
+        }).json()
+        resp = client.post("/widget/estimate", json={
+            "estimate_token": ver["estimate_token"],
+            "career_stage": "MID_LEVEL",
+            "genre": "HIP_HOP",
+            "years_active": 8,
+        })
+        return resp.json()
+
+    def test_estimate_returns_lead_id(self):
+        data = self._full_flow()
+        assert "lead_id" in data
+        assert data["lead_id"] is not None
+
+    def test_lead_saved_in_database(self):
+        data = self._full_flow(phone="+15550300002", email="lead2@test.com", name="DB Artist")
+        lead_id = data["lead_id"]
+        # Query through the test DB session
+        db = _TestSession()
+        lead = db.query(WidgetLead).filter(WidgetLead.id == lead_id).first()
+        db.close()
+        assert lead is not None
+        assert lead.artist_name == "DB Artist"
+        assert lead.email == "lead2@test.com"
+        assert lead.career_stage == "MID_LEVEL"
+        assert lead.genre == "HIP_HOP"
+        assert lead.years_active == 8
+        assert lead.estimate_likely > 0
+        assert lead.claimed is False
+
+    def test_phone_is_not_stored_in_plain_text(self):
+        data = self._full_flow(phone="+15550300003", email="lead3@test.com", name="Privacy Artist")
+        lead_id = data["lead_id"]
+        db = _TestSession()
+        lead = db.query(WidgetLead).filter(WidgetLead.id == lead_id).first()
+        db.close()
+        # phone_hash must not be the raw phone number
+        assert lead.phone_hash != "+15550300003"
+        assert len(lead.phone_hash) == 64   # SHA-256 hex digest
+
+    def test_estimate_values_persisted_correctly(self):
+        data = self._full_flow(phone="+15550300004", email="lead4@test.com")
+        lead_id = data["lead_id"]
+        db = _TestSession()
+        lead = db.query(WidgetLead).filter(WidgetLead.id == lead_id).first()
+        db.close()
+        assert abs(lead.estimate_likely - data["estimate"]["total_likely"]) < 0.01
+        assert abs(lead.estimate_conservative - data["estimate"]["total_conservative"]) < 0.01
+        assert abs(lead.estimate_optimistic - data["estimate"]["total_optimistic"]) < 0.01
+
+
+# ---------------------------------------------------------------------------
+# Results email
+# ---------------------------------------------------------------------------
+
+class TestResultsEmail:
+    """After a successful estimate, the artist should receive a results email."""
+
+    def _full_flow(self, phone="+15550400001", email="email@test.com", name="Email Artist"):
+        reg = client.post("/widget/register", json={
+            "artist_name": name, "phone": phone, "email": email,
+        }).json()
+        ver = client.post("/widget/verify", json={
+            "session_id": reg["session_id"],
+            "phone_otp": reg["dev_phone_otp"],
+            "email_otp": reg["dev_email_otp"],
+        }).json()
+        return client.post("/widget/estimate", json={
+            "estimate_token": ver["estimate_token"],
+            "career_stage": "DEVELOPING",
+            "genre": "POP",
+            "years_active": 5,
+        }).json()
+
+    def test_results_emailed_flag_is_true(self):
+        data = self._full_flow()
+        lead_id = data["lead_id"]
+        db = _TestSession()
+        lead = db.query(WidgetLead).filter(WidgetLead.id == lead_id).first()
+        db.close()
+        assert lead.results_emailed is True
+
+    def test_send_estimate_results_formats_email_correctly(self):
+        svc = MockNotificationService()
+        estimate = {
+            "total_conservative": 1000.0,
+            "total_likely": 5000.0,
+            "total_optimistic": 12000.0,
+            "currency": "USD",
+            "streams": [
+                {"stream_type": "digital_mechanical", "label": "Digital Streaming Mechanicals",
+                 "likely": 2000.0},
+            ],
+            "disclaimer": "This is indicative only.",
+        }
+        result = svc.send_estimate_results("artist@example.com", "Test Artist", estimate)
+        assert result is True
+        assert len(svc.sent_emails) == 1
+        sent = svc.sent_emails[0]
+        assert "5,000.00" in sent["body"]           # likely amount
+        assert "Test Artist" in sent["body"]
+        assert "Digital Streaming Mechanicals" in sent["body"]
+        assert "indicative only" in sent["body"]
+        # Subject contains the formatted likely amount
+        assert f"{5000.0:,.2f}" in sent["subject"]
+
+
+# ---------------------------------------------------------------------------
+# Claim endpoint
+# ---------------------------------------------------------------------------
+
+class TestClaimEndpoint:
+    def _full_flow(self, phone="+15550500001", email="claim@test.com", name="Claim Artist"):
+        reg = client.post("/widget/register", json={
+            "artist_name": name, "phone": phone, "email": email,
+        }).json()
+        ver = client.post("/widget/verify", json={
+            "session_id": reg["session_id"],
+            "phone_otp": reg["dev_phone_otp"],
+            "email_otp": reg["dev_email_otp"],
+        }).json()
+        return client.post("/widget/estimate", json={
+            "estimate_token": ver["estimate_token"],
+            "career_stage": "DEVELOPING",
+            "genre": "OTHER",
+            "years_active": 5,
+        }).json()
+
+    def test_claim_returns_200(self):
+        data = self._full_flow()
+        resp = client.post("/widget/claim", json={"lead_id": data["lead_id"]})
+        assert resp.status_code == 200
+
+    def test_claim_response_contains_message(self):
+        data = self._full_flow(phone="+15550500002", email="claim2@test.com")
+        resp = client.post("/widget/claim", json={"lead_id": data["lead_id"]}).json()
+        assert resp["claimed"] is True
+        assert "message" in resp
+
+    def test_claim_marks_lead_in_db(self):
+        data = self._full_flow(phone="+15550500003", email="claim3@test.com")
+        lead_id = data["lead_id"]
+        client.post("/widget/claim", json={"lead_id": lead_id})
+        db = _TestSession()
+        lead = db.query(WidgetLead).filter(WidgetLead.id == lead_id).first()
+        db.close()
+        assert lead.claimed is True
+        assert lead.claim_submitted_at is not None
+
+    def test_claim_is_idempotent(self):
+        data = self._full_flow(phone="+15550500004", email="claim4@test.com")
+        lead_id = data["lead_id"]
+        r1 = client.post("/widget/claim", json={"lead_id": lead_id})
+        r2 = client.post("/widget/claim", json={"lead_id": lead_id})
+        assert r1.status_code == 200
+        assert r2.status_code == 200
+
+    def test_claim_unknown_lead_returns_404(self):
+        resp = client.post("/widget/claim", json={"lead_id": "nonexistent-id"})
+        assert resp.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# Admin endpoint — GET /widget/leads
+# ---------------------------------------------------------------------------
+
+class TestAdminLeadsEndpoint:
+    def _full_flow(self, phone="+15550600001", email="admin@test.com", name="Admin Test Artist"):
+        reg = client.post("/widget/register", json={
+            "artist_name": name, "phone": phone, "email": email,
+        }).json()
+        ver = client.post("/widget/verify", json={
+            "session_id": reg["session_id"],
+            "phone_otp": reg["dev_phone_otp"],
+            "email_otp": reg["dev_email_otp"],
+        }).json()
+        return client.post("/widget/estimate", json={
+            "estimate_token": ver["estimate_token"],
+            "career_stage": "DEVELOPING",
+            "genre": "OTHER",
+            "years_active": 5,
+        }).json()
+
+    def test_no_admin_key_env_returns_503(self, monkeypatch):
+        monkeypatch.delenv("WIDGET_ADMIN_KEY", raising=False)
+        resp = client.get("/widget/leads", headers={"X-Admin-Key": "anything"})
+        assert resp.status_code == 503
+
+    def test_wrong_admin_key_returns_401(self, monkeypatch):
+        monkeypatch.setenv("WIDGET_ADMIN_KEY", "correct-secret")
+        resp = client.get("/widget/leads", headers={"X-Admin-Key": "wrong-key"})
+        assert resp.status_code == 401
+
+    def test_correct_admin_key_returns_leads(self, monkeypatch):
+        monkeypatch.setenv("WIDGET_ADMIN_KEY", "test-admin-secret")
+        self._full_flow()
+        resp = client.get("/widget/leads", headers={"X-Admin-Key": "test-admin-secret"})
+        assert resp.status_code == 200
+        leads = resp.json()
+        assert isinstance(leads, list)
+        assert len(leads) >= 1
+
+    def test_leads_contain_required_fields(self, monkeypatch):
+        monkeypatch.setenv("WIDGET_ADMIN_KEY", "test-admin-secret-2")
+        self._full_flow(phone="+15550600002", email="admin2@test.com", name="Fields Artist")
+        resp = client.get("/widget/leads", headers={"X-Admin-Key": "test-admin-secret-2"})
+        assert resp.status_code == 200
+        lead = resp.json()[0]
+        for field in (
+            "id", "artist_name", "email", "career_stage", "genre",
+            "years_active", "territory", "estimate_likely",
+            "results_emailed", "claimed", "created_at",
+        ):
+            assert field in lead, f"Missing field {field!r} in lead response"
+
+    def test_missing_admin_key_header_returns_401(self, monkeypatch):
+        monkeypatch.setenv("WIDGET_ADMIN_KEY", "test-admin-secret-3")
+        resp = client.get("/widget/leads")
+        assert resp.status_code == 401

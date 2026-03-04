@@ -486,6 +486,7 @@
   /* ─── State ──────────────────────────────────────────────────────────── */
   let sessionId     = null;
   let estimateToken = null;
+  let leadId        = null;
   let countdownTimer = null;
   let selectedStage  = 'DEVELOPING';
   let devPhoneOtp    = null;
@@ -700,6 +701,7 @@
         showAlert(3, data.detail || 'Failed to calculate estimate. Please try again.');
         return;
       }
+      leadId = data.lead_id || null;
       renderResults(data);
       goTo(4);
     } catch (e) {
@@ -767,8 +769,37 @@
   }
 
   /* ─── CTAs ────────────────────────────────────────────────────────────── */
-  function ctaClaim() {
-    alert('Our recovery specialists will reach out to begin the full audit process. Thank you for trusting ARCOS7!');
+  async function ctaClaim() {
+    const btn = document.querySelector('#pane4 .btn-primary');
+    if (!leadId) {
+      showAlert(4, 'Could not submit your request — lead ID is missing. Please try refreshing and completing the form again.', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div>Submitting…';
+
+    try {
+      const res = await fetch(`${API_BASE}/widget/claim`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        btn.disabled = false;
+        btn.textContent = 'Claim My Recovery →';
+        showAlert(4, data.detail || 'Could not submit your request. Please try again.', 'error');
+        return;
+      }
+      btn.textContent = '✓ Request Received';
+      btn.style.background = 'var(--accent)';
+      showAlert(4, data.message || 'Your request has been submitted. We\'ll be in touch soon.', 'success');
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = 'Claim My Recovery →';
+      showAlert(4, 'Network error. Please try again.', 'error');
+    }
   }
 
   function ctaShare() {
@@ -784,11 +815,19 @@
   function doReset() {
     clearCountdown();
     sessionId = estimateToken = devPhoneOtp = devEmailOtp = null;
+    leadId = null;
     ['artistName','phone','email','phoneOtp','emailOtp'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = '';
     });
     document.getElementById('devHint').style.display = 'none';
+    // Reset CTA button state
+    const ctaBtn = document.querySelector('#pane4 .btn-primary');
+    if (ctaBtn) {
+      ctaBtn.disabled = false;
+      ctaBtn.textContent = 'Claim My Recovery →';
+      ctaBtn.style.background = '';
+    }
     [1,2,3,4].forEach(n => clearAlert(n));
     goTo(1);
   }

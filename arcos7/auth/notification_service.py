@@ -95,6 +95,63 @@ class NotificationService(ABC):
         )
         return self.send_email(email, subject, body)
 
+    def send_estimate_results(
+        self,
+        email: str,
+        artist_name: str,
+        estimate: dict,
+    ) -> bool:
+        """
+        Email the royalty estimate results to the artist.
+
+        Parameters
+        ----------
+        email:
+            Destination address.
+        artist_name:
+            Used in the greeting line.
+        estimate:
+            The dict returned by :func:`~arcos7.ml.royalty_estimator.RoyaltyEstimate.to_dict`.
+        """
+        likely      = estimate.get("total_likely", 0)
+        conservative = estimate.get("total_conservative", 0)
+        optimistic  = estimate.get("total_optimistic", 0)
+        currency    = estimate.get("currency", "USD")
+        streams     = estimate.get("streams", [])
+        disclaimer  = estimate.get("disclaimer", "")
+
+        def _fmt(n: float) -> str:
+            return f"{currency} {n:,.2f}"
+
+        stream_lines = "\n".join(
+            f"  • {s.get('label', s.get('stream_type', ''))}: {_fmt(s.get('likely', 0))}"
+            for s in streams
+        )
+
+        subject = f"Your ARCOS7 Royalty Estimate — {_fmt(likely)} likely owed"
+        body = (
+            f"Hi {artist_name},\n\n"
+            f"Here is your personalised royalty estimate from the ARCOS7 Royalty Estimator.\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"  ESTIMATED UNPAID ROYALTIES\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            f"  Conservative:  {_fmt(conservative)}\n"
+            f"  Likely:        {_fmt(likely)}\n"
+            f"  Optimistic:    {_fmt(optimistic)}\n\n"
+            f"Breakdown by revenue stream:\n"
+            f"{stream_lines}\n\n"
+            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            f"Want to pursue recovery?\n"
+            f"Reply to this email or visit https://arcos7.com/recovery to speak\n"
+            f"with an ARCOS7 recovery specialist.\n\n"
+            f"Important notice\n"
+            f"────────────────\n"
+            f"{disclaimer}\n\n"
+            f"— The ARCOS7 Team\n"
+            f"https://arcos7.com\n"
+        )
+        return self.send_email(email, subject, body)
+
 
 # ---------------------------------------------------------------------------
 # Mock implementation (development / testing only)
