@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from arcos7.models.base import Base, engine
 from arcos7.api.routers import artists, earnings, anomalies, claims, billing, recovery, widget
 from arcos7.api.routers import ingestion
+from arcos7.api.routers import celero as celero_router
 
 
 @asynccontextmanager
@@ -66,6 +67,7 @@ app.include_router(billing.router)
 app.include_router(recovery.router)
 app.include_router(widget.router)
 app.include_router(ingestion.router)
+app.include_router(celero_router.router)
 
 
 @app.get("/health")
@@ -132,6 +134,11 @@ def readiness():
         and os.environ.get("SMTP_PASSWORD")
     )
 
+    # Celero Commerce — Merchant of Record
+    from arcos7.celero.client import CeleroClient
+    celero_client = CeleroClient()
+    celero_webhook_secret_set = bool(os.environ.get("CELERO_WEBHOOK_SECRET"))
+
     # Core platform is always ready (DB + API)
     core_ready = True
 
@@ -144,6 +151,18 @@ def readiness():
             "api": "ready",
             "widget": "ready",
             "statement_upload": "ready",
+        },
+        "merchant_of_record": {
+            "provider": "Celero Commerce",
+            "gateway": "Celero Connect®",
+            "api_configured": celero_client.configured,
+            "webhook_secret_configured": celero_webhook_secret_set,
+            "status": (
+                "ready"
+                if celero_client.configured and celero_webhook_secret_set
+                else "missing_credentials"
+            ),
+            **celero_client.status(),
         },
         "notifications": {
             "sms_twilio": "ready" if twilio_ready else "missing_credentials",

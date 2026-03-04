@@ -17,6 +17,9 @@ class Artist(Base):
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
     stage_names: Mapped[list | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    # Celero Commerce — Merchant of Record
+    # Populated when the artist is registered via POST /artists/{id}/celero/register
+    celero_customer_vault_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class ArtistSchema(BaseModel):
@@ -27,6 +30,7 @@ class ArtistSchema(BaseModel):
     ipi_number: str | None = None
     stage_names: list[str] | None = None
     created_at: datetime
+    celero_customer_vault_id: str | None = None
 
 
 class ArtistCreate(BaseModel):

@@ -10,10 +10,11 @@ ARCOS7 Engine 2 is a comprehensive platform designed to detect, recover, and pre
 | **Earnings Engine** | ✅ Ready | Full historical reconstruction and real-time calculation |
 | **Anomaly Detection** | ✅ Ready | 5-category rule engine; runs automatically after statement upload |
 | **Claims Orchestration** | ✅ Ready | Full IDENTIFIED → PAID lifecycle with evidence packets |
-| **Billing Engine** | ✅ Ready | 10% contingency fee, invoice generation |
+| **Billing Engine** | ✅ Ready | 10% contingency fee, invoice generation, wired to Celero |
 | **Recovery Tools** | ✅ Ready | SOL tracker, audit eligibility, rate benchmark, recoupment, priority queue |
 | **ML Suite** | ✅ Ready | Isolation Forest anomaly detector, earnings forecaster, catalog scorer, rate benchmarker |
 | **Statement Upload** | ✅ Ready | CSV ingestion for DistroKid, TuneCore, CD Baby, ASCAP, BMI, Spotify, generic |
+| **Celero Commerce (MoR)** | 🔑 Key needed | Integration built; needs `CELERO_SECURITY_KEY` from Celero onboarding |
 | **PRO API Connectors** | ⚠️ Pending | ASCAP, BMI, SESAC, etc. require formal data-partnership agreements |
 | **DSP API Connectors** | ⚠️ Pending | DSPs don't expose royalty data via API — use distributor CSV exports |
 | **Platform API Connectors** | ⚠️ Pending | YouTube CMS requires Google partnership; TikTok/IG require approved developer access |
@@ -49,15 +50,92 @@ Returns the status of every connector and notification service.  Use this endpoi
 
 ---
 
+## Celero Commerce — Merchant of Record Integration
+
+Celero Commerce acts as the **Merchant of Record** for all ARCOS7 payments:
+
+- Celero legally processes every contingency-fee transaction on behalf of ARCOS7.
+- Celero handles **tax compliance** (sales tax, VAT, etc.) automatically.
+- Celero issues receipts and manages chargebacks with the card networks.
+- Artists' payment credentials are stored in the **Celero Customer Vault** — ARCOS7 never handles raw card data (PCI scope stays entirely with Celero).
+- Artist disbursements (the 90% net recovery share) are sent as **ACH credits** via Celero.
+
+### Payment flow
+
+```
+1. Claim recovered → status = PAID
+       ↓
+2. POST /artists/{id}/celero/charge
+   (charges 10% contingency fee via artist's vaulted payment method)
+       ↓
+3. Celero webhook: transaction.approved
+   → Claim status → CLOSED
+       ↓
+4. POST /artists/{id}/celero/disburse
+   (ACH credit of 90% net to artist's bank account in vault)
+       ↓
+5. Celero webhook: disbursement.settled
+   → CeleroTransaction status → SETTLED
+```
+
+### Setup (3 steps)
+
+**Step 1** — Get sandbox credentials:
+Request a sandbox merchant key at https://celerocommerce.com/developers/
+
+**Step 2** — Set environment variables:
+```bash
+export CELERO_SECURITY_KEY="your-key-from-celero"
+export CELERO_WEBHOOK_SECRET="your-webhook-secret"
+# Optional — defaults to NMI sandbox:
+# export CELERO_API_URL="https://secure.networkmerchants.com/api/transact.php"
+```
+
+**Step 3** — Configure webhook URL in Celero merchant dashboard:
+```
+Settings → Webhooks → Add Endpoint
+URL: https://your-domain.com/celero/webhook
+Events: transaction.approved, transaction.declined, transaction.void,
+        transaction.refund, disbursement.settled, disbursement.failed
+```
+
+### Artist onboarding with Celero
+
+1. **Register artist** — `POST /artists/{id}/celero/register` (contact details → vault ID)
+2. **Collect payment method** — Direct artist to Celero's hosted Collect.js or Collect Checkout form (no card data touches ARCOS7 servers)
+3. **Verify** — `GET /artists/{id}/celero/status` confirms vault registration and transaction history
+
+### Check integration status
+
+```
+GET /health/readiness
+```
+
+Look for the `merchant_of_record` section:
+```json
+{
+  "merchant_of_record": {
+    "provider": "Celero Commerce",
+    "gateway": "Celero Connect®",
+    "api_configured": true,
+    "webhook_secret_configured": true,
+    "status": "ready"
+  }
+}
+```
+
+---
+
 ## Features
 
 - **Statement Upload & Auto-Ingestion**: Upload royalty statement CSVs; events and payments are parsed, persisted, and analysed automatically
 - **Multi-Source Connector Architecture**: Pluggable connectors for PROs, DSPs, ticketing platforms, and content platforms (credentials validated via env vars; `connect()` returns `False` rather than silently failing)
+- **Celero Commerce (Merchant of Record)**: Full Celero Connect® integration — customer vault registration, contingency-fee charging, artist disbursements via ACH, refund/void, webhook event processing
 - **Rights Graph**: NetworkX-powered directed graph mapping artists, works, and contracts
 - **Earnings Engine**: Reconstructs historical earnings and computes real-time expected payments against contract terms
 - **Anomaly Detection**: Rule-based detection for royalty underpayments, touring settlement gaps, merch royalty omissions, sync licensing violations, and low platform rates
 - **Claims Orchestration**: Full lifecycle management from identification through payment recovery
-- **Billing Engine**: 10% contingency fee model with invoice generation and billing summaries
+- **Billing Engine**: 10% contingency fee model with invoice generation and Celero-gated payment processing
 - **ML Suite**: Isolation Forest anomaly detector, linear-regression earnings forecaster, catalog health scorer, comparable-rate benchmarker
 - **Royalty Estimator Widget**: MFA-gated public widget (SMS + email OTP) for artist lead capture and indicative royalty estimates
 - **REST API**: FastAPI-powered endpoints for all platform operations
@@ -68,11 +146,12 @@ Returns the status of every connector and notification service.  Use this endpoi
 arcos7/
 ├── models/         # SQLAlchemy ORM models + Pydantic schemas
 ├── ingestion/      # CSV statement parser + connector architecture (PRO, DSP, Ticketing, Platform)
+├── celero/         # Celero Commerce Merchant of Record (client, webhook handler)
 ├── graph/          # Rights graph (NetworkX DiGraph)
 ├── earnings/       # Earnings calculation and historical reconstruction
 ├── anomaly/        # Anomaly detection engine + rule modules
 ├── recovery/       # Claims lifecycle orchestration
-├── billing/        # Contingency billing and invoice management
+├── billing/        # Contingency billing, invoice management, Celero payment methods
 ├── ml/             # ML modules (anomaly detector, forecaster, catalog scorer, rate benchmarker)
 ├── auth/           # OTP service, notification service (Twilio SMS + SMTP email)
 ├── widget/         # Royalty estimator widget HTML
@@ -106,6 +185,9 @@ Key variables:
 - `TWILIO_*` — SMS delivery for OTP
 - `SMTP_*` — email delivery for OTP and results emails
 - `DATABASE_URL` — PostgreSQL URL for production (defaults to SQLite)
+- `CELERO_SECURITY_KEY` — **Celero Commerce merchant key** (issued during Celero onboarding; request at https://celerocommerce.com/developers/)
+- `CELERO_WEBHOOK_SECRET` — HMAC-SHA256 secret for validating Celero webhook payloads (set in Celero dashboard → Settings → Webhooks)
+- `CELERO_API_URL` — override gateway URL (defaults to NMI sandbox; live URL provided during production onboarding)
 
 See `.env.example` for the full list including connector API key variable names.
 
@@ -161,6 +243,17 @@ pytest tests/ -v
 | POST | `/widget/estimate` | Widget Step 3: generate + persist estimate |
 | POST | `/widget/claim` | Widget: submit recovery claim |
 | GET | `/widget/leads` | Admin: list all widget leads (requires X-Admin-Key) |
+| **Celero Commerce (Merchant of Record)** | | |
+| POST | `/artists/{id}/celero/register` | Register artist in Celero Customer Vault |
+| GET | `/artists/{id}/celero/status` | Artist Celero registration + transaction summary |
+| PUT | `/artists/{id}/celero/customer` | Update artist contact info in Celero vault |
+| POST | `/artists/{id}/celero/charge` | Charge contingency fee for a reconciled claim |
+| POST | `/artists/{id}/celero/disburse` | Disburse net recovery to artist via ACH |
+| POST | `/artists/{id}/celero/transactions/{txn_id}/refund` | Refund a charge |
+| POST | `/artists/{id}/celero/transactions/{txn_id}/void` | Void an unsettled charge |
+| GET | `/artists/{id}/celero/transactions` | List all Celero transactions |
+| GET | `/artists/{id}/celero/transactions/{txn_id}` | Get transaction detail |
+| POST | `/celero/webhook` | Receive Celero Commerce webhook events |
 
 ## License
 
