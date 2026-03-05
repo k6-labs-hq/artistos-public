@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARCOS7 Recovery Dashboard</title>
+  <style>
+    :root {
+      --bg: #f4f7f4;
+      --ink: #12221d;
+      --ink-soft: #4f675d;
+      --card: #ffffff;
+      --line: #d7e0da;
+      --brand: #1f7a5a;
+      --brand-2: #2f9c74;
+      --danger: #b34738;
+      --warn: #a6701b;
+      --ok: #2d7e43;
+      --radius: 14px;
+      --shadow: 0 10px 24px rgba(18, 34, 29, 0.08);
+      --font-main: "Avenir Next", "Manrope", "Segoe UI Variable", "Source Sans 3", sans-serif;
+      --font-mono: "IBM Plex Mono", "Cascadia Code", Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-main);
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 7% 0%, #e4eee8 0%, transparent 35%),
+        radial-gradient(circle at 92% 14%, #e9f2ed 0%, transparent 28%),
+        var(--bg);
+      min-height: 100vh;
+    }
+
+    .wrap { width: min(1180px, 94vw); margin: 24px auto 44px; }
+    .top { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+    .hero, .loader, .toolbar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -64px;
+      top: -34px;
+      width: 230px;
+      height: 230px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(47, 156, 116, 0.15), transparent 68%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 1.1px;
+      text-transform: uppercase;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: clamp(24px, 3.2vw, 38px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .sub { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.5; max-width: 54ch; }
+
+    .loader {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .loader label, .toolbar label {
+      font-size: 12px;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 4px;
+    }
+
+    .row { display: flex; gap: 8px; align-items: center; }
+
+    input, select {
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      background: #fbfdfb;
+      color: var(--ink);
+      font: inherit;
+      padding: 11px 12px;
+      width: 100%;
+      outline: none;
+    }
+
+    input:focus, select:focus { border-color: var(--brand-2); box-shadow: 0 0 0 4px rgba(47, 156, 116, 0.15); }
+
+    button {
+      border: none;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: transform 0.16s ease;
+      white-space: nowrap;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.58; cursor: not-allowed; transform: none; }
+
+    .btn-muted {
+      background: #f0f5f2;
+      color: var(--ink-soft);
+      border: 1px solid var(--line);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--brand);
+      border: 1px solid #afd0c1;
+    }
+
+    .status { min-height: 20px; font-size: 13px; color: var(--ink-soft); }
+    .status.err { color: var(--danger); }
+
+    .toolbar {
+      margin-bottom: 12px;
+      padding: 12px;
+      display: none;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: end;
+    }
+
+    .toolbar.show { display: flex; }
+    .toolbar .group { min-width: 150px; flex: 1 1 160px; }
+    .toolbar .export { min-width: 130px; flex: 0 0 auto; }
+
+    .grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+
+    .card {
+      grid-column: span 4;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      opacity: 0;
+      transform: translateY(8px);
+      animation: rise 0.35s ease forwards;
+    }
+
+    .card.wide { grid-column: span 6; }
+    .card.full { grid-column: span 12; }
+
+    @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+
+    .k { font-size: 12px; text-transform: uppercase; letter-spacing: 0.9px; color: var(--ink-soft); font-weight: 700; margin-bottom: 6px; }
+    .v { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 6px; }
+    .note { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+    .stamp { margin-top: 7px; font-size: 11px; color: #6b8177; letter-spacing: 0.2px; }
+
+    .card-head { display: flex; align-items: start; justify-content: space-between; gap: 8px; }
+
+    .tiny-btn {
+      font-size: 12px;
+      padding: 5px 9px;
+      background: #f3f8f5;
+      color: var(--ink-soft);
+      border: 1px solid var(--line);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 99px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      background: #ecf5f0;
+      color: var(--ok);
+    }
+    .pill.warn { background: #f8efe2; color: var(--warn); }
+    .pill.err { background: #f9e9e6; color: var(--danger); }
+
+    .list { margin: 10px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+    .list li { border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; background: #fcfdfc; font-size: 13px; line-height: 1.4; }
+
+    .mono { font-family: var(--font-mono); font-size: 12px; color: var(--ink-soft); }
+
+    .spark {
+      width: 100%;
+      height: 10px;
+      border-radius: 99px;
+      background: #dbe8e1;
+      position: relative;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .spark > span {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      transition: width 0.9s ease;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 15, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 30;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-card {
+      width: min(760px, 96vw);
+      max-height: 82vh;
+      overflow: auto;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 44px rgba(10, 18, 15, 0.26);
+      padding: 16px;
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .modal-title { margin: 0; font-size: 21px; letter-spacing: -0.01em; }
+
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .tbl th, .tbl td {
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      padding: 8px 7px;
+      vertical-align: top;
+    }
+
+    .tbl th { color: var(--ink-soft); font-size: 12px; text-transform: uppercase; letter-spacing: 0.7px; }
+
+    @media (max-width: 1000px) {
+      .top { grid-template-columns: 1fr; }
+      .card, .card.wide { grid-column: span 6; }
+      .card.full { grid-column: span 6; }
+      .grid { grid-template-columns: repeat(6, 1fr); }
+    }
+
+    @media (max-width: 700px) {
+      .wrap { width: 94vw; margin-top: 14px; }
+      .grid { grid-template-columns: 1fr; }
+      .card, .card.wide, .card.full { grid-column: 1; }
+      .row { flex-direction: column; align-items: stretch; }
+      .toolbar .export { flex: 1 1 100%; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .loader, .toolbar, .tiny-btn, #modal { display: none !important; }
+      .wrap { width: 100%; margin: 0; }
+      .card, .hero { box-shadow: none; border-color: #c9d4cf; }
+      .top { grid-template-columns: 1fr; }
+      body.exec-mode #cards { display: none !important; }
+      body.exec-mode #execSheet { display: block !important; }
+    }
+
+    .exec-sheet {
+      display: none;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-top: 12px;
+    }
+
+    .exec-sheet h2 {
+      margin: 0 0 6px;
+      font-size: 24px;
+      letter-spacing: -0.01em;
+    }
+
+    .exec-sheet p {
+      margin: 0 0 10px;
+      color: var(--ink-soft);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .exec-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+
+    .exec-kpi {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      background: #fcfdfc;
+    }
+
+    .exec-kpi .t { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--ink-soft); font-weight: 700; }
+    .exec-kpi .n { font-size: 18px; font-weight: 800; margin-top: 3px; }
+
+    @media (max-width: 900px) {
+      .exec-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <section class="top">
+      <div class="hero">
+        <div class="eyebrow">ARCOS7 Intelligence</div>
+        <h1>Recovery Dashboard</h1>
+        <p class="sub">A confidence-first control center for leakage detection, recovery momentum, and model trust. Use filters to focus on what matters this week.</p>
+      </div>
+      <div class="loader">
+        <label for="artistId">Artist ID</label>
+        <div class="row">
+          <input id="artistId" placeholder="Paste artist UUID" />
+          <button id="loadBtn">Load</button>
+        </div>
+        <div id="status" class="status">Enter an artist ID and press Load.</div>
+      </div>
+    </section>
+
+    <section id="toolbar" class="toolbar" aria-label="Filters and exports">
+      <div class="group">
+        <label for="dateFrom">From Date</label>
+        <input id="dateFrom" type="date" />
+      </div>
+      <div class="group">
+        <label for="dateTo">To Date</label>
+        <input id="dateTo" type="date" />
+      </div>
+      <div class="group">
+        <label for="territoryFilter">Territory</label>
+        <select id="territoryFilter">
+          <option value="">All territories</option>
+        </select>
+      </div>
+      <div class="group">
+        <label for="subtypeFilter">Subtype</label>
+        <select id="subtypeFilter">
+          <option value="">All subtypes</option>
+        </select>
+      </div>
+      <button id="applyFilters" class="btn-muted export">Apply Filters</button>
+      <button id="clearFilters" class="btn-muted export">Reset</button>
+      <button id="exportCsv" class="btn-outline export">Export CSV</button>
+      <button id="exportPdf" class="btn-outline export">Export PDF</button>
+      <button id="exportExec" class="btn-outline export">Executive Summary</button>
+    </section>
+
+    <section id="cards" class="grid" aria-live="polite"></section>
+
+    <section id="execSheet" class="exec-sheet" aria-live="polite"></section>
+  </main>
+
+  <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="modalTitle" class="modal-title">Details</h2>
+        <button id="closeModal" class="btn-muted">Close</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const artistInput = document.getElementById("artistId");
+    const loadBtn = document.getElementById("loadBtn");
+    const statusEl = document.getElementById("status");
+    const cardsEl = document.getElementById("cards");
+    const toolbarEl = document.getElementById("toolbar");
+
+    const dateFromEl = document.getElementById("dateFrom");
+    const dateToEl = document.getElementById("dateTo");
+    const territoryEl = document.getElementById("territoryFilter");
+    const subtypeEl = document.getElementById("subtypeFilter");
+    const execSheetEl = document.getElementById("execSheet");
+
+    const modalEl = document.getElementById("modal");
+    const modalTitleEl = document.getElementById("modalTitle");
+    const modalBodyEl = document.getElementById("modalBody");
+
+    const money = (v) => {
+      const n = Number(v || 0);
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+    };
+
+    const esc = (s) => String(s ?? "").replace(/[&<>\"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+    const state = {
+      artistId: "",
+      raw: null,
+      filteredActions: [],
+      filteredFeed: [],
+      initialUrlApplied: false,
+      pendingUrlFilters: null
+    };
+
+    function setStatus(msg, isError = false) {
+      statusEl.textContent = msg;
+      statusEl.className = isError ? "status err" : "status";
+    }
+
+    function fmtTs(ts) {
+      const d = toDateOrNull(ts);
+      if (!d) return "Unknown";
+      return d.toLocaleString();
+    }
+
+    function latestTs(rows, key) {
+      const arr = (rows || [])
+        .map((r) => r && r[key] ? toDateOrNull(r[key]) : null)
+        .filter(Boolean)
+        .sort((a, b) => b - a);
+      return arr.length ? arr[0].toISOString() : null;
+    }
+
+    function syncUrlFromState() {
+      const params = new URLSearchParams(window.location.search);
+      if (state.artistId) params.set("artist", state.artistId); else params.delete("artist");
+
+      const mapping = [
+        ["from", dateFromEl.value],
+        ["to", dateToEl.value],
+        ["territory", territoryEl.value],
+        ["subtype", subtypeEl.value]
+      ];
+
+      mapping.forEach(([k, v]) => {
+        if (v) params.set(k, v);
+        else params.delete(k);
+      });
+
+      const q = params.toString();
+      const next = `${window.location.pathname}${q ? `?${q}` : ""}`;
+      window.history.replaceState({}, "", next);
+    }
+
+    function readUrlState() {
+      const params = new URLSearchParams(window.location.search);
+      const artist = params.get("artist") || "";
+      const from = params.get("from") || "";
+      const to = params.get("to") || "";
+      const territory = params.get("territory") || "";
+      const subtype = params.get("subtype") || "";
+      return { artist, from, to, territory, subtype };
+    }
+
+    function toDateOrNull(value) {
+      if (!value) return null;
+      const d = new Date(value);
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function inDateWindow(ts, fromDate, toDate) {
+      if (!ts) return true;
+      const date = toDateOrNull(ts);
+      if (!date) return true;
+      if (fromDate && date < fromDate) return false;
+      if (toDate && date > toDate) return false;
+      return true;
+    }
+
+    function fillSelect(selectEl, values, defaultLabel) {
+      const current = selectEl.value;
+      const opts = ["<option value=\"\">" + defaultLabel + "</option>"];
+      values.sort().forEach((v) => opts.push(`<option value="${esc(v)}">${esc(v)}</option>`));
+      selectEl.innerHTML = opts.join("");
+      if (current && values.includes(current)) selectEl.value = current;
+    }
+
+    function buildFilterOptions(data) {
+      const actions = (((data || {}).priority_actions || {}).top_10_actions) || [];
+      const territories = new Set();
+      const subtypes = new Set();
+      actions.forEach((a) => {
+        if (a.territory) territories.add(String(a.territory));
+        if (a.subtype) subtypes.add(String(a.subtype));
+      });
+      fillSelect(territoryEl, Array.from(territories), "All territories");
+      fillSelect(subtypeEl, Array.from(subtypes), "All subtypes");
+    }
+
+    function applyFiltersAndRender() {
+      if (!state.raw) return;
+      const actions = (((state.raw || {}).priority_actions || {}).top_10_actions) || [];
+      const feed = (state.raw.activity_feed || []);
+
+      const fromDate = toDateOrNull(dateFromEl.value ? `${dateFromEl.value}T00:00:00` : "");
+      const toDate = toDateOrNull(dateToEl.value ? `${dateToEl.value}T23:59:59` : "");
+      const territory = territoryEl.value;
+      const subtype = subtypeEl.value;
+
+      state.filteredActions = actions.filter((a) => {
+        if (territory && String(a.territory || "") !== territory) return false;
+        if (subtype && String(a.subtype || "") !== subtype) return false;
+        return true;
+      });
+
+      state.filteredFeed = feed.filter((e) => inDateWindow(e.timestamp, fromDate, toDate));
+
+      renderDashboard(state.raw);
+      setStatus("Filters applied. Use Export for a shareable snapshot.");
+      syncUrlFromState();
+    }
+
+    function openModal(kind) {
+      if (!state.raw) return;
+      const data = state.raw;
+
+      if (kind === "leakage") {
+        modalTitleEl.textContent = "Leakage Breakdown";
+        const byCategory = data.leakage_discovered && data.leakage_discovered.by_category ? data.leakage_discovered.by_category : {};
+        const rows = Object.keys(byCategory).map((k) => `
+          <tr>
+            <td>${esc(k)}</td>
+            <td>${byCategory[k].count || 0}</td>
+            <td>${money(byCategory[k].estimated_recoverable)}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="3">No leakage rows available.</td></tr>`;
+        modalBodyEl.innerHTML = `
+          <table class="tbl">
+            <thead><tr><th>Category</th><th>Count</th><th>Estimated Recoverable</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else if (kind === "calibration") {
+        modalTitleEl.textContent = "Calibration by Subtype";
+        const map = data.calibration_health && data.calibration_health.by_subtype ? data.calibration_health.by_subtype : {};
+        const rows = Object.keys(map).map((k) => `
+          <tr>
+            <td>${esc(k)}</td>
+            <td>${Math.round((Number(map[k].posterior_success_rate || 0) * 100))}%</td>
+            <td>${map[k].sample_count || 0}</td>
+            <td>${map[k].sufficient_samples ? "Yes" : "No"}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="4">No subtype calibration rows yet.</td></tr>`;
+        modalBodyEl.innerHTML = `
+          <table class="tbl">
+            <thead><tr><th>Subtype</th><th>Posterior</th><th>Samples</th><th>Sufficient</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else if (kind === "actions") {
+        modalTitleEl.textContent = "Priority Actions (Filtered)";
+        const rows = state.filteredActions.map((a) => `
+          <tr>
+            <td>${esc(a.subtype || a.action_type || "Action")}</td>
+            <td>${esc(a.sol_status || "UNKNOWN")}</td>
+            <td>${money(a.estimated_recoverable)}</td>
+            <td>${a.priority_rank || "-"}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="4">No filtered actions.</td></tr>`;
+        modalBodyEl.innerHTML = `
+          <table class="tbl">
+            <thead><tr><th>Type</th><th>SOL</th><th>Recoverable</th><th>Rank</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        `;
+      } else {
+        return;
+      }
+
+      modalEl.classList.add("show");
+    }
+
+    function closeModal() {
+      modalEl.classList.remove("show");
+    }
+
+    function card(title, valueHtml, note, detailKey, cls = "") {
+      return `
+        <article class="card ${cls}">
+          <div class="card-head">
+            <div class="k">${title}</div>
+            ${detailKey ? `<button class="tiny-btn" data-detail="${detailKey}">Details</button>` : ""}
+          </div>
+          <div class="v">${valueHtml}</div>
+          <p class="note">${note}</p>
+        </article>
+      `;
+    }
+
+    function renderDashboard(data) {
+      const leakage = data.leakage_discovered || {};
+      const pursuit = data.in_pursuit || {};
+      const balance = data.balance_still_pursuing || {};
+      const cal = data.calibration_health || {};
+      const trend = data.earnings_trend || {};
+      const actions = state.filteredActions;
+
+      const overall = cal.overall || {};
+      const ratePct = Math.round((Number(overall.posterior_success_rate || 0) * 100));
+      const sampleCount = Number(overall.sample_count || 0);
+      const trustClass = sampleCount >= 8 ? "pill" : (sampleCount >= 3 ? "pill warn" : "pill err");
+      const trustText = sampleCount >= 8 ? "High signal" : (sampleCount >= 3 ? "Building signal" : "Low signal");
+
+      const actionItems = actions.slice(0, 5).map((a) => `
+        <li>
+          <strong>${esc(a.subtype || a.action_type || "Action")}</strong><br />
+          <span class="mono">${esc(a.sol_status || "UNKNOWN")}</span> • ${money(a.estimated_recoverable)}
+        </li>
+      `).join("") || "<li>No prioritized actions match current filters.</li>";
+
+      const feedItems = state.filteredFeed.slice(0, 5).map((e) => `
+        <li>
+          <strong>${esc(e.title || e.type)}</strong><br />
+          <span class="mono">${esc((e.timestamp || "").replace("T", " ").replace("Z", ""))}</span>
+        </li>
+      `).join("") || "<li>No activity rows match current filters.</li>";
+
+      cardsEl.innerHTML = [
+        card(
+          "Leakage Discovered",
+          money(leakage.total_estimated_recoverable),
+          `${leakage.total_anomalies || 0} total anomalies, ${leakage.open_anomalies || 0} open.` +
+          `<div class="stamp">Last updated: ${fmtTs(latestTs(leakage.recent_discoveries, "discovered_at") || data.generated_at)}</div>`,
+          "leakage"
+        ),
+        card(
+          "In Pursuit",
+          money(pursuit.total_amount_in_pursuit),
+          `${pursuit.active_claim_count || 0} active claims being advanced.` +
+          `<div class="stamp">Last updated: ${fmtTs(latestTs(pursuit.active_claims, "updated_at") || data.generated_at)}</div>`
+        ),
+        card(
+          "Still Pursuing",
+          money(balance.balance_still_pursuing),
+          `Pending deposit: ${money(balance.total_pending_deposit)}.` +
+          `<div class="stamp">Last updated: ${fmtTs(data.generated_at)}</div>`
+        ),
+
+        `<article class="card wide">
+          <div class="card-head">
+            <div class="k">Calibration Health</div>
+            <button class="tiny-btn" data-detail="calibration">Details</button>
+          </div>
+          <div class="v">${ratePct}%</div>
+          <p class="note">Posterior success rate from real outcomes.<span class="stamp">Last updated: ${fmtTs(data.generated_at)}</span></p>
+          <div class="${trustClass.includes("warn") ? "pill warn" : trustClass.includes("err") ? "pill err" : "pill"}">${trustText} • ${sampleCount} samples</div>
+          <div class="spark" aria-hidden="true"><span id="sparkFill"></span></div>
+        </article>`,
+
+        `<article class="card wide">
+          <div class="k">Earnings Trend</div>
+          <div class="v">${esc(trend.trend || "INSUFFICIENT_DATA")}</div>
+          <p class="note">90-day outlook range: ${money(trend.predicted_low)} to ${money(trend.predicted_high)}.<span class="stamp">Last updated: ${fmtTs(data.generated_at)}</span></p>
+        </article>`,
+
+        `<article class="card full">
+          <div class="card-head">
+            <div class="k">Top Priority Actions</div>
+            <button class="tiny-btn" data-detail="actions">Details</button>
+          </div>
+          <p class="note"><span class="stamp">Last updated: ${fmtTs(data.generated_at)}</span></p>
+          <ul class="list">${actionItems}</ul>
+        </article>`,
+
+        `<article class="card full">
+          <div class="k">Recent Activity</div>
+          <p class="note"><span class="stamp">Last updated: ${fmtTs((state.filteredFeed[0] || {}).timestamp || data.generated_at)}</span></p>
+          <ul class="list">${feedItems}</ul>
+        </article>`
+      ].join("");
+
+      const spark = document.getElementById("sparkFill");
+      if (spark) {
+        requestAnimationFrame(() => {
+          spark.style.width = `${Math.max(0, Math.min(100, ratePct))}%`;
+        });
+      }
+
+      cardsEl.querySelectorAll("[data-detail]").forEach((btn) => {
+        btn.addEventListener("click", () => openModal(btn.getAttribute("data-detail")));
+      });
+    }
+
+    function exportCsv() {
+      if (!state.raw) return;
+      const lines = [];
+      lines.push(["metric", "value"].join(","));
+      lines.push(["artist_id", state.artistId].join(","));
+      lines.push(["leakage_total_estimated_recoverable", Number((state.raw.leakage_discovered || {}).total_estimated_recoverable || 0)].join(","));
+      lines.push(["in_pursuit_total", Number((state.raw.in_pursuit || {}).total_amount_in_pursuit || 0)].join(","));
+      lines.push(["balance_still_pursuing", Number((state.raw.balance_still_pursuing || {}).balance_still_pursuing || 0)].join(","));
+      lines.push(["calibration_posterior", Number(((state.raw.calibration_health || {}).overall || {}).posterior_success_rate || 0)].join(","));
+
+      lines.push("");
+      lines.push(["filtered_priority_actions"].join(","));
+      lines.push(["subtype", "sol_status", "estimated_recoverable", "priority_rank"].join(","));
+      state.filteredActions.forEach((a) => {
+        lines.push([
+          `"${String(a.subtype || a.action_type || "").replace(/"/g, '""')}"`,
+          `"${String(a.sol_status || "").replace(/"/g, '""')}"`,
+          Number(a.estimated_recoverable || 0),
+          Number(a.priority_rank || 0)
+        ].join(","));
+      });
+
+      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `arcos7_dashboard_${state.artistId}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportPdf() {
+      window.print();
+    }
+
+    function buildExecutiveSummaryHtml() {
+      if (!state.raw) return "";
+      const d = state.raw;
+      const leakage = d.leakage_discovered || {};
+      const pursuit = d.in_pursuit || {};
+      const bal = d.balance_still_pursuing || {};
+      const cal = d.calibration_health || {};
+      const trend = d.earnings_trend || {};
+
+      const topActions = state.filteredActions.slice(0, 3).map((a) =>
+        `<li><strong>${esc(a.subtype || a.action_type || "Action")}</strong> (${esc(a.sol_status || "UNKNOWN")}) — ${money(a.estimated_recoverable)}</li>`
+      ).join("") || "<li>No filtered actions currently meet criteria.</li>";
+
+      const posterior = Math.round(Number(((cal.overall || {}).posterior_success_rate || 0) * 100));
+
+      return `
+        <h2>Executive Recovery Summary</h2>
+        <p>Generated for artist <span class="mono">${esc(state.artistId)}</span> on ${fmtTs(d.generated_at)}. This summary reflects current filters and latest persisted data.</p>
+        <div class="exec-grid">
+          <div class="exec-kpi"><div class="t">Leakage Identified</div><div class="n">${money(leakage.total_estimated_recoverable)}</div></div>
+          <div class="exec-kpi"><div class="t">Active Pursuit</div><div class="n">${money(pursuit.total_amount_in_pursuit)}</div></div>
+          <div class="exec-kpi"><div class="t">Still Pursuing</div><div class="n">${money(bal.balance_still_pursuing)}</div></div>
+          <div class="exec-kpi"><div class="t">Calibrated Success</div><div class="n">${posterior}%</div></div>
+        </div>
+        <p><strong>Outlook:</strong> ${esc(trend.trend || "INSUFFICIENT_DATA")}. 90-day forecast range is ${money(trend.predicted_low)} to ${money(trend.predicted_high)}.</p>
+        <p><strong>Top Immediate Actions:</strong></p>
+        <ul>${topActions}</ul>
+        <p>Filter context: from <span class="mono">${esc(dateFromEl.value || "(none)")}</span>, to <span class="mono">${esc(dateToEl.value || "(none)")}</span>, territory <span class="mono">${esc(territoryEl.value || "all")}</span>, subtype <span class="mono">${esc(subtypeEl.value || "all")}</span>.</p>
+      `;
+    }
+
+    function exportExecutiveSummary() {
+      if (!state.raw) return;
+      execSheetEl.innerHTML = buildExecutiveSummaryHtml();
+      document.body.classList.add("exec-mode");
+      window.print();
+    }
+
+    async function loadDashboard() {
+      const artistId = artistInput.value.trim();
+      if (!artistId) {
+        setStatus("Please enter an artist ID.", true);
+        return;
+      }
+
+      loadBtn.disabled = true;
+      setStatus("Loading dashboard and intelligence signals...");
+
+      try {
+        const [dashboardRes, calibRes] = await Promise.all([
+          fetch(`/artists/${encodeURIComponent(artistId)}/dashboard`),
+          fetch(`/artists/${encodeURIComponent(artistId)}/intelligence/calibration`)
+        ]);
+
+        if (!dashboardRes.ok) throw new Error(`Dashboard request failed (${dashboardRes.status}).`);
+
+        const dashboard = await dashboardRes.json();
+        if (calibRes.ok) {
+          const calib = await calibRes.json();
+          dashboard.calibration_health = calib;
+        }
+
+        state.artistId = artistId;
+        state.raw = dashboard;
+        buildFilterOptions(dashboard);
+
+        if (!state.initialUrlApplied && state.pendingUrlFilters) {
+          if (state.pendingUrlFilters.from) dateFromEl.value = state.pendingUrlFilters.from;
+          if (state.pendingUrlFilters.to) dateToEl.value = state.pendingUrlFilters.to;
+          if (state.pendingUrlFilters.territory) territoryEl.value = state.pendingUrlFilters.territory;
+          if (state.pendingUrlFilters.subtype) subtypeEl.value = state.pendingUrlFilters.subtype;
+          state.initialUrlApplied = true;
+        }
+
+        toolbarEl.classList.add("show");
+
+        applyFiltersAndRender();
+      } catch (err) {
+        cardsEl.innerHTML = "";
+        toolbarEl.classList.remove("show");
+        setStatus(err.message || "Failed to load dashboard.", true);
+      } finally {
+        loadBtn.disabled = false;
+      }
+    }
+
+    document.getElementById("applyFilters").addEventListener("click", applyFiltersAndRender);
+    document.getElementById("clearFilters").addEventListener("click", () => {
+      dateFromEl.value = "";
+      dateToEl.value = "";
+      territoryEl.value = "";
+      subtypeEl.value = "";
+      applyFiltersAndRender();
+    });
+
+    document.getElementById("exportCsv").addEventListener("click", exportCsv);
+    document.getElementById("exportPdf").addEventListener("click", exportPdf);
+    document.getElementById("exportExec").addEventListener("click", exportExecutiveSummary);
+
+    window.addEventListener("afterprint", () => {
+      document.body.classList.remove("exec-mode");
+    });
+
+    document.getElementById("closeModal").addEventListener("click", closeModal);
+    modalEl.addEventListener("click", (e) => { if (e.target === modalEl) closeModal(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+    loadBtn.addEventListener("click", loadDashboard);
+    artistInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") loadDashboard();
+    });
+
+    (function initFromUrl() {
+      const qs = readUrlState();
+      state.pendingUrlFilters = qs;
+      if (qs.artist) {
+        artistInput.value = qs.artist;
+        loadDashboard();
+      }
+    })();
+  </script>
+</body>
+</html>

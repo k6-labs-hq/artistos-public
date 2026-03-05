@@ -25,7 +25,10 @@ complete picture of their recovery status:
   received so the artist can see exactly what happened and when.
 """
 
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 
 from arcos7.earnings.dashboard import DashboardEngine
@@ -33,6 +36,16 @@ from arcos7.models.artist import Artist
 from arcos7.models.base import get_db
 
 router = APIRouter(tags=["dashboard"])
+
+_DASHBOARD_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "recovery_dashboard.html"
+
+
+@router.get("/dashboard/ui")
+def get_dashboard_ui():
+  """Serve the standalone artist recovery dashboard UI page."""
+  if not _DASHBOARD_UI_PATH.exists():
+    raise HTTPException(status_code=404, detail="Dashboard UI not found")
+  return FileResponse(str(_DASHBOARD_UI_PATH), media_type="text/html")
 
 
 @router.get("/artists/{artist_id}/dashboard")

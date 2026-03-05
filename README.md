@@ -525,6 +525,7 @@ pytest tests/ -v
 |--------|------|-------------|
 | GET | `/health` | Health check |
 | GET | `/health/readiness` | Connector and credential readiness status |
+| GET | `/dashboard/ui` | Serve the standalone recovery dashboard frontend |
 | POST | `/artists/` | Create artist |
 | GET | `/artists/{id}` | Get artist |
 | GET | `/terms` | Get current terms text/version/hash |
