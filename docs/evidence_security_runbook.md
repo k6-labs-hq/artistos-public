@@ -93,6 +93,12 @@ Additional pass criterion:
 curl -L "http://localhost:8000/claims/{claim_id}/evidence/export?format=zip&refresh=true" -o evidence_{claim_id}.zip
 ```
 
+Operator helper (recommended, verification-gated):
+
+```bash
+scripts/export_evidence.sh --claim-id {claim_id} --format zip --refresh
+```
+
 Validate ZIP contents:
 - `evidence_packet.json`
 - `evidence_summary.txt`
@@ -190,7 +196,7 @@ External counsel can verify independently when provided:
 1. Generate packet.
 2. Run `scripts/verify_evidence.sh --claim-id {claim_id}`.
 3. Verify prior link when applicable (`--expected-prior-hash`).
-4. Export ZIP packet.
+4. Run `scripts/export_evidence.sh --claim-id {claim_id} --format zip --refresh`.
 5. Confirm required files are present.
 6. Archive ZIP and verification result immutably.
 7. Handoff to legal.

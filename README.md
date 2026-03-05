@@ -386,6 +386,14 @@ scripts/verify_evidence.sh --claim-id {claim_id}
 scripts/verify_evidence.sh --claim-id {claim_id} --expected-prior-hash {prior_hash}
 ```
 
+Gated verify-then-export helper (recommended for legal handoff):
+
+```bash
+scripts/export_evidence.sh --claim-id {claim_id} --format zip --refresh
+scripts/export_evidence.sh --claim-id {claim_id} --format pdf
+scripts/export_evidence.sh --claim-id {claim_id} --format zip --expected-prior-hash {prior_hash}
+```
+
 Verification checks include:
 - `packet_hash_matches`
 - `chain_hash_matches`
