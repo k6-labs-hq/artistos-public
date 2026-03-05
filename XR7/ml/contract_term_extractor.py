@@ -8,6 +8,48 @@ class ContractTermExtractor:
     _RATE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%")
     _TERRITORY_RE = re.compile(r"\b(worldwide|world wide|us|usa|uk|eu|global|japan|korea|france)\b", re.IGNORECASE)
     _RECOUP_RE = re.compile(r"\b(recoup(?:ment)?|reserve)\b", re.IGNORECASE)
+    _AUDIT_RE = re.compile(r"\b(audit\s+right[s]?|right\s+to\s+audit|books\s+and\s+records)\b", re.IGNORECASE)
+
+    def extract_with_highlights(
+        self,
+        contract_text: str,
+        effective_start: date | None = None,
+        effective_end: date | None = None,
+    ) -> tuple[list[dict], list[dict]]:
+        """Return extracted terms plus highlighted clause spans for UI review."""
+        text = contract_text or ""
+        terms = self.extract(text, effective_start=effective_start, effective_end=effective_end)
+        highlights: list[dict] = []
+
+        for match in self._RATE_RE.finditer(text):
+            highlights.append(
+                {
+                    "clause_type": "rate",
+                    "matched_text": match.group(0),
+                    "start": match.start(),
+                    "end": match.end(),
+                    "confidence_score": 0.75,
+                }
+            )
+
+        for regex, ctype, conf in (
+            (self._RECOUP_RE, "recoupment", 0.65),
+            (self._AUDIT_RE, "audit_rights", 0.7),
+        ):
+            for match in regex.finditer(text):
+                start = max(0, match.start() - 80)
+                end = min(len(text), match.end() + 80)
+                highlights.append(
+                    {
+                        "clause_type": ctype,
+                        "matched_text": text[start:end],
+                        "start": start,
+                        "end": end,
+                        "confidence_score": conf,
+                    }
+                )
+
+        return terms, highlights
 
     def extract(
         self,
@@ -46,6 +88,17 @@ class ContractTermExtractor:
                     "term_key": "recoupment_clause",
                     "term_value": "present",
                     "confidence_score": 0.65,
+                    "effective_start": effective_start,
+                    "effective_end": effective_end,
+                }
+            )
+
+        if self._AUDIT_RE.search(text):
+            terms.append(
+                {
+                    "term_key": "audit_rights_clause",
+                    "term_value": "present",
+                    "confidence_score": 0.7,
                     "effective_start": effective_start,
                     "effective_end": effective_end,
                 }

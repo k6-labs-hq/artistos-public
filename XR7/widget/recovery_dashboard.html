@@ -276,6 +276,31 @@
 
     .tbl th { color: var(--ink-soft); font-size: 12px; text-transform: uppercase; letter-spacing: 0.7px; }
 
+    .chart-box {
+      margin-top: 8px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px;
+      background: #fcfdfc;
+    }
+
+    .legend {
+      display: flex;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      margin-right: 5px;
+    }
+
     @media (max-width: 1000px) {
       .top { grid-template-columns: 1fr; }
       .card, .card.wide { grid-column: span 6; }
@@ -434,6 +459,7 @@
     const state = {
       artistId: "",
       raw: null,
+      charts: null,
       filteredActions: [],
       filteredFeed: [],
       initialUrlApplied: false,
@@ -625,6 +651,66 @@
       `;
     }
 
+    function makePolyline(series, color, width = 2) {
+      if (!series.length) return "";
+      const max = Math.max(...series, 1);
+      const min = Math.min(...series, 0);
+      const range = Math.max(max - min, 1);
+      const points = series.map((v, i) => {
+        const x = Math.round((i / Math.max(1, series.length - 1)) * 100);
+        const y = Math.round(100 - ((v - min) / range) * 100);
+        return `${x},${y}`;
+      }).join(" ");
+      return `<polyline fill="none" stroke="${color}" stroke-width="${width}" points="${points}" />`;
+    }
+
+    function makeBand(lowSeries, highSeries, color) {
+      if (!lowSeries.length || !highSeries.length || lowSeries.length !== highSeries.length) return "";
+      const all = lowSeries.concat(highSeries);
+      const max = Math.max(...all, 1);
+      const min = Math.min(...all, 0);
+      const range = Math.max(max - min, 1);
+
+      const top = highSeries.map((v, i) => {
+        const x = Math.round((i / Math.max(1, highSeries.length - 1)) * 100);
+        const y = Math.round(100 - ((v - min) / range) * 100);
+        return `${x},${y}`;
+      });
+      const bottom = lowSeries.map((v, i) => {
+        const x = Math.round(((lowSeries.length - 1 - i) / Math.max(1, lowSeries.length - 1)) * 100);
+        const y = Math.round(100 - ((lowSeries[lowSeries.length - 1 - i] - min) / range) * 100);
+        return `${x},${y}`;
+      });
+      const pts = top.concat(bottom).join(" ");
+      return `<polygon points="${pts}" fill="${color}" opacity="0.22" />`;
+    }
+
+    function renderMiniChart(charts) {
+      const recovered = ((charts || {}).recovered_by_month || []).map((x) => Number(x.amount || 0));
+      const leakage = ((charts || {}).leakage_by_month || []).map((x) => Number(x.amount || 0));
+      const bands = (charts || {}).forecast_confidence_bands || [];
+      const pred = bands.map((x) => Number(x.predicted || 0));
+      const low = bands.map((x) => Number(x.low || 0));
+      const high = bands.map((x) => Number(x.high || 0));
+
+      return `
+        <div class="chart-box">
+          <svg viewBox="0 0 100 100" width="100%" height="160" preserveAspectRatio="none" aria-label="Trend chart">
+            ${makeBand(low, high, "#2f9c74")}
+            ${makePolyline(recovered, "#1f7a5a", 2.5)}
+            ${makePolyline(leakage, "#b34738", 2)}
+            ${makePolyline(pred, "#1e3a8a", 2)}
+          </svg>
+          <div class="legend">
+            <span><span class="swatch" style="background:#1f7a5a"></span>Recovered</span>
+            <span><span class="swatch" style="background:#b34738"></span>Leakage</span>
+            <span><span class="swatch" style="background:#1e3a8a"></span>Forecast</span>
+            <span><span class="swatch" style="background:#2f9c74"></span>Confidence Band</span>
+          </div>
+        </div>
+      `;
+    }
+
     function renderDashboard(data) {
       const leakage = data.leakage_discovered || {};
       const pursuit = data.in_pursuit || {};
@@ -632,6 +718,7 @@
       const cal = data.calibration_health || {};
       const trend = data.earnings_trend || {};
       const actions = state.filteredActions;
+      const charts = state.charts || {};
 
       const overall = cal.overall || {};
       const ratePct = Math.round((Number(overall.posterior_success_rate || 0) * 100));
@@ -689,6 +776,7 @@
           <div class="k">Earnings Trend</div>
           <div class="v">${esc(trend.trend || "INSUFFICIENT_DATA")}</div>
           <p class="note">90-day outlook range: ${money(trend.predicted_low)} to ${money(trend.predicted_high)}.<span class="stamp">Last updated: ${fmtTs(data.generated_at)}</span></p>
+          ${renderMiniChart(charts)}
         </article>`,
 
         `<article class="card full">
@@ -805,9 +893,10 @@
       setStatus("Loading dashboard and intelligence signals...");
 
       try {
-        const [dashboardRes, calibRes] = await Promise.all([
+        const [dashboardRes, calibRes, chartsRes] = await Promise.all([
           fetch(`/artists/${encodeURIComponent(artistId)}/dashboard`),
-          fetch(`/artists/${encodeURIComponent(artistId)}/intelligence/calibration`)
+          fetch(`/artists/${encodeURIComponent(artistId)}/intelligence/calibration`),
+          fetch(`/artists/${encodeURIComponent(artistId)}/dashboard/charts`)
         ]);
 
         if (!dashboardRes.ok) throw new Error(`Dashboard request failed (${dashboardRes.status}).`);
@@ -816,6 +905,11 @@
         if (calibRes.ok) {
           const calib = await calibRes.json();
           dashboard.calibration_health = calib;
+        }
+        if (chartsRes.ok) {
+          state.charts = await chartsRes.json();
+        } else {
+          state.charts = null;
         }
 
         state.artistId = artistId;

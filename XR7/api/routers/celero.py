@@ -49,9 +49,15 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.auth.event_notifications import send_event_notification
 from XR7.billing.engine import BillingEngine
 from XR7.celero.client import CeleroClient
-from XR7.celero.webhook import CeleroWebhookHandler, validate_signature, parse_event
+from XR7.celero.webhook import (
+    CeleroWebhookHandler,
+    EVENT_DISBURSEMENT_SETTLED,
+    validate_signature,
+    parse_event,
+)
 from XR7.models.artist import Artist, ArtistSchema
 from XR7.models.base import get_db
 from XR7.models.celero_transaction import (
@@ -61,6 +67,7 @@ from XR7.models.celero_transaction import (
     CeleroTransactionSchema,
 )
 from XR7.models.claim import Claim, ClaimStatus
+from XR7.models.notification_preference import NotificationPreference
 
 router = APIRouter(tags=["celero"])
 
@@ -640,5 +647,22 @@ async def celero_webhook(
 
     handler = CeleroWebhookHandler(db)
     result = handler.handle(event)
+
+    event_type = event.get("event_type") or event.get("type", "")
+    if event_type == EVENT_DISBURSEMENT_SETTLED and result.get("handled"):
+        txn = db.query(CeleroTransaction).filter(CeleroTransaction.id == result.get("XR7_transaction_id")).first()
+        if txn:
+            pref = (
+                db.query(NotificationPreference)
+                .filter(NotificationPreference.artist_id == txn.artist_id)
+                .first()
+            )
+            send_event_notification(
+                pref,
+                "deposit_received",
+                "Deposit received",
+                f"A disbursement of {txn.amount:.2f} {txn.currency} settled (ref: {txn.celero_transaction_id}).",
+                current_hour_utc=datetime.now(timezone.utc).hour,
+            )
 
     return {"received": True, **result}

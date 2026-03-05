@@ -11,6 +11,7 @@ from XR7.api.routers import celero as celero_router
 from XR7.api.routers import dashboard as dashboard_router
 from XR7.api.routers import terms as terms_router
 from XR7.api.routers import intelligence as intelligence_router
+from XR7.api.routers import expansion as expansion_router
 
 
 @asynccontextmanager
@@ -18,6 +19,9 @@ async def lifespan(app: FastAPI):
     # Import models to ensure all tables are registered before create_all
     import XR7.models.terms_acceptance  # noqa: F401
     import XR7.models.recovery_intelligence  # noqa: F401
+    import XR7.models.notification_preference  # noqa: F401
+    import XR7.models.team_access  # noqa: F401
+    import XR7.models.evidence_anchor  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -77,6 +81,7 @@ app.include_router(celero_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(terms_router.router)
 app.include_router(intelligence_router.router)
+app.include_router(expansion_router.router)
 
 
 @app.get("/health")

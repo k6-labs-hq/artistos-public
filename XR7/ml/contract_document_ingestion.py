@@ -57,10 +57,28 @@ class ContractDocumentIngestion:
             )
 
         if not text:
-            warnings.append(
-                "No machine-readable PDF text was found. For scanned contracts, upload a text export "
-                "or image and enable OCR dependencies (Pillow + pytesseract + tesseract binary)."
-            )
+            # OCR fallback for scanned PDFs when optional deps are available.
+            try:
+                import pytesseract  # type: ignore
+                from PIL import Image  # type: ignore
+                from pdf2image import convert_from_bytes  # type: ignore
+
+                pages = convert_from_bytes(content, dpi=200)
+                ocr_parts = []
+                for page in pages:
+                    if not isinstance(page, Image.Image):
+                        continue
+                    ocr_parts.append(pytesseract.image_to_string(page) or "")
+                text = "\n".join(ocr_parts).strip()
+                if text:
+                    method = "pdf_ocr_fallback"
+                else:
+                    warnings.append("OCR fallback executed but no readable text was extracted.")
+            except Exception:
+                warnings.append(
+                    "No machine-readable PDF text was found. For scanned contracts, install "
+                    "pdf2image + Pillow + pytesseract and system tesseract/poppler."
+                )
 
         return {"text": text, "method": method, "warnings": warnings}
 

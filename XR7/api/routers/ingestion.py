@@ -28,22 +28,28 @@ from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 
 from XR7.anomaly.engine import AnomalyEngine
+from XR7.auth.event_notifications import send_event_notification
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ingestion.statement_parser import parse_csv, SUPPORTED_FORMATS
 from XR7.models.artist import Artist
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
 from XR7.models.event import Event, EventType
+from XR7.models.notification_preference import NotificationPreference
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
+from XR7.recovery.statute_tracker import classify_anomalies
 
 router = APIRouter(tags=["ingestion"])
 
 # Maximum upload size: 50 MB (most statements are < 5 MB)
 _MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+_MAX_BATCH_FILES = 100
 
 
 # ---------------------------------------------------------------------------
@@ -229,6 +235,10 @@ async def upload_statement(
             ),
         )
 
+    anomaly_count_before = (
+        db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    )
+
     # Parse
     result = parse_csv(content, artist_id)
     status = "PROCESSED"
@@ -250,6 +260,50 @@ async def upload_statement(
             anomaly_engine.detect_all(artist_id, db)
         except Exception:  # noqa: BLE001
             pass  # anomaly detection failure must not block the upload response
+
+    anomaly_count_after = (
+        db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    )
+    new_anomalies = max(0, int(anomaly_count_after) - int(anomaly_count_before))
+    if new_anomalies > 0:
+        pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+        send_event_notification(
+            pref,
+            "anomaly_detected",
+            "New XR7 anomalies detected",
+            f"{new_anomalies} new anomaly(ies) were detected after statement upload {file.filename}.",
+            current_hour_utc=datetime.now(timezone.utc).hour,
+        )
+
+        # Also raise urgency alerts when SOL windows are already at-risk.
+        anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+        classified = classify_anomalies(
+            [
+                {
+                    "id": a.id,
+                    "category": str(a.category),
+                    "subtype": a.subtype,
+                    "territory": a.territory,
+                    "created_at": a.created_at,
+                    "estimated_recoverable": a.estimated_recoverable,
+                }
+                for a in anomalies
+            ]
+        )
+        urgent = [x for x in classified if x.get("sol_status") in {"EXPIRED", "URGENT"}]
+        if urgent:
+            top = urgent[0]
+            amount = float(top.get("estimated_recoverable") or 0.0)
+            send_event_notification(
+                pref,
+                "urgent_sol",
+                "Urgent SOL Alert",
+                (
+                    f"{len(urgent)} item(s) are urgent/expired. Top: {top.get('subtype')} "
+                    f"({top.get('sol_status')}), est. recoverable ${amount:,.2f}."
+                ),
+                current_hour_utc=datetime.now(timezone.utc).hour,
+            )
 
     # Create audit record
     statement = Statement(
@@ -285,6 +339,101 @@ async def upload_statement(
         )
 
     return statement
+
+
+@router.post("/artists/{artist_id}/statements/upload-batch")
+async def upload_statement_batch(
+    artist_id: str,
+    files: list[UploadFile] = File(...),
+    db: Session = Depends(get_db),
+):
+    """Upload and process a batch of statement CSV files in a single request."""
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    require_terms_accepted(artist_id, db)
+
+    if not files:
+        raise HTTPException(status_code=400, detail="At least one file is required")
+    if len(files) > _MAX_BATCH_FILES:
+        raise HTTPException(status_code=400, detail=f"Batch exceeds max file count ({_MAX_BATCH_FILES})")
+
+    processed = []
+    failed = []
+    duplicates = 0
+
+    for file in files:
+        try:
+            if not file.filename or not file.filename.lower().endswith(".csv"):
+                raise ValueError("Only CSV files are accepted")
+
+            content = await file.read()
+            if not content:
+                raise ValueError("File is empty")
+            if len(content) > _MAX_UPLOAD_BYTES:
+                raise ValueError(f"File exceeds {_MAX_UPLOAD_BYTES // 1024 // 1024}MB limit")
+
+            file_hash = hashlib.sha256(content).hexdigest()
+            existing = (
+                db.query(Statement)
+                .filter(Statement.artist_id == artist_id, Statement.file_hash == file_hash)
+                .first()
+            )
+            if existing:
+                duplicates += 1
+                failed.append({"filename": file.filename, "error": "duplicate", "statement_id": existing.id})
+                continue
+
+            result = parse_csv(content, artist_id)
+            events_created = _save_events(db, result.events)
+            payments_created = _save_payments(db, result.payments)
+
+            statement = Statement(
+                id=str(uuid.uuid4()),
+                artist_id=artist_id,
+                filename=file.filename or "unknown.csv",
+                file_hash=file_hash,
+                format_detected=result.format_detected,
+                row_count=result.row_count,
+                events_created=events_created,
+                payments_created=payments_created,
+                skipped_rows=result.skipped_rows,
+                status="PROCESSED" if result.events or result.payments else "FAILED",
+                error_summary="; ".join(result.errors[:5]) if result.errors and not result.events else None,
+                uploaded_at=datetime.now(timezone.utc),
+            )
+            db.add(statement)
+            db.commit()
+            db.refresh(statement)
+
+            processed.append({
+                "filename": file.filename,
+                "statement_id": statement.id,
+                "events_created": events_created,
+                "payments_created": payments_created,
+                "status": statement.status,
+            })
+        except Exception as exc:  # noqa: BLE001
+            failed.append({"filename": file.filename or "unknown", "error": str(exc)})
+
+    # Trigger anomaly detection once after the full batch.
+    if processed:
+        try:
+            rg = RightsGraph()
+            AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)
+        except Exception:  # noqa: BLE001
+            pass
+
+    return {
+        "artist_id": artist_id,
+        "requested": len(files),
+        "processed_count": len(processed),
+        "failed_count": len(failed),
+        "duplicate_count": duplicates,
+        "processed": processed,
+        "failed": failed,
+    }
 
 
 @router.get(

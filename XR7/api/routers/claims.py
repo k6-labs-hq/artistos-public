@@ -3,13 +3,16 @@ import io
 import json
 from pathlib import Path
 import zipfile
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.auth.event_notifications import send_event_notification
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
+from XR7.models.notification_preference import NotificationPreference
 from XR7.recovery.orchestrator import ClaimsOrchestrator
 
 router = APIRouter(tags=["claims"])
@@ -125,7 +128,20 @@ def get_claim(claim_id: str, db: Session = Depends(get_db)):
 def advance_claim(claim_id: str, db: Session = Depends(get_db)):
     orchestrator = ClaimsOrchestrator(db)
     try:
-        return orchestrator.advance_claim(claim_id)
+        updated = orchestrator.advance_claim(claim_id)
+        pref = (
+            db.query(NotificationPreference)
+            .filter(NotificationPreference.artist_id == updated.artist_id)
+            .first()
+        )
+        send_event_notification(
+            pref,
+            "claim_advanced",
+            "Claim status updated",
+            f"Claim {updated.id} advanced to {updated.status}.",
+            current_hour_utc=datetime.now(timezone.utc).hour,
+        )
+        return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 

@@ -124,7 +124,7 @@ def extract_contract_terms(
         raise HTTPException(status_code=404, detail="Artist not found")
 
     extractor = ContractTermExtractor()
-    terms = extractor.extract(
+    terms, highlights = extractor.extract_with_highlights(
         contract_text=payload.contract_text,
         effective_start=payload.effective_start,
         effective_end=payload.effective_end,
@@ -153,6 +153,7 @@ def extract_contract_terms(
     return {
         "artist_id": artist_id,
         "term_count": len(created),
+        "highlights": highlights,
         "terms": [
             {
                 "id": t.id,
@@ -210,7 +211,11 @@ async def extract_contract_terms_upload(
         ) from exc
 
     extractor = ContractTermExtractor()
-    terms = extractor.extract(contract_text=contract_text, effective_start=start_dt, effective_end=end_dt)
+    terms, highlights = extractor.extract_with_highlights(
+        contract_text=contract_text,
+        effective_start=start_dt,
+        effective_end=end_dt,
+    )
 
     created = []
     for term in terms:
@@ -237,6 +242,7 @@ async def extract_contract_terms_upload(
         "term_count": len(created),
         "extraction_method": extracted.get("method"),
         "warnings": extracted.get("warnings", []),
+        "highlights": highlights,
         "terms": [
             {
                 "id": t.id,

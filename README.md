@@ -644,6 +644,40 @@ The API will be available at `http://localhost:8000`. Interactive docs at `http:
 pytest tests/ -v
 ```
 
+## Roadmap (Market-Driven Additions)
+
+The following additions are prioritised based on current market reality: widespread underpayments, artist demand for transparency + automation, slow external partnerships, and litigation-grade evidence requirements.
+
+### High Priority (Quick Wins and Core Experience)
+
+- Mobile/responsive dashboard expansion (`/dashboard/ui`) so artists and managers can operate from phones and tablets.
+- Event notifications by SMS/email for key lifecycle moments: anomaly detected, urgent SOL deadline, claim advanced, and deposit received.
+- Bulk statement upload and batch processing for multi-year historical recovery work.
+- Dashboard visual analytics: earnings trends, leakage by category over time, and forecast confidence bands.
+- Exportable reporting (PDF/CSV): leakage totals, recovered vs potential, and catalog health signal breakdown.
+- Contract ingestion improvements for `/artists/{id}/intelligence/contracts/extract-upload`: stronger OCR for scanned PDFs and highlighted key clauses (rate, recoupment, audit rights).
+
+### Competitive Differentiation
+
+- Semi-automated ingestion fallbacks where full APIs are unavailable (secure OAuth where feasible; guided browser-assisted workflows where not).
+- Collaborative team access with scoped roles (artist, manager, attorney) and permission boundaries.
+- Benchmark intelligence with anonymized peer percentiles by catalog profile.
+- Trust-marketing metrics and success stories using safe aggregated outcomes (total recovered, average uplift).
+- Self-service claim templates (letters/emails) prefilled by anomaly type and evidence context.
+- Better international support: non-USD handling, FX normalization, and baseline withholding tax estimation.
+
+### Strategic
+
+- Priority API partnership program (target at least one major PRO/distributor integration once traction milestones are met).
+- Optional immutable evidence lineage layer on top of current hashing/signature chain.
+- Predictive recovery scoring model to estimate total recoverable value by artist.
+- In-product education layer (download guides, dispute playbooks, SOL explainers by jurisdiction).
+- White-label B2B deployment mode for labels, managers, and law firms.
+- Audit-rights exercise workflow: draft demand letters, timeline tracking, and counterparty response handling.
+
+Detailed phased implementation plan and acceptance criteria:
+`docs/product_expansion_backlog.md`
+
 ## API Endpoints
 
 | Method | Path | Description |
@@ -708,6 +742,53 @@ pytest tests/ -v
 | GET | `/artists/{id}/celero/transactions` | List all Celero transactions |
 | GET | `/artists/{id}/celero/transactions/{transaction_id}` | Get transaction detail |
 | POST | `/celero/webhook` | Receive Celero Commerce webhook events |
+
+## Expansion Endpoints (Now Live)
+
+The roadmap capabilities below are implemented and available in the API:
+
+- **Mobile/responsive dashboard frontend + charts + export actions**:
+`GET /dashboard/ui`, `GET /artists/{id}/dashboard/charts`
+- **Event notifications (preferences + dispatch + urgent SOL checks)**:
+`GET /artists/{id}/notifications/preferences`,
+`PUT /artists/{id}/notifications/preferences`,
+`POST /artists/{id}/notifications/dispatch`,
+`POST /artists/{id}/notifications/urgent-sol-check`
+- **Bulk statement upload / batch processing**:
+`POST /artists/{id}/statements/upload-batch`
+- **Exportable summary reports (JSON/CSV/PDF)**:
+`GET /artists/{id}/reports/summary?format=json|csv|pdf`
+- **Contract ingestion improvements (OCR + clause highlights)**:
+`POST /artists/{id}/intelligence/contracts/extract-upload`,
+`POST /artists/{id}/intelligence/contracts/extract`
+- **Integration fallbacks / semi-automated pulling setup**:
+`POST /artists/{id}/connect/oauth-session`,
+`GET /artists/{id}/connect/fallbacks`
+- **Collaborative team access (artist/manager/attorney)**:
+`POST /artists/{id}/team/members`,
+`GET /artists/{id}/team/members`,
+`DELETE /artists/{id}/team/members/{member_id}`
+- **Benchmark percentile comparisons**:
+`GET /artists/{id}/recovery/benchmark-percentiles`
+- **Public aggregate success metrics**:
+`GET /stats/public/recovery`
+- **Self-service claim templates**:
+`POST /artists/{id}/claims/templates`
+- **International withholding + FX estimates**:
+`POST /artists/{id}/intelligence/withholding-estimate`
+- **Immutable evidence anchoring + verification chain**:
+`POST /claims/{claim_id}/evidence/anchor`,
+`GET /claims/{claim_id}/evidence/verify`
+- **Predictive total recoverable scoring**:
+`POST /artists/{id}/ml/predict-recoverable`
+- **Education/community layer endpoints**:
+`GET /education/guides`, `GET /education/guides/{guide_id}`
+- **White-label/B2B portfolio view**:
+`GET /b2b/portfolio/{org_id}`
+- **Audit-rights exercise workflow bootstrap**:
+`GET /artists/{id}/recovery/audit-demand-letter`
+- **Partnership pipeline visibility**:
+`GET /partnerships/targets`
 
 ## License
 
