@@ -752,6 +752,45 @@ Team access enforcement note:
 - Bootstrap rule: the first `POST /artists/{id}/team/members` entry must use role `artist`.
 - Only `artist` role can add/remove team members; `manager` and `attorney` are read/operations roles.
 
+### OpenAPI Role Matrix (Expansion)
+
+Security headers used by protected artist-scoped expansion routes:
+- `X-Actor-Email` — required once team membership exists for the artist.
+- `X-Actor-Role` — optional validation header; when present, must match the role assigned to `X-Actor-Email`.
+
+Bootstrap behavior:
+- If no team members exist for an artist, protected routes allow access without role headers.
+- First team member creation must use role `artist`.
+
+Protected artist-scoped routes and allowed roles:
+
+| Method | Path | Allowed roles (when team exists) |
+|--------|------|-----------------------------------|
+| GET | `/artists/{id}/notifications/preferences` | `artist`, `manager`, `attorney` |
+| PUT | `/artists/{id}/notifications/preferences` | `artist`, `manager` |
+| POST | `/artists/{id}/notifications/dispatch` | `artist`, `manager` |
+| POST | `/artists/{id}/notifications/urgent-sol-check` | `artist`, `manager` |
+| GET | `/artists/{id}/dashboard/charts` | `artist`, `manager`, `attorney` |
+| GET | `/artists/{id}/reports/summary` | `artist`, `manager`, `attorney` |
+| POST | `/artists/{id}/connect/oauth-session` | `artist`, `manager` |
+| GET | `/artists/{id}/connect/fallbacks` | `artist`, `manager`, `attorney` |
+| GET | `/artists/{id}/team/members` | `artist`, `manager`, `attorney` |
+| POST | `/artists/{id}/team/members` | `artist` (or bootstrap first member) |
+| DELETE | `/artists/{id}/team/members/{member_id}` | `artist` |
+| GET | `/artists/{id}/recovery/benchmark-percentiles` | `artist`, `manager`, `attorney` |
+| POST | `/artists/{id}/claims/templates` | `artist`, `manager`, `attorney` |
+| POST | `/artists/{id}/intelligence/withholding-estimate` | `artist`, `manager`, `attorney` |
+| POST | `/artists/{id}/ml/predict-recoverable` | `artist`, `manager`, `attorney` |
+| GET | `/artists/{id}/recovery/audit-demand-letter` | `artist`, `manager`, `attorney` |
+
+Public/non-artist-scoped expansion routes (no team headers required):
+- `GET /stats/public/recovery`
+- `POST /claims/{claim_id}/evidence/anchor`
+- `GET /education/guides`
+- `GET /education/guides/{guide_id}`
+- `GET /b2b/portfolio/{org_id}`
+- `GET /partnerships/targets`
+
 - **Mobile/responsive dashboard frontend + charts + export actions**:
 `GET /dashboard/ui`, `GET /artists/{id}/dashboard/charts`
 - **Event notifications (preferences + dispatch + urgent SOL checks)**:
