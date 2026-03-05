@@ -15,6 +15,8 @@ from sqlalchemy.pool import StaticPool
 
 from arcos7.models.base import Base, get_db
 from arcos7.api.app import app
+# Ensure all model tables are registered before create_all
+import arcos7.models.terms_acceptance  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"

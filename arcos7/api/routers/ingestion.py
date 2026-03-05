@@ -33,6 +33,7 @@ from arcos7.models.base import get_db
 from arcos7.models.event import Event, EventType
 from arcos7.models.payment import Payment, PaymentType
 from arcos7.models.statement import Statement, StatementSchema
+from arcos7.api.routers.terms import require_terms_accepted
 
 router = APIRouter(tags=["ingestion"])
 
@@ -133,10 +134,18 @@ async def upload_statement(
 
     Returns a :class:`~arcos7.models.statement.Statement` record summarising
     what was parsed and saved.
+
+    **Requires prior acceptance of the Artist Recovery Services Agreement.**
+    Call ``GET /terms`` to read the agreement and
+    ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint
+    returns HTTP 403 until the artist has agreed to the terms.
     """
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
+
+    # Gate: artist must have accepted the current T&C before submitting data.
+    require_terms_accepted(artist_id, db)
 
     if not file.filename or not file.filename.lower().endswith(".csv"):
         raise HTTPException(

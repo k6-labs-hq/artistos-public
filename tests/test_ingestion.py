@@ -45,7 +45,7 @@ client = TestClient(app)
 
 @pytest.fixture()
 def artist_id():
-    """Create an artist in the test DB and return its ID."""
+    """Create an artist in the test DB, accept the current T&C, and return the ID."""
     db = _TestSession()
     artist = Artist(
         id=str(uuid.uuid4()),
@@ -56,6 +56,15 @@ def artist_id():
     db.commit()
     aid = artist.id
     db.close()
+
+    # Accept the current T&C so statement upload tests can proceed.
+    from arcos7.legal.terms import TERMS_VERSION
+    resp = client.post(
+        f"/artists/{aid}/terms/accept",
+        json={"terms_version": TERMS_VERSION, "agreed": True},
+    )
+    assert resp.status_code == 201, f"T&C accept failed: {resp.json()}"
+
     return aid
 
 

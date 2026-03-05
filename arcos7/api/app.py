@@ -9,10 +9,13 @@ from arcos7.api.routers import artists, earnings, anomalies, claims, billing, re
 from arcos7.api.routers import ingestion
 from arcos7.api.routers import celero as celero_router
 from arcos7.api.routers import dashboard as dashboard_router
+from arcos7.api.routers import terms as terms_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Import models to ensure all tables are registered before create_all
+    import arcos7.models.terms_acceptance  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -70,6 +73,7 @@ app.include_router(widget.router)
 app.include_router(ingestion.router)
 app.include_router(celero_router.router)
 app.include_router(dashboard_router.router)
+app.include_router(terms_router.router)
 
 
 @app.get("/health")
