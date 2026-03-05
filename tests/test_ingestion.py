@@ -28,6 +28,12 @@ from arcos7.ingestion.connectors.dsp import DSPConnector
 from arcos7.ingestion.connectors.platform import PlatformConnector
 from arcos7.ingestion.connectors.ticketing import TicketingConnector
 from arcos7.ingestion.connectors.mlc import MLCConnector
+from arcos7.ingestion.connectors.international_pro import (
+    APRAAMCOSConnector,
+    JASRACConnector,
+    KOMCAConnector,
+    SACEMConnector,
+)
 from arcos7.models.base import Base, get_db
 from arcos7.models.artist import Artist
 from arcos7.models.event import Event
@@ -566,6 +572,61 @@ class TestConnectorCredentials:
         assert abs(row["unit_value"] - 0.0125) < 1e-9
         assert row["platform"] == "MLC"
 
+    def test_apra_amcos_connect_true_with_env_key(self, monkeypatch):
+        monkeypatch.setenv("APRA_AMCOS_API_KEY", "apra-key")
+        c = APRAAMCOSConnector(config={})
+        assert c.connect() is True
+
+    def test_jasrac_connect_false_without_key(self, monkeypatch):
+        monkeypatch.delenv("JASRAC_API_KEY", raising=False)
+        c = JASRACConnector(config={})
+        assert c.connect() is False
+
+    def test_komca_fetch_recent_returns_rows(self):
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.url.params["artist_id"] == "artist-9"
+            return httpx.Response(
+                200,
+                json={
+                    "records": [
+                        {
+                            "artist_id": "artist-9",
+                            "work_id": "work-k",
+                            "performances": "200",
+                            "royalty_amount": "3.50",
+                            "statement_date": "2025-02-01",
+                            "country": "KR",
+                        }
+                    ]
+                },
+            )
+
+        transport = httpx.MockTransport(handler)
+        client = httpx.Client(transport=transport)
+        connector = KOMCAConnector(
+            config={"api_key": "k", "base_url": "https://example.test"},
+            http_client=client,
+        )
+        rows = connector.fetch_recent("artist-9", datetime(2025, 2, 1, tzinfo=timezone.utc))
+        assert len(rows) == 1
+        assert rows[0]["source"] == "KOMCA"
+
+    def test_sacem_normalize_defaults_to_performance(self):
+        connector = SACEMConnector(config={"api_key": "k"})
+        normalized = connector.normalize([
+            {
+                "artist_id": "artist-2",
+                "iswc": "T-111.222.333-4",
+                "quantity": "50",
+                "amount": "9.00",
+                "country": "FR",
+                "statement_date": "2025-01-10",
+            }
+        ])
+        assert normalized[0]["event_type"] == "PERFORMANCE"
+        assert normalized[0]["platform"] == "SACEM"
+        assert normalized[0]["quantity"] == 50
+
 
 # ---------------------------------------------------------------------------
 # POST /artists/{id}/connect
@@ -607,6 +668,14 @@ class TestConnectEndpoint:
         resp = client.post(f"/artists/{artist_id}/connect").json()
         assert resp["configured_sources"] >= 1
 
+    def test_connect_sources_include_international_pros(self, artist_id):
+        sources = client.post(f"/artists/{artist_id}/connect").json()["sources"]
+        names = [s["source"] for s in sources]
+        assert "APRA AMCOS" in names
+        assert "JASRAC" in names
+        assert "KOMCA" in names
+        assert "SACEM" in names
+
 
 # ---------------------------------------------------------------------------
 # GET /health/readiness
@@ -632,6 +701,7 @@ class TestReadinessEndpoint:
         data = client.get("/health/readiness").json()
         assert "connectors" in data
         assert "pros" in data["connectors"]
+        assert "international_pros" in data["connectors"]
         assert "dsps" in data["connectors"]
         assert "ticketing" in data["connectors"]
 
@@ -647,6 +717,14 @@ class TestReadinessEndpoint:
         data = client.get("/health/readiness").json()
         assert "note" in data
         assert "statements/upload" in data["note"]
+
+    def test_international_pros_present_in_readiness(self):
+        data = client.get("/health/readiness").json()
+        names = [p["name"] for p in data["connectors"]["international_pros"]]
+        assert "APRA AMCOS" in names
+        assert "JASRAC" in names
+        assert "KOMCA" in names
+        assert "SACEM" in names
 
     def test_distributors_section_present(self):
         data = client.get("/health/readiness").json()

@@ -64,6 +64,12 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
     from arcos7.ingestion.connectors.platform import PlatformConnector
     from arcos7.ingestion.connectors.ticketing import TicketingConnector
     from arcos7.ingestion.connectors.mlc import MLCConnector
+    from arcos7.ingestion.connectors.international_pro import (
+        APRAAMCOSConnector,
+        JASRACConnector,
+        KOMCAConnector,
+        SACEMConnector,
+    )
 
     def _check(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -79,6 +85,10 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
         + [_check(DSPConnector, dsp, dsp_name=dsp) for dsp in ("Spotify", "Apple Music")]
         + [_check(PlatformConnector, p, platform_name=p) for p in ("YouTube", "TikTok")]
         + [_check(TicketingConnector, t, platform_name=t) for t in ("Ticketmaster", "AXS")]
+        + [_check(APRAAMCOSConnector, "APRA AMCOS")]
+        + [_check(JASRACConnector, "JASRAC")]
+        + [_check(KOMCAConnector, "KOMCA")]
+        + [_check(SACEMConnector, "SACEM")]
         + [_check(MLCConnector, "MLC")]
     )
 

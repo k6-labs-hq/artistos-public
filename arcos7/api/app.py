@@ -99,6 +99,12 @@ def readiness():
     from arcos7.ingestion.connectors.ticketing import TicketingConnector
     from arcos7.ingestion.connectors.distributor import DistributorConnector
     from arcos7.ingestion.connectors.mlc import MLCConnector
+    from arcos7.ingestion.connectors.international_pro import (
+        APRAAMCOSConnector,
+        JASRACConnector,
+        KOMCAConnector,
+        SACEMConnector,
+    )
 
     def _connector_status(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -113,6 +119,12 @@ def readiness():
     pros = [
         _connector_status(PROConnector, pro, pro_name=pro)
         for pro in ("ASCAP", "BMI", "SESAC", "GMR", "SOCAN", "PRS", "GEMA")
+    ]
+    international_pros = [
+        _connector_status(APRAAMCOSConnector, "APRA AMCOS"),
+        _connector_status(JASRACConnector, "JASRAC"),
+        _connector_status(KOMCAConnector, "KOMCA"),
+        _connector_status(SACEMConnector, "SACEM"),
     ]
     # DSPs
     dsps = [
@@ -185,6 +197,7 @@ def readiness():
         },
         "connectors": {
             "pros": pros,
+            "international_pros": international_pros,
             "dsps": dsps,
             "platforms": platforms,
             "ticketing": ticketing,
@@ -198,6 +211,8 @@ def readiness():
             "See GET /ingestion/supported-formats for the full list of auto-detected "
             "CSV formats (DistroKid, TuneCore, CD Baby, Amuse, United Masters, ONErpm, "
             "Stem, LANDR, Ditto Music, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, + generic). "
-            "For MLC feed integration, configure MLC_API_KEY (and optionally MLC_API_BASE_URL)."
+            "For MLC feed integration, configure MLC_API_KEY (and optionally MLC_API_BASE_URL). "
+            "For international PRO feeds, configure APRA_AMCOS_API_KEY, JASRAC_API_KEY, "
+            "KOMCA_API_KEY, and SACEM_API_KEY."
         ),
     }
