@@ -3,9 +3,14 @@ Statement upload and ingestion endpoints for ARCOS7 Engine 2.
 
 POST /artists/{id}/statements/upload
     Accept a royalty statement CSV file, detect its format (DistroKid,
-    TuneCore, CD Baby, ASCAP, BMI, Spotify, or generic), persist the
+    TuneCore, CD Baby, Amuse, United Masters, ONErpm, Stem, LANDR, Ditto,
+    ReverbNation, Bandcamp, ASCAP, BMI, Spotify, or generic), persist the
     events and payments to the database, run anomaly detection on the
     newly ingested data, and return a parse summary.
+
+GET  /ingestion/supported-formats
+    Return the full list of explicitly supported CSV formats with example
+    column headers and instructions for each distributor / PRO.
 
 GET /artists/{id}/statements
     List all statement uploads for an artist, newest first.
@@ -27,7 +32,7 @@ from sqlalchemy.orm import Session
 from arcos7.anomaly.engine import AnomalyEngine
 from arcos7.earnings.engine import EarningsEngine
 from arcos7.graph.rights_graph import RightsGraph
-from arcos7.ingestion.statement_parser import parse_csv
+from arcos7.ingestion.statement_parser import parse_csv, SUPPORTED_FORMATS
 from arcos7.models.artist import Artist
 from arcos7.models.base import get_db
 from arcos7.models.event import Event, EventType
@@ -39,6 +44,51 @@ router = APIRouter(tags=["ingestion"])
 
 # Maximum upload size: 50 MB (most statements are < 5 MB)
 _MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+
+
+# ---------------------------------------------------------------------------
+# Supported-formats catalogue endpoint
+# ---------------------------------------------------------------------------
+
+@router.get("/ingestion/supported-formats")
+def supported_formats() -> dict:
+    """
+    Return the complete list of explicitly supported royalty statement CSV
+    formats, grouped by type (distributor, PRO, DSP, generic).
+
+    For each format the response includes:
+    - ``name`` — human-readable distributor/PRO name
+    - ``type`` — ``"distributor"`` | ``"pro"`` | ``"dsp"`` | ``"generic"``
+    - ``key_columns`` — representative column headers from that format's CSV
+    - ``description`` — how to obtain the file and what it covers
+
+    Any CSV that does not match an explicit format is handled by the
+    ``"generic"`` fallback, which recognises any file with recognisable date,
+    source, quantity, and amount columns.  This covers distributors such as
+    Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
+    """
+    distributors = {k: v for k, v in SUPPORTED_FORMATS.items() if v["type"] == "distributor"}
+    pros = {k: v for k, v in SUPPORTED_FORMATS.items() if v["type"] == "pro"}
+    dsps = {k: v for k, v in SUPPORTED_FORMATS.items() if v["type"] == "dsp"}
+    generic = {k: v for k, v in SUPPORTED_FORMATS.items() if v["type"] == "generic"}
+
+    return {
+        "total_explicit_formats": len(SUPPORTED_FORMATS) - len(generic),
+        "formats": SUPPORTED_FORMATS,
+        "by_type": {
+            "distributors": distributors,
+            "pros": pros,
+            "dsps": dsps,
+            "generic": generic,
+        },
+        "upload_endpoint": "POST /artists/{artist_id}/statements/upload",
+        "note": (
+            "Upload any CSV file — the format is detected automatically from "
+            "the column headers.  If your distributor is not in the explicit "
+            "list, the generic fallback handles any CSV with date, source, "
+            "quantity, and amount columns."
+        ),
+    }
 
 
 # ---------------------------------------------------------------------------

@@ -21,7 +21,7 @@ from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from arcos7.ingestion.statement_parser import detect_format, parse_csv
+from arcos7.ingestion.statement_parser import detect_format, parse_csv, SUPPORTED_FORMATS
 from arcos7.ingestion.connectors.pro import PROConnector
 from arcos7.ingestion.connectors.dsp import DSPConnector
 from arcos7.ingestion.connectors.platform import PlatformConnector
@@ -582,3 +582,411 @@ class TestReadinessEndpoint:
         data = client.get("/health/readiness").json()
         assert "note" in data
         assert "statements/upload" in data["note"]
+
+    def test_distributors_section_present(self):
+        data = client.get("/health/readiness").json()
+        assert "distributors" in data["connectors"]
+        assert isinstance(data["connectors"]["distributors"], list)
+        assert len(data["connectors"]["distributors"]) > 0
+
+    def test_distributors_include_known_names(self):
+        data = client.get("/health/readiness").json()
+        names = [d["name"] for d in data["connectors"]["distributors"]]
+        assert "Amuse" in names
+        assert "United Masters" in names
+        assert "ONErpm" in names
+        assert "DistroKid" in names
+        assert "TuneCore" in names
+        assert "CD Baby" in names
+
+
+# ---------------------------------------------------------------------------
+# GET /ingestion/supported-formats
+# ---------------------------------------------------------------------------
+
+class TestSupportedFormatsEndpoint:
+    def test_returns_200(self):
+        resp = client.get("/ingestion/supported-formats")
+        assert resp.status_code == 200
+
+    def test_response_has_required_keys(self):
+        data = client.get("/ingestion/supported-formats").json()
+        assert "total_explicit_formats" in data
+        assert "formats" in data
+        assert "by_type" in data
+        assert "upload_endpoint" in data
+
+    def test_total_explicit_formats_is_positive(self):
+        data = client.get("/ingestion/supported-formats").json()
+        # Explicit formats = all SUPPORTED_FORMATS entries except "generic"
+        expected = len([k for k in SUPPORTED_FORMATS if k != "generic"])
+        assert data["total_explicit_formats"] == expected
+
+    def test_formats_includes_all_distributors(self):
+        formats = client.get("/ingestion/supported-formats").json()["formats"]
+        for fmt in ("distrokid", "tunecore", "cdbaby", "amuse", "unitedmasters",
+                    "onerpm", "stem", "landr", "ditto", "reverbnation", "bandcamp"):
+            assert fmt in formats, f"Missing format: {fmt}"
+
+    def test_formats_includes_pros(self):
+        formats = client.get("/ingestion/supported-formats").json()["formats"]
+        assert "ascap" in formats
+        assert "bmi" in formats
+
+    def test_formats_includes_generic(self):
+        formats = client.get("/ingestion/supported-formats").json()["formats"]
+        assert "generic" in formats
+
+    def test_each_format_has_required_fields(self):
+        formats = client.get("/ingestion/supported-formats").json()["formats"]
+        for fmt_key, fmt_data in formats.items():
+            assert "name" in fmt_data, f"{fmt_key} missing 'name'"
+            assert "type" in fmt_data, f"{fmt_key} missing 'type'"
+            assert "key_columns" in fmt_data, f"{fmt_key} missing 'key_columns'"
+            assert "description" in fmt_data, f"{fmt_key} missing 'description'"
+
+    def test_by_type_groups_correctly(self):
+        data = client.get("/ingestion/supported-formats").json()
+        # Derive expected counts directly from the SUPPORTED_FORMATS constant
+        expected_distributors = sum(1 for v in SUPPORTED_FORMATS.values() if v["type"] == "distributor")
+        expected_pros = sum(1 for v in SUPPORTED_FORMATS.values() if v["type"] == "pro")
+        expected_dsps = sum(1 for v in SUPPORTED_FORMATS.values() if v["type"] == "dsp")
+        expected_generic = sum(1 for v in SUPPORTED_FORMATS.values() if v["type"] == "generic")
+        assert len(data["by_type"]["distributors"]) == expected_distributors
+        assert len(data["by_type"]["pros"]) == expected_pros
+        assert len(data["by_type"]["dsps"]) == expected_dsps
+        assert len(data["by_type"]["generic"]) == expected_generic
+
+    def test_upload_endpoint_field(self):
+        data = client.get("/ingestion/supported-formats").json()
+        assert "statements/upload" in data["upload_endpoint"]
+
+    def test_generic_description_mentions_other_distributors(self):
+        data = client.get("/ingestion/supported-formats").json()
+        generic_desc = data["formats"]["generic"]["description"]
+        # Should mention the generic fallback coverage
+        assert "generic" in generic_desc.lower() or "fallback" in generic_desc.lower() or "other" in generic_desc.lower()
+
+
+# ---------------------------------------------------------------------------
+# New distributor format detection
+# ---------------------------------------------------------------------------
+
+class TestDetectFormatNewDistributors:
+    def test_detects_amuse(self):
+        assert detect_format(
+            ["Reporting Period", "Platform", "Country", "Track Title", "ISRC", "Streams", "Revenue"]
+        ) == "amuse"
+
+    def test_detects_amuse_case_insensitive(self):
+        assert detect_format(
+            ["REPORTING PERIOD", "PLATFORM", "COUNTRY", "TRACK TITLE", "ISRC", "STREAMS", "REVENUE"]
+        ) == "amuse"
+
+    def test_detects_unitedmasters(self):
+        assert detect_format(
+            ["Period", "Store", "Country/Region", "Album", "Track", "ISRC", "Units", "Total Revenue"]
+        ) == "unitedmasters"
+
+    def test_detects_onerpm(self):
+        assert detect_format(
+            ["Sale Date", "Retailer", "Country", "Track Title", "ISRC", "UPC", "Qty", "Net Amount"]
+        ) == "onerpm"
+
+    def test_detects_stem(self):
+        assert detect_format(
+            ["Period", "Platform", "Country Code", "Track Name", "ISRC", "Streams", "Net Revenue"]
+        ) == "stem"
+
+    def test_detects_landr(self):
+        assert detect_format(
+            ["Month", "Store", "Territory", "Track Name", "ISRC", "Net Quantity", "Net Revenue"]
+        ) == "landr"
+
+    def test_detects_ditto(self):
+        assert detect_format(
+            ["Month", "Store", "Country", "Title", "ISRC", "Streams", "Net Revenue"]
+        ) == "ditto"
+
+    def test_detects_reverbnation(self):
+        assert detect_format(
+            ["Date", "Platform", "Country", "Song", "ISRC", "Streams", "Revenue"]
+        ) == "reverbnation"
+
+    def test_detects_bandcamp(self):
+        assert detect_format(
+            ["Date", "Item Name", "Buyer Name", "Country", "Item Type", "Quantity", "Revenue"]
+        ) == "bandcamp"
+
+    # Ensure new formats don't accidentally match existing ones
+    def test_ditto_not_confused_with_distrokid(self):
+        # DistroKid uses "Earnings", Ditto uses "Net Revenue" + "Streams"
+        assert detect_format(
+            ["Month", "Store", "Country", "Title", "ISRC", "Quantity", "Earnings"]
+        ) == "distrokid"
+
+    def test_ditto_not_confused_with_tunecore(self):
+        # TuneCore uses "Sale Month" not "Month"
+        assert detect_format(
+            ["Sale Month", "Store", "Country", "Title", "ISRC", "Quantity", "Net Revenue"]
+        ) == "tunecore"
+
+    def test_stem_not_confused_with_ditto(self):
+        # Stem uses "Country Code" not "Country"
+        assert detect_format(
+            ["Period", "Platform", "Country Code", "Track Name", "ISRC", "Streams", "Net Revenue"]
+        ) == "stem"
+
+    def test_landr_not_confused_with_ditto(self):
+        # LANDR has "Net Quantity" and "Territory" which Ditto doesn't
+        assert detect_format(
+            ["Month", "Store", "Territory", "Track Name", "ISRC", "Net Quantity", "Net Revenue"]
+        ) == "landr"
+
+
+# ---------------------------------------------------------------------------
+# New distributor CSV parsers
+# ---------------------------------------------------------------------------
+
+class TestAmuseParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Reporting Period", "Platform", "Country", "Artist", "Track Title", "ISRC", "Streams", "Revenue"],
+            [["2024-01", "Spotify", "US", "Test Artist", "My Song", "USABC1234567", "5000", "20.50"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "a1").format_detected == "amuse"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "a1")
+        assert len(result.payments) == 1
+        assert result.payments[0]["amount"] == pytest.approx(20.50, abs=0.001)
+
+    def test_source_contains_amuse(self):
+        result = parse_csv(self._csv(), "a1")
+        assert "Amuse" in result.payments[0]["source"]
+
+    def test_parses_streams(self):
+        result = parse_csv(self._csv(), "a1")
+        assert result.events[0]["quantity"] == 5000
+
+    def test_parses_isrc(self):
+        result = parse_csv(self._csv(), "a1")
+        assert result.events[0]["isrc"] == "USABC1234567"
+
+
+class TestUnitedMastersParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Period", "Store", "Country/Region", "Album", "Track", "ISRC", "UPC", "Units", "Total Revenue"],
+            [["2024-02", "Apple Music", "US", "My Album", "My Track", "USDEF1234567", "123456789", "1200", "4.80"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "u1").format_detected == "unitedmasters"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "u1")
+        assert result.payments[0]["amount"] == pytest.approx(4.80, abs=0.001)
+
+    def test_source_contains_united_masters(self):
+        result = parse_csv(self._csv(), "u1")
+        assert "United Masters" in result.payments[0]["source"]
+
+    def test_parses_units(self):
+        result = parse_csv(self._csv(), "u1")
+        assert result.events[0]["quantity"] == 1200
+
+
+class TestONErpmParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Sale Date", "Retailer", "Country", "Track Title", "ISRC", "UPC", "Qty", "Net Amount"],
+            [["2024-03-15", "Amazon Music", "US", "My Track", "USGHI1234567", "987654321", "800", "3.20"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "o1").format_detected == "onerpm"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "o1")
+        assert result.payments[0]["amount"] == pytest.approx(3.20, abs=0.001)
+
+    def test_source_contains_onerpm(self):
+        result = parse_csv(self._csv(), "o1")
+        assert "ONErpm" in result.payments[0]["source"]
+
+    def test_parses_qty(self):
+        result = parse_csv(self._csv(), "o1")
+        assert result.events[0]["quantity"] == 800
+
+
+class TestStemParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Period", "Platform", "Country Code", "Track Name", "ISRC", "Streams", "Net Revenue"],
+            [["2024-04", "Spotify", "GB", "My Track", "USJKL1234567", "3500", "14.00"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "s1").format_detected == "stem"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "s1")
+        assert result.payments[0]["amount"] == pytest.approx(14.00, abs=0.001)
+
+    def test_source_contains_stem(self):
+        result = parse_csv(self._csv(), "s1")
+        assert "Stem" in result.payments[0]["source"]
+
+    def test_territory_from_country_code(self):
+        result = parse_csv(self._csv(), "s1")
+        assert result.events[0]["territory"] == "GB"
+
+
+class TestLANDRParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Month", "Store", "Territory", "Track Name", "ISRC", "Net Quantity", "Net Revenue"],
+            [["2024-05", "Deezer", "FR", "My Track", "USMNO1234567", "600", "2.40"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "l1").format_detected == "landr"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "l1")
+        assert result.payments[0]["amount"] == pytest.approx(2.40, abs=0.001)
+
+    def test_source_contains_landr(self):
+        result = parse_csv(self._csv(), "l1")
+        assert "LANDR" in result.payments[0]["source"]
+
+    def test_parses_net_quantity(self):
+        result = parse_csv(self._csv(), "l1")
+        assert result.events[0]["quantity"] == 600
+
+
+class TestDittoParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Month", "Store", "Country", "Title", "ISRC", "Streams", "Net Revenue"],
+            [["2024-06", "Tidal", "CA", "My Song", "USPQR1234567", "900", "3.60"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "d1").format_detected == "ditto"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "d1")
+        assert result.payments[0]["amount"] == pytest.approx(3.60, abs=0.001)
+
+    def test_source_contains_ditto(self):
+        result = parse_csv(self._csv(), "d1")
+        assert "Ditto" in result.payments[0]["source"]
+
+    def test_parses_streams(self):
+        result = parse_csv(self._csv(), "d1")
+        assert result.events[0]["quantity"] == 900
+
+
+class TestReverbNationParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Date", "Platform", "Country", "Song", "ISRC", "Streams", "Revenue"],
+            [["2024-07-01", "YouTube", "US", "My Song", "USSTU1234567", "2000", "8.00"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "r1").format_detected == "reverbnation"
+
+    def test_parses_amount(self):
+        result = parse_csv(self._csv(), "r1")
+        assert result.payments[0]["amount"] == pytest.approx(8.00, abs=0.001)
+
+    def test_source_contains_reverbnation(self):
+        result = parse_csv(self._csv(), "r1")
+        assert "ReverbNation" in result.payments[0]["source"]
+
+    def test_title_from_song_column(self):
+        result = parse_csv(self._csv(), "r1")
+        assert result.events[0]["work_title"] == "My Song"
+
+
+class TestBandcampParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            ["Date", "Item Name", "Buyer Name", "Country", "Item Type", "SKU", "Quantity", "Price Per Item", "Revenue"],
+            [["2024-08-15", "My Album", "John Doe", "US", "album", "SKU-001", "1", "10.00", "9.00"]],
+        )
+
+    def test_detects_correct_format(self):
+        assert parse_csv(self._csv(), "b1").format_detected == "bandcamp"
+
+    def test_parses_revenue(self):
+        result = parse_csv(self._csv(), "b1")
+        assert result.payments[0]["amount"] == pytest.approx(9.00, abs=0.001)
+
+    def test_source_contains_bandcamp(self):
+        result = parse_csv(self._csv(), "b1")
+        assert "Bandcamp" in result.payments[0]["source"]
+
+    def test_event_type_is_sale(self):
+        result = parse_csv(self._csv(), "b1")
+        assert result.events[0]["event_type"] == "SALE"
+
+    def test_title_from_item_name(self):
+        result = parse_csv(self._csv(), "b1")
+        assert result.events[0]["work_title"] == "My Album"
+
+
+# ---------------------------------------------------------------------------
+# DistributorConnector
+# ---------------------------------------------------------------------------
+
+class TestDistributorConnector:
+    def test_connect_false_without_key(self, monkeypatch):
+        monkeypatch.delenv("AMUSE_API_KEY", raising=False)
+        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        c = DistributorConnector(config={}, distributor_name="Amuse")
+        assert c.connect() is False
+
+    def test_connect_true_with_env_key(self, monkeypatch):
+        monkeypatch.setenv("AMUSE_API_KEY", "test-amuse-key")
+        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        c = DistributorConnector(config={}, distributor_name="Amuse")
+        assert c.connect() is True
+
+    def test_onerpm_connect_false_without_key(self, monkeypatch):
+        monkeypatch.delenv("ONERPM_API_KEY", raising=False)
+        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        c = DistributorConnector(config={}, distributor_name="ONErpm")
+        assert c.connect() is False
+
+    def test_fetch_historical_raises_not_implemented(self, monkeypatch):
+        monkeypatch.delenv("AMUSE_API_KEY", raising=False)
+        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        c = DistributorConnector(config={}, distributor_name="Amuse")
+        with pytest.raises(NotImplementedError) as exc:
+            c.fetch_historical("artist-1", datetime.now(timezone.utc), datetime.now(timezone.utc))
+        assert "Amuse" in str(exc.value)
+        assert "statements/upload" in str(exc.value)
+
+    def test_supported_distributors_includes_all(self):
+        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        names = DistributorConnector.supported_distributors()
+        for expected in ("Amuse", "United Masters", "ONErpm", "Stem", "LANDR",
+                         "Ditto Music", "ReverbNation", "Bandcamp",
+                         "DistroKid", "TuneCore", "CD Baby"):
+            assert expected in names, f"Missing distributor: {expected}"
+
+    def test_normalize_returns_list(self):
+        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        c = DistributorConnector(config={}, distributor_name="Stem")
+        raw = [{"streams": 1000, "currency": "USD", "country": "US"}]
+        result = c.normalize(raw)
+        assert isinstance(result, list)
+        assert len(result) == 1
+        assert result[0]["platform"] == "Stem"
+
