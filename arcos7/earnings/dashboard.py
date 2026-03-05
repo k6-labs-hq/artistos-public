@@ -54,6 +54,7 @@ from arcos7.earnings.engine import EarningsEngine
 from arcos7.graph.rights_graph import RightsGraph
 from arcos7.ml.catalog_scorer import CatalogScorer
 from arcos7.ml.forecaster import EarningsForecaster
+from arcos7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from arcos7.recovery.priority_ranker import build_action_queue
 from arcos7.recovery.statute_tracker import classify_anomalies, sol_summary
 
@@ -130,6 +131,7 @@ class DashboardEngine:
         balance = self._balance_section(in_pursuit, deposited, claims, artist_id)
         deadlines = self._deadlines_section(anomalies)
         priority_actions = self._priority_actions_section(anomalies, claims)
+        calibration_health = self._calibration_health_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
         earnings_trend = self._earnings_trend_section(artist_id)
         feed = self._activity_feed(anomalies, claims, disbursements)
@@ -143,6 +145,7 @@ class DashboardEngine:
             "balance_still_pursuing": balance,
             "deadlines": deadlines,
             "priority_actions": priority_actions,
+            "calibration_health": calibration_health,
             "catalog_health": catalog_health,
             "earnings_trend": earnings_trend,
             "activity_feed": feed,
@@ -486,6 +489,22 @@ class DashboardEngine:
             "grade": result.get("grade"),
             "signals": result.get("signals", {}),
             "recommendations": result.get("recommendations", []),
+        }
+
+    def _calibration_health_section(self, artist_id: str) -> dict:
+        """
+        Model calibration readiness for expected utility ranking.
+
+        Exposes global and subtype-level posterior success rates and whether
+        there is enough labeled feedback to trust scoped calibration.
+        """
+        calibrator = SuccessProbabilityCalibrator()
+        summary = calibrator.calibration_summary(artist_id, self.db)
+        return {
+            "overall": summary.get("overall", {}),
+            "by_subtype": summary.get("by_subtype", {}),
+            "minimum_scope_samples": summary.get("minimum_scope_samples"),
+            "method": summary.get("method"),
         }
 
     def _earnings_trend_section(self, artist_id: str) -> dict:

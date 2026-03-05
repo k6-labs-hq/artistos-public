@@ -6,7 +6,7 @@ ARCOS7 Engine 2 is a comprehensive platform designed to detect, recover, and pre
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| **Artist Recovery Dashboard** | ✅ Ready | Single endpoint showing leakage, in-pursuit totals, deposits received, balance outstanding, activity feed |
+| **Artist Recovery Dashboard** | ✅ Ready | Single endpoint showing leakage, in-pursuit totals, deposits received, calibration health, balance outstanding, activity feed |
 | **Royalty Estimator Widget** | ✅ Ready | MFA-gated, lead capture, results email, CTA — no API keys needed |
 | **Earnings Engine** | ✅ Ready | Full historical reconstruction and real-time calculation |
 | **Anomaly Detection** | ✅ Ready | 5-category rule engine; runs automatically after statement upload |
@@ -175,7 +175,27 @@ GET /artists/{id}/dashboard
 }
 ```
 
-**7. Catalog health** — ML composite score
+**7. Calibration health** — model confidence reliability from real outcomes
+```json
+"calibration_health": {
+  "overall": {
+    "posterior_success_rate": 0.666667,
+    "sample_count": 12,
+    "sufficient_samples": true
+  },
+  "by_subtype": {
+    "MISSING_MECHANICAL": {
+      "posterior_success_rate": 0.75,
+      "sample_count": 6,
+      "sufficient_samples": true
+    }
+  },
+  "minimum_scope_samples": 3,
+  "method": "beta_posterior_blend"
+}
+```
+
+**8. Catalog health** — ML composite score
 ```json
 "catalog_health": {
   "health_score": 68,
@@ -193,7 +213,7 @@ GET /artists/{id}/dashboard
 }
 ```
 
-**8. Earnings trend** — 90-day forecast
+**9. Earnings trend** — 90-day forecast
 ```json
 "earnings_trend": {
   "trend": "GROWING",
@@ -205,7 +225,7 @@ GET /artists/{id}/dashboard
 }
 ```
 
-**9. Activity feed** — reverse-chronological log of everything that's happened
+**10. Activity feed** — reverse-chronological log of everything that's happened
 ```json
 "activity_feed": [
   {
@@ -234,6 +254,90 @@ The dashboard updates automatically every time:
 - A new anomaly is detected (statement upload or manual detection)
 - A claim status changes
 - A Celero disbursement is received (webhook `disbursement.settled`)
+
+### Frontend Integration Quickstart
+
+For priority queue UX, call these two endpoints in order:
+
+1. Fetch calibration health (to show model reliability badges):
+
+```http
+GET /artists/{id}/intelligence/calibration
+```
+
+Example response (truncated):
+
+```json
+{
+  "artist_id": "artist-123",
+  "overall": {
+    "posterior_success_rate": 0.666667,
+    "sample_count": 12,
+    "sufficient_samples": true
+  },
+  "by_subtype": {
+    "MISSING_MECHANICAL": {
+      "posterior_success_rate": 0.75,
+      "sample_count": 6,
+      "sufficient_samples": true
+    }
+  },
+  "minimum_scope_samples": 3,
+  "method": "beta_posterior_blend"
+}
+```
+
+2. Rank queue items by expected utility:
+
+```http
+POST /artists/{id}/intelligence/rank-utility
+Content-Type: application/json
+```
+
+```json
+{
+  "analyst_hourly_cost": 100,
+  "items": [
+    {
+      "id": "a1",
+      "subtype": "MISSING_MECHANICAL",
+      "estimated_recoverable": 3000,
+      "success_probability": 0.7,
+      "effort_hours": 2
+    },
+    {
+      "id": "a2",
+      "subtype": "RATE_DRIFT_LOW",
+      "estimated_recoverable": 800,
+      "success_probability": 0.8,
+      "effort_hours": 1
+    }
+  ]
+}
+```
+
+Example response fields used by UI sorting/badges:
+
+```json
+{
+  "artist_id": "artist-123",
+  "count": 2,
+  "ranked": [
+    {
+      "id": "a1",
+      "utility_rank": 1,
+      "expected_utility": 1900,
+      "expected_recovery_value": 2100,
+      "calibration": {
+        "scope": "subtype:MISSING_MECHANICAL",
+        "sufficient_samples": true,
+        "sample_count": 6,
+        "posterior_success_rate": 0.75
+      }
+    }
+  ]
+}
+```
 
 ---
 
@@ -318,7 +422,7 @@ Look for the `merchant_of_record` section:
 - **End-to-End Recovery Lifecycle**: Ingestion -> anomaly detection -> claim orchestration -> billing -> Celero payout tracking in a single API surface.
 - **15-Format Statement Ingestion + Generic Fallback**: Explicit parsers for DistroKid, TuneCore, CD Baby, Amuse, United Masters, ONErpm, Stem, LANDR, Ditto, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, plus generic CSV detection.
 - **Terms & Conditions Compliance Gate**: Required agreement acceptance (`GET /terms`, `POST /artists/{id}/terms/accept`) is enforced before statement upload.
-- **Artist Recovery Dashboard**: Unified artist dashboard with leakage discovered, claims in pursuit, deposited funds, pursuing balance, deadlines, priority actions, catalog health, earnings trend, and activity feed.
+- **Artist Recovery Dashboard**: Unified artist dashboard with leakage discovered, claims in pursuit, deposited funds, calibration health, pursuing balance, deadlines, priority actions, catalog health, earnings trend, and activity feed.
 - **Connector Readiness & Credential Visibility**: `GET /health/readiness` and `POST /artists/{id}/connect` expose integration readiness without making external network calls.
 - **Celero Commerce Merchant-of-Record**: Vault registration, customer updates, contingency charges, ACH disbursements, refund/void handling, transaction history, and signed webhook processing.
 - **Recovery Tooling Suite**: Statute-of-limitations classification, rate benchmarking, audit-rights eligibility analysis, recoupment tracking, and ranked priority action queue.
@@ -343,6 +447,8 @@ Look for the `merchant_of_record` section:
 `GET /artists/{id}/earnings`, `GET /artists/{id}/earnings/history`, `POST /artists/{id}/earnings/reconstruct`, `POST /artists/{id}/ml/forecast`, `GET /artists/{id}/billing`, `GET /artists/{id}/invoices`
 - **Recovery analytics**:
 `GET /artists/{id}/recovery/sol-status`, `GET /artists/{id}/recovery/rate-benchmark`, `GET /artists/{id}/recovery/audit-eligibility`, `GET /artists/{id}/recovery/recoupment`, `GET /artists/{id}/recovery/priority-queue`
+- **Recovery intelligence**:
+`POST /artists/{id}/intelligence/ledger/ingest`, `POST /artists/{id}/intelligence/contracts/extract`, `POST /artists/{id}/intelligence/contracts/extract-upload`, `POST /artists/{id}/intelligence/simulate-expected-payout`, `POST /artists/{id}/intelligence/feedback`, `POST /artists/{id}/intelligence/rank-utility`, `GET /artists/{id}/intelligence/calibration`
 - **Widget funnel and lead ops**:
 `POST /widget/register`, `POST /widget/verify`, `POST /widget/estimate`, `POST /widget/claim`, `GET /widget/leads` (requires `X-Admin-Key`)
 - **Celero merchant-of-record**:
@@ -424,7 +530,7 @@ pytest tests/ -v
 | GET | `/terms` | Get current terms text/version/hash |
 | POST | `/artists/{id}/terms/accept` | Accept current terms version (required before statement upload) |
 | GET | `/artists/{id}/terms/status` | Check whether artist accepted current terms |
-| **GET** | **`/artists/{id}/dashboard`** | **Artist recovery dashboard — leakage, in pursuit, deposits, balance, activity feed** |
+| **GET** | **`/artists/{id}/dashboard`** | **Artist recovery dashboard — leakage, in pursuit, deposits, calibration health, balance, activity feed** |
 | GET | `/artists/{id}/summary` | Earnings + anomaly summary |
 | POST | `/artists/{id}/connect` | Check connector credential status |
 | GET | `/artists/{id}/earnings` | Earnings summary |
@@ -451,6 +557,13 @@ pytest tests/ -v
 | GET | `/artists/{id}/recovery/audit-eligibility` | Audit rights eligibility |
 | GET | `/artists/{id}/recovery/recoupment` | Recoupment position |
 | GET | `/artists/{id}/recovery/priority-queue` | Prioritised recovery action queue |
+| POST | `/artists/{id}/intelligence/ledger/ingest` | Ingest canonical royalty ledger rows with source lineage |
+| POST | `/artists/{id}/intelligence/contracts/extract` | Extract contract terms from raw text and persist term snapshots |
+| POST | `/artists/{id}/intelligence/contracts/extract-upload` | Upload `.txt/.md/.pdf/.image` contract and extract terms |
+| POST | `/artists/{id}/intelligence/simulate-expected-payout` | Simulate expected payout with rate, withholding, and FX inputs |
+| POST | `/artists/{id}/intelligence/feedback` | Record recovery outcomes for calibration and learning |
+| POST | `/artists/{id}/intelligence/rank-utility` | Rank actions by expected utility using calibrated success probabilities |
+| GET | `/artists/{id}/intelligence/calibration` | Calibration health summary (overall + subtype posterior success rates) |
 | POST | `/widget/register` | Widget Step 1: register + send OTPs |
 | POST | `/widget/verify` | Widget Step 2: verify OTPs → estimate token |
 | POST | `/widget/estimate` | Widget Step 3: generate + persist estimate |

@@ -408,6 +408,7 @@ class TestDashboardAPIEndpoint:
         assert "balance_still_pursuing" in data
         assert "deadlines" in data
         assert "priority_actions" in data
+        assert "calibration_health" in data
         assert "catalog_health" in data
         assert "earnings_trend" in data
         assert "activity_feed" in data
@@ -468,6 +469,8 @@ class TestDashboardAPIEndpoint:
         assert data["deadlines"]["expired_count"] == 0
         assert data["deadlines"]["urgent_count"] == 0
         assert data["priority_actions"]["total_open_items"] == 0
+        assert "overall" in data["calibration_health"]
+        assert data["calibration_health"]["overall"]["sample_count"] == 0
         assert data["catalog_health"]["health_score"] is not None  # scorer always returns a value
         assert data["earnings_trend"]["trend"] in ("INSUFFICIENT_DATA", "GROWING", "FLAT", "DECLINING")
 
@@ -695,6 +698,17 @@ class TestDashboardNewSectionsAPIContract:
         assert "health_score" in ch
         assert "grade" in ch
         assert "signals" in ch
+
+    def test_calibration_health_fields_via_api(self):
+        resp = client.post("/artists/", json={"name": "Calibration API Artist"})
+        aid = resp.json()["id"]
+        calib = client.get(f"/artists/{aid}/dashboard").json()["calibration_health"]
+        assert "overall" in calib
+        assert "by_subtype" in calib
+        assert "minimum_scope_samples" in calib
+        assert "method" in calib
+        assert "posterior_success_rate" in calib["overall"]
+        assert "sample_count" in calib["overall"]
 
     def test_earnings_trend_fields_via_api(self):
         resp = client.post("/artists/", json={"name": "Trend API Artist"})
