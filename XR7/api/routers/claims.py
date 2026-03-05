@@ -1,4 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+import csv
+import io
+import json
+from pathlib import Path
+import zipfile
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -7,6 +13,99 @@ from XR7.models.claim import Claim, ClaimSchema
 from XR7.recovery.orchestrator import ClaimsOrchestrator
 
 router = APIRouter(tags=["claims"])
+
+
+def _safe_pdf_text(text: str) -> str:
+    return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+
+def _build_simple_pdf(lines: list[str]) -> bytes:
+    # Minimal single-page PDF generator to avoid external dependencies.
+    page_lines = lines[:46]
+    content_ops = ["BT", "/F1 10 Tf", "50 780 Td", "12 TL"]
+    for line in page_lines:
+        content_ops.append(f"({_safe_pdf_text(line)}) Tj")
+        content_ops.append("T*")
+    content_ops.append("ET")
+    content = "\n".join(content_ops).encode("utf-8")
+
+    objects = []
+    objects.append(b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n")
+    objects.append(b"2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj\n")
+    objects.append(
+        b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+        b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n"
+    )
+    objects.append(b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n")
+    objects.append(f"5 0 obj << /Length {len(content)} >> stream\n".encode("utf-8") + content + b"\nendstream endobj\n")
+
+    output = io.BytesIO()
+    output.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(output.tell())
+        output.write(obj)
+    xref_start = output.tell()
+    output.write(f"xref\n0 {len(objects) + 1}\n".encode("utf-8"))
+    output.write(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        output.write(f"{off:010d} 00000 n \n".encode("utf-8"))
+    output.write(
+        (
+            f"trailer << /Size {len(objects) + 1} /Root 1 0 R >>\n"
+            f"startxref\n{xref_start}\n%%EOF"
+        ).encode("utf-8")
+    )
+    return output.getvalue()
+
+
+def _evidence_summary_lines(packet: dict) -> list[str]:
+    anomaly = packet.get("anomaly", {})
+    proof = packet.get("proof", {})
+    totals = proof.get("totals", {})
+    recon = packet.get("reconciliation", {})
+    integrity = packet.get("integrity", {})
+
+    return [
+        "XR7 Evidence Packet",
+        f"Claim ID: {packet.get('claim_id')}",
+        f"Generated At: {packet.get('generated_at')}",
+        f"Anomaly: {anomaly.get('category')} / {anomaly.get('subtype')}",
+        f"Description: {anomaly.get('description')}",
+        "",
+        "Missed Money Proof",
+        f"Missing Money Amount: {proof.get('missing_money_amount')}",
+        f"Ledger Rows Cited: {totals.get('ledger_row_count', 0)}",
+        f"Total Expected: {totals.get('total_expected_amount', 0)}",
+        f"Total Received: {totals.get('total_received_amount', 0)}",
+        f"Ledger Shortfall: {totals.get('ledger_shortfall_amount', 0)}",
+        "",
+        "Reconciliation",
+        f"Model Shortfall: {recon.get('model_shortfall_amount')}",
+        f"Proof Shortfall: {recon.get('proof_shortfall_amount')}",
+        f"Discrepancy Amount: {recon.get('discrepancy_amount')}",
+        f"Discrepancy Flag: {recon.get('discrepancy_flag')}",
+        "",
+        "Integrity",
+        f"Packet Hash: {integrity.get('packet_hash')}",
+        f"Prior Packet Hash: {integrity.get('prior_packet_hash')}",
+        f"Chain Hash: {integrity.get('chain_hash')}",
+        f"Signature: {integrity.get('signature')}",
+    ]
+
+
+def _resolve_source_file(source_file: str | None) -> Path | None:
+    if not source_file:
+        return None
+    p = Path(source_file)
+    if p.is_absolute() and p.exists() and p.is_file():
+        return p
+    repo_root = Path(__file__).resolve().parents[3]
+    candidates = [Path.cwd() / source_file, repo_root / source_file]
+    for candidate in candidates:
+        if candidate.exists() and candidate.is_file():
+            return candidate
+    return None
 
 
 @router.get("/artists/{artist_id}/claims")
@@ -38,6 +137,127 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
         return orchestrator.generate_evidence_packet(claim_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/claims/{claim_id}/evidence/export")
+def export_evidence_packet(
+    claim_id: str,
+    format: str = Query(default="zip", pattern="^(zip|pdf)$"),
+    refresh: bool = Query(default=False),
+    db: Session = Depends(get_db),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    orchestrator = ClaimsOrchestrator(db)
+    if refresh or not isinstance(claim.evidence, dict) or not claim.evidence:
+        packet = orchestrator.generate_evidence_packet(claim_id)
+    else:
+        packet = claim.evidence
+
+    lines = _evidence_summary_lines(packet)
+    pdf_bytes = _build_simple_pdf(lines)
+
+    if format == "pdf":
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="evidence_{claim_id}.pdf"'},
+        )
+
+    proof_rows = packet.get("proof", {}).get("ledger_evidence", [])
+    citations = packet.get("legal_support", {}).get("source_citations", [])
+
+    proof_csv = io.StringIO()
+    proof_headers = [
+        "ledger_entry_id",
+        "source",
+        "source_file",
+        "source_row",
+        "record_type",
+        "work_id",
+        "event_type",
+        "period_start",
+        "period_end",
+        "territory",
+        "currency",
+        "expected_amount",
+        "received_amount",
+        "shortfall_amount",
+        "calculation",
+        "ingested_at",
+    ]
+    writer = csv.DictWriter(proof_csv, fieldnames=proof_headers)
+    writer.writeheader()
+    for row in proof_rows:
+        writer.writerow({key: row.get(key) for key in proof_headers})
+
+    citations_csv = io.StringIO()
+    citation_headers = ["ledger_entry_id", "source", "source_file", "source_row"]
+    citation_writer = csv.DictWriter(citations_csv, fieldnames=citation_headers)
+    citation_writer.writeheader()
+    for row in citations:
+        citation_writer.writerow({key: row.get(key) for key in citation_headers})
+
+    zip_buffer = io.BytesIO()
+    missing_sources: list[str] = []
+    with zipfile.ZipFile(zip_buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("evidence_packet.json", json.dumps(packet, indent=2, sort_keys=True))
+        zf.writestr("evidence_summary.txt", "\n".join(lines) + "\n")
+        zf.writestr("proof_rows.csv", proof_csv.getvalue())
+        zf.writestr("source_citations.csv", citations_csv.getvalue())
+        zf.writestr("evidence_packet.pdf", pdf_bytes)
+        zf.writestr("integrity_manifest.json", json.dumps(packet.get("integrity", {}), indent=2, sort_keys=True))
+
+        attached_files: set[str] = set()
+        for citation in citations:
+            source_file = citation.get("source_file")
+            resolved = _resolve_source_file(source_file)
+            if resolved is None:
+                if source_file:
+                    missing_sources.append(str(source_file))
+                continue
+            arcname = f"attachments/{resolved.name}"
+            if arcname in attached_files:
+                continue
+            zf.write(resolved, arcname=arcname)
+            attached_files.add(arcname)
+
+        if missing_sources:
+            zf.writestr("missing_sources.txt", "\n".join(sorted(set(missing_sources))) + "\n")
+
+    return Response(
+        content=zip_buffer.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="evidence_{claim_id}.zip"'},
+    )
+
+
+@router.get("/claims/{claim_id}/evidence/verify")
+def verify_evidence_packet(
+    claim_id: str,
+    expected_prior_packet_hash: str | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    if not isinstance(claim.evidence, dict) or not claim.evidence:
+        raise HTTPException(status_code=404, detail="Evidence packet not found")
+
+    verification = ClaimsOrchestrator(db).verify_packet_integrity(claim.evidence)
+
+    prior_link_matches = True
+    if expected_prior_packet_hash is not None:
+        prior_link_matches = verification.get("prior_packet_hash") == expected_prior_packet_hash
+        verification["checks"]["prior_link_matches"] = prior_link_matches
+
+    verification["valid"] = bool(verification.get("valid")) and prior_link_matches
+    verification["claim_id"] = claim_id
+    verification["packet_version"] = claim.evidence.get("metadata", {}).get("packet_version")
+    verification["revision"] = claim.evidence.get("metadata", {}).get("revision")
+    return verification
 
 
 class ReconcileRequest(BaseModel):

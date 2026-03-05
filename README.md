@@ -341,6 +341,119 @@ Example response fields used by UI sorting/badges:
 
 ---
 
+## Claim Evidence and Legal Packet Workflow
+
+XR7 now supports attorney-ready evidence exports and cryptographic verification for each claim packet.
+
+### Generate or refresh evidence
+
+```bash
+curl -X POST "http://localhost:8000/claims/{claim_id}/evidence"
+```
+
+### Export evidence for legal review
+
+ZIP package (JSON, CSV citations, PDF summary, integrity manifest, and source attachments when files are present):
+
+```bash
+curl -L "http://localhost:8000/claims/{claim_id}/evidence/export?format=zip&refresh=true" \
+  -o evidence_{claim_id}.zip
+```
+
+PDF summary only:
+
+```bash
+curl -L "http://localhost:8000/claims/{claim_id}/evidence/export?format=pdf" \
+  -o evidence_{claim_id}.pdf
+```
+
+### Verify packet integrity and chain linkage
+
+```bash
+curl "http://localhost:8000/claims/{claim_id}/evidence/verify"
+```
+
+Optional prior-link check:
+
+```bash
+curl "http://localhost:8000/claims/{claim_id}/evidence/verify?expected_prior_packet_hash={prior_hash}"
+```
+
+One-command operator helper (archives verification JSON and exits non-zero on any failed check):
+
+```bash
+scripts/verify_evidence.sh --claim-id {claim_id}
+scripts/verify_evidence.sh --claim-id {claim_id} --expected-prior-hash {prior_hash}
+```
+
+Verification checks include:
+- `packet_hash_matches`
+- `chain_hash_matches`
+- `line_hashes_match`
+- `signature_valid`
+- `prior_link_matches` (when expected prior hash is supplied)
+
+### Signing modes (HMAC and RSA)
+
+Default mode is HMAC:
+
+```bash
+export XR7_EVIDENCE_SIGNING_MODE="hmac"
+export XR7_EVIDENCE_HMAC_SECRET="replace-with-long-random-secret"
+```
+
+Asymmetric RSA mode:
+
+```bash
+export XR7_EVIDENCE_SIGNING_MODE="rsa"
+export XR7_EVIDENCE_PRIVATE_KEY_PEM="-----BEGIN PRIVATE KEY-----..."
+export XR7_EVIDENCE_PUBLIC_KEY_PEM="-----BEGIN PUBLIC KEY-----..."
+```
+
+Each packet includes metadata:
+- `metadata.packet_version` (current: `1.1`)
+- `metadata.revision` (increments per regenerated packet)
+- `integrity.packet_hash`, `integrity.prior_packet_hash`, `integrity.chain_hash`, `integrity.signature`
+
+### Production Security Checklist
+
+Use this checklist before relying on exported packets in active disputes or litigation:
+
+1. Enforce asymmetric signing in production:
+`XR7_EVIDENCE_SIGNING_MODE=rsa`
+
+2. Store private keys outside source control:
+Inject `XR7_EVIDENCE_PRIVATE_KEY_PEM` through a secrets manager (not `.env` committed to git).
+
+3. Publish public verification key to counsel:
+Share `XR7_EVIDENCE_PUBLIC_KEY_PEM` with external attorneys/auditors so they can independently verify signatures.
+
+4. Rotate signing keys on a fixed cadence:
+Recommended every 90 days, and immediately after any key exposure event.
+
+5. Preserve prior public keys for historical verification:
+Do not delete old verify keys until all packets signed with those keys are no longer needed.
+
+6. Require verification before attorney handoff:
+Call `GET /claims/{claim_id}/evidence/verify` and ensure `valid=true`.
+
+7. Enforce chain-link checks for revised packets:
+When reviewing revisions, pass `expected_prior_packet_hash` and require `prior_link_matches=true`.
+
+8. Treat any failed integrity check as a stop condition:
+If any check fails (`packet_hash_matches`, `chain_hash_matches`, `line_hashes_match`, or `signature_valid`), regenerate and investigate before external submission.
+
+9. Keep immutable export archives:
+Store exported ZIP packets in write-once or append-only storage with retention policy.
+
+10. Log verification outcomes:
+Persist verification timestamp, claim id, packet hash, signer mode, and result for compliance audit trails.
+
+Detailed operational procedure:
+`docs/evidence_security_runbook.md`
+
+---
+
 ## Celero Commerce — Merchant of Record Integration
 
 Celero Commerce acts as the **Merchant of Record** for all XR7 payments:
@@ -442,7 +555,7 @@ Look for the `merchant_of_record` section:
 - **Ingestion and statement operations**:
 `GET /ingestion/supported-formats`, `POST /artists/{id}/statements/upload`, `GET /artists/{id}/statements`, `GET /artists/{id}/statements/{statement_id}`
 - **Anomaly and claims operations**:
-`GET /artists/{id}/anomalies`, `GET /anomalies/{id}`, `POST /artists/{id}/anomalies/detect`, `GET /artists/{id}/claims`, `GET /claims/{id}`, `POST /claims/{id}/advance`, `POST /claims/{id}/evidence`, `POST /claims/{id}/reconcile`
+`GET /artists/{id}/anomalies`, `GET /anomalies/{id}`, `POST /artists/{id}/anomalies/detect`, `GET /artists/{id}/claims`, `GET /claims/{id}`, `POST /claims/{id}/advance`, `POST /claims/{id}/evidence`, `GET /claims/{id}/evidence/export`, `GET /claims/{id}/evidence/verify`, `POST /claims/{id}/reconcile`
 - **Earnings and billing**:
 `GET /artists/{id}/earnings`, `GET /artists/{id}/earnings/history`, `POST /artists/{id}/earnings/reconstruct`, `POST /artists/{id}/ml/forecast`, `GET /artists/{id}/billing`, `GET /artists/{id}/invoices`
 - **Recovery analytics**:
@@ -502,6 +615,10 @@ Key variables:
 - `CELERO_SECURITY_KEY` — **Celero Commerce merchant key** (issued during Celero onboarding; request at https://celerocommerce.com/developers/)
 - `CELERO_WEBHOOK_SECRET` — HMAC-SHA256 secret for validating Celero webhook payloads (set in Celero dashboard → Settings → Webhooks)
 - `CELERO_API_URL` — override gateway URL (defaults to NMI sandbox; live URL provided during production onboarding)
+- `XR7_EVIDENCE_SIGNING_MODE` — `hmac` (default) or `rsa` for evidence packet signing
+- `XR7_EVIDENCE_HMAC_SECRET` — secret used when signing mode is `hmac`
+- `XR7_EVIDENCE_PRIVATE_KEY_PEM` — PEM private key used when signing mode is `rsa`
+- `XR7_EVIDENCE_PUBLIC_KEY_PEM` — PEM public key used to verify RSA signatures
 
 See `.env.example` for the full list including connector API key variable names.
 
@@ -550,6 +667,8 @@ pytest tests/ -v
 | GET | `/claims/{id}` | Get claim detail |
 | POST | `/claims/{id}/advance` | Advance claim status |
 | POST | `/claims/{id}/evidence` | Generate evidence packet |
+| GET | `/claims/{id}/evidence/export` | Export attorney-ready evidence package (`format=zip|pdf`, optional `refresh=true`) |
+| GET | `/claims/{id}/evidence/verify` | Verify evidence packet integrity, signature, and optional prior hash link |
 | POST | `/claims/{id}/reconcile` | Reconcile recovered amount |
 | GET | `/artists/{id}/billing` | Billing summary |
 | GET | `/artists/{id}/invoices` | List invoices |
