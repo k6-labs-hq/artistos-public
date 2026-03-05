@@ -5,7 +5,7 @@ import io
 import uuid
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
@@ -113,13 +113,70 @@ def _artist_or_404(artist_id: str, db: Session) -> Artist:
     return artist
 
 
+def _authorize_team_access(
+    artist_id: str,
+    db: Session,
+    allowed_roles: set[TeamRole],
+    *,
+    actor_email: str | None,
+    actor_role: str | None,
+) -> None:
+    """Enforce team-member access when team records exist for an artist.
+
+    Bootstrap mode: if the artist has no team members yet, access is allowed.
+    """
+    members_exist = db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
+    if not members_exist:
+        return
+
+    if not actor_email:
+        raise HTTPException(
+            status_code=403,
+            detail="X-Actor-Email is required once team access is configured for this artist.",
+        )
+
+    member = (
+        db.query(TeamMember)
+        .filter(
+            TeamMember.artist_id == artist_id,
+            func.lower(TeamMember.user_email) == actor_email.strip().lower(),
+        )
+        .first()
+    )
+    if not member:
+        raise HTTPException(status_code=403, detail="Actor is not a team member for this artist.")
+
+    member_role = TeamRole(member.role)
+    if member_role not in allowed_roles:
+        allowed = ", ".join(sorted(r.value for r in allowed_roles))
+        raise HTTPException(
+            status_code=403,
+            detail=f"Insufficient role. Allowed roles: {allowed}.",
+        )
+
+    if actor_role and actor_role.strip().lower() != member_role.value:
+        raise HTTPException(
+            status_code=403,
+            detail="X-Actor-Role does not match the role assigned to this team member.",
+        )
+
+
 @router.put("/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema)
 def upsert_notification_preferences(
     artist_id: str,
     payload: NotificationPreferenceUpsert,
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
     if not pref:
         pref = NotificationPreference(artist_id=artist_id)
@@ -140,8 +197,20 @@ def upsert_notification_preferences(
 
 
 @router.get("/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema)
-def get_notification_preferences(artist_id: str, db: Session = Depends(get_db)):
+def get_notification_preferences(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
     if not pref:
         pref = NotificationPreference(artist_id=artist_id)
@@ -156,8 +225,17 @@ def dispatch_notification(
     artist_id: str,
     payload: NotificationDispatchRequest,
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
     result = send_event_notification(
         pref,
@@ -170,8 +248,20 @@ def dispatch_notification(
 
 
 @router.post("/artists/{artist_id}/notifications/urgent-sol-check")
-def urgent_sol_notification_check(artist_id: str, db: Session = Depends(get_db)):
+def urgent_sol_notification_check(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
 
     anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
@@ -213,8 +303,17 @@ def dashboard_charts_data(
     artist_id: str,
     days: int = Query(default=180, ge=30, le=730),
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     cutoff = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
 
     payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
@@ -280,8 +379,17 @@ def export_summary_report(
     artist_id: str,
     format: str = Query(default="json", pattern="^(json|csv|pdf)$"),
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     report = _summary_report_payload(artist_id, db)
 
     if format == "json":
@@ -322,8 +430,17 @@ def create_oauth_session(
     artist_id: str,
     payload: OAuthSessionRequest,
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     state = hashlib.sha256(f"{artist_id}:{payload.provider}:{uuid.uuid4()}".encode("utf-8")).hexdigest()
     return {
         "artist_id": artist_id,
@@ -335,8 +452,20 @@ def create_oauth_session(
 
 
 @router.get("/artists/{artist_id}/connect/fallbacks")
-def list_connect_fallbacks(artist_id: str, db: Session = Depends(get_db)):
+def list_connect_fallbacks(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     return {
         "artist_id": artist_id,
         "fallbacks": [
@@ -362,8 +491,42 @@ def list_connect_fallbacks(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/artists/{artist_id}/team/members", response_model=TeamMemberSchema, status_code=201)
-def add_team_member(artist_id: str, payload: TeamMemberCreate, db: Session = Depends(get_db)):
+def add_team_member(
+    artist_id: str,
+    payload: TeamMemberCreate,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+
+    existing_any = db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
+    if not existing_any:
+        if payload.role != TeamRole.ARTIST:
+            raise HTTPException(
+                status_code=400,
+                detail="First team member must use role 'artist' to establish ownership.",
+            )
+    else:
+        _authorize_team_access(
+            artist_id,
+            db,
+            {TeamRole.ARTIST},
+            actor_email=x_actor_email,
+            actor_role=x_actor_role,
+        )
+
+    existing_member = (
+        db.query(TeamMember)
+        .filter(
+            TeamMember.artist_id == artist_id,
+            func.lower(TeamMember.user_email) == payload.user_email.strip().lower(),
+        )
+        .first()
+    )
+    if existing_member:
+        raise HTTPException(status_code=409, detail="Team member with this email already exists.")
+
     member = TeamMember(artist_id=artist_id, user_email=payload.user_email, role=payload.role)
     db.add(member)
     db.commit()
@@ -372,14 +535,39 @@ def add_team_member(artist_id: str, payload: TeamMemberCreate, db: Session = Dep
 
 
 @router.get("/artists/{artist_id}/team/members", response_model=list[TeamMemberSchema])
-def list_team_members(artist_id: str, db: Session = Depends(get_db)):
+def list_team_members(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     return db.query(TeamMember).filter(TeamMember.artist_id == artist_id).all()
 
 
 @router.delete("/artists/{artist_id}/team/members/{member_id}")
-def remove_team_member(artist_id: str, member_id: str, db: Session = Depends(get_db)):
+def remove_team_member(
+    artist_id: str,
+    member_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     member = db.query(TeamMember).filter(TeamMember.id == member_id, TeamMember.artist_id == artist_id).first()
     if not member:
         raise HTTPException(status_code=404, detail="Team member not found")
@@ -389,8 +577,20 @@ def remove_team_member(artist_id: str, member_id: str, db: Session = Depends(get
 
 
 @router.get("/artists/{artist_id}/recovery/benchmark-percentiles")
-def benchmark_percentiles(artist_id: str, db: Session = Depends(get_db)):
+def benchmark_percentiles(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     avg_unit = db.query(func.coalesce(func.avg(Event.unit_value), 0.0)).filter(Event.artist_id == artist_id).scalar() or 0.0
     # Heuristic percentile band for MVP. Replace with cohort model when dataset scales.
     percentile = max(1, min(99, int((float(avg_unit) / 0.02) * 100)))
@@ -423,7 +623,16 @@ def generate_claim_template(
     artist_id: str,
     payload: ClaimTemplateRequest,
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     artist = _artist_or_404(artist_id, db)
     letter = (
         f"Subject: Formal Claim Notice - {payload.subtype}\n\n"
@@ -448,8 +657,17 @@ def estimate_withholding(
     artist_id: str,
     payload: CurrencyTaxEstimateRequest,
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     gross = float(payload.gross_amount)
     withheld = gross * max(0.0, payload.withholding_rate)
     net_source = gross - withheld
@@ -498,8 +716,17 @@ def predict_total_recoverable(
     artist_id: str,
     payload: PredictRecoverableRequest,
     db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
     _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     leakage = db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0)).filter(Anomaly.artist_id == artist_id).scalar() or 0.0
     recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(Payment.artist_id == artist_id).scalar() or 0.0
     anomaly_count = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()
@@ -556,7 +783,19 @@ def white_label_portfolio(org_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/artists/{artist_id}/recovery/audit-demand-letter")
-def generate_audit_demand_letter(artist_id: str, db: Session = Depends(get_db)):
+def generate_audit_demand_letter(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
     artist = _artist_or_404(artist_id, db)
     recommendations = analyze_audit_eligibility([], [])
     note = "No active contract recommendations found." if not recommendations else "Review attached recommended contracts."

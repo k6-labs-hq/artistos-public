@@ -747,6 +747,11 @@ Detailed phased implementation plan and acceptance criteria:
 
 The roadmap capabilities below are implemented and available in the API:
 
+Team access enforcement note:
+- After at least one team member exists for an artist, artist-scoped expansion endpoints require `X-Actor-Email` (and optional `X-Actor-Role`) matching a team member.
+- Bootstrap rule: the first `POST /artists/{id}/team/members` entry must use role `artist`.
+- Only `artist` role can add/remove team members; `manager` and `attorney` are read/operations roles.
+
 - **Mobile/responsive dashboard frontend + charts + export actions**:
 `GET /dashboard/ui`, `GET /artists/{id}/dashboard/charts`
 - **Event notifications (preferences + dispatch + urgent SOL checks)**:
