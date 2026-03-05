@@ -61,6 +61,27 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     - ``balance_still_pursuing`` — the key number: money we are still chasing
     - ``total_pending_deposit`` — approved but not yet ACH-settled
 
+    **deadlines**
+    - ``expired_count`` — anomalies whose SOL window has already closed
+    - ``urgent_count`` — anomalies with <90 days remaining on their SOL window
+    - ``at_risk_count`` — anomalies with 90–180 days remaining
+    - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining
+
+    **priority_actions**
+    - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency
+    - ``total_open_items`` — total items in the priority queue
+
+    **catalog_health**
+    - ``health_score`` — ML composite score 0–100
+    - ``grade`` — letter grade A–F
+    - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.)
+    - ``recommendations`` — list of actionable improvement suggestions
+
+    **earnings_trend**
+    - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA
+    - ``predicted_total`` — predicted earnings over next 90 days
+    - ``predicted_low`` / ``predicted_high`` — 95% confidence interval
+
     **activity_feed**
     - Up to 50 timestamped events: leakage discoveries, claim updates,
       and payment deposits, newest first.

@@ -115,7 +115,76 @@ GET /artists/{id}/dashboard
 }
 ```
 
-**5. Activity feed** — reverse-chronological log of everything that's happened
+**5. Deadlines** — statute-of-limitations urgency
+```json
+"deadlines": {
+  "expired_count": 1,
+  "urgent_count": 2,
+  "at_risk_count": 3,
+  "ok_count": 7,
+  "total_open_anomalies": 13,
+  "top_urgent_items": [
+    {
+      "id": "anomaly-id",
+      "category": "ROYALTY",
+      "subtype": "RATE_BELOW_MARKET",
+      "sol_status": "URGENT",
+      "days_remaining": 42,
+      "estimated_recoverable": 8500.00
+    }
+  ]
+}
+```
+
+**6. Priority actions** — what to work on right now
+```json
+"priority_actions": {
+  "total_open_items": 12,
+  "top_10_estimated_recoverable": 38250.00,
+  "top_10_actions": [
+    {
+      "action_type": "FILE_CLAIM",
+      "priority_rank": 1,
+      "normalised_score": 95.2,
+      "estimated_recoverable": 8500.00,
+      "sol_status": "URGENT",
+      "days_remaining": 42
+    }
+  ]
+}
+```
+
+**7. Catalog health** — ML composite score
+```json
+"catalog_health": {
+  "health_score": 68,
+  "grade": "C",
+  "signals": {
+    "metadata_completeness": 0.45,
+    "payment_regularity": 0.82,
+    "anomaly_density": 0.61,
+    "recovery_rate": 0.70,
+    "earnings_accuracy": 0.75
+  },
+  "recommendations": [
+    "Add ISRC codes to 55% of your works to improve metadata completeness"
+  ]
+}
+```
+
+**8. Earnings trend** — 90-day forecast
+```json
+"earnings_trend": {
+  "trend": "GROWING",
+  "horizon_days": 90,
+  "predicted_total": 12400.00,
+  "predicted_low": 10200.00,
+  "predicted_high": 14600.00,
+  "slope_per_day": 18.50
+}
+```
+
+**9. Activity feed** — reverse-chronological log of everything that's happened
 ```json
 "activity_feed": [
   {

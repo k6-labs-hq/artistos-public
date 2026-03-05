@@ -18,7 +18,22 @@ summary so they can see at a glance:
    pipeline and what has already been deposited.  This is the number artists
    care most about: "how much are you still trying to get for me?"
 
-5. **Activity feed** — a reverse-chronological event log combining anomaly
+5. **Deadlines** — statute-of-limitations urgency overview.  Shows which
+   anomalies are EXPIRED, URGENT (<90 days), or AT_RISK (90–180 days) so
+   artists know what they could permanently lose the right to claim.
+
+6. **Priority actions** — top 10 ranked items from the recovery priority
+   queue, combining anomalies and claims by (value × confidence × urgency).
+   The artist's actionable "do-this-now" list.
+
+7. **Catalog health** — ML-derived 0–100 composite score (A–F grade) that
+   combines metadata completeness, payment regularity, anomaly density,
+   recovery rate, and earnings accuracy.
+
+8. **Earnings trend** — 90-day earnings forecast showing whether the artist's
+   income is GROWING, FLAT, or DECLINING, with a predicted dollar range.
+
+9. **Activity feed** — a reverse-chronological event log combining anomaly
    discoveries, claim status changes, and payment deposits so the artist can
    see exactly what happened and when.
 """
@@ -33,6 +48,14 @@ from sqlalchemy.orm import Session
 from arcos7.models.anomaly import Anomaly, AnomalyStatus
 from arcos7.models.celero_transaction import CeleroTransaction, CeleroTxnStatus, CeleroTxnType
 from arcos7.models.claim import Claim, ClaimStatus
+from arcos7.models.payment import Payment
+from arcos7.models.work import Work
+from arcos7.earnings.engine import EarningsEngine
+from arcos7.graph.rights_graph import RightsGraph
+from arcos7.ml.catalog_scorer import CatalogScorer
+from arcos7.ml.forecaster import EarningsForecaster
+from arcos7.recovery.priority_ranker import build_action_queue
+from arcos7.recovery.statute_tracker import classify_anomalies, sol_summary
 
 
 # Claim statuses that are still "in pursuit" (open / active)
@@ -98,11 +121,17 @@ class DashboardEngine:
             .order_by(CeleroTransaction.updated_at.desc())
             .all()
         )
+        works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
+        payments = self.db.query(Payment).filter(Payment.artist_id == artist_id).all()
 
         leakage = self._leakage_section(anomalies)
         in_pursuit = self._in_pursuit_section(claims)
         deposited = self._deposited_section(disbursements)
         balance = self._balance_section(in_pursuit, deposited, claims, artist_id)
+        deadlines = self._deadlines_section(anomalies)
+        priority_actions = self._priority_actions_section(anomalies, claims)
+        catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
+        earnings_trend = self._earnings_trend_section(artist_id)
         feed = self._activity_feed(anomalies, claims, disbursements)
 
         return {
@@ -112,6 +141,10 @@ class DashboardEngine:
             "in_pursuit": in_pursuit,
             "recovered_and_deposited": deposited,
             "balance_still_pursuing": balance,
+            "deadlines": deadlines,
+            "priority_actions": priority_actions,
+            "catalog_health": catalog_health,
+            "earnings_trend": earnings_trend,
             "activity_feed": feed,
         }
 
@@ -281,6 +314,222 @@ class DashboardEngine:
             "note": (
                 "balance_still_pursuing = amount in active (not-yet-disbursed) claims.  "
                 "total_pending_deposit = disbursements approved but ACH not yet settled."
+            ),
+        }
+
+    def _deadlines_section(self, anomalies: list[Anomaly]) -> dict:
+        """
+        Statute-of-limitations urgency overview.
+
+        EXPIRED anomalies have permanently lost their recovery window.
+        URGENT (<90 days) and AT_RISK (90–180 days) require immediate action.
+        This section surfaces the most time-sensitive items so artists never
+        miss a filing deadline and permanently lose their right to recover.
+        """
+        anomaly_dicts = [
+            {
+                "id": a.id,
+                "category": str(a.category),
+                "subtype": a.subtype,
+                "severity": str(a.severity),
+                "status": str(a.status),
+                "estimated_recoverable": a.estimated_recoverable,
+                "confidence_score": a.confidence_score,
+                "territory": a.territory,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+            }
+            for a in anomalies
+            if a.status != AnomalyStatus.CLOSED
+        ]
+        summary = sol_summary(anomaly_dicts)
+
+        # Surface the top 5 most urgent items with enough detail to act on
+        classified = classify_anomalies(anomaly_dicts)
+        urgent_items = [
+            {
+                "id": item.get("id"),
+                "category": item.get("category"),
+                "subtype": item.get("subtype"),
+                "sol_status": item.get("sol_status"),
+                "days_remaining": item.get("days_remaining"),
+                "estimated_recoverable": item.get("estimated_recoverable"),
+                "territory": item.get("territory"),
+            }
+            for item in classified
+            if item.get("sol_status") in ("EXPIRED", "URGENT", "AT_RISK")
+        ]
+        urgent_items.sort(key=lambda x: x.get("days_remaining") or 9999)
+
+        return {
+            "expired_count": summary["counts_by_status"].get("EXPIRED", 0),
+            "urgent_count": summary["counts_by_status"].get("URGENT", 0),
+            "at_risk_count": summary["counts_by_status"].get("AT_RISK", 0),
+            "ok_count": summary["counts_by_status"].get("OK", 0),
+            "total_open_anomalies": summary["total_anomalies"],
+            "top_urgent_items": urgent_items[:5],
+            "note": (
+                "Act immediately on EXPIRED and URGENT items — missed SOL deadlines "
+                "permanently forfeit the right to file a claim."
+            ),
+        }
+
+    def _priority_actions_section(
+        self, anomalies: list[Anomaly], claims: list[Claim]
+    ) -> dict:
+        """
+        Top 10 ranked items from the recovery priority queue.
+
+        Scores each open anomaly and active claim by
+        (estimated_recoverable × confidence × SOL_urgency) / age_factor
+        and returns the highest-ROI actions.  The artist's "do-this-now" list.
+        """
+        open_anomaly_dicts = [
+            {
+                "id": a.id,
+                "category": str(a.category),
+                "subtype": a.subtype,
+                "severity": str(a.severity),
+                "status": str(a.status),
+                "estimated_recoverable": a.estimated_recoverable,
+                "confidence_score": a.confidence_score,
+                "territory": a.territory,
+                "created_at": a.created_at.isoformat() if a.created_at else None,
+            }
+            for a in anomalies
+            if a.status != AnomalyStatus.CLOSED
+        ]
+        active_claim_dicts = [
+            {
+                "id": c.id,
+                "claim_type": c.claim_type,
+                "status": str(c.status),
+                "estimated_recoverable": c.recovered_amount,
+                # Claims don't carry a native ML confidence score — 0.7 is a
+                # conservative prior reflecting that an open claim has already
+                # passed initial validation (IDENTIFIED/PREPARED/SUBMITTED).
+                "confidence_score": 0.7,
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+            }
+            for c in claims
+            if c.status in _ACTIVE_CLAIM_STATUSES
+        ]
+
+        # Enrich anomalies with SOL status before ranking
+        classified_anomalies = classify_anomalies(open_anomaly_dicts)
+        queue = build_action_queue(classified_anomalies, active_claim_dicts)
+
+        top_items = queue[:10]
+        total_recoverable = sum(
+            item.get("estimated_recoverable") or 0.0 for item in top_items
+        )
+
+        return {
+            "total_open_items": len(queue),
+            "top_10_actions": top_items,
+            "top_10_estimated_recoverable": round(total_recoverable, 2),
+            "note": (
+                "Items ranked by (estimated_value × confidence × SOL_urgency) / age. "
+                "Work through this list top-to-bottom for maximum recovery ROI."
+            ),
+        }
+
+    def _catalog_health_section(
+        self,
+        artist_id: str,
+        works: list[Work],
+        payments: list[Payment],
+        anomalies: list[Anomaly],
+        claims: list[Claim],
+    ) -> dict:
+        """
+        ML-derived catalog health score (0–100) with letter grade (A–F).
+
+        Combines metadata completeness, payment regularity, anomaly density,
+        recovery rate, and earnings accuracy into a single composite signal.
+        Useful as a dashboard KPI — artists aim to increase this score over
+        time as their catalog is cleaned up and claims are resolved.
+        """
+        works_dicts = [{"id": w.id, "isrc": w.isrc, "iswc": w.iswc} for w in works]
+        payments_dicts = [
+            {
+                "id": p.id,
+                "amount": p.amount,
+                "currency": p.currency,
+                "received_at": p.received_at.isoformat(),
+            }
+            for p in payments
+        ]
+        anomaly_dicts = [{"id": a.id, "status": a.status} for a in anomalies]
+        claim_dicts = [
+            {"id": c.id, "status": c.status, "recovered_amount": c.recovered_amount}
+            for c in claims
+        ]
+
+        rg = RightsGraph()
+        engine = EarningsEngine(rg)
+        earnings_summary = engine.get_earnings_summary(artist_id, self.db)
+
+        scorer = CatalogScorer()
+        report = scorer.score(
+            artist_id=artist_id,
+            works=works_dicts,
+            payments=payments_dicts,
+            anomalies=anomaly_dicts,
+            claims=claim_dicts,
+            earnings_summary=earnings_summary,
+        )
+
+        result = report.to_dict()
+        # Expose the key fields at the top level for easy dashboard display
+        return {
+            "health_score": result.get("health_score"),
+            "grade": result.get("grade"),
+            "signals": result.get("signals", {}),
+            "recommendations": result.get("recommendations", []),
+        }
+
+    def _earnings_trend_section(self, artist_id: str) -> dict:
+        """
+        90-day earnings forecast with trend direction and predicted range.
+
+        Uses a linear-regression model over historical earnings to classify
+        the trend as GROWING, FLAT, or DECLINING and gives a predicted dollar
+        range for the next quarter.
+
+        Returns a compact summary suitable for a dashboard KPI card — artists
+        can drill into the full forecast via GET /artists/{id}/ml/forecast.
+        """
+        from datetime import datetime as _dt, timezone as _tz
+
+        rg = RightsGraph()
+        engine = EarningsEngine(rg)
+        historical_start = _dt(2000, 1, 1)
+        end = _dt.now(_tz.utc)
+        historical = engine.reconstruct_historical(artist_id, historical_start, end, self.db)
+
+        if not historical:
+            return {
+                "trend": "INSUFFICIENT_DATA",
+                "horizon_days": 90,
+                "predicted_total": None,
+                "predicted_low": None,
+                "predicted_high": None,
+                "note": "Upload royalty statements to enable earnings trend forecasting.",
+            }
+
+        forecaster = EarningsForecaster()
+        result = forecaster.forecast(historical, horizon_days=90, confidence=0.95)
+
+        return {
+            "trend": result.get("trend", "UNKNOWN"),
+            "horizon_days": 90,
+            "predicted_total": result.get("predicted_total"),
+            "predicted_low": result.get("lower_bound"),
+            "predicted_high": result.get("upper_bound"),
+            "slope_per_day": result.get("slope_per_day"),
+            "note": (
+                "Forecast uses linear-regression trend model over all historical earnings. "
+                "See GET /artists/{id}/ml/forecast for the full breakdown."
             ),
         }
 

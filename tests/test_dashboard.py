@@ -406,6 +406,10 @@ class TestDashboardAPIEndpoint:
         assert "in_pursuit" in data
         assert "recovered_and_deposited" in data
         assert "balance_still_pursuing" in data
+        assert "deadlines" in data
+        assert "priority_actions" in data
+        assert "catalog_health" in data
+        assert "earnings_trend" in data
         assert "activity_feed" in data
 
     def test_dashboard_leakage_fields(self):
@@ -460,3 +464,242 @@ class TestDashboardAPIEndpoint:
         assert data["recovered_and_deposited"]["total_deposited"] == 0.0
         assert data["balance_still_pursuing"]["balance_still_pursuing"] == 0.0
         assert data["activity_feed"] == []
+        # New sections — zero / empty state
+        assert data["deadlines"]["expired_count"] == 0
+        assert data["deadlines"]["urgent_count"] == 0
+        assert data["priority_actions"]["total_open_items"] == 0
+        assert data["catalog_health"]["health_score"] is not None  # scorer always returns a value
+        assert data["earnings_trend"]["trend"] in ("INSUFFICIENT_DATA", "GROWING", "FLAT", "DECLINING")
+
+
+# ---------------------------------------------------------------------------
+# New section tests — deadlines
+# ---------------------------------------------------------------------------
+
+class TestDashboardDeadlines:
+    def test_empty_artist_all_zero_counts(self, db, artist):
+        dl = DashboardEngine(db).compute(artist.id)["deadlines"]
+        assert dl["expired_count"] == 0
+        assert dl["urgent_count"] == 0
+        assert dl["at_risk_count"] == 0
+        assert dl["ok_count"] == 0
+        assert dl["top_urgent_items"] == []
+
+    def test_open_anomalies_are_classified(self, db, artist):
+        # SOL window for ROYALTY/DEFAULT = 1095 days. An anomaly created very
+        # recently will have ~1095 days left → status OK.
+        _add_anomaly(db, artist.id, status=AnomalyStatus.OPEN)
+        dl = DashboardEngine(db).compute(artist.id)["deadlines"]
+        assert dl["total_open_anomalies"] == 1
+        # Recent anomaly should be OK (not expired/urgent)
+        assert dl["ok_count"] == 1
+
+    def test_closed_anomalies_excluded_from_deadlines(self, db, artist):
+        _add_anomaly(db, artist.id, status=AnomalyStatus.CLOSED)
+        dl = DashboardEngine(db).compute(artist.id)["deadlines"]
+        assert dl["total_open_anomalies"] == 0
+
+    def test_deadlines_has_required_fields(self, db, artist):
+        dl = DashboardEngine(db).compute(artist.id)["deadlines"]
+        assert "expired_count" in dl
+        assert "urgent_count" in dl
+        assert "at_risk_count" in dl
+        assert "ok_count" in dl
+        assert "total_open_anomalies" in dl
+        assert "top_urgent_items" in dl
+        assert "note" in dl
+
+    def test_top_urgent_items_capped_at_5(self, db, artist):
+        for i in range(10):
+            _add_anomaly(db, artist.id, status=AnomalyStatus.OPEN)
+        dl = DashboardEngine(db).compute(artist.id)["deadlines"]
+        assert len(dl["top_urgent_items"]) <= 5
+
+    def test_urgent_items_have_required_fields(self, db, artist):
+        # Create an anomaly old enough to be URGENT or EXPIRED by back-dating it.
+        from datetime import timedelta
+        ts = _BASE_TS - timedelta(days=1080)  # near end of 3-year ROYALTY window
+        a = Anomaly(
+            id=str(uuid.uuid4()),
+            artist_id=artist.id,
+            category=AnomalyCategory.ROYALTY,
+            subtype="OLD_ISSUE",
+            severity=AnomalySeverity.HIGH,
+            confidence_score=0.9,
+            estimated_recoverable=1000.0,
+            status=AnomalyStatus.OPEN,
+            created_at=ts,
+        )
+        db.add(a)
+        db.commit()
+        dl = DashboardEngine(db).compute(artist.id)["deadlines"]
+        # This anomaly should be URGENT or EXPIRED
+        urgent_or_expired = dl["urgent_count"] + dl["expired_count"]
+        assert urgent_or_expired >= 1
+        if dl["top_urgent_items"]:
+            item = dl["top_urgent_items"][0]
+            assert "sol_status" in item
+            assert "days_remaining" in item
+            assert "category" in item
+
+
+# ---------------------------------------------------------------------------
+# New section tests — priority_actions
+# ---------------------------------------------------------------------------
+
+class TestDashboardPriorityActions:
+    def test_empty_artist_no_actions(self, db, artist):
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        assert pa["total_open_items"] == 0
+        assert pa["top_10_actions"] == []
+        assert pa["top_10_estimated_recoverable"] == 0.0
+
+    def test_open_anomalies_appear_in_queue(self, db, artist):
+        _add_anomaly(db, artist.id, estimated_recoverable=500.0)
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        assert pa["total_open_items"] >= 1
+
+    def test_active_claims_appear_in_queue(self, db, artist):
+        anom = _add_anomaly(db, artist.id)
+        _add_claim(db, artist.id, anom.id, status=ClaimStatus.SUBMITTED, recovered_amount=800.0)
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        assert pa["total_open_items"] >= 1
+
+    def test_closed_anomalies_excluded_from_queue(self, db, artist):
+        _add_anomaly(db, artist.id, status=AnomalyStatus.CLOSED)
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        assert pa["total_open_items"] == 0
+
+    def test_paid_claims_excluded_from_queue(self, db, artist):
+        anom = _add_anomaly(db, artist.id)
+        _add_claim(db, artist.id, anom.id, status=ClaimStatus.PAID, recovered_amount=500.0)
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        # PAID claim should not appear (anomaly is still OPEN though)
+        claim_items = [
+            i for i in pa["top_10_actions"] if i.get("action_type") == "ADVANCE_CLAIM"
+        ]
+        assert len(claim_items) == 0
+
+    def test_top_10_capped(self, db, artist):
+        for i in range(15):
+            _add_anomaly(db, artist.id, subtype=f"TYPE_{i}")
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        assert len(pa["top_10_actions"]) <= 10
+
+    def test_priority_actions_has_required_fields(self, db, artist):
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        assert "total_open_items" in pa
+        assert "top_10_actions" in pa
+        assert "top_10_estimated_recoverable" in pa
+        assert "note" in pa
+
+    def test_recoverable_total_matches_items(self, db, artist):
+        _add_anomaly(db, artist.id, estimated_recoverable=300.0)
+        _add_anomaly(db, artist.id, estimated_recoverable=200.0)
+        pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
+        computed = sum(i.get("estimated_recoverable") or 0.0 for i in pa["top_10_actions"])
+        assert pa["top_10_estimated_recoverable"] == pytest.approx(computed)
+
+
+# ---------------------------------------------------------------------------
+# New section tests — catalog_health
+# ---------------------------------------------------------------------------
+
+class TestDashboardCatalogHealth:
+    def test_health_score_present(self, db, artist):
+        ch = DashboardEngine(db).compute(artist.id)["catalog_health"]
+        assert "health_score" in ch
+        assert ch["health_score"] is not None
+
+    def test_grade_present(self, db, artist):
+        ch = DashboardEngine(db).compute(artist.id)["catalog_health"]
+        assert "grade" in ch
+        assert ch["grade"] in ("A", "B", "C", "D", "F")
+
+    def test_health_score_in_valid_range(self, db, artist):
+        ch = DashboardEngine(db).compute(artist.id)["catalog_health"]
+        assert 0 <= ch["health_score"] <= 100
+
+    def test_signals_dict_present(self, db, artist):
+        ch = DashboardEngine(db).compute(artist.id)["catalog_health"]
+        assert "signals" in ch
+        assert isinstance(ch["signals"], dict)
+
+    def test_recommendations_list_present(self, db, artist):
+        ch = DashboardEngine(db).compute(artist.id)["catalog_health"]
+        assert "recommendations" in ch
+        assert isinstance(ch["recommendations"], list)
+
+
+# ---------------------------------------------------------------------------
+# New section tests — earnings_trend
+# ---------------------------------------------------------------------------
+
+class TestDashboardEarningsTrend:
+    def test_earnings_trend_present(self, db, artist):
+        et = DashboardEngine(db).compute(artist.id)["earnings_trend"]
+        assert "trend" in et
+
+    def test_insufficient_data_when_no_history(self, db, artist):
+        et = DashboardEngine(db).compute(artist.id)["earnings_trend"]
+        assert et["trend"] == "INSUFFICIENT_DATA"
+        assert et["predicted_total"] is None
+
+    def test_horizon_days_always_90(self, db, artist):
+        et = DashboardEngine(db).compute(artist.id)["earnings_trend"]
+        assert et["horizon_days"] == 90
+
+    def test_trend_has_required_fields(self, db, artist):
+        et = DashboardEngine(db).compute(artist.id)["earnings_trend"]
+        assert "trend" in et
+        assert "horizon_days" in et
+        assert "predicted_total" in et
+        assert "predicted_low" in et
+        assert "predicted_high" in et
+        assert "note" in et
+
+    def test_valid_trend_values(self, db, artist):
+        et = DashboardEngine(db).compute(artist.id)["earnings_trend"]
+        # UNKNOWN is a defensive fallback from the underlying forecaster for
+        # edge-case inputs; the four documented values are the normal outputs.
+        valid = {"GROWING", "FLAT", "DECLINING", "INSUFFICIENT_DATA", "UNKNOWN"}
+        assert et["trend"] in valid
+
+
+# ---------------------------------------------------------------------------
+# New section API contract tests
+# ---------------------------------------------------------------------------
+
+class TestDashboardNewSectionsAPIContract:
+    def test_deadlines_fields_via_api(self):
+        resp = client.post("/artists/", json={"name": "Deadlines API Artist"})
+        aid = resp.json()["id"]
+        dl = client.get(f"/artists/{aid}/dashboard").json()["deadlines"]
+        assert "expired_count" in dl
+        assert "urgent_count" in dl
+        assert "at_risk_count" in dl
+        assert "top_urgent_items" in dl
+
+    def test_priority_actions_fields_via_api(self):
+        resp = client.post("/artists/", json={"name": "Priority API Artist"})
+        aid = resp.json()["id"]
+        pa = client.get(f"/artists/{aid}/dashboard").json()["priority_actions"]
+        assert "total_open_items" in pa
+        assert "top_10_actions" in pa
+        assert "top_10_estimated_recoverable" in pa
+
+    def test_catalog_health_fields_via_api(self):
+        resp = client.post("/artists/", json={"name": "Health API Artist"})
+        aid = resp.json()["id"]
+        ch = client.get(f"/artists/{aid}/dashboard").json()["catalog_health"]
+        assert "health_score" in ch
+        assert "grade" in ch
+        assert "signals" in ch
+
+    def test_earnings_trend_fields_via_api(self):
+        resp = client.post("/artists/", json={"name": "Trend API Artist"})
+        aid = resp.json()["id"]
+        et = client.get(f"/artists/{aid}/dashboard").json()["earnings_trend"]
+        assert "trend" in et
+        assert "horizon_days" in et
+        assert "predicted_total" in et
