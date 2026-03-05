@@ -4,7 +4,7 @@ This document defines four deliverables to move ArtistOS toward a best-in-class 
 
 ## 1) New Models and Schemas Added
 
-Implemented in `arcos7/models/recovery_intelligence.py`:
+Implemented in `XR7/models/recovery_intelligence.py`:
 
 - `RoyaltyLedgerEntry`
 : Statement-line canonical ledger with lineage fields (`source_file`, `source_row`, `contract_version`, `fx_rate_used`, `ingested_at`).
@@ -22,7 +22,7 @@ Associated schemas:
 
 ## 2) Exact API Endpoints Added
 
-Implemented in `arcos7/api/routers/intelligence.py` and registered in `arcos7/api/app.py`.
+Implemented in `XR7/api/routers/intelligence.py` and registered in `XR7/api/app.py`.
 
 - `POST /artists/{artist_id}/intelligence/ledger/ingest`
 : Ingest canonical ledger rows with source lineage.
@@ -41,7 +41,7 @@ Implemented in `arcos7/api/routers/intelligence.py` and registered in `arcos7/ap
 
 ## 3) First Three Model Classes Implemented
 
-Implemented in `arcos7/ml/`:
+Implemented in `XR7/ml/`:
 
 - `ContractTermExtractor` (`contract_term_extractor.py`)
 : Rule-based extraction for royalty rate, territory, and recoupment clause signals.

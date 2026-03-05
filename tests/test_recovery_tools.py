@@ -13,32 +13,32 @@ from datetime import date, datetime, timedelta, timezone
 
 import pytest
 
-from arcos7.recovery.statute_tracker import (
+from XR7.recovery.statute_tracker import (
     classify_anomalies,
     get_urgent_anomalies,
     sol_summary,
     SOLStatus,
     DEFAULT_SOL_WINDOWS,
 )
-from arcos7.ml.rate_benchmarker import (
+from XR7.ml.rate_benchmarker import (
     RateBenchmarker,
     compare_event_rates,
     RateTier,
     DEFAULT_BENCHMARKS,
 )
-from arcos7.recovery.audit_tracker import (
+from XR7.recovery.audit_tracker import (
     analyze_audit_eligibility,
     audit_summary,
     AuditEligibility,
 )
-from arcos7.recovery.priority_ranker import (
+from XR7.recovery.priority_ranker import (
     rank_anomalies,
     rank_claims,
     build_action_queue,
     PriorityItem,
     ActionType,
 )
-from arcos7.recovery.recoupment_tracker import (
+from XR7.recovery.recoupment_tracker import (
     compute_recoupment,
     recoupment_summary,
     RecoupmentStatus,

@@ -26,9 +26,9 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from arcos7.api.app import app
-from arcos7.billing.engine import BillingEngine
-from arcos7.celero.client import (
+from XR7.api.app import app
+from XR7.billing.engine import BillingEngine
+from XR7.celero.client import (
     CeleroClient,
     CeleroResponse,
     _parse_response,
@@ -36,7 +36,7 @@ from arcos7.celero.client import (
     RESPONSE_DECLINED,
     RESPONSE_ERROR,
 )
-from arcos7.celero.webhook import (
+from XR7.celero.webhook import (
     CeleroWebhookHandler,
     parse_event,
     validate_signature,
@@ -45,16 +45,16 @@ from arcos7.celero.webhook import (
     EVENT_DISBURSEMENT_SETTLED,
     EVENT_DISBURSEMENT_FAILED,
 )
-from arcos7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
-from arcos7.models.artist import Artist
-from arcos7.models.base import get_db
-from arcos7.models.celero_transaction import (
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
+from XR7.models.artist import Artist
+from XR7.models.base import get_db
+from XR7.models.celero_transaction import (
     CeleroTransaction,
     CeleroTxnStatus,
     CeleroTxnType,
     CeleroTransactionSchema,
 )
-from arcos7.models.claim import Claim, ClaimStatus
+from XR7.models.claim import Claim, ClaimStatus
 
 # Use the shared test DB from conftest
 from tests.conftest import TestSession as _TestSession
@@ -297,12 +297,12 @@ class TestWebhookSignatureValidation:
 
     def test_development_skips_validation_without_secret(self, monkeypatch):
         monkeypatch.delenv("CELERO_WEBHOOK_SECRET", raising=False)
-        monkeypatch.setenv("ARCOS7_ENV", "development")
+        monkeypatch.setenv("XR7_ENV", "development")
         assert validate_signature(b"{}", "any-sig") is True
 
     def test_production_raises_without_secret(self, monkeypatch):
         monkeypatch.delenv("CELERO_WEBHOOK_SECRET", raising=False)
-        monkeypatch.setenv("ARCOS7_ENV", "production")
+        monkeypatch.setenv("XR7_ENV", "production")
         with pytest.raises(ValueError) as exc:
             validate_signature(b"{}", "any-sig")
         assert "CELERO_WEBHOOK_SECRET" in str(exc.value)
@@ -500,7 +500,7 @@ class TestArtistCeleroField:
         assert artist.celero_customer_vault_id == "vault-xyz-789"
 
     def test_schema_includes_vault_id(self, artist_with_vault):
-        from arcos7.models.artist import ArtistSchema
+        from XR7.models.artist import ArtistSchema
         schema = ArtistSchema.model_validate(artist_with_vault)
         assert schema.celero_customer_vault_id == "vault-abc-123"
 
@@ -690,7 +690,7 @@ class TestArtistCeleroEndpoints:
             response_text="Customer Added",
             customer_vault_id="vault-mock-001",
         )
-        with patch("arcos7.celero.client.CeleroClient.add_customer", return_value=mock_response):
+        with patch("XR7.celero.client.CeleroClient.add_customer", return_value=mock_response):
             resp = client.post(
                 f"/artists/{aid}/celero/register",
                 json={"first_name": "Mock", "last_name": "Artist", "email": "mock@artist.com"},
@@ -709,13 +709,13 @@ class TestArtistCeleroEndpoints:
             response_text="Customer Added",
             customer_vault_id="vault-double-1",
         )
-        with patch("arcos7.celero.client.CeleroClient.add_customer", return_value=mock_response):
+        with patch("XR7.celero.client.CeleroClient.add_customer", return_value=mock_response):
             client.post(
                 f"/artists/{aid}/celero/register",
                 json={"first_name": "D", "last_name": "R", "email": "d@r.com"},
             )
         # Second registration attempt
-        with patch("arcos7.celero.client.CeleroClient.add_customer", return_value=mock_response):
+        with patch("XR7.celero.client.CeleroClient.add_customer", return_value=mock_response):
             resp2 = client.post(
                 f"/artists/{aid}/celero/register",
                 json={"first_name": "D", "last_name": "R", "email": "d@r.com"},
@@ -764,7 +764,7 @@ class TestChargeAndDisburseEndpoints:
         artist = db.query(Artist).filter(Artist.id == aid).first()
         artist.celero_customer_vault_id = "vault-charge-001"
         # Create anomaly and claim
-        from arcos7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
+        from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
         anom = Anomaly(
             id=str(uuid.uuid4()),
             artist_id=aid,
@@ -799,7 +799,7 @@ class TestChargeAndDisburseEndpoints:
             auth_code="AUTH1",
             response_code="100",
         )
-        with patch("arcos7.celero.client.CeleroClient.charge", return_value=mock_response):
+        with patch("XR7.celero.client.CeleroClient.charge", return_value=mock_response):
             resp = client.post(
                 f"/artists/{aid}/celero/charge",
                 json={"claim_id": claim_id},
@@ -826,7 +826,7 @@ class TestChargeAndDisburseEndpoints:
             response_text="SUCCESS",
             transaction_id="TXN-DISBURSE-OK",
         )
-        with patch("arcos7.celero.client.CeleroClient.disburse", return_value=mock_response):
+        with patch("XR7.celero.client.CeleroClient.disburse", return_value=mock_response):
             resp = client.post(
                 f"/artists/{aid}/celero/disburse",
                 json={"amount": 720.0, "currency": "USD"},
@@ -886,7 +886,7 @@ class TestWebhookEndpoint:
 
     def test_invalid_json_returns_400(self, monkeypatch):
         monkeypatch.delenv("CELERO_WEBHOOK_SECRET", raising=False)
-        monkeypatch.setenv("ARCOS7_ENV", "development")
+        monkeypatch.setenv("XR7_ENV", "development")
         resp = client.post(
             "/celero/webhook",
             content=b"not-json",

@@ -20,16 +20,16 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-from arcos7.api.app import app
-from arcos7.earnings.dashboard import DashboardEngine
-from arcos7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
-from arcos7.models.artist import Artist
-from arcos7.models.celero_transaction import (
+from XR7.api.app import app
+from XR7.earnings.dashboard import DashboardEngine
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
+from XR7.models.artist import Artist
+from XR7.models.celero_transaction import (
     CeleroTransaction,
     CeleroTxnStatus,
     CeleroTxnType,
 )
-from arcos7.models.claim import Claim, ClaimStatus
+from XR7.models.claim import Claim, ClaimStatus
 
 from tests.conftest import TestSession as _TestSession
 

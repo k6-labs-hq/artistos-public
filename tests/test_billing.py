@@ -2,11 +2,11 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from arcos7.models.base import Base
-from arcos7.models.artist import Artist
-from arcos7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
-from arcos7.models.claim import Claim, ClaimStatus
-from arcos7.billing.engine import BillingEngine
+from XR7.models.base import Base
+from XR7.models.artist import Artist
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
+from XR7.models.claim import Claim, ClaimStatus
+from XR7.billing.engine import BillingEngine
 from datetime import datetime, timezone
 
 

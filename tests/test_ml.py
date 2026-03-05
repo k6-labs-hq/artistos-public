@@ -1,5 +1,5 @@
 """
-Tests for the arcos7.ml module:
+Tests for the XR7.ml module:
 - MLAnomalyDetector (IsolationForest, drift, missingness)
 - EarningsForecaster (linear trend)
 - CatalogScorer (health/risk scoring)
@@ -13,15 +13,15 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from arcos7.ml.anomaly_detector import (
+from XR7.ml.anomaly_detector import (
     MLAnomalyDetector,
     detect_payment_outliers,
     detect_rate_drift,
     detect_missing_periodic_payments,
 )
-from arcos7.ml.forecaster import EarningsForecaster, forecast_earnings
-from arcos7.ml.catalog_scorer import CatalogScorer, _grade
-from arcos7.ml.confidence import ConfidenceUpdater, AnomalyOutcome
+from XR7.ml.forecaster import EarningsForecaster, forecast_earnings
+from XR7.ml.catalog_scorer import CatalogScorer, _grade
+from XR7.ml.confidence import ConfidenceUpdater, AnomalyOutcome
 
 
 # ---------------------------------------------------------------------------

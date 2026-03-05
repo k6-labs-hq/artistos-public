@@ -20,8 +20,8 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from fastapi.testclient import TestClient
 
-import arcos7.auth.otp_service as otp_svc
-from arcos7.auth.otp_service import (
+import XR7.auth.otp_service as otp_svc
+from XR7.auth.otp_service import (
     MAX_ATTEMPTS,
     OTP_EXPIRY_SECONDS,
     MAX_SENDS_PER_PHONE_PER_HOUR,
@@ -35,10 +35,10 @@ from arcos7.auth.otp_service import (
     validate_token,
     clear_all,
 )
-from arcos7.auth.notification_service import MockNotificationService
-from arcos7.models.base import Base, get_db
-from arcos7.models.widget_lead import WidgetLead
-from arcos7.api.app import app
+from XR7.auth.notification_service import MockNotificationService
+from XR7.models.base import Base, get_db
+from XR7.models.widget_lead import WidgetLead
+from XR7.api.app import app
 
 # Use the shared test DB defined in conftest.py
 from tests.conftest import TestSession as _TestSession
@@ -201,7 +201,7 @@ class TestValidateToken:
             validate_token("not-a-real-token")
 
     def test_expired_token_raises_token_error(self, now):
-        from arcos7.auth.otp_service import ESTIMATE_TOKEN_EXPIRY_SECONDS
+        from XR7.auth.otp_service import ESTIMATE_TOKEN_EXPIRY_SECONDS
         s = _make_session(now=now)
         token = verify_session(s.session_id, s.phone_otp, s.email_otp, now=now)
         future = now + timedelta(seconds=ESTIMATE_TOKEN_EXPIRY_SECONDS + 1)
@@ -233,7 +233,7 @@ class TestMockNotificationService:
         assert len(svc.sent_emails) == 1
 
     def test_raises_in_production(self, monkeypatch):
-        monkeypatch.setenv("ARCOS7_ENV", "production")
+        monkeypatch.setenv("XR7_ENV", "production")
         with pytest.raises(RuntimeError, match="MockNotificationService cannot be used in production"):
             MockNotificationService()
 

@@ -22,24 +22,24 @@ import httpx
 import pytest
 from fastapi.testclient import TestClient
 
-from arcos7.ingestion.statement_parser import detect_format, parse_csv, SUPPORTED_FORMATS
-from arcos7.ingestion.connectors.pro import PROConnector
-from arcos7.ingestion.connectors.dsp import DSPConnector
-from arcos7.ingestion.connectors.platform import PlatformConnector
-from arcos7.ingestion.connectors.ticketing import TicketingConnector
-from arcos7.ingestion.connectors.mlc import MLCConnector
-from arcos7.ingestion.connectors.international_pro import (
+from XR7.ingestion.statement_parser import detect_format, parse_csv, SUPPORTED_FORMATS
+from XR7.ingestion.connectors.pro import PROConnector
+from XR7.ingestion.connectors.dsp import DSPConnector
+from XR7.ingestion.connectors.platform import PlatformConnector
+from XR7.ingestion.connectors.ticketing import TicketingConnector
+from XR7.ingestion.connectors.mlc import MLCConnector
+from XR7.ingestion.connectors.international_pro import (
     APRAAMCOSConnector,
     JASRACConnector,
     KOMCAConnector,
     SACEMConnector,
 )
-from arcos7.models.base import Base, get_db
-from arcos7.models.artist import Artist
-from arcos7.models.event import Event
-from arcos7.models.payment import Payment
-from arcos7.models.statement import Statement
-from arcos7.api.app import app
+from XR7.models.base import Base, get_db
+from XR7.models.artist import Artist
+from XR7.models.event import Event
+from XR7.models.payment import Payment
+from XR7.models.statement import Statement
+from XR7.api.app import app
 
 # Use the shared test DB defined in conftest.py
 from tests.conftest import TestSession as _TestSession
@@ -66,7 +66,7 @@ def artist_id():
     db.close()
 
     # Accept the current T&C so statement upload tests can proceed.
-    from arcos7.legal.terms import TERMS_VERSION
+    from XR7.legal.terms import TERMS_VERSION
     resp = client.post(
         f"/artists/{aid}/terms/accept",
         json={"terms_version": TERMS_VERSION, "agreed": True},
@@ -1105,25 +1105,25 @@ class TestBandcampParser:
 class TestDistributorConnector:
     def test_connect_false_without_key(self, monkeypatch):
         monkeypatch.delenv("AMUSE_API_KEY", raising=False)
-        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        from XR7.ingestion.connectors.distributor import DistributorConnector
         c = DistributorConnector(config={}, distributor_name="Amuse")
         assert c.connect() is False
 
     def test_connect_true_with_env_key(self, monkeypatch):
         monkeypatch.setenv("AMUSE_API_KEY", "test-amuse-key")
-        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        from XR7.ingestion.connectors.distributor import DistributorConnector
         c = DistributorConnector(config={}, distributor_name="Amuse")
         assert c.connect() is True
 
     def test_onerpm_connect_false_without_key(self, monkeypatch):
         monkeypatch.delenv("ONERPM_API_KEY", raising=False)
-        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        from XR7.ingestion.connectors.distributor import DistributorConnector
         c = DistributorConnector(config={}, distributor_name="ONErpm")
         assert c.connect() is False
 
     def test_fetch_historical_raises_not_implemented(self, monkeypatch):
         monkeypatch.delenv("AMUSE_API_KEY", raising=False)
-        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        from XR7.ingestion.connectors.distributor import DistributorConnector
         c = DistributorConnector(config={}, distributor_name="Amuse")
         with pytest.raises(NotImplementedError) as exc:
             c.fetch_historical("artist-1", datetime.now(timezone.utc), datetime.now(timezone.utc))
@@ -1131,7 +1131,7 @@ class TestDistributorConnector:
         assert "statements/upload" in str(exc.value)
 
     def test_supported_distributors_includes_all(self):
-        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        from XR7.ingestion.connectors.distributor import DistributorConnector
         names = DistributorConnector.supported_distributors()
         for expected in ("Amuse", "United Masters", "ONErpm", "Stem", "LANDR",
                          "Ditto Music", "ReverbNation", "Bandcamp",
@@ -1139,7 +1139,7 @@ class TestDistributorConnector:
             assert expected in names, f"Missing distributor: {expected}"
 
     def test_normalize_returns_list(self):
-        from arcos7.ingestion.connectors.distributor import DistributorConnector
+        from XR7.ingestion.connectors.distributor import DistributorConnector
         c = DistributorConnector(config={}, distributor_name="Stem")
         raw = [{"streams": 1000, "currency": "USD", "country": "US"}]
         result = c.normalize(raw)

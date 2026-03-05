@@ -1,6 +1,6 @@
-# ARCOS7 Engine 2 — Artist Earnings Accuracy Platform
+# XR7 Engine 2 — Artist Earnings Accuracy Platform
 
-ARCOS7 Engine 2 is a comprehensive platform designed to detect, recover, and prevent earning discrepancies for artists across all revenue streams — streaming royalties, touring settlements, merchandise royalties, sync licensing, brand partnerships, and platform payments.
+XR7 Engine 2 is a comprehensive platform designed to detect, recover, and prevent earning discrepancies for artists across all revenue streams — streaming royalties, touring settlements, merchandise royalties, sync licensing, brand partnerships, and platform payments.
 
 ## Market Readiness
 
@@ -83,7 +83,7 @@ GET /artists/{id}/dashboard
 
 ### What the dashboard shows
 
-**1. Leakage discovered** — every anomaly ARCOS7 has ever found for this artist
+**1. Leakage discovered** — every anomaly XR7 has ever found for this artist
 ```json
 "leakage_discovered": {
   "total_anomalies": 14,
@@ -343,12 +343,12 @@ Example response fields used by UI sorting/badges:
 
 ## Celero Commerce — Merchant of Record Integration
 
-Celero Commerce acts as the **Merchant of Record** for all ARCOS7 payments:
+Celero Commerce acts as the **Merchant of Record** for all XR7 payments:
 
-- Celero legally processes every contingency-fee transaction on behalf of ARCOS7.
+- Celero legally processes every contingency-fee transaction on behalf of XR7.
 - Celero handles **tax compliance** (sales tax, VAT, etc.) automatically.
 - Celero issues receipts and manages chargebacks with the card networks.
-- Artists' payment credentials are stored in the **Celero Customer Vault** — ARCOS7 never handles raw card data (PCI scope stays entirely with Celero).
+- Artists' payment credentials are stored in the **Celero Customer Vault** — XR7 never handles raw card data (PCI scope stays entirely with Celero).
 - Artist disbursements (the 90% net recovery share) are sent as **ACH credits** via Celero.
 
 ### Payment flow
@@ -393,7 +393,7 @@ Events: transaction.approved, transaction.declined, transaction.void,
 ### Artist onboarding with Celero
 
 1. **Register artist** — `POST /artists/{id}/celero/register` (contact details → vault ID)
-2. **Collect payment method** — Direct artist to Celero's hosted Collect.js or Collect Checkout form (no card data touches ARCOS7 servers)
+2. **Collect payment method** — Direct artist to Celero's hosted Collect.js or Collect Checkout form (no card data touches XR7 servers)
 3. **Verify** — `GET /artists/{id}/celero/status` confirms vault registration and transaction history
 
 ### Check integration status
@@ -457,7 +457,7 @@ Look for the `merchant_of_record` section:
 ## Architecture
 
 ```
-arcos7/
+XR7/
 ├── models/         # SQLAlchemy ORM models + Pydantic schemas
 ├── ingestion/      # CSV statement parser + connector architecture (PRO, DSP, Ticketing, Platform)
 ├── celero/         # Celero Commerce Merchant of Record (client, webhook handler)
@@ -493,7 +493,7 @@ source .env
 ```
 
 Key variables:
-- `ARCOS7_ENV` — set to `production` to enable real Twilio/SMTP and enforce CORS allowlist
+- `XR7_ENV` — set to `production` to enable real Twilio/SMTP and enforce CORS allowlist
 - `WIDGET_ADMIN_KEY` — secret key for `GET /widget/leads` admin endpoint
 - `WIDGET_ALLOWED_ORIGINS` — comma-separated CORS origins (required in production)
 - `TWILIO_*` — SMS delivery for OTP
@@ -508,7 +508,7 @@ See `.env.example` for the full list including connector API key variable names.
 ### Running the API
 
 ```bash
-uvicorn arcos7.api.app:app --reload
+uvicorn XR7.api.app:app --reload
 ```
 
 The API will be available at `http://localhost:8000`. Interactive docs at `http://localhost:8000/docs`.
@@ -584,4 +584,4 @@ pytest tests/ -v
 
 ## License
 
-Proprietary — ARCOS7 Engine 2
+Proprietary — XR7 Engine 2

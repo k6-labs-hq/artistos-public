@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arcos7"
+name = "XR7"
 version = "2.0.0"
-description = "ARCOS7 Engine 2 - Artist Earnings Accuracy Platform"
+description = "XR7 Engine 2 - Artist Earnings Accuracy Platform"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.100.0",

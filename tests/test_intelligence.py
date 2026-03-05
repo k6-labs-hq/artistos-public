@@ -6,12 +6,12 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
-from arcos7.api.app import app
-from arcos7.ml.contract_term_extractor import ContractTermExtractor
-from arcos7.ml.expected_payout_simulator import ExpectedPayoutSimulator
-from arcos7.ml.recovery_utility_ranker import RecoveryUtilityRanker
-from arcos7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity
-from arcos7.models.artist import Artist
+from XR7.api.app import app
+from XR7.ml.contract_term_extractor import ContractTermExtractor
+from XR7.ml.expected_payout_simulator import ExpectedPayoutSimulator
+from XR7.ml.recovery_utility_ranker import RecoveryUtilityRanker
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity
+from XR7.models.artist import Artist
 from tests.conftest import TestSession as _TestSession
 
 client = TestClient(app)

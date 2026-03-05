@@ -1,5 +1,5 @@
 """
-Shared test fixtures for the ARCOS7 Engine 2 test suite.
+Shared test fixtures for the XR7 Engine 2 test suite.
 
 Sets up a single in-memory SQLite database using StaticPool so that all
 connections share the same instance.  Both test files (`test_widget_auth.py`
@@ -13,10 +13,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from arcos7.models.base import Base, get_db
-from arcos7.api.app import app
+from XR7.models.base import Base, get_db
+from XR7.api.app import app
 # Ensure all model tables are registered before create_all
-import arcos7.models.terms_acceptance  # noqa: F401
+import XR7.models.terms_acceptance  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"
