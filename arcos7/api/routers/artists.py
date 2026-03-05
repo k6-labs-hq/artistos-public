@@ -63,6 +63,7 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
     from arcos7.ingestion.connectors.dsp import DSPConnector
     from arcos7.ingestion.connectors.platform import PlatformConnector
     from arcos7.ingestion.connectors.ticketing import TicketingConnector
+    from arcos7.ingestion.connectors.mlc import MLCConnector
 
     def _check(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -78,6 +79,7 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
         + [_check(DSPConnector, dsp, dsp_name=dsp) for dsp in ("Spotify", "Apple Music")]
         + [_check(PlatformConnector, p, platform_name=p) for p in ("YouTube", "TikTok")]
         + [_check(TicketingConnector, t, platform_name=t) for t in ("Ticketmaster", "AXS")]
+        + [_check(MLCConnector, "MLC")]
     )
 
     configured_count = sum(1 for s in sources if s["configured"])

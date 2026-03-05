@@ -18,6 +18,7 @@ import os
 import uuid
 from datetime import datetime, timezone
 
+import httpx
 import pytest
 from fastapi.testclient import TestClient
 
@@ -26,6 +27,7 @@ from arcos7.ingestion.connectors.pro import PROConnector
 from arcos7.ingestion.connectors.dsp import DSPConnector
 from arcos7.ingestion.connectors.platform import PlatformConnector
 from arcos7.ingestion.connectors.ticketing import TicketingConnector
+from arcos7.ingestion.connectors.mlc import MLCConnector
 from arcos7.models.base import Base, get_db
 from arcos7.models.artist import Artist
 from arcos7.models.event import Event
@@ -501,6 +503,69 @@ class TestConnectorCredentials:
         c = TicketingConnector(config={}, platform_name="Ticketmaster")
         assert c.connect() is True
 
+    def test_mlc_connect_false_without_key(self, monkeypatch):
+        monkeypatch.delenv("MLC_API_KEY", raising=False)
+        c = MLCConnector(config={})
+        assert c.connect() is False
+
+    def test_mlc_connect_true_with_env_key(self, monkeypatch):
+        monkeypatch.setenv("MLC_API_KEY", "mlc-key")
+        c = MLCConnector(config={})
+        assert c.connect() is True
+
+    def test_mlc_fetch_historical_returns_rows(self):
+        def handler(request: httpx.Request) -> httpx.Response:
+            assert request.url.params["artist_id"] == "artist-1"
+            return httpx.Response(
+                200,
+                json={
+                    "data": [
+                        {
+                            "artist_id": "artist-1",
+                            "work_id": "work-1",
+                            "quantity": "1000",
+                            "amount": "12.50",
+                            "statement_date": "2025-01-15",
+                            "territory": "US",
+                        }
+                    ]
+                },
+            )
+
+        transport = httpx.MockTransport(handler)
+        client = httpx.Client(transport=transport)
+        connector = MLCConnector(
+            config={"api_key": "k", "base_url": "https://example.test"},
+            http_client=client,
+        )
+        rows = connector.fetch_historical(
+            "artist-1",
+            datetime(2025, 1, 1, tzinfo=timezone.utc),
+            datetime(2025, 1, 31, tzinfo=timezone.utc),
+        )
+        assert len(rows) == 1
+        assert rows[0]["source"] == "MLC"
+
+    def test_mlc_normalize_calculates_unit_value(self):
+        connector = MLCConnector(config={"api_key": "k"})
+        normalized = connector.normalize([
+            {
+                "artist_id": "artist-1",
+                "work_id": "work-1",
+                "quantity": "1000",
+                "amount": "12.50",
+                "currency": "USD",
+                "statement_date": "2025-01-15",
+                "country": "US",
+            }
+        ])
+        assert len(normalized) == 1
+        row = normalized[0]
+        assert row["event_type"] == "MECHANICAL"
+        assert row["quantity"] == 1000
+        assert abs(row["unit_value"] - 0.0125) < 1e-9
+        assert row["platform"] == "MLC"
+
 
 # ---------------------------------------------------------------------------
 # POST /artists/{id}/connect
@@ -598,6 +663,20 @@ class TestReadinessEndpoint:
         assert "DistroKid" in names
         assert "TuneCore" in names
         assert "CD Baby" in names
+
+    def test_mechanical_connector_section_present(self):
+        data = client.get("/health/readiness").json()
+        assert "mechanical" in data["connectors"]
+        assert isinstance(data["connectors"]["mechanical"], list)
+        assert len(data["connectors"]["mechanical"]) == 1
+
+    def test_mechanical_connector_defaults_to_missing_credentials(self, monkeypatch):
+        monkeypatch.delenv("MLC_API_KEY", raising=False)
+        data = client.get("/health/readiness").json()
+        mlc = data["connectors"]["mechanical"][0]
+        assert mlc["name"] == "MLC"
+        assert mlc["configured"] is False
+        assert mlc["status"] == "missing_credentials"
 
 
 # ---------------------------------------------------------------------------

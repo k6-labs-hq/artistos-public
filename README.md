@@ -14,7 +14,7 @@ ARCOS7 Engine 2 is a comprehensive platform designed to detect, recover, and pre
 | **Billing Engine** | ✅ Ready | 10% contingency fee, invoice generation, wired to Celero |
 | **Recovery Tools** | ✅ Ready | SOL tracker, audit eligibility, rate benchmark, recoupment, priority queue |
 | **ML Suite** | ✅ Ready | Isolation Forest anomaly detector, earnings forecaster, catalog scorer, rate benchmarker |
-| **Statement Upload** | ✅ Ready | CSV ingestion for DistroKid, TuneCore, CD Baby, ASCAP, BMI, Spotify, generic |
+| **Statement Upload** | ✅ Ready | CSV ingestion for 15 explicit formats (major distributors + PROs + Spotify) plus generic fallback |
 | **Celero Commerce (MoR)** | 🔑 Key needed | Integration built; needs `CELERO_SECURITY_KEY` from Celero onboarding |
 | **PRO API Connectors** | ⚠️ Pending | ASCAP, BMI, SESAC, etc. require formal data-partnership agreements |
 | **DSP API Connectors** | ⚠️ Pending | DSPs don't expose royalty data via API — use distributor CSV exports |
@@ -34,12 +34,33 @@ Supported formats are auto-detected from the column headers:
 - **DistroKid** — monthly earnings reports
 - **TuneCore** — sale month reports
 - **CD Baby** — sales/earnings exports
+- **Amuse** — royalty report exports
+- **United Masters** — earnings export CSV
+- **ONErpm** — royalty statement CSV
+- **Stem** — earnings report CSV
+- **LANDR** — royalty statement CSV
+- **Ditto Music** — royalty statement CSV
+- **ReverbNation** — earnings report CSV
+- **Bandcamp** — sales CSV
 - **ASCAP** — performance royalty statements
 - **BMI** — royalty statement downloads
 - **Spotify for Artists** — stream revenue CSV
-- **Generic** — any CSV with date, amount, and quantity columns
+- **Generic** — any CSV with date, source/platform, quantity, and amount columns
+
+Get the full machine-readable format catalog (including key columns and descriptions):
+
+```
+GET /ingestion/supported-formats
+```
 
 After upload, anomaly detection runs automatically.
+
+Before upload, artists must accept the current Artist Recovery Services Agreement:
+
+```
+GET  /terms
+POST /artists/{id}/terms/accept
+```
 
 ### Checking What's Configured
 
@@ -294,17 +315,38 @@ Look for the `merchant_of_record` section:
 
 ## Features
 
-- **Statement Upload & Auto-Ingestion**: Upload royalty statement CSVs; events and payments are parsed, persisted, and analysed automatically
-- **Multi-Source Connector Architecture**: Pluggable connectors for PROs, DSPs, ticketing platforms, and content platforms (credentials validated via env vars; `connect()` returns `False` rather than silently failing)
-- **Celero Commerce (Merchant of Record)**: Full Celero Connect® integration — customer vault registration, contingency-fee charging, artist disbursements via ACH, refund/void, webhook event processing
-- **Rights Graph**: NetworkX-powered directed graph mapping artists, works, and contracts
-- **Earnings Engine**: Reconstructs historical earnings and computes real-time expected payments against contract terms
-- **Anomaly Detection**: Rule-based detection for royalty underpayments, touring settlement gaps, merch royalty omissions, sync licensing violations, and low platform rates
-- **Claims Orchestration**: Full lifecycle management from identification through payment recovery
-- **Billing Engine**: 10% contingency fee model with invoice generation and Celero-gated payment processing
-- **ML Suite**: Isolation Forest anomaly detector, linear-regression earnings forecaster, catalog health scorer, comparable-rate benchmarker
-- **Royalty Estimator Widget**: MFA-gated public widget (SMS + email OTP) for artist lead capture and indicative royalty estimates
-- **REST API**: FastAPI-powered endpoints for all platform operations
+- **End-to-End Recovery Lifecycle**: Ingestion -> anomaly detection -> claim orchestration -> billing -> Celero payout tracking in a single API surface.
+- **15-Format Statement Ingestion + Generic Fallback**: Explicit parsers for DistroKid, TuneCore, CD Baby, Amuse, United Masters, ONErpm, Stem, LANDR, Ditto, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, plus generic CSV detection.
+- **Terms & Conditions Compliance Gate**: Required agreement acceptance (`GET /terms`, `POST /artists/{id}/terms/accept`) is enforced before statement upload.
+- **Artist Recovery Dashboard**: Unified artist dashboard with leakage discovered, claims in pursuit, deposited funds, pursuing balance, deadlines, priority actions, catalog health, earnings trend, and activity feed.
+- **Connector Readiness & Credential Visibility**: `GET /health/readiness` and `POST /artists/{id}/connect` expose integration readiness without making external network calls.
+- **Celero Commerce Merchant-of-Record**: Vault registration, customer updates, contingency charges, ACH disbursements, refund/void handling, transaction history, and signed webhook processing.
+- **Recovery Tooling Suite**: Statute-of-limitations classification, rate benchmarking, audit-rights eligibility analysis, recoupment tracking, and ranked priority action queue.
+- **ML Capabilities**: Catalog health scoring, earnings forecasting, anomaly support tooling, and royalty estimate modeling.
+- **MFA-Gated Widget Funnel**: Register/verify/estimate/claim flow with OTP rate limits, lockout, token expiry, lead persistence, and optional admin retrieval endpoint.
+- **Security & Production Controls**: CORS allowlist enforcement in production, admin key protection for widget leads, webhook signature verification, and environment-based readiness diagnostics.
+- **Comprehensive Test Coverage**: Test modules across ingestion, Celero, dashboard, recovery tools, terms flow, widget auth, ML, models, anomaly, and billing.
+
+## Functionality Map
+
+- **Core API and health**:
+`GET /health`, `GET /health/readiness`
+- **Artist management and summaries**:
+`POST /artists/`, `GET /artists/{id}`, `POST /artists/{id}/connect`, `GET /artists/{id}/summary`, `GET /artists/{id}/ml/catalog-health`, `GET /artists/{id}/dashboard`
+- **Terms and legal acceptance**:
+`GET /terms`, `POST /artists/{id}/terms/accept`, `GET /artists/{id}/terms/status`
+- **Ingestion and statement operations**:
+`GET /ingestion/supported-formats`, `POST /artists/{id}/statements/upload`, `GET /artists/{id}/statements`, `GET /artists/{id}/statements/{statement_id}`
+- **Anomaly and claims operations**:
+`GET /artists/{id}/anomalies`, `GET /anomalies/{id}`, `POST /artists/{id}/anomalies/detect`, `GET /artists/{id}/claims`, `GET /claims/{id}`, `POST /claims/{id}/advance`, `POST /claims/{id}/evidence`, `POST /claims/{id}/reconcile`
+- **Earnings and billing**:
+`GET /artists/{id}/earnings`, `GET /artists/{id}/earnings/history`, `POST /artists/{id}/earnings/reconstruct`, `POST /artists/{id}/ml/forecast`, `GET /artists/{id}/billing`, `GET /artists/{id}/invoices`
+- **Recovery analytics**:
+`GET /artists/{id}/recovery/sol-status`, `GET /artists/{id}/recovery/rate-benchmark`, `GET /artists/{id}/recovery/audit-eligibility`, `GET /artists/{id}/recovery/recoupment`, `GET /artists/{id}/recovery/priority-queue`
+- **Widget funnel and lead ops**:
+`POST /widget/register`, `POST /widget/verify`, `POST /widget/estimate`, `POST /widget/claim`, `GET /widget/leads` (requires `X-Admin-Key`)
+- **Celero merchant-of-record**:
+`POST /artists/{id}/celero/register`, `GET /artists/{id}/celero/status`, `PUT /artists/{id}/celero/customer`, `POST /artists/{id}/celero/charge`, `POST /artists/{id}/celero/disburse`, `POST /artists/{id}/celero/transactions/{transaction_id}/refund`, `POST /artists/{id}/celero/transactions/{transaction_id}/void`, `GET /artists/{id}/celero/transactions`, `GET /artists/{id}/celero/transactions/{transaction_id}`, `POST /celero/webhook`
 
 ## Architecture
 
@@ -379,6 +421,9 @@ pytest tests/ -v
 | GET | `/health/readiness` | Connector and credential readiness status |
 | POST | `/artists/` | Create artist |
 | GET | `/artists/{id}` | Get artist |
+| GET | `/terms` | Get current terms text/version/hash |
+| POST | `/artists/{id}/terms/accept` | Accept current terms version (required before statement upload) |
+| GET | `/artists/{id}/terms/status` | Check whether artist accepted current terms |
 | **GET** | **`/artists/{id}/dashboard`** | **Artist recovery dashboard — leakage, in pursuit, deposits, balance, activity feed** |
 | GET | `/artists/{id}/summary` | Earnings + anomaly summary |
 | POST | `/artists/{id}/connect` | Check connector credential status |
@@ -387,6 +432,7 @@ pytest tests/ -v
 | POST | `/artists/{id}/earnings/reconstruct` | Reconstruct earnings for date range |
 | POST | `/artists/{id}/ml/forecast` | ML earnings forecast |
 | GET | `/artists/{id}/ml/catalog-health` | ML catalog health score |
+| GET | `/ingestion/supported-formats` | List explicit CSV formats + key columns and generic fallback |
 | POST | `/artists/{id}/statements/upload` | **Upload royalty statement CSV** |
 | GET | `/artists/{id}/statements` | List uploaded statements |
 | GET | `/artists/{id}/statements/{statement_id}` | Get statement detail |
@@ -416,10 +462,10 @@ pytest tests/ -v
 | PUT | `/artists/{id}/celero/customer` | Update artist contact info in Celero vault |
 | POST | `/artists/{id}/celero/charge` | Charge contingency fee for a reconciled claim |
 | POST | `/artists/{id}/celero/disburse` | Disburse net recovery to artist via ACH |
-| POST | `/artists/{id}/celero/transactions/{txn_id}/refund` | Refund a charge |
-| POST | `/artists/{id}/celero/transactions/{txn_id}/void` | Void an unsettled charge |
+| POST | `/artists/{id}/celero/transactions/{transaction_id}/refund` | Refund a charge |
+| POST | `/artists/{id}/celero/transactions/{transaction_id}/void` | Void an unsettled charge |
 | GET | `/artists/{id}/celero/transactions` | List all Celero transactions |
-| GET | `/artists/{id}/celero/transactions/{txn_id}` | Get transaction detail |
+| GET | `/artists/{id}/celero/transactions/{transaction_id}` | Get transaction detail |
 | POST | `/celero/webhook` | Receive Celero Commerce webhook events |
 
 ## License

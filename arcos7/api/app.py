@@ -98,6 +98,7 @@ def readiness():
     from arcos7.ingestion.connectors.platform import PlatformConnector
     from arcos7.ingestion.connectors.ticketing import TicketingConnector
     from arcos7.ingestion.connectors.distributor import DistributorConnector
+    from arcos7.ingestion.connectors.mlc import MLCConnector
 
     def _connector_status(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -133,6 +134,8 @@ def readiness():
         _connector_status(DistributorConnector, dist, distributor_name=dist)
         for dist in DistributorConnector.supported_distributors()
     ]
+    # Mechanical royalties
+    mechanical = [_connector_status(MLCConnector, "MLC")]
 
     # Notification services
     twilio_ready = bool(
@@ -186,6 +189,7 @@ def readiness():
             "platforms": platforms,
             "ticketing": ticketing,
             "distributors": distributors,
+            "mechanical": mechanical,
         },
         "note": (
             "Connector 'missing_credentials' status means the API key environment "
@@ -193,6 +197,7 @@ def readiness():
             "ingest royalty statement CSV files without requiring any connector credentials.  "
             "See GET /ingestion/supported-formats for the full list of auto-detected "
             "CSV formats (DistroKid, TuneCore, CD Baby, Amuse, United Masters, ONErpm, "
-            "Stem, LANDR, Ditto Music, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, + generic)."
+            "Stem, LANDR, Ditto Music, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, + generic). "
+            "For MLC feed integration, configure MLC_API_KEY (and optionally MLC_API_BASE_URL)."
         ),
     }
