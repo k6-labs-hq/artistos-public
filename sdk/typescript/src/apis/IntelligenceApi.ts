@@ -18,9 +18,10 @@ import type {
   ContractExtractRequest,
   HTTPValidationError,
   LedgerIngestRequest,
-  RecoveryOutcomeFeedbackCreate,
+  MLFeedbackEventSchema,
   RecoveryOutcomeFeedbackSchema,
   SimulatePayoutRequest,
+  StructuredFeedbackRequest,
   UtilityRankRequest,
 } from '../models/index';
 import {
@@ -30,19 +31,21 @@ import {
     HTTPValidationErrorToJSON,
     LedgerIngestRequestFromJSON,
     LedgerIngestRequestToJSON,
-    RecoveryOutcomeFeedbackCreateFromJSON,
-    RecoveryOutcomeFeedbackCreateToJSON,
+    MLFeedbackEventSchemaFromJSON,
+    MLFeedbackEventSchemaToJSON,
     RecoveryOutcomeFeedbackSchemaFromJSON,
     RecoveryOutcomeFeedbackSchemaToJSON,
     SimulatePayoutRequestFromJSON,
     SimulatePayoutRequestToJSON,
+    StructuredFeedbackRequestFromJSON,
+    StructuredFeedbackRequestToJSON,
     UtilityRankRequestFromJSON,
     UtilityRankRequestToJSON,
 } from '../models/index';
 
 export interface CreateOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPostRequest {
     artistId: string;
-    recoveryOutcomeFeedbackCreate: RecoveryOutcomeFeedbackCreate;
+    structuredFeedbackRequest: StructuredFeedbackRequest;
 }
 
 export interface ExtractContractTermsArtistsArtistIdIntelligenceContractsExtractPostRequest {
@@ -66,6 +69,10 @@ export interface GetCalibrationHealthArtistsArtistIdIntelligenceCalibrationGetRe
 export interface IngestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPostRequest {
     artistId: string;
     ledgerIngestRequest: LedgerIngestRequest;
+}
+
+export interface ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequest {
+    artistId: string;
 }
 
 export interface RankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPostRequest {
@@ -94,10 +101,10 @@ export class IntelligenceApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['recoveryOutcomeFeedbackCreate'] == null) {
+        if (requestParameters['structuredFeedbackRequest'] == null) {
             throw new runtime.RequiredError(
-                'recoveryOutcomeFeedbackCreate',
-                'Required parameter "recoveryOutcomeFeedbackCreate" was null or undefined when calling createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost().'
+                'structuredFeedbackRequest',
+                'Required parameter "structuredFeedbackRequest" was null or undefined when calling createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost().'
             );
         }
 
@@ -116,7 +123,7 @@ export class IntelligenceApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: RecoveryOutcomeFeedbackCreateToJSON(requestParameters['recoveryOutcomeFeedbackCreate']),
+            body: StructuredFeedbackRequestToJSON(requestParameters['structuredFeedbackRequest']),
         };
     }
 
@@ -393,6 +400,51 @@ export class IntelligenceApi extends runtime.BaseAPI {
      */
     async ingestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPost(requestParameters: IngestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.ingestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet without sending the request
+     */
+    async listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequestOpts(requestParameters: ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/intelligence/feedback/events`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * List Feedback Events
+     */
+    async listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRaw(requestParameters: ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<MLFeedbackEventSchema>>> {
+        const requestOptions = await this.listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(MLFeedbackEventSchemaFromJSON));
+    }
+
+    /**
+     * List Feedback Events
+     */
+    async listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet(requestParameters: ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<MLFeedbackEventSchema>> {
+        const response = await this.listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

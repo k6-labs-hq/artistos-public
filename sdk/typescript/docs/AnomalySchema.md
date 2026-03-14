@@ -20,6 +20,9 @@ Name | Type
 `territory` | string
 `status` | [AnomalyStatus](AnomalyStatus.md)
 `description` | string
+`anomalyScore` | number
+`modelVersion` | string
+`featureSnapshot` | string
 `createdAt` | Date
 
 ## Example
@@ -43,6 +46,9 @@ const example = {
   "territory": null,
   "status": null,
   "description": null,
+  "anomalyScore": null,
+  "modelVersion": null,
+  "featureSnapshot": null,
   "createdAt": null,
 } satisfies AnomalySchema
 

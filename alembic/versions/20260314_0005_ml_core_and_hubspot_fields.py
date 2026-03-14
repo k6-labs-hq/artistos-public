@@ -37,17 +37,17 @@ def _table_exists(table_name: str) -> bool:
 
 
 def upgrade() -> None:
-    if not _column_exists("artists", "email"):
+    if _table_exists("artists") and not _column_exists("artists", "email"):
         op.add_column("artists", sa.Column("email", sa.String(), nullable=True))
         op.create_index("ix_artists_email", "artists", ["email"])
-    if not _column_exists("artists", "role"):
+    if _table_exists("artists") and not _column_exists("artists", "role"):
         op.add_column("artists", sa.Column("role", sa.String(), nullable=True))
 
-    if not _column_exists("anomalies", "anomaly_score"):
+    if _table_exists("anomalies") and not _column_exists("anomalies", "anomaly_score"):
         op.add_column("anomalies", sa.Column("anomaly_score", sa.Float(), nullable=True))
-    if not _column_exists("anomalies", "model_version"):
+    if _table_exists("anomalies") and not _column_exists("anomalies", "model_version"):
         op.add_column("anomalies", sa.Column("model_version", sa.String(), nullable=True))
-    if not _column_exists("anomalies", "feature_snapshot"):
+    if _table_exists("anomalies") and not _column_exists("anomalies", "feature_snapshot"):
         op.add_column("anomalies", sa.Column("feature_snapshot", sa.String(), nullable=True))
 
     if not _table_exists("ml_feedback_events"):
@@ -172,15 +172,18 @@ def downgrade() -> None:
         op.drop_index("ix_ml_feedback_events_artist_id", table_name="ml_feedback_events")
         op.drop_table("ml_feedback_events")
 
-    if _column_exists("anomalies", "feature_snapshot"):
+    if _table_exists("anomalies") and _column_exists("anomalies", "feature_snapshot"):
         op.drop_column("anomalies", "feature_snapshot")
-    if _column_exists("anomalies", "model_version"):
+    if _table_exists("anomalies") and _column_exists("anomalies", "model_version"):
         op.drop_column("anomalies", "model_version")
-    if _column_exists("anomalies", "anomaly_score"):
+    if _table_exists("anomalies") and _column_exists("anomalies", "anomaly_score"):
         op.drop_column("anomalies", "anomaly_score")
 
-    if _column_exists("artists", "role"):
+    if _table_exists("artists") and _column_exists("artists", "role"):
         op.drop_column("artists", "role")
-    if _column_exists("artists", "email"):
-        op.drop_index("ix_artists_email", table_name="artists")
+    if _table_exists("artists") and _column_exists("artists", "email"):
+        try:
+            op.drop_index("ix_artists_email", table_name="artists")
+        except Exception:  # noqa: BLE001
+            pass
         op.drop_column("artists", "email")

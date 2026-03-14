@@ -143,7 +143,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list_anomalies_artists_artist_id_anomalies_get**
-> object list_anomalies_artists_artist_id_anomalies_get(artist_id, status=status)
+> object list_anomalies_artists_artist_id_anomalies_get(artist_id, status=status, debug=debug)
 
 List Anomalies
 
@@ -168,10 +168,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
     api_instance = xr7_sdk.AnomaliesApi(api_client)
     artist_id = 'artist_id_example' # str | 
     status = 'status_example' # str |  (optional)
+    debug = False # bool |  (optional) (default to False)
 
     try:
         # List Anomalies
-        api_response = api_instance.list_anomalies_artists_artist_id_anomalies_get(artist_id, status=status)
+        api_response = api_instance.list_anomalies_artists_artist_id_anomalies_get(artist_id, status=status, debug=debug)
         print("The response of AnomaliesApi->list_anomalies_artists_artist_id_anomalies_get:\n")
         pprint(api_response)
     except Exception as e:
@@ -187,6 +188,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **artist_id** | **str**|  | 
  **status** | **str**|  | [optional] 
+ **debug** | **bool**|  | [optional] [default to False]
 
 ### Return type
 

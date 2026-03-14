@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **default_fx_rate** | **float** |  | [optional] [default to 1.0]
 **payout_currency** | **str** |  | [optional] [default to 'USD']
 **received_amount** | **float** |  | [optional] 
+**contract_terms** | **Dict[str, object]** |  | [optional] 
 
 ## Example
 

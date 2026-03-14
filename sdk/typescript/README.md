@@ -141,6 +141,7 @@ All URIs are relative to *http://localhost*
 *IntelligenceApi* | [**extractContractTermsUploadArtistsArtistIdIntelligenceContractsExtractUploadPost**](docs/IntelligenceApi.md#extractcontracttermsuploadartistsartistidintelligencecontractsextractuploadpost) | **POST** /artists/{artist_id}/intelligence/contracts/extract-upload | Extract Contract Terms Upload
 *IntelligenceApi* | [**getCalibrationHealthArtistsArtistIdIntelligenceCalibrationGet**](docs/IntelligenceApi.md#getcalibrationhealthartistsartistidintelligencecalibrationget) | **GET** /artists/{artist_id}/intelligence/calibration | Get Calibration Health
 *IntelligenceApi* | [**ingestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPost**](docs/IntelligenceApi.md#ingestroyaltyledgerartistsartistidintelligenceledgeringestpost) | **POST** /artists/{artist_id}/intelligence/ledger/ingest | Ingest Royalty Ledger
+*IntelligenceApi* | [**listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet**](docs/IntelligenceApi.md#listfeedbackeventsartistsartistidintelligencefeedbackeventsget) | **GET** /artists/{artist_id}/intelligence/feedback/events | List Feedback Events
 *IntelligenceApi* | [**rankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPost**](docs/IntelligenceApi.md#rankbyexpectedutilityartistsartistidintelligencerankutilitypost) | **POST** /artists/{artist_id}/intelligence/rank-utility | Rank By Expected Utility
 *IntelligenceApi* | [**simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPost**](docs/IntelligenceApi.md#simulateexpectedpayoutartistsartistidintelligencesimulateexpectedpayoutpost) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout
 *OnboardingApi* | [**buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost**](docs/OnboardingApi.md#buildcatalogworkgraphartistsartistidcataloggraphbuildpost) | **POST** /artists/{artist_id}/catalog/graph/build | Build Catalog Work Graph
@@ -228,6 +229,8 @@ All URIs are relative to *http://localhost*
 - [LedgerIngestRequest](docs/LedgerIngestRequest.md)
 - [LedgerRecordType](docs/LedgerRecordType.md)
 - [LocationInner](docs/LocationInner.md)
+- [MLFeedbackEventSchema](docs/MLFeedbackEventSchema.md)
+- [MLFeedbackType](docs/MLFeedbackType.md)
 - [NotificationDispatchRequest](docs/NotificationDispatchRequest.md)
 - [NotificationPreferenceSchema](docs/NotificationPreferenceSchema.md)
 - [NotificationPreferenceUpsert](docs/NotificationPreferenceUpsert.md)
@@ -239,7 +242,6 @@ All URIs are relative to *http://localhost*
 - [PredictRecoverableRequest](docs/PredictRecoverableRequest.md)
 - [ReconcileRequest](docs/ReconcileRequest.md)
 - [ReconstructRequest](docs/ReconstructRequest.md)
-- [RecoveryOutcomeFeedbackCreate](docs/RecoveryOutcomeFeedbackCreate.md)
 - [RecoveryOutcomeFeedbackSchema](docs/RecoveryOutcomeFeedbackSchema.md)
 - [RecoverySubmitResponse](docs/RecoverySubmitResponse.md)
 - [RegisterRequest](docs/RegisterRequest.md)
@@ -253,6 +255,7 @@ All URIs are relative to *http://localhost*
 - [RoyaltyLedgerEntryCreate](docs/RoyaltyLedgerEntryCreate.md)
 - [SimulatePayoutRequest](docs/SimulatePayoutRequest.md)
 - [StatementSchema](docs/StatementSchema.md)
+- [StructuredFeedbackRequest](docs/StructuredFeedbackRequest.md)
 - [SyncJobCreateRequest](docs/SyncJobCreateRequest.md)
 - [SyncJobSchema](docs/SyncJobSchema.md)
 - [TeamMemberCreate](docs/TeamMemberCreate.md)

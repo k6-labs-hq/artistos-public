@@ -19,6 +19,9 @@ Name | Type | Description | Notes
 **territory** | **str** |  | [optional] 
 **status** | [**AnomalyStatus**](AnomalyStatus.md) |  | 
 **description** | **str** |  | [optional] 
+**anomaly_score** | **float** |  | [optional] 
+**model_version** | **str** |  | [optional] 
+**feature_snapshot** | **str** |  | [optional] 
 **created_at** | **datetime** |  | 
 
 ## Example

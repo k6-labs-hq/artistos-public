@@ -36,6 +36,7 @@ export interface GetAnomalyAnomaliesAnomalyIdGetRequest {
 export interface ListAnomaliesArtistsArtistIdAnomaliesGetRequest {
     artistId: string;
     status?: string | null;
+    debug?: boolean;
 }
 
 /**
@@ -152,6 +153,10 @@ export class AnomaliesApi extends runtime.BaseAPI {
 
         if (requestParameters['status'] != null) {
             queryParameters['status'] = requestParameters['status'];
+        }
+
+        if (requestParameters['debug'] != null) {
+            queryParameters['debug'] = requestParameters['debug'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

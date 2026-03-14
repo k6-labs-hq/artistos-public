@@ -28,9 +28,11 @@ class ArtistCreate(BaseModel):
     ArtistCreate
     """ # noqa: E501
     name: StrictStr
+    email: Optional[StrictStr] = None
+    role: Optional[StrictStr] = None
     ipi_number: Optional[StrictStr] = None
     stage_names: Optional[List[StrictStr]] = None
-    __properties: ClassVar[List[str]] = ["name", "ipi_number", "stage_names"]
+    __properties: ClassVar[List[str]] = ["name", "email", "role", "ipi_number", "stage_names"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -71,6 +73,16 @@ class ArtistCreate(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # set to None if email (nullable) is None
+        # and model_fields_set contains the field
+        if self.email is None and "email" in self.model_fields_set:
+            _dict['email'] = None
+
+        # set to None if role (nullable) is None
+        # and model_fields_set contains the field
+        if self.role is None and "role" in self.model_fields_set:
+            _dict['role'] = None
+
         # set to None if ipi_number (nullable) is None
         # and model_fields_set contains the field
         if self.ipi_number is None and "ipi_number" in self.model_fields_set:
@@ -94,6 +106,8 @@ class ArtistCreate(BaseModel):
 
         _obj = cls.model_validate({
             "name": obj.get("name"),
+            "email": obj.get("email"),
+            "role": obj.get("role"),
             "ipi_number": obj.get("ipi_number"),
             "stage_names": obj.get("stage_names")
         })

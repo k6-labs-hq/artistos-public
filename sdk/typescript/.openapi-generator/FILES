@@ -1,6 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 README.md
 docs/AdminApi.md
 docs/AdminAuditLogSchema.md
@@ -52,6 +51,8 @@ docs/IntelligenceApi.md
 docs/LedgerIngestRequest.md
 docs/LedgerRecordType.md
 docs/LocationInner.md
+docs/MLFeedbackEventSchema.md
+docs/MLFeedbackType.md
 docs/NotificationDispatchRequest.md
 docs/NotificationPreferenceSchema.md
 docs/NotificationPreferenceUpsert.md
@@ -65,7 +66,6 @@ docs/PredictRecoverableRequest.md
 docs/ReconcileRequest.md
 docs/ReconstructRequest.md
 docs/RecoveryApi.md
-docs/RecoveryOutcomeFeedbackCreate.md
 docs/RecoveryOutcomeFeedbackSchema.md
 docs/RecoverySubmitResponse.md
 docs/RegisterRequest.md
@@ -80,6 +80,7 @@ docs/ReviewSourceType.md
 docs/RoyaltyLedgerEntryCreate.md
 docs/SimulatePayoutRequest.md
 docs/StatementSchema.md
+docs/StructuredFeedbackRequest.md
 docs/SyncJobCreateRequest.md
 docs/SyncJobSchema.md
 docs/TeamMemberCreate.md
@@ -156,6 +157,8 @@ src/models/ImmutableLedgerEntrySchema.ts
 src/models/LedgerIngestRequest.ts
 src/models/LedgerRecordType.ts
 src/models/LocationInner.ts
+src/models/MLFeedbackEventSchema.ts
+src/models/MLFeedbackType.ts
 src/models/NotificationDispatchRequest.ts
 src/models/NotificationPreferenceSchema.ts
 src/models/NotificationPreferenceUpsert.ts
@@ -167,7 +170,6 @@ src/models/ParserPluginUpsertRequest.ts
 src/models/PredictRecoverableRequest.ts
 src/models/ReconcileRequest.ts
 src/models/ReconstructRequest.ts
-src/models/RecoveryOutcomeFeedbackCreate.ts
 src/models/RecoveryOutcomeFeedbackSchema.ts
 src/models/RecoverySubmitResponse.ts
 src/models/RegisterRequest.ts
@@ -181,6 +183,7 @@ src/models/ReviewSourceType.ts
 src/models/RoyaltyLedgerEntryCreate.ts
 src/models/SimulatePayoutRequest.ts
 src/models/StatementSchema.ts
+src/models/StructuredFeedbackRequest.ts
 src/models/SyncJobCreateRequest.ts
 src/models/SyncJobSchema.ts
 src/models/TeamMemberCreate.ts

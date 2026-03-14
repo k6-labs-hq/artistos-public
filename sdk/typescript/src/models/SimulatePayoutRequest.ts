@@ -55,6 +55,12 @@ export interface SimulatePayoutRequest {
      * @memberof SimulatePayoutRequest
      */
     receivedAmount?: number | null;
+    /**
+     * 
+     * @type {{ [key: string]: any; }}
+     * @memberof SimulatePayoutRequest
+     */
+    contractTerms?: { [key: string]: any; } | null;
 }
 
 /**
@@ -81,6 +87,7 @@ export function SimulatePayoutRequestFromJSONTyped(json: any, ignoreDiscriminato
         'defaultFxRate': json['default_fx_rate'] == null ? undefined : json['default_fx_rate'],
         'payoutCurrency': json['payout_currency'] == null ? undefined : json['payout_currency'],
         'receivedAmount': json['received_amount'] == null ? undefined : json['received_amount'],
+        'contractTerms': json['contract_terms'] == null ? undefined : json['contract_terms'],
     };
 }
 
@@ -101,6 +108,7 @@ export function SimulatePayoutRequestToJSONTyped(value?: SimulatePayoutRequest |
         'default_fx_rate': value['defaultFxRate'],
         'payout_currency': value['payoutCurrency'],
         'received_amount': value['receivedAmount'],
+        'contract_terms': value['contractTerms'],
     };
 }
 

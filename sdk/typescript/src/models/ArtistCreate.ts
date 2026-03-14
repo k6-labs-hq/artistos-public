@@ -30,6 +30,18 @@ export interface ArtistCreate {
      * @type {string}
      * @memberof ArtistCreate
      */
+    email?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    role?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
     ipiNumber?: string | null;
     /**
      * 
@@ -58,6 +70,8 @@ export function ArtistCreateFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'name': json['name'],
+        'email': json['email'] == null ? undefined : json['email'],
+        'role': json['role'] == null ? undefined : json['role'],
         'ipiNumber': json['ipi_number'] == null ? undefined : json['ipi_number'],
         'stageNames': json['stage_names'] == null ? undefined : json['stage_names'],
     };
@@ -75,6 +89,8 @@ export function ArtistCreateToJSONTyped(value?: ArtistCreate | null, ignoreDiscr
     return {
         
         'name': value['name'],
+        'email': value['email'],
+        'role': value['role'],
         'ipi_number': value['ipiNumber'],
         'stage_names': value['stageNames'],
     };

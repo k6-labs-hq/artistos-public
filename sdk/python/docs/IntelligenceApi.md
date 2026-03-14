@@ -9,12 +9,13 @@ Method | HTTP request | Description
 [**extract_contract_terms_upload_artists_artist_id_intelligence_contracts_extract_upload_post**](IntelligenceApi.md#extract_contract_terms_upload_artists_artist_id_intelligence_contracts_extract_upload_post) | **POST** /artists/{artist_id}/intelligence/contracts/extract-upload | Extract Contract Terms Upload
 [**get_calibration_health_artists_artist_id_intelligence_calibration_get**](IntelligenceApi.md#get_calibration_health_artists_artist_id_intelligence_calibration_get) | **GET** /artists/{artist_id}/intelligence/calibration | Get Calibration Health
 [**ingest_royalty_ledger_artists_artist_id_intelligence_ledger_ingest_post**](IntelligenceApi.md#ingest_royalty_ledger_artists_artist_id_intelligence_ledger_ingest_post) | **POST** /artists/{artist_id}/intelligence/ledger/ingest | Ingest Royalty Ledger
+[**list_feedback_events_artists_artist_id_intelligence_feedback_events_get**](IntelligenceApi.md#list_feedback_events_artists_artist_id_intelligence_feedback_events_get) | **GET** /artists/{artist_id}/intelligence/feedback/events | List Feedback Events
 [**rank_by_expected_utility_artists_artist_id_intelligence_rank_utility_post**](IntelligenceApi.md#rank_by_expected_utility_artists_artist_id_intelligence_rank_utility_post) | **POST** /artists/{artist_id}/intelligence/rank-utility | Rank By Expected Utility
 [**simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post**](IntelligenceApi.md#simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout
 
 
 # **create_outcome_feedback_artists_artist_id_intelligence_feedback_post**
-> RecoveryOutcomeFeedbackSchema create_outcome_feedback_artists_artist_id_intelligence_feedback_post(artist_id, recovery_outcome_feedback_create)
+> RecoveryOutcomeFeedbackSchema create_outcome_feedback_artists_artist_id_intelligence_feedback_post(artist_id, structured_feedback_request)
 
 Create Outcome Feedback
 
@@ -23,8 +24,8 @@ Create Outcome Feedback
 
 ```python
 import xr7_sdk
-from xr7_sdk.models.recovery_outcome_feedback_create import RecoveryOutcomeFeedbackCreate
 from xr7_sdk.models.recovery_outcome_feedback_schema import RecoveryOutcomeFeedbackSchema
+from xr7_sdk.models.structured_feedback_request import StructuredFeedbackRequest
 from xr7_sdk.rest import ApiException
 from pprint import pprint
 
@@ -40,11 +41,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
     artist_id = 'artist_id_example' # str | 
-    recovery_outcome_feedback_create = xr7_sdk.RecoveryOutcomeFeedbackCreate() # RecoveryOutcomeFeedbackCreate | 
+    structured_feedback_request = xr7_sdk.StructuredFeedbackRequest() # StructuredFeedbackRequest | 
 
     try:
         # Create Outcome Feedback
-        api_response = api_instance.create_outcome_feedback_artists_artist_id_intelligence_feedback_post(artist_id, recovery_outcome_feedback_create)
+        api_response = api_instance.create_outcome_feedback_artists_artist_id_intelligence_feedback_post(artist_id, structured_feedback_request)
         print("The response of IntelligenceApi->create_outcome_feedback_artists_artist_id_intelligence_feedback_post:\n")
         pprint(api_response)
     except Exception as e:
@@ -59,7 +60,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **artist_id** | **str**|  | 
- **recovery_outcome_feedback_create** | [**RecoveryOutcomeFeedbackCreate**](RecoveryOutcomeFeedbackCreate.md)|  | 
+ **structured_feedback_request** | [**StructuredFeedbackRequest**](StructuredFeedbackRequest.md)|  | 
 
 ### Return type
 
@@ -352,6 +353,73 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **list_feedback_events_artists_artist_id_intelligence_feedback_events_get**
+> List[MLFeedbackEventSchema] list_feedback_events_artists_artist_id_intelligence_feedback_events_get(artist_id)
+
+List Feedback Events
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.models.ml_feedback_event_schema import MLFeedbackEventSchema
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.IntelligenceApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+
+    try:
+        # List Feedback Events
+        api_response = api_instance.list_feedback_events_artists_artist_id_intelligence_feedback_events_get(artist_id)
+        print("The response of IntelligenceApi->list_feedback_events_artists_artist_id_intelligence_feedback_events_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling IntelligenceApi->list_feedback_events_artists_artist_id_intelligence_feedback_events_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+
+### Return type
+
+[**List[MLFeedbackEventSchema]**](MLFeedbackEventSchema.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details

@@ -6,6 +6,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **str** |  | 
+**email** | **str** |  | [optional] 
+**role** | **str** |  | [optional] 
 **ipi_number** | **str** |  | [optional] 
 **stage_names** | **List[str]** |  | [optional] 
 

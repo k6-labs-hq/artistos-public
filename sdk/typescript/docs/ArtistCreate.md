@@ -7,6 +7,8 @@
 Name | Type
 ------------ | -------------
 `name` | string
+`email` | string
+`role` | string
 `ipiNumber` | string
 `stageNames` | Array&lt;string&gt;
 
@@ -18,6 +20,8 @@ import type { ArtistCreate } from '@xr7/sdk'
 // TODO: Update the object below with actual values
 const example = {
   "name": null,
+  "email": null,
+  "role": null,
   "ipiNumber": null,
   "stageNames": null,
 } satisfies ArtistCreate

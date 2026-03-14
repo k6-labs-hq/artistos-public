@@ -33,7 +33,8 @@ class SimulatePayoutRequest(BaseModel):
     default_fx_rate: Optional[Union[StrictFloat, StrictInt]] = 1.0
     payout_currency: Optional[StrictStr] = 'USD'
     received_amount: Optional[Union[StrictFloat, StrictInt]] = None
-    __properties: ClassVar[List[str]] = ["usage_rows", "fallback_rate", "default_withholding_rate", "default_fx_rate", "payout_currency", "received_amount"]
+    contract_terms: Optional[Dict[str, Any]] = None
+    __properties: ClassVar[List[str]] = ["usage_rows", "fallback_rate", "default_withholding_rate", "default_fx_rate", "payout_currency", "received_amount", "contract_terms"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -79,6 +80,11 @@ class SimulatePayoutRequest(BaseModel):
         if self.received_amount is None and "received_amount" in self.model_fields_set:
             _dict['received_amount'] = None
 
+        # set to None if contract_terms (nullable) is None
+        # and model_fields_set contains the field
+        if self.contract_terms is None and "contract_terms" in self.model_fields_set:
+            _dict['contract_terms'] = None
+
         return _dict
 
     @classmethod
@@ -96,7 +102,8 @@ class SimulatePayoutRequest(BaseModel):
             "default_withholding_rate": obj.get("default_withholding_rate") if obj.get("default_withholding_rate") is not None else 0.0,
             "default_fx_rate": obj.get("default_fx_rate") if obj.get("default_fx_rate") is not None else 1.0,
             "payout_currency": obj.get("payout_currency") if obj.get("payout_currency") is not None else 'USD',
-            "received_amount": obj.get("received_amount")
+            "received_amount": obj.get("received_amount"),
+            "contract_terms": obj.get("contract_terms")
         })
         return _obj
 

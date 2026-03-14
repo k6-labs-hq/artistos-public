@@ -144,7 +144,7 @@ No authorization required
 
 ## listAnomaliesArtistsArtistIdAnomaliesGet
 
-> any listAnomaliesArtistsArtistIdAnomaliesGet(artistId, status)
+> any listAnomaliesArtistsArtistIdAnomaliesGet(artistId, status, debug)
 
 List Anomalies
 
@@ -166,6 +166,8 @@ async function example() {
     artistId: artistId_example,
     // string (optional)
     status: status_example,
+    // boolean (optional)
+    debug: true,
   } satisfies ListAnomaliesArtistsArtistIdAnomaliesGetRequest;
 
   try {
@@ -187,6 +189,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **status** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **debug** | `boolean` |  | [Optional] [Defaults to `false`] |
 
 ### Return type
 

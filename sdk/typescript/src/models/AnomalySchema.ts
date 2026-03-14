@@ -127,6 +127,24 @@ export interface AnomalySchema {
     description?: string | null;
     /**
      * 
+     * @type {number}
+     * @memberof AnomalySchema
+     */
+    anomalyScore?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AnomalySchema
+     */
+    modelVersion?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof AnomalySchema
+     */
+    featureSnapshot?: string | null;
+    /**
+     * 
      * @type {Date}
      * @memberof AnomalySchema
      */
@@ -174,6 +192,9 @@ export function AnomalySchemaFromJSONTyped(json: any, ignoreDiscriminator: boole
         'territory': json['territory'] == null ? undefined : json['territory'],
         'status': AnomalyStatusFromJSON(json['status']),
         'description': json['description'] == null ? undefined : json['description'],
+        'anomalyScore': json['anomaly_score'] == null ? undefined : json['anomaly_score'],
+        'modelVersion': json['model_version'] == null ? undefined : json['model_version'],
+        'featureSnapshot': json['feature_snapshot'] == null ? undefined : json['feature_snapshot'],
         'createdAt': (new Date(json['created_at'])),
     };
 }
@@ -203,6 +224,9 @@ export function AnomalySchemaToJSONTyped(value?: AnomalySchema | null, ignoreDis
         'territory': value['territory'],
         'status': AnomalyStatusToJSON(value['status']),
         'description': value['description'],
+        'anomaly_score': value['anomalyScore'],
+        'model_version': value['modelVersion'],
+        'feature_snapshot': value['featureSnapshot'],
         'created_at': value['createdAt'].toISOString(),
     };
 }

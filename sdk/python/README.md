@@ -175,6 +175,7 @@ Class | Method | HTTP request | Description
 *IntelligenceApi* | [**extract_contract_terms_upload_artists_artist_id_intelligence_contracts_extract_upload_post**](docs/IntelligenceApi.md#extract_contract_terms_upload_artists_artist_id_intelligence_contracts_extract_upload_post) | **POST** /artists/{artist_id}/intelligence/contracts/extract-upload | Extract Contract Terms Upload
 *IntelligenceApi* | [**get_calibration_health_artists_artist_id_intelligence_calibration_get**](docs/IntelligenceApi.md#get_calibration_health_artists_artist_id_intelligence_calibration_get) | **GET** /artists/{artist_id}/intelligence/calibration | Get Calibration Health
 *IntelligenceApi* | [**ingest_royalty_ledger_artists_artist_id_intelligence_ledger_ingest_post**](docs/IntelligenceApi.md#ingest_royalty_ledger_artists_artist_id_intelligence_ledger_ingest_post) | **POST** /artists/{artist_id}/intelligence/ledger/ingest | Ingest Royalty Ledger
+*IntelligenceApi* | [**list_feedback_events_artists_artist_id_intelligence_feedback_events_get**](docs/IntelligenceApi.md#list_feedback_events_artists_artist_id_intelligence_feedback_events_get) | **GET** /artists/{artist_id}/intelligence/feedback/events | List Feedback Events
 *IntelligenceApi* | [**rank_by_expected_utility_artists_artist_id_intelligence_rank_utility_post**](docs/IntelligenceApi.md#rank_by_expected_utility_artists_artist_id_intelligence_rank_utility_post) | **POST** /artists/{artist_id}/intelligence/rank-utility | Rank By Expected Utility
 *IntelligenceApi* | [**simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post**](docs/IntelligenceApi.md#simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout
 *OnboardingApi* | [**build_catalog_work_graph_artists_artist_id_catalog_graph_build_post**](docs/OnboardingApi.md#build_catalog_work_graph_artists_artist_id_catalog_graph_build_post) | **POST** /artists/{artist_id}/catalog/graph/build | Build Catalog Work Graph
@@ -262,6 +263,8 @@ Class | Method | HTTP request | Description
  - [LedgerIngestRequest](docs/LedgerIngestRequest.md)
  - [LedgerRecordType](docs/LedgerRecordType.md)
  - [LocationInner](docs/LocationInner.md)
+ - [MLFeedbackEventSchema](docs/MLFeedbackEventSchema.md)
+ - [MLFeedbackType](docs/MLFeedbackType.md)
  - [NotificationDispatchRequest](docs/NotificationDispatchRequest.md)
  - [NotificationPreferenceSchema](docs/NotificationPreferenceSchema.md)
  - [NotificationPreferenceUpsert](docs/NotificationPreferenceUpsert.md)
@@ -273,7 +276,6 @@ Class | Method | HTTP request | Description
  - [PredictRecoverableRequest](docs/PredictRecoverableRequest.md)
  - [ReconcileRequest](docs/ReconcileRequest.md)
  - [ReconstructRequest](docs/ReconstructRequest.md)
- - [RecoveryOutcomeFeedbackCreate](docs/RecoveryOutcomeFeedbackCreate.md)
  - [RecoveryOutcomeFeedbackSchema](docs/RecoveryOutcomeFeedbackSchema.md)
  - [RecoverySubmitResponse](docs/RecoverySubmitResponse.md)
  - [RegisterRequest](docs/RegisterRequest.md)
@@ -287,6 +289,7 @@ Class | Method | HTTP request | Description
  - [RoyaltyLedgerEntryCreate](docs/RoyaltyLedgerEntryCreate.md)
  - [SimulatePayoutRequest](docs/SimulatePayoutRequest.md)
  - [StatementSchema](docs/StatementSchema.md)
+ - [StructuredFeedbackRequest](docs/StructuredFeedbackRequest.md)
  - [SyncJobCreateRequest](docs/SyncJobCreateRequest.md)
  - [SyncJobSchema](docs/SyncJobSchema.md)
  - [TeamMemberCreate](docs/TeamMemberCreate.md)

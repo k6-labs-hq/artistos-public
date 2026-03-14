@@ -12,6 +12,7 @@ Name | Type
 `defaultFxRate` | number
 `payoutCurrency` | string
 `receivedAmount` | number
+`contractTerms` | { [key: string]: any; }
 
 ## Example
 
@@ -26,6 +27,7 @@ const example = {
   "defaultFxRate": null,
   "payoutCurrency": null,
   "receivedAmount": null,
+  "contractTerms": null,
 } satisfies SimulatePayoutRequest
 
 console.log(example)

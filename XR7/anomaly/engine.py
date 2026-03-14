@@ -131,7 +131,7 @@ class AnomalyEngine:
                             model_version=str(first_version),
                             training_snapshot_ref="peer-context-live-window",
                             metrics={"detected_count": len(anomalies)},
-                            metadata={"engine": "MLAnomalyDetector"},
+                            extra_metadata={"engine": "MLAnomalyDetector"},
                         )
                     )
                     db_session.commit()

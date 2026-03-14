@@ -9,6 +9,7 @@ All URIs are relative to *http://localhost*
 | [**extractContractTermsUploadArtistsArtistIdIntelligenceContractsExtractUploadPost**](IntelligenceApi.md#extractcontracttermsuploadartistsartistidintelligencecontractsextractuploadpost) | **POST** /artists/{artist_id}/intelligence/contracts/extract-upload | Extract Contract Terms Upload |
 | [**getCalibrationHealthArtistsArtistIdIntelligenceCalibrationGet**](IntelligenceApi.md#getcalibrationhealthartistsartistidintelligencecalibrationget) | **GET** /artists/{artist_id}/intelligence/calibration | Get Calibration Health |
 | [**ingestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPost**](IntelligenceApi.md#ingestroyaltyledgerartistsartistidintelligenceledgeringestpost) | **POST** /artists/{artist_id}/intelligence/ledger/ingest | Ingest Royalty Ledger |
+| [**listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet**](IntelligenceApi.md#listfeedbackeventsartistsartistidintelligencefeedbackeventsget) | **GET** /artists/{artist_id}/intelligence/feedback/events | List Feedback Events |
 | [**rankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPost**](IntelligenceApi.md#rankbyexpectedutilityartistsartistidintelligencerankutilitypost) | **POST** /artists/{artist_id}/intelligence/rank-utility | Rank By Expected Utility |
 | [**simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPost**](IntelligenceApi.md#simulateexpectedpayoutartistsartistidintelligencesimulateexpectedpayoutpost) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout |
 
@@ -16,7 +17,7 @@ All URIs are relative to *http://localhost*
 
 ## createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost
 
-> RecoveryOutcomeFeedbackSchema createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost(artistId, recoveryOutcomeFeedbackCreate)
+> RecoveryOutcomeFeedbackSchema createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost(artistId, structuredFeedbackRequest)
 
 Create Outcome Feedback
 
@@ -36,8 +37,8 @@ async function example() {
   const body = {
     // string
     artistId: artistId_example,
-    // RecoveryOutcomeFeedbackCreate
-    recoveryOutcomeFeedbackCreate: ...,
+    // StructuredFeedbackRequest
+    structuredFeedbackRequest: ...,
   } satisfies CreateOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPostRequest;
 
   try {
@@ -58,7 +59,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
-| **recoveryOutcomeFeedbackCreate** | [RecoveryOutcomeFeedbackCreate](RecoveryOutcomeFeedbackCreate.md) |  | |
+| **structuredFeedbackRequest** | [StructuredFeedbackRequest](StructuredFeedbackRequest.md) |  | |
 
 ### Return type
 
@@ -356,6 +357,72 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet
+
+> Array&lt;MLFeedbackEventSchema&gt; listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet(artistId)
+
+List Feedback Events
+
+### Example
+
+```ts
+import {
+  Configuration,
+  IntelligenceApi,
+} from '@xr7/sdk';
+import type { ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new IntelligenceApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+  } satisfies ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetRequest;
+
+  try {
+    const data = await api.listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+[**Array&lt;MLFeedbackEventSchema&gt;**](MLFeedbackEventSchema.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 

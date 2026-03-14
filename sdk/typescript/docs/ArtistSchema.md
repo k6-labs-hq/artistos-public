@@ -8,6 +8,8 @@ Name | Type
 ------------ | -------------
 `id` | string
 `name` | string
+`email` | string
+`role` | string
 `ipiNumber` | string
 `stageNames` | Array&lt;string&gt;
 `createdAt` | Date
@@ -25,6 +27,8 @@ import type { ArtistSchema } from '@xr7/sdk'
 const example = {
   "id": null,
   "name": null,
+  "email": null,
+  "role": null,
   "ipiNumber": null,
   "stageNames": null,
   "createdAt": null,

@@ -82,6 +82,8 @@ __all__ = [
     "LedgerIngestRequest",
     "LedgerRecordType",
     "LocationInner",
+    "MLFeedbackEventSchema",
+    "MLFeedbackType",
     "NotificationDispatchRequest",
     "NotificationPreferenceSchema",
     "NotificationPreferenceUpsert",
@@ -93,7 +95,6 @@ __all__ = [
     "PredictRecoverableRequest",
     "ReconcileRequest",
     "ReconstructRequest",
-    "RecoveryOutcomeFeedbackCreate",
     "RecoveryOutcomeFeedbackSchema",
     "RecoverySubmitResponse",
     "RegisterRequest",
@@ -107,6 +108,7 @@ __all__ = [
     "RoyaltyLedgerEntryCreate",
     "SimulatePayoutRequest",
     "StatementSchema",
+    "StructuredFeedbackRequest",
     "SyncJobCreateRequest",
     "SyncJobSchema",
     "TeamMemberCreate",
@@ -194,6 +196,8 @@ from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySch
 from xr7_sdk.models.ledger_ingest_request import LedgerIngestRequest as LedgerIngestRequest
 from xr7_sdk.models.ledger_record_type import LedgerRecordType as LedgerRecordType
 from xr7_sdk.models.location_inner import LocationInner as LocationInner
+from xr7_sdk.models.ml_feedback_event_schema import MLFeedbackEventSchema as MLFeedbackEventSchema
+from xr7_sdk.models.ml_feedback_type import MLFeedbackType as MLFeedbackType
 from xr7_sdk.models.notification_dispatch_request import NotificationDispatchRequest as NotificationDispatchRequest
 from xr7_sdk.models.notification_preference_schema import NotificationPreferenceSchema as NotificationPreferenceSchema
 from xr7_sdk.models.notification_preference_upsert import NotificationPreferenceUpsert as NotificationPreferenceUpsert
@@ -205,7 +209,6 @@ from xr7_sdk.models.parser_plugin_upsert_request import ParserPluginUpsertReques
 from xr7_sdk.models.predict_recoverable_request import PredictRecoverableRequest as PredictRecoverableRequest
 from xr7_sdk.models.reconcile_request import ReconcileRequest as ReconcileRequest
 from xr7_sdk.models.reconstruct_request import ReconstructRequest as ReconstructRequest
-from xr7_sdk.models.recovery_outcome_feedback_create import RecoveryOutcomeFeedbackCreate as RecoveryOutcomeFeedbackCreate
 from xr7_sdk.models.recovery_outcome_feedback_schema import RecoveryOutcomeFeedbackSchema as RecoveryOutcomeFeedbackSchema
 from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse as RecoverySubmitResponse
 from xr7_sdk.models.register_request import RegisterRequest as RegisterRequest
@@ -219,6 +222,7 @@ from xr7_sdk.models.review_source_type import ReviewSourceType as ReviewSourceTy
 from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate as RoyaltyLedgerEntryCreate
 from xr7_sdk.models.simulate_payout_request import SimulatePayoutRequest as SimulatePayoutRequest
 from xr7_sdk.models.statement_schema import StatementSchema as StatementSchema
+from xr7_sdk.models.structured_feedback_request import StructuredFeedbackRequest as StructuredFeedbackRequest
 from xr7_sdk.models.sync_job_create_request import SyncJobCreateRequest as SyncJobCreateRequest
 from xr7_sdk.models.sync_job_schema import SyncJobSchema as SyncJobSchema
 from xr7_sdk.models.team_member_create import TeamMemberCreate as TeamMemberCreate

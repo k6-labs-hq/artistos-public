@@ -45,8 +45,11 @@ class AnomalySchema(BaseModel):
     territory: Optional[StrictStr] = None
     status: AnomalyStatus
     description: Optional[StrictStr] = None
+    anomaly_score: Optional[Union[StrictFloat, StrictInt]] = None
+    model_version: Optional[StrictStr] = None
+    feature_snapshot: Optional[StrictStr] = None
     created_at: datetime
-    __properties: ClassVar[List[str]] = ["id", "artist_id", "category", "subtype", "severity", "expected_amount", "actual_amount", "estimated_recoverable", "confidence_score", "time_window_start", "time_window_end", "territory", "status", "description", "created_at"]
+    __properties: ClassVar[List[str]] = ["id", "artist_id", "category", "subtype", "severity", "expected_amount", "actual_amount", "estimated_recoverable", "confidence_score", "time_window_start", "time_window_end", "territory", "status", "description", "anomaly_score", "model_version", "feature_snapshot", "created_at"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -122,6 +125,21 @@ class AnomalySchema(BaseModel):
         if self.description is None and "description" in self.model_fields_set:
             _dict['description'] = None
 
+        # set to None if anomaly_score (nullable) is None
+        # and model_fields_set contains the field
+        if self.anomaly_score is None and "anomaly_score" in self.model_fields_set:
+            _dict['anomaly_score'] = None
+
+        # set to None if model_version (nullable) is None
+        # and model_fields_set contains the field
+        if self.model_version is None and "model_version" in self.model_fields_set:
+            _dict['model_version'] = None
+
+        # set to None if feature_snapshot (nullable) is None
+        # and model_fields_set contains the field
+        if self.feature_snapshot is None and "feature_snapshot" in self.model_fields_set:
+            _dict['feature_snapshot'] = None
+
         return _dict
 
     @classmethod
@@ -148,6 +166,9 @@ class AnomalySchema(BaseModel):
             "territory": obj.get("territory"),
             "status": obj.get("status"),
             "description": obj.get("description"),
+            "anomaly_score": obj.get("anomaly_score"),
+            "model_version": obj.get("model_version"),
+            "feature_snapshot": obj.get("feature_snapshot"),
             "created_at": obj.get("created_at")
         })
         return _obj

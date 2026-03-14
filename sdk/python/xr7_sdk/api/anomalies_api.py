@@ -15,7 +15,7 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
+from pydantic import StrictBool, StrictStr
 from typing import Any, Optional
 from xr7_sdk.models.anomaly_schema import AnomalySchema
 
@@ -562,6 +562,7 @@ class AnomaliesApi:
         self,
         artist_id: StrictStr,
         status: Optional[StrictStr] = None,
+        debug: Optional[StrictBool] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -582,6 +583,8 @@ class AnomaliesApi:
         :type artist_id: str
         :param status:
         :type status: str
+        :param debug:
+        :type debug: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -607,6 +610,7 @@ class AnomaliesApi:
         _param = self._list_anomalies_artists_artist_id_anomalies_get_serialize(
             artist_id=artist_id,
             status=status,
+            debug=debug,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -633,6 +637,7 @@ class AnomaliesApi:
         self,
         artist_id: StrictStr,
         status: Optional[StrictStr] = None,
+        debug: Optional[StrictBool] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -653,6 +658,8 @@ class AnomaliesApi:
         :type artist_id: str
         :param status:
         :type status: str
+        :param debug:
+        :type debug: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -678,6 +685,7 @@ class AnomaliesApi:
         _param = self._list_anomalies_artists_artist_id_anomalies_get_serialize(
             artist_id=artist_id,
             status=status,
+            debug=debug,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -704,6 +712,7 @@ class AnomaliesApi:
         self,
         artist_id: StrictStr,
         status: Optional[StrictStr] = None,
+        debug: Optional[StrictBool] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -724,6 +733,8 @@ class AnomaliesApi:
         :type artist_id: str
         :param status:
         :type status: str
+        :param debug:
+        :type debug: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -749,6 +760,7 @@ class AnomaliesApi:
         _param = self._list_anomalies_artists_artist_id_anomalies_get_serialize(
             artist_id=artist_id,
             status=status,
+            debug=debug,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -770,6 +782,7 @@ class AnomaliesApi:
         self,
         artist_id,
         status,
+        debug,
         _request_auth,
         _content_type,
         _headers,
@@ -797,6 +810,10 @@ class AnomaliesApi:
         if status is not None:
             
             _query_params.append(('status', status))
+            
+        if debug is not None:
+            
+            _query_params.append(('debug', debug))
             
         # process the header parameters
         # process the form parameters

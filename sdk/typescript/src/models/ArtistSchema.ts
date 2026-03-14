@@ -44,6 +44,18 @@ export interface ArtistSchema {
      * @type {string}
      * @memberof ArtistSchema
      */
+    email?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    role?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
     ipiNumber?: string | null;
     /**
      * 
@@ -108,6 +120,8 @@ export function ArtistSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'id': json['id'],
         'name': json['name'],
+        'email': json['email'] == null ? undefined : json['email'],
+        'role': json['role'] == null ? undefined : json['role'],
         'ipiNumber': json['ipi_number'] == null ? undefined : json['ipi_number'],
         'stageNames': json['stage_names'] == null ? undefined : json['stage_names'],
         'createdAt': (new Date(json['created_at'])),
@@ -131,6 +145,8 @@ export function ArtistSchemaToJSONTyped(value?: ArtistSchema | null, ignoreDiscr
         
         'id': value['id'],
         'name': value['name'],
+        'email': value['email'],
+        'role': value['role'],
         'ipi_number': value['ipiNumber'],
         'stage_names': value['stageNames'],
         'created_at': value['createdAt'].toISOString(),
