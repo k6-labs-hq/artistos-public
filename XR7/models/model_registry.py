@@ -18,7 +18,7 @@ class ModelRegistryEntry(Base):
     model_version: Mapped[str] = mapped_column(String, nullable=False, index=True)
     training_snapshot_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     metrics: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    extra_metadata: Mapped[dict | None] = mapped_column("metadata", JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -30,5 +30,5 @@ class ModelRegistryEntrySchema(BaseModel):
     model_version: str
     training_snapshot_ref: str | None = None
     metrics: dict | None = None
-    metadata: dict | None = None
+    extra_metadata: dict | None = None
     created_at: datetime
