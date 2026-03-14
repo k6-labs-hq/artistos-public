@@ -148,6 +148,25 @@ HUBSPOT_PRIVATE_APP_TOKEN=...
 
 HubSpot sync is triggered asynchronously from artist creation, widget funnel events, first statement ingestion, anomaly detection, claim milestones, and settled recovery disbursements.
 
+### Recovery Intelligence Feature Matrix
+
+| Capability | Primary Module(s) | API Surface |
+|---|---|---|
+| 1. Cash recovery forecast (per claim) | `XR7/recovery/cash_recovery_forecast.py` | `GET /claims/{claim_id}/forecast`, `GET /artists/{id}/claims` (includes `forecast`) |
+| 2. Automated payer-specific playbooks | `XR7/recovery/payer_playbooks/` | `GET /claims/{claim_id}/playbook`, `GET /artists/{id}/recovery/playbook-summary` |
+| 3. Deadline risk engine | `XR7/recovery/deadline_risk_engine.py` | `GET /artists/{id}/recovery/deadline-risk`, dashboard `deadlines.deadline_risk`; Celery: `xr7.pipeline.auto_escalate_claims`, `xr7.pipeline.notify_deadline_risk` |
+| 4. Evidence strength scoring | `XR7/recovery/evidence_strength.py` | `GET /claims/{claim_id}/evidence/strength`; integrated into claim advancement and review queue evidence checks |
+| 5. Negotiation intelligence | `XR7/recovery/negotiation_intelligence.py` | `GET /claims/{claim_id}/negotiation-intel`; integrated into claim advancement review signals |
+| 6. Weekly artist digest | `XR7/recovery/weekly_digest.py` | `GET /artists/{id}/digest/weekly`; Celery: `xr7.pipeline.weekly_artist_digest` |
+| 7. Smart contract QA before signature | `XR7/ml/contract_term_extractor.py` | `POST /artists/{id}/intelligence/contracts/pre-signature-review` |
+| 8. Contributor split verification | `XR7/recovery/split_verification.py` | `GET /artists/{id}/splits/verification`, `GET /artists/{id}/splits/conflicts` |
+| 9. Bank-grade trust controls | `XR7/recovery/orchestrator.py`, `XR7/models/evidence_anchor.py` | `POST /claims/{claim_id}/evidence/export?mode=expert`, `GET /claims/{claim_id}/evidence/verify` |
+| 10. Partner ecosystem connectors | `XR7/ingestion/connectors/partner_ecosystem.py` | `POST /artists/{id}/connect/{provider}`, `GET /artists/{id}/connect/{provider}/status` |
+| 11. HubSpot CRM auto-populate | `XR7/services/hubspot_client.py`, `XR7/tasks/hubspot.py` | Async triggers from artist/widget/ingestion/anomaly/claim/recovery lifecycle events |
+| 12. Output quality requirements | Existing architecture (`FastAPI`, `SQLAlchemy`, `Celery`, `Redis`) + tests | OpenAPI + SDK flow (`make sdks`), regression suite (`pytest`) |
+
+Partner connector environment variables are documented in `.env.example` (for example `STRIPE_CONNECT_TOKEN`, `CHARTMETRIC_TOKEN`, `SONGTRUST_TOKEN`, `ASCAP_TOKEN`, `BMI_TOKEN`, `SESAC_TOKEN`).
+
 ---
 
 ## Artist Recovery Dashboard
