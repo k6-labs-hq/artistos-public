@@ -67,8 +67,11 @@ def test_advance_claim_transitions(db_session, artist_and_anomaly):
 def test_advance_claim_raises_at_terminal_state(db_session, artist_and_anomaly):
     orchestrator = ClaimsOrchestrator(db_session)
     claim = orchestrator.create_claim("anomaly-1", "ROYALTY_DISPUTE")
-    # Advance all the way to CLOSED
-    for _ in range(6):
+    # Advance all the way to CLOSED without hard-coding the number of
+    # intermediate states in the workflow.
+    for _ in range(10):
+        if claim.status == ClaimStatus.CLOSED:
+            break
         claim = orchestrator.advance_claim(claim.id)
     assert claim.status == ClaimStatus.CLOSED
     with pytest.raises(ValueError):

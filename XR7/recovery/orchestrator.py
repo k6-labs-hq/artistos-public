@@ -22,9 +22,11 @@ from XR7.models.recovery_intelligence import RoyaltyLedgerEntry
 class ClaimsOrchestrator:
     CLAIM_TRANSITIONS = {
         ClaimStatus.IDENTIFIED: ClaimStatus.PREPARED,
-        ClaimStatus.PREPARED: ClaimStatus.FILED,
+        # Keep SUBMITTED as an explicit intermediate state for compatibility
+        # with existing dashboard and recovery workflows.
+        ClaimStatus.PREPARED: ClaimStatus.SUBMITTED,
+        ClaimStatus.SUBMITTED: ClaimStatus.FILED,
         ClaimStatus.FILED: ClaimStatus.IN_REVIEW,
-        ClaimStatus.SUBMITTED: ClaimStatus.IN_REVIEW,
         ClaimStatus.IN_REVIEW: ClaimStatus.ACCEPTED,
         ClaimStatus.ACCEPTED: ClaimStatus.PAID,
         ClaimStatus.PAID: ClaimStatus.CLOSED,
