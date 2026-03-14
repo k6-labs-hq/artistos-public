@@ -24,13 +24,27 @@ from XR7.models.payment import Payment
 from XR7.models.statement import Statement
 from XR7.models.work import Work
 from XR7.recovery.audit_tracker import analyze_audit_eligibility, audit_summary
+from XR7.recovery.benchmarking import cross_artist_benchmarks
 from XR7.recovery.cash_recovery_forecast import build_claim_forecast
+from XR7.recovery.catalog_integrity import assess_catalog_integrity
 from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
+from XR7.recovery.fraud_detection import run_fraud_scan
+from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.payer_playbooks import summarize_artist_playbooks
+from XR7.recovery.rate_benchmark_advanced import advanced_rate_benchmark
+from XR7.recovery.recovery_attribution import attribute_recovery
+from XR7.recovery.recovery_funnel import compute_recovery_funnel
+from XR7.recovery.recovery_playbook import generate_recovery_playbook
+from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
+from XR7.recovery.recovery_roi import recovery_roi_summary
+from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
+from XR7.recovery.sla_guarantee import sla_status_for_artist
 from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recoupment_tracker import compute_recoupment, recoupment_summary
 from XR7.recovery.split_verification import upsert_split_conflict_anomalies, verify_splits
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
+from XR7.recovery.underpayment_heatmap import build_underpayment_heatmap
+from XR7.recovery.underpayment_reconstruction import reconstruct_historical_underpayment
 from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.models.ml_feedback import CalibrationSnapshot
@@ -94,10 +108,24 @@ def _claim_to_dict(c: Claim) -> dict:
         "id": c.id,
         "artist_id": c.artist_id,
         "claim_type": c.claim_type,
+        "payer": _claim_payer(c),
         "status": str(c.status),
         "estimated_recoverable": c.recovered_amount,
         "confidence_score": 0.7,
         "created_at": c.created_at.isoformat() if c.created_at else None,
+    }
+
+
+def _statement_to_dict(s: Statement) -> dict:
+    return {
+        "id": s.id,
+        "artist_id": s.artist_id,
+        "file_hash": s.file_hash,
+        "row_count": s.row_count,
+        "events_created": s.events_created,
+        "status": s.status,
+        # Used only for local tamper/fraud heuristics in tests/dev.
+        "raw_content": f"{s.filename}:{s.row_count}:{s.events_created}",
     }
 
 
@@ -270,6 +298,23 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
         row["effort_adjustment"] = segment.get("effort_adjustment", 1.0)
         row["segment"] = segment.get("segment")
 
+    payer_behavior_cache: dict[str, dict] = {}
+    claim_behavior_rows = [
+        {
+            "payer": _claim_payer(c),
+            "status": str(c.status),
+            "settlement_days": 45,
+            "settlement_percent": min(1.0, max(0.1, float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0))),
+        }
+        for c in claims_full
+    ]
+    for claim in claims_full:
+        payer_key = _claim_payer(claim)
+        if payer_key not in payer_behavior_cache:
+            payer_behavior_cache[payer_key] = payer_behavior_profile(payer_key, claim_behavior_rows)
+
+    payer_behavior_rows = list(payer_behavior_cache.values())
+
     forecast_index: dict[str, dict] = {}
     for claim in claims_full:
         forecast = build_claim_forecast(
@@ -282,10 +327,24 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
 
     for row in claims_raw:
         forecast = forecast_index.get(row.get("id")) or {}
+        payer_behavior = payer_behavior_cache.get(str(row.get("payer") or "generic"), {})
         row["confidence_score"] = float(forecast.get("confidence") or row.get("confidence_score") or 0.7)
+        row["confidence_score"] = min(
+            0.99,
+            max(0.05, (row["confidence_score"] * 0.7) + (float(payer_behavior.get("acceptance_probability") or 0.5) * 0.3)),
+        )
         row["effort_adjustment"] = float(row.get("effort_adjustment") or 1.0) * max(
             0.8,
             min(1.4, float(forecast.get("time_to_cash_days") or 30) / 30.0),
+        )
+
+    for row in anomalies_raw:
+        behavior = payer_behavior_rows[0] if payer_behavior_rows else None
+        rp = anomaly_recovery_probability(row, behavior)
+        row["confidence_score"] = float(rp.get("probability_of_recovery") or row.get("confidence_score") or 0.5)
+        row["effort_adjustment"] = float(row.get("effort_adjustment") or 1.0) * max(
+            0.8,
+            min(1.6, float(rp.get("expected_effort_hours") or 4.0) / 6.0),
         )
 
     # Enrich anomalies with SOL status before ranking
@@ -436,4 +495,266 @@ def split_conflicts(artist_id: str, db: Session = Depends(get_db)):
             }
             for r in rows
         ],
+    }
+
+
+@router.get("/{artist_id}/recovery/expected-value")
+def recovery_expected_value(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
+    contracts = [_contract_to_dict(c) for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()]
+
+    total_claims = max(len(claims), 1)
+    paid_claims = sum(1 for c in claims if str(c.get("status")) in {"PAID", "CLOSED"})
+    historical_recovery_rate = float(paid_claims) / float(total_claims)
+
+    payer_rows = [payer_behavior_profile(str(c.get("payer") or "generic"), claims) for c in claims[:10]]
+    catalog_health_score = max(40.0, 100.0 - (len(anomalies) * 2.0))
+
+    return {
+        "artist_id": artist_id,
+        **portfolio_expected_recovery_value(
+            anomalies=anomalies,
+            claims=claims,
+            catalog_health=catalog_health_score,
+            payer_behavior_rows=payer_rows,
+            contracts=contracts,
+            historical_recovery_rate=historical_recovery_rate,
+        ),
+    }
+
+
+@router.get("/{artist_id}/recovery/funnel")
+def recovery_funnel(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    claims = [
+        {
+            **_claim_to_dict(c),
+            "updated_at": c.updated_at.isoformat() if c.updated_at else None,
+        }
+        for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    ]
+    deposits = [
+        _payment_to_dict(p)
+        for p in db.query(Payment).filter(Payment.artist_id == artist_id, Payment.payment_type == "PAYOUT").all()
+    ]
+    return {
+        "artist_id": artist_id,
+        **compute_recovery_funnel(anomalies, claims, deposits),
+    }
+
+
+@router.get("/{artist_id}/catalog/integrity")
+def catalog_integrity(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    works = [
+        {
+            "id": w.id,
+            "title": w.title,
+            "isrc": w.isrc,
+            "iswc": w.iswc,
+        }
+        for w in db.query(Work).filter(Work.artist_id == artist_id).all()
+    ]
+    contracts = [_contract_to_dict(c) for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()]
+    events = [
+        {
+            "work_id": e.work_id,
+            "platform": e.platform,
+            "quantity": e.quantity,
+            "unit_value": e.unit_value,
+        }
+        for e in db.query(Event).filter(Event.artist_id == artist_id).all()
+    ]
+    return {
+        "artist_id": artist_id,
+        **assess_catalog_integrity(works, contracts, events),
+    }
+
+
+@router.get("/{artist_id}/recovery/rate-benchmark-advanced")
+def rate_benchmark_advanced(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    events = [
+        {
+            "platform": e.platform,
+            "territory": e.territory,
+            "unit_value": e.unit_value,
+            "quantity": e.quantity,
+        }
+        for e in db.query(Event).filter(Event.artist_id == artist_id).all()
+    ]
+    return {
+        "artist_id": artist_id,
+        **advanced_rate_benchmark(events),
+    }
+
+
+@router.post("/{artist_id}/fraud-scan")
+def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    claims = [
+        {
+            "id": c.id,
+            "anomaly_id": c.anomaly_id,
+            "claim_type": c.claim_type,
+        }
+        for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    ]
+    statements = [_statement_to_dict(s) for s in db.query(Statement).filter(Statement.artist_id == artist_id).all()]
+    return {
+        "artist_id": artist_id,
+        **run_fraud_scan(claims, statements),
+    }
+
+
+@router.get("/{artist_id}/sla/status")
+def sla_status(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
+    return {
+        "artist_id": artist_id,
+        **sla_status_for_artist(claims),
+    }
+
+
+@router.get("/{artist_id}/recovery/heatmap")
+def underpayment_heatmap(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
+    return {
+        "artist_id": artist_id,
+        **build_underpayment_heatmap(anomalies, claims),
+    }
+
+
+@router.get("/{artist_id}/recovery/roi")
+def recovery_roi(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
+    return {
+        "artist_id": artist_id,
+        **recovery_roi_summary(claims, anomalies),
+    }
+
+
+@router.post("/{artist_id}/recovery/reconstruct-historical")
+def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    events = [
+        {
+            "expected_amount": float(e.unit_value or 0.0) * float(e.quantity or 0.0),
+            "unit_value": e.unit_value,
+            "quantity": e.quantity,
+        }
+        for e in db.query(Event).filter(Event.artist_id == artist_id).all()
+    ]
+    payments = [
+        {"amount": p.amount}
+        for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+    ]
+    return {
+        "artist_id": artist_id,
+        **reconstruct_historical_underpayment(events, payments),
+    }
+
+
+@router.get("/{artist_id}/recovery/attribution")
+def recovery_attribution(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    claims = [
+        {
+            **_claim_to_dict(c),
+            "anomaly_id": c.anomaly_id,
+            "recovered_amount": c.recovered_amount,
+        }
+        for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    ]
+    return {
+        "artist_id": artist_id,
+        **attribute_recovery(anomalies, claims),
+    }
+
+
+@router.get("/{artist_id}/benchmarking")
+def artist_benchmarking(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    artists = db.query(Artist).all()
+    peer_population = []
+    for peer in artists:
+        peer_anomalies = db.query(Anomaly).filter(Anomaly.artist_id == peer.id).all()
+        peer_claims = db.query(Claim).filter(Claim.artist_id == peer.id).all()
+        peer_population.append(
+            {
+                "leakage": sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies),
+                "recovery": sum(float(c.recovered_amount or 0.0) for c in peer_claims),
+                "anomaly_density": float(len(peer_anomalies)) / max(1.0, float(len(peer_claims) or 1.0)),
+                "catalog_health": max(20.0, 100.0 - (len(peer_anomalies) * 2.0)),
+            }
+        )
+
+    current_anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    current_claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    artist_summary = {
+        "leakage": sum(float(a.estimated_recoverable or 0.0) for a in current_anomalies),
+        "recovery": sum(float(c.recovered_amount or 0.0) for c in current_claims),
+        "anomaly_density": float(len(current_anomalies)) / max(1.0, float(len(current_claims) or 1.0)),
+        "catalog_health": max(20.0, 100.0 - (len(current_anomalies) * 2.0)),
+    }
+    return {
+        "artist_id": artist_id,
+        **cross_artist_benchmarks(artist_summary, peer_population),
+    }
+
+
+@router.get("/{artist_id}/recovery/playbook")
+def recovery_playbook(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    queue = priority_queue(artist_id, db)
+    deadline = deadline_risk(artist_id, db)
+    return {
+        "artist_id": artist_id,
+        **generate_recovery_playbook(
+            priority_items=queue.get("queue") or [],
+            deadline_risk=deadline,
+            evidence_requirements=[
+                "signed_evidence_packet",
+                "source_citations_csv",
+                "contract_basis_docs",
+            ],
+            negotiation_strategy="anchor_high_then_settle_midpoint_with_deadline_pressure",
+        ),
     }

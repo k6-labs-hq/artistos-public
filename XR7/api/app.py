@@ -16,6 +16,8 @@ from XR7.api.routers import onboarding as onboarding_router
 from XR7.api.routers import forensic as forensic_router
 from XR7.api.routers import review_queue as review_queue_router
 from XR7.api.routers import admin_console as admin_console_router
+from XR7.api.routers import payers as payers_router
+from XR7.api.routers import workspace as workspace_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -106,6 +108,8 @@ app.include_router(onboarding_router.router)
 app.include_router(forensic_router.router)
 app.include_router(review_queue_router.router)
 app.include_router(admin_console_router.router)
+app.include_router(payers_router.router)
+app.include_router(workspace_router.router)
 
 
 @app.get("/health")

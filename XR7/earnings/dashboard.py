@@ -59,6 +59,7 @@ from XR7.ml.recovery_potential import RecoveryPotentialModel
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.models.contract import Contract
 from XR7.recovery.priority_ranker import build_action_queue
+from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
 from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 
@@ -139,6 +140,7 @@ class DashboardEngine:
         priority_actions = self._priority_actions_section(anomalies, claims)
         calibration_health = self._calibration_health_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
+        expected_value = self._expected_value_section(anomalies, claims, contracts, catalog_health)
         segment_insight = self._catalog_segment_section(works, payments, anomalies)
         recovery_potential = self._recovery_potential_section(anomalies, contracts, catalog_health, segment_insight)
         earnings_trend = self._earnings_trend_section(artist_id)
@@ -153,6 +155,7 @@ class DashboardEngine:
             "balance_still_pursuing": balance,
             "deadlines": deadlines,
             "priority_actions": priority_actions,
+            "expected_recovery_value": expected_value,
             "calibration_health": calibration_health,
             "catalog_health": catalog_health,
             "catalog_segments": segment_insight,
@@ -513,6 +516,54 @@ class DashboardEngine:
                 "Work through this list top-to-bottom for maximum recovery ROI."
             ),
         }
+
+    def _expected_value_section(
+        self,
+        anomalies: list[Anomaly],
+        claims: list[Claim],
+        contracts: list[Contract],
+        catalog_health: dict,
+    ) -> dict:
+        anomalies_dict = [
+            {
+                "id": a.id,
+                "estimated_recoverable": float(a.estimated_recoverable or 0.0),
+            }
+            for a in anomalies
+        ]
+        claims_dict = [
+            {
+                "id": c.id,
+                "status": str(c.status),
+                "recovered_amount": float(c.recovered_amount or 0.0),
+            }
+            for c in claims
+        ]
+        contract_rows = [
+            {
+                "id": c.id,
+                "terms": c.terms or {},
+                "territory": c.territory,
+            }
+            for c in contracts
+        ]
+        paid_claims = sum(1 for c in claims if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED})
+        historical_rate = float(paid_claims) / max(float(len(claims) or 1), 1.0)
+
+        payer_rows = [
+            {
+                "acceptance_probability": 0.65,
+            }
+        ]
+
+        return portfolio_expected_recovery_value(
+            anomalies=anomalies_dict,
+            claims=claims_dict,
+            catalog_health=float(catalog_health.get("health_score", 70.0) or 70.0),
+            payer_behavior_rows=payer_rows,
+            contracts=contract_rows,
+            historical_recovery_rate=historical_rate,
+        )
 
     def _catalog_health_section(
         self,

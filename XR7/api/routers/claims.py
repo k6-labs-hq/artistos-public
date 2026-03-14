@@ -21,7 +21,10 @@ from XR7.recovery.cash_recovery_forecast import build_claim_forecast
 from XR7.recovery.evidence_strength import score_evidence_strength
 from XR7.recovery.negotiation_intelligence import build_negotiation_intel
 from XR7.recovery.orchestrator import ClaimsOrchestrator
+from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.payer_playbooks import build_claim_playbook
+from XR7.recovery.recovery_automation import build_automation_plan
+from XR7.recovery.sla_predictor import predict_claim_sla_dates
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 
@@ -491,3 +494,109 @@ def claim_negotiation_intel(claim_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Claim not found")
     historical = db.query(Claim).filter(Claim.artist_id == claim.artist_id, Claim.id != claim.id).all()
     return build_negotiation_intel(claim, historical)
+
+
+@router.get("/claims/{claim_id}/strength-explainer")
+def claim_strength_explainer(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    anchor_count = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).count()
+    strength = score_evidence_strength(claim_id, claim.evidence or {}, anchor_count)
+
+    contributing = []
+    risk = []
+    if float(strength.get("completeness_score") or 0.0) >= 70:
+        contributing.append("High evidence completeness")
+    else:
+        risk.append("Evidence completeness below target")
+    if float(strength.get("chain_of_custody_score") or 0.0) >= 70:
+        contributing.append("Strong chain of custody metadata")
+    else:
+        risk.append("Insufficient chain-of-custody coverage")
+    if float(strength.get("consistency_score") or 0.0) < 60:
+        risk.append("Reconciliation discrepancy risk")
+
+    return {
+        "claim_id": claim_id,
+        **strength,
+        "strength_explanation": "Strength score is a weighted blend of completeness, consistency, provenance, and chain-of-custody.",
+        "contributing_factors": contributing,
+        "risk_factors": risk,
+    }
+
+
+@router.get("/claims/{claim_id}/sla-prediction")
+def claim_sla_prediction(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    payer_rows = [
+        {
+            "payer": str((c.evidence or {}).get("legal_support", {}).get("contract_basis", [{}])[0].get("counterparty") or "generic").lower(),
+            "status": str(c.status),
+            "settlement_days": 45,
+            "settlement_percent": min(1.0, max(0.1, float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0))),
+        }
+        for c in db.query(Claim).filter(Claim.artist_id == claim.artist_id).all()
+    ]
+    payer_id = str((claim.evidence or {}).get("legal_support", {}).get("contract_basis", [{}])[0].get("counterparty") or "generic").lower()
+    behavior = payer_behavior_profile(payer_id, payer_rows)
+    return {
+        "claim_id": claim_id,
+        **predict_claim_sla_dates(
+            {
+                "id": claim.id,
+                "created_at": claim.created_at.isoformat() if claim.created_at else None,
+                "status": str(claim.status),
+            },
+            behavior,
+        ),
+    }
+
+
+@router.get("/claims/{claim_id}/automation-plan")
+def claim_automation_plan(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    return {
+        "claim_id": claim_id,
+        **build_automation_plan(
+            {
+                "id": claim.id,
+                "status": str(claim.status),
+            },
+            deadline_risk={"risk_color": "YELLOW" if str(claim.status) in {"SUBMITTED", "FILED", "IN_REVIEW"} else "GREEN"},
+        ),
+    }
+
+
+@router.get("/claims/{claim_id}/evidence/optimized")
+def claim_evidence_optimized(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+    playbook = build_claim_playbook(claim, anomaly)
+    packet = claim.evidence or {}
+    return {
+        "claim_id": claim_id,
+        "payer_specific_formatting": {
+            "payer": playbook.get("payer"),
+            "required_fields": playbook.get("required_fields_checklist"),
+            "sla_expectations": playbook.get("sla_expectations"),
+        },
+        "escalation_templates": playbook.get("escalation_paths"),
+        "legal_language": [
+            "This claim is submitted under applicable contractual and statutory rights.",
+            "Please preserve records relevant to the disputed reporting periods.",
+        ],
+        "optimized_packet": {
+            "metadata": packet.get("metadata", {}),
+            "proof": packet.get("proof", {}),
+            "legal_support": packet.get("legal_support", {}),
+            "integrity": packet.get("integrity", {}),
+        },
+    }
