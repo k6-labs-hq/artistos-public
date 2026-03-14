@@ -228,6 +228,122 @@ def test_rbac_enforces_artist_only_team_mutation():
     assert allowed_delete.status_code == 200
 
 
+def test_oauth_connector_flow_scope_refresh_and_multitenant_linking():
+    artist_id = _create_artist()
+    owner_headers = _bootstrap_artist_member(artist_id)
+
+    session_resp = client.post(
+        f"/artists/{artist_id}/connect/oauth-session",
+        json={
+            "provider": "spotify",
+            "redirect_uri": "https://example.com/callback",
+            "scopes": ["catalog.read", "payments.read"],
+            "tenant_id": "label-a",
+        },
+        headers=owner_headers,
+    )
+    assert session_resp.status_code == 200
+    session_body = session_resp.json()
+    session_id = session_body["session_id"]
+    oauth_state = session_body["oauth_state"]
+
+    missing_scope_resp = client.post(
+        f"/artists/{artist_id}/connect/oauth-session/{session_id}/exchange",
+        json={
+            "state": oauth_state,
+            "code": "code-1",
+            "external_account_id": "acct-123",
+            "tenant_id": "label-a",
+            "granted_scopes": ["catalog.read"],
+        },
+        headers=owner_headers,
+    )
+    assert missing_scope_resp.status_code == 400
+
+    exchange_resp = client.post(
+        f"/artists/{artist_id}/connect/oauth-session/{session_id}/exchange",
+        json={
+            "state": oauth_state,
+            "code": "code-1",
+            "external_account_id": "acct-123",
+            "tenant_id": "label-a",
+            "granted_scopes": ["catalog.read", "payments.read"],
+            "expires_in_seconds": 0,
+            "display_name": "Primary Label Account",
+        },
+        headers=owner_headers,
+    )
+    assert exchange_resp.status_code == 200
+    account_id = exchange_resp.json()["account"]["id"]
+
+    second_session_resp = client.post(
+        f"/artists/{artist_id}/connect/oauth-session",
+        json={
+            "provider": "spotify",
+            "redirect_uri": "https://example.com/callback",
+            "scopes": ["catalog.read"],
+            "tenant_id": "label-b",
+        },
+        headers=owner_headers,
+    )
+    assert second_session_resp.status_code == 200
+    second_session = second_session_resp.json()
+
+    second_exchange_resp = client.post(
+        f"/artists/{artist_id}/connect/oauth-session/{second_session['session_id']}/exchange",
+        json={
+            "state": second_session["oauth_state"],
+            "code": "code-2",
+            "external_account_id": "acct-456",
+            "tenant_id": "label-b",
+            "granted_scopes": ["catalog.read"],
+        },
+        headers=owner_headers,
+    )
+    assert second_exchange_resp.status_code == 200
+
+    list_resp = client.get(f"/artists/{artist_id}/connect/accounts", headers=owner_headers)
+    assert list_resp.status_code == 200
+    listed = list_resp.json()
+    assert listed["count"] == 2
+    assert {a["tenant_id"] for a in listed["accounts"]} == {"label-a", "label-b"}
+
+    list_tenant_a = client.get(
+        f"/artists/{artist_id}/connect/accounts",
+        params={"tenant_id": "label-a"},
+        headers=owner_headers,
+    )
+    assert list_tenant_a.status_code == 200
+    assert list_tenant_a.json()["count"] == 1
+
+    refresh_resp = client.post(
+        f"/artists/{artist_id}/connect/accounts/{account_id}/refresh",
+        json={"force": True, "expires_in_seconds": 7200, "rotate_refresh_token": True},
+        headers=owner_headers,
+    )
+    assert refresh_resp.status_code == 200
+    assert refresh_resp.json()["refreshed"] is True
+
+    disconnect_resp = client.delete(
+        f"/artists/{artist_id}/connect/accounts/{account_id}",
+        headers=owner_headers,
+    )
+    assert disconnect_resp.status_code == 200
+    assert disconnect_resp.json()["disconnected"] is True
+
+    after_disconnect = client.get(f"/artists/{artist_id}/connect/accounts", headers=owner_headers)
+    assert after_disconnect.status_code == 200
+    assert after_disconnect.json()["count"] == 1
+
+    include_inactive_resp = client.get(
+        f"/artists/{artist_id}/connect/accounts",
+        params={"include_inactive": "true"},
+        headers=owner_headers,
+    )
+    assert include_inactive_resp.status_code == 200
+    assert include_inactive_resp.json()["count"] == 2
+
+
 def test_expansion_endpoints_smoke_matrix():
     artist_id = _create_artist()
     owner_headers = _bootstrap_artist_member(artist_id)

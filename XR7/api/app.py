@@ -12,6 +12,7 @@ from XR7.api.routers import dashboard as dashboard_router
 from XR7.api.routers import terms as terms_router
 from XR7.api.routers import intelligence as intelligence_router
 from XR7.api.routers import expansion as expansion_router
+from XR7.api.routers import onboarding as onboarding_router
 
 
 @asynccontextmanager
@@ -22,6 +23,11 @@ async def lifespan(app: FastAPI):
     import XR7.models.notification_preference  # noqa: F401
     import XR7.models.team_access  # noqa: F401
     import XR7.models.evidence_anchor  # noqa: F401
+    import XR7.models.oauth_connector  # noqa: F401
+    import XR7.models.catalog_confirmation  # noqa: F401
+    import XR7.models.immutable_ledger_entry  # noqa: F401
+    import XR7.models.parser_plugin  # noqa: F401
+    import XR7.models.sync_job  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -82,6 +88,7 @@ app.include_router(dashboard_router.router)
 app.include_router(terms_router.router)
 app.include_router(intelligence_router.router)
 app.include_router(expansion_router.router)
+app.include_router(onboarding_router.router)
 
 
 @app.get("/health")

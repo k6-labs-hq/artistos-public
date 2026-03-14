@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XR7 Permissions Dashboard</title>
+  <style>
+    :root {
+      --bg: #0d1b2a;
+      --card: #1b263b;
+      --ink: #e0e1dd;
+      --muted: #9fb3c8;
+      --accent: #e09f3e;
+      --ok: #4caf50;
+      --warn: #ff7043;
+    }
+    body { margin: 0; font-family: "IBM Plex Sans", "Segoe UI", sans-serif; background: radial-gradient(circle at top, #1b263b, #0d1b2a 65%); color: var(--ink); }
+    .wrap { max-width: 1000px; margin: 2rem auto; padding: 1rem; }
+    .hero { margin-bottom: 1rem; }
+    .hero h1 { margin: 0; font-size: 2rem; }
+    .hero p { color: var(--muted); margin-top: 0.3rem; }
+    .card { background: var(--card); border: 1px solid #32455f; border-radius: 14px; padding: 1rem; margin: 0.8rem 0; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.8rem; }
+    .pill { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 999px; font-size: 0.8rem; }
+    .ok { background: rgba(76, 175, 80, 0.2); color: #98e69c; }
+    .warn { background: rgba(255, 112, 67, 0.2); color: #ffbfaa; }
+    input, button { font-size: 1rem; border-radius: 10px; border: 1px solid #2f4661; }
+    input { padding: 0.6rem; background: #12253b; color: var(--ink); min-width: 260px; }
+    button { padding: 0.6rem 1rem; background: var(--accent); color: #1a1a1a; border: none; cursor: pointer; font-weight: 700; }
+    ul { margin: 0.4rem 0 0; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Permissions Dashboard</h1>
+      <p>Connected accounts, missing connections, health, and sync status.</p>
+    </div>
+
+    <div class="card">
+      <label for="artistId">Artist ID:</label>
+      <div class="row">
+        <input id="artistId" placeholder="artist-uuid" />
+        <button id="loadBtn">Load</button>
+      </div>
+    </div>
+
+    <div id="content"></div>
+  </div>
+
+  <script>
+    const content = document.getElementById("content");
+
+    function card(html) {
+      return `<div class="card">${html}</div>`;
+    }
+
+    function render(data) {
+      const connected = data.connected_accounts || [];
+      const missing = data.missing_connections || [];
+      const syncs = data.last_sync_timestamps || [];
+
+      let html = "";
+      html += card(`<h3>Connection Health</h3><p>Healthy: ${data.connection_health.healthy_count} | Disconnected: ${data.connection_health.disconnected_count}</p>`);
+      html += card(`<h3>Missing Connections</h3><ul>${missing.map(m => `<li>${m}</li>`).join("") || "<li>None</li>"}</ul>`);
+      html += card(`<h3>Last Sync Timestamps</h3><ul>${syncs.map(t => `<li>${t}</li>`).join("") || "<li>No sync history</li>"}</ul>`);
+      html += card(`<h3>Connected Accounts</h3>
+        <ul>${connected.map(a => `<li><b>${a.provider}</b> / tenant: ${a.tenant_id} <span class="pill ${a.connection_health === 'healthy' ? 'ok' : 'warn'}">${a.connection_health}</span><br/>Last sync: ${a.last_sync_timestamp || 'n/a'}</li>`).join("") || "<li>No connected accounts</li>"}</ul>`);
+      content.innerHTML = html;
+    }
+
+    async function load() {
+      const artistId = document.getElementById("artistId").value.trim();
+      if (!artistId) {
+        content.innerHTML = card("<p class='warn'>Enter an artist ID.</p>");
+        return;
+      }
+
+      const res = await fetch(`/artists/${artistId}/connect/permissions-dashboard`);
+      if (!res.ok) {
+        content.innerHTML = card(`<p class='warn'>Failed to load dashboard (${res.status}).</p>`);
+        return;
+      }
+      render(await res.json());
+    }
+
+    document.getElementById("loadBtn").addEventListener("click", load);
+  </script>
+</body>
+</html>

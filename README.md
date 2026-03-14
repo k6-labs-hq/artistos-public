@@ -627,6 +627,9 @@ Key variables:
 - `XR7_EVIDENCE_HMAC_SECRET` — secret used when signing mode is `hmac`
 - `XR7_EVIDENCE_PRIVATE_KEY_PEM` — PEM private key used when signing mode is `rsa`
 - `XR7_EVIDENCE_PUBLIC_KEY_PEM` — PEM public key used to verify RSA signatures
+- `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` — enable live Spotify OAuth exchange/refresh in connector layer
+- `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET` — enable live YouTube OAuth exchange/refresh
+- `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` — enable live TikTok OAuth exchange/refresh
 
 See `.env.example` for the full list including connector API key variable names.
 
@@ -808,6 +811,92 @@ Public/non-artist-scoped expansion routes (no team headers required):
 - **Integration fallbacks / semi-automated pulling setup**:
 `POST /artists/{id}/connect/oauth-session`,
 `GET /artists/{id}/connect/fallbacks`
+- **OAuth/API connector layer (unified)**:
+`POST /artists/{id}/connect/oauth-session` (create OAuth2 stateful login session with requested scopes),
+`POST /artists/{id}/connect/oauth-session/{session_id}/exchange` (validate state + link provider account + persist tokens),
+`GET /artists/{id}/connect/accounts` (list linked accounts with provider/tenant filters),
+`POST /artists/{id}/connect/accounts/{account_id}/refresh` (refresh access token from stored refresh token),
+`DELETE /artists/{id}/connect/accounts/{account_id}` (disconnect linked account)
+
+- **Data fetcher modules (historical statements + catalog + registrations + usage + universal schema normalisation)**:
+`POST /artists/{id}/fetchers/distributor`,
+`POST /artists/{id}/fetchers/pro`,
+`POST /artists/{id}/fetchers/mlc`,
+`POST /artists/{id}/fetchers/youtube`,
+`POST /artists/{id}/fetchers/social`
+
+Provider fetcher execution mode:
+- If provider API base URL + key env vars are configured, fetchers attempt live pulls.
+- If not configured, fetchers return deterministic simulated payloads so local/dev pipelines stay testable.
+
+- **Permissions dashboard (backend + UI)**:
+`GET /artists/{id}/connect/permissions-dashboard`,
+`GET /permissions/ui`
+
+- **File ingestion pipeline (PDF/CSV/XLSX/ZIP + scan/type detection/PDF split/OCR fallback)**:
+`POST /artists/{id}/ingestion/upload-any`
+
+Ingestion hardening:
+- ClamAV scan is attempted first (configurable with `XR7_USE_CLAMAV`, `CLAMAV_HOST`, `CLAMAV_PORT`), with signature fallback when daemon is unavailable.
+- Strict extension-vs-magic validation is enforced by default (`strict_validation=true`), blocking suspicious uploads.
+
+- **Pluggable statement parser engine (distributor/PRO/publisher/MLC -> universal schema)**:
+`POST /artists/{id}/parsers/distributor`,
+`POST /artists/{id}/parsers/pro`,
+`POST /artists/{id}/parsers/publisher`,
+`POST /artists/{id}/parsers/mlc`
+
+Parser plugin persistence:
+- `PUT /artists/{id}/parsers/plugins` (register/update plugin metadata)
+- `GET /artists/{id}/parsers/plugins` (list plugin registrations)
+
+Async sync jobs with retries + status tracking:
+- `POST /artists/{id}/sync/jobs` (enqueue job; optional async execution)
+- `GET /artists/{id}/sync/jobs` (list job statuses)
+- `GET /artists/{id}/sync/jobs/{job_id}` (single job detail)
+- `POST /artists/{id}/sync/jobs/{job_id}/run` (manual run/retry)
+
+- **Missing data detector**:
+`GET /artists/{id}/ingestion/missing-data`
+
+- **Catalog graph builder + confirmation + inference**:
+`POST /artists/{id}/catalog/graph/build`,
+`POST /artists/{id}/catalog/confirm`,
+`GET /artists/{id}/catalog/confirm`,
+`POST /artists/{id}/catalog/infer`
+
+- **Variance detection engine**:
+`POST /artists/{id}/variance/scan`
+
+- **Evidence packet generator (audit packet endpoint)**:
+`POST /claims/{claim_id}/evidence/generate-audit`
+
+- **Recovery automation engine**:
+`POST /artists/{id}/recovery/automate`
+
+- **Immutable ledger**:
+`GET /artists/{id}/ledger/immutable`
+
+OAuth connector mode behavior:
+- If provider OAuth credentials are configured (env vars above), exchange/refresh calls use live provider token endpoints.
+- If credentials are not configured, endpoints run in safe simulated mode so local development and tests still work.
+
+Step-to-module mapping (implemented baseline):
+
+- Step 1: OAuth/API Connector Layer -> `connect/oauth-session`, `connect/accounts/*`
+- Step 1: Data Fetcher Modules -> `/fetchers/{integration}`
+- Step 1: Permissions Dashboard -> `/connect/permissions-dashboard`, `/permissions/ui`
+- Step 2: File Ingestion Pipeline -> `/ingestion/upload-any`
+- Step 2: Statement Parser Engine -> `/parsers/{parser_type}`
+- Step 2: Missing Data Detector -> `/ingestion/missing-data`
+- Step 3: Catalog Graph Builder -> `/catalog/graph/build`
+- Step 3: Catalog Confirmation UI backend -> `/catalog/confirm`
+- Step 3: Auto-Inference Engine -> `/catalog/infer`
+- Step 4: Variance Detection Engine -> `/variance/scan`
+- Step 4: Evidence Packet Generator -> `/claims/{claim_id}/evidence/generate-audit`
+- Step 4: Recovery Automation Engine -> `/recovery/automate`
+- Step 4: Immutable Ledger -> `/ledger/immutable`
+
 - **Collaborative team access (artist/manager/attorney)**:
 `POST /artists/{id}/team/members`,
 `GET /artists/{id}/team/members`,

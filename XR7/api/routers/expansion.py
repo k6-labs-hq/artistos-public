@@ -3,7 +3,7 @@ from __future__ import annotations
 import hashlib
 import io
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
@@ -12,6 +12,11 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
+from XR7.ingestion.connectors.oauth_providers import (
+    OAuthProviderError,
+    OAuthProviderService,
+    parse_scope_string,
+)
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -22,6 +27,16 @@ from XR7.models.notification_preference import (
     NotificationPreference,
     NotificationPreferenceSchema,
     NotificationPreferenceUpsert,
+)
+from XR7.models.oauth_connector import (
+    ConnectorAccountLink,
+    ConnectorAccountLinkSchema,
+    ConnectorAccountStatus,
+    OAuthConnectorSession,
+    OAuthSessionCreateRequest,
+    OAuthSessionStatus,
+    OAuthTokenExchangeRequest,
+    OAuthTokenRefreshRequest,
 )
 from XR7.models.payment import Payment
 from XR7.models.team_access import TeamMember, TeamMemberCreate, TeamMemberSchema, TeamRole
@@ -81,11 +96,6 @@ class NotificationDispatchRequest(BaseModel):
     body: str
 
 
-class OAuthSessionRequest(BaseModel):
-    provider: str
-    redirect_uri: str
-
-
 class CurrencyTaxEstimateRequest(BaseModel):
     gross_amount: float
     source_currency: str = "USD"
@@ -104,6 +114,70 @@ class ClaimTemplateRequest(BaseModel):
 class PredictRecoverableRequest(BaseModel):
     catalog_size: int | None = None
     genre: str | None = None
+
+
+def _normalize_scopes(scopes: list[str] | str | None) -> list[str]:
+    if scopes is None:
+        return []
+    if isinstance(scopes, str):
+        raw = scopes.replace(",", " ").split()
+    else:
+        raw = [s for s in scopes]
+
+    unique_scopes: list[str] = []
+    seen: set[str] = set()
+    for item in raw:
+        scope = item.strip()
+        if not scope:
+            continue
+        lowered = scope.lower()
+        if lowered in seen:
+            continue
+        seen.add(lowered)
+        unique_scopes.append(scope)
+    return unique_scopes
+
+
+def _scopes_to_storage(scopes: list[str] | str | None) -> str:
+    return " ".join(_normalize_scopes(scopes))
+
+
+def _scopes_from_storage(scopes_value: str | None) -> list[str]:
+    return _normalize_scopes(scopes_value or "")
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _as_utc(dt: datetime | None) -> datetime | None:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _session_or_404(artist_id: str, session_id: str, db: Session) -> OAuthConnectorSession:
+    session = (
+        db.query(OAuthConnectorSession)
+        .filter(OAuthConnectorSession.id == session_id, OAuthConnectorSession.artist_id == artist_id)
+        .first()
+    )
+    if not session:
+        raise HTTPException(status_code=404, detail="OAuth session not found")
+    return session
+
+
+def _account_or_404(artist_id: str, account_id: str, db: Session) -> ConnectorAccountLink:
+    account = (
+        db.query(ConnectorAccountLink)
+        .filter(ConnectorAccountLink.id == account_id, ConnectorAccountLink.artist_id == artist_id)
+        .first()
+    )
+    if not account:
+        raise HTTPException(status_code=404, detail="Connector account not found")
+    return account
 
 
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
@@ -428,7 +502,7 @@ def export_summary_report(
 @router.post("/artists/{artist_id}/connect/oauth-session")
 def create_oauth_session(
     artist_id: str,
-    payload: OAuthSessionRequest,
+    payload: OAuthSessionCreateRequest,
     db: Session = Depends(get_db),
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
@@ -441,13 +515,334 @@ def create_oauth_session(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
+    now = _utc_now()
     state = hashlib.sha256(f"{artist_id}:{payload.provider}:{uuid.uuid4()}".encode("utf-8")).hexdigest()
+    provider_service = OAuthProviderService(payload.provider)
+    requested_scopes = _normalize_scopes(payload.scopes) or provider_service.default_scopes()
+    oauth_session = OAuthConnectorSession(
+        artist_id=artist_id,
+        provider=payload.provider,
+        redirect_uri=payload.redirect_uri,
+        state=state,
+        requested_scopes=_scopes_to_storage(requested_scopes),
+        tenant_id=payload.tenant_id,
+        status=OAuthSessionStatus.PENDING,
+        created_by_email=x_actor_email,
+        expires_at=now.replace(microsecond=0) + timedelta(minutes=15),
+        created_at=now,
+        updated_at=now,
+    )
+    db.add(oauth_session)
+    db.commit()
+    db.refresh(oauth_session)
+
+    authorize_url = provider_service.build_authorization_url(
+        redirect_uri=payload.redirect_uri,
+        state=state,
+        scopes=requested_scopes,
+        tenant_id=payload.tenant_id,
+    )
     return {
         "artist_id": artist_id,
+        "session_id": oauth_session.id,
         "provider": payload.provider,
         "oauth_state": state,
         "redirect_uri": payload.redirect_uri,
-        "note": "Use this state token for secure OAuth callback validation.",
+        "requested_scopes": requested_scopes,
+        "tenant_id": payload.tenant_id,
+        "authorization_url": authorize_url,
+        "provider_configured": provider_service.configured(),
+        "expires_at": oauth_session.expires_at.isoformat(),
+        "note": "Use this state token for callback validation, then call exchange endpoint to store linked account tokens.",
+    }
+
+
+@router.post("/artists/{artist_id}/connect/oauth-session/{session_id}/exchange")
+def exchange_oauth_code(
+    artist_id: str,
+    session_id: str,
+    payload: OAuthTokenExchangeRequest,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
+    _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
+
+    oauth_session = _session_or_404(artist_id, session_id, db)
+    now = _utc_now()
+
+    if oauth_session.status != OAuthSessionStatus.PENDING:
+        raise HTTPException(status_code=409, detail="OAuth session is not pending")
+    session_expires_at = _as_utc(oauth_session.expires_at)
+    if session_expires_at and session_expires_at < now:
+        oauth_session.status = OAuthSessionStatus.EXPIRED
+        oauth_session.updated_at = now
+        db.commit()
+        raise HTTPException(status_code=400, detail="OAuth session has expired")
+    if payload.state != oauth_session.state:
+        raise HTTPException(status_code=400, detail="Invalid OAuth state")
+    if payload.tenant_id != oauth_session.tenant_id:
+        raise HTTPException(status_code=400, detail="OAuth tenant mismatch")
+
+    requested_scopes = _scopes_from_storage(oauth_session.requested_scopes)
+    provider_service = OAuthProviderService(oauth_session.provider)
+    token_data: dict | None = None
+    if payload.access_token is None or payload.refresh_token is None:
+        try:
+            token_data = provider_service.exchange_code(
+                code=payload.code,
+                redirect_uri=oauth_session.redirect_uri,
+                tenant_id=payload.tenant_id,
+                fallback_scopes=requested_scopes,
+            )
+        except OAuthProviderError as exc:
+            raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    granted_scopes = _normalize_scopes(payload.granted_scopes)
+    if not granted_scopes:
+        if token_data:
+            granted_scopes = _normalize_scopes(parse_scope_string(token_data.get("scope")))
+        if not granted_scopes:
+            granted_scopes = requested_scopes
+
+    missing_scopes = sorted(set(s.lower() for s in requested_scopes) - set(s.lower() for s in granted_scopes))
+
+    if missing_scopes and not payload.allow_partial_scope_grant:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "message": "Provider did not grant all requested scopes",
+                "missing_scopes": missing_scopes,
+            },
+        )
+
+    access_token = payload.access_token or (token_data or {}).get("access_token")
+    refresh_token = payload.refresh_token or (token_data or {}).get("refresh_token")
+    token_type = payload.token_type or (token_data or {}).get("token_type") or "Bearer"
+    expires_in_seconds = payload.expires_in_seconds
+    if token_data is not None:
+        expires_in_seconds = int(token_data.get("expires_in") or expires_in_seconds or 3600)
+
+    if not access_token:
+        raise HTTPException(status_code=400, detail="Missing access token from OAuth exchange")
+
+    account = (
+        db.query(ConnectorAccountLink)
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id,
+            ConnectorAccountLink.provider == oauth_session.provider,
+            ConnectorAccountLink.tenant_id == payload.tenant_id,
+            ConnectorAccountLink.external_account_id == payload.external_account_id,
+        )
+        .first()
+    )
+
+    token_expires_at = None
+    if expires_in_seconds is not None:
+        token_expires_at = now + timedelta(seconds=max(0, expires_in_seconds))
+
+    if not account:
+        account = ConnectorAccountLink(
+            artist_id=artist_id,
+            provider=oauth_session.provider,
+            tenant_id=payload.tenant_id,
+            external_account_id=payload.external_account_id,
+            display_name=payload.display_name,
+            granted_scopes=_scopes_to_storage(granted_scopes),
+            access_token=access_token,
+            refresh_token=refresh_token,
+            token_type=token_type,
+            token_expires_at=token_expires_at,
+            last_refreshed_at=now,
+            status=ConnectorAccountStatus.ACTIVE,
+            created_by_email=x_actor_email,
+            is_active=True,
+            created_at=now,
+            updated_at=now,
+        )
+        db.add(account)
+    else:
+        account.display_name = payload.display_name or account.display_name
+        account.granted_scopes = _scopes_to_storage(granted_scopes)
+        account.access_token = access_token
+        account.refresh_token = refresh_token
+        account.token_type = token_type
+        account.token_expires_at = token_expires_at
+        account.last_refreshed_at = now
+        account.status = ConnectorAccountStatus.ACTIVE
+        account.is_active = True
+        account.updated_at = now
+
+    oauth_session.status = OAuthSessionStatus.EXCHANGED
+    oauth_session.updated_at = now
+
+    db.commit()
+    db.refresh(account)
+
+    return {
+        "artist_id": artist_id,
+        "provider": oauth_session.provider,
+        "session_id": oauth_session.id,
+        "account": ConnectorAccountLinkSchema.model_validate(account),
+        "scope_check": {
+            "requested": requested_scopes,
+            "granted": granted_scopes,
+            "missing": missing_scopes,
+            "full_grant": len(missing_scopes) == 0,
+        },
+        "linked": True,
+        "oauth_code_consumed": bool(payload.code),
+        "provider_configured": provider_service.configured(),
+        "provider_exchange_mode": "live" if token_data and not token_data.get("simulated") else "simulated",
+    }
+
+
+@router.get("/artists/{artist_id}/connect/accounts")
+def list_connected_accounts(
+    artist_id: str,
+    provider: str | None = Query(default=None),
+    tenant_id: str | None = Query(default=None),
+    include_inactive: bool = Query(default=False),
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
+    _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER, TeamRole.ATTORNEY},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
+
+    query = db.query(ConnectorAccountLink).filter(ConnectorAccountLink.artist_id == artist_id)
+    if provider:
+        query = query.filter(func.lower(ConnectorAccountLink.provider) == provider.strip().lower())
+    if tenant_id:
+        query = query.filter(ConnectorAccountLink.tenant_id == tenant_id)
+    if not include_inactive:
+        query = query.filter(ConnectorAccountLink.is_active.is_(True))
+
+    rows = query.order_by(ConnectorAccountLink.created_at.desc()).all()
+    now = _utc_now()
+    accounts = []
+    for row in rows:
+        token_expires_at = _as_utc(row.token_expires_at)
+        needs_refresh = bool(token_expires_at and token_expires_at <= now)
+        item = ConnectorAccountLinkSchema.model_validate(row).model_dump(mode="json")
+        item["granted_scopes"] = _scopes_from_storage(row.granted_scopes)
+        item["needs_refresh"] = needs_refresh
+        accounts.append(item)
+
+    return {
+        "artist_id": artist_id,
+        "count": len(accounts),
+        "accounts": accounts,
+    }
+
+
+@router.post("/artists/{artist_id}/connect/accounts/{account_id}/refresh")
+def refresh_connected_account_token(
+    artist_id: str,
+    account_id: str,
+    payload: OAuthTokenRefreshRequest,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
+    _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST, TeamRole.MANAGER},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
+
+    account = _account_or_404(artist_id, account_id, db)
+    if not account.is_active or account.status != ConnectorAccountStatus.ACTIVE:
+        raise HTTPException(status_code=409, detail="Connector account is not active")
+    if not account.refresh_token:
+        raise HTTPException(status_code=400, detail="Connector account has no refresh token")
+
+    now = _utc_now()
+    token_expires_at = _as_utc(account.token_expires_at)
+    if not payload.force and token_expires_at and token_expires_at > now + timedelta(minutes=2):
+        return {
+            "artist_id": artist_id,
+            "account_id": account_id,
+            "refreshed": False,
+            "reason": "token_still_valid",
+            "token_expires_at": token_expires_at.isoformat(),
+        }
+
+    provider_service = OAuthProviderService(account.provider)
+    try:
+        refreshed = provider_service.refresh_token(
+            account.refresh_token,
+            fallback_expires_in=payload.expires_in_seconds,
+        )
+    except OAuthProviderError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+    account.access_token = refreshed["access_token"]
+    if payload.rotate_refresh_token:
+        account.refresh_token = refreshed.get("refresh_token")
+    account.token_type = refreshed.get("token_type") or account.token_type
+    account.last_refreshed_at = now
+    account.token_expires_at = now + timedelta(seconds=max(0, int(refreshed.get("expires_in") or payload.expires_in_seconds)))
+    account.updated_at = now
+
+    db.commit()
+
+    return {
+        "artist_id": artist_id,
+        "account_id": account_id,
+        "provider": account.provider,
+        "tenant_id": account.tenant_id,
+        "refreshed": True,
+        "token_expires_at": account.token_expires_at.isoformat() if account.token_expires_at else None,
+        "rotated_refresh_token": payload.rotate_refresh_token,
+        "provider_configured": provider_service.configured(),
+        "provider_refresh_mode": "live" if not refreshed.get("simulated") else "simulated",
+    }
+
+
+@router.delete("/artists/{artist_id}/connect/accounts/{account_id}")
+def disconnect_connected_account(
+    artist_id: str,
+    account_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
+    _artist_or_404(artist_id, db)
+    _authorize_team_access(
+        artist_id,
+        db,
+        {TeamRole.ARTIST},
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
+
+    account = _account_or_404(artist_id, account_id, db)
+    account.is_active = False
+    account.status = ConnectorAccountStatus.DISCONNECTED
+    account.updated_at = _utc_now()
+    db.commit()
+
+    return {
+        "artist_id": artist_id,
+        "account_id": account_id,
+        "disconnected": True,
     }
 
 
