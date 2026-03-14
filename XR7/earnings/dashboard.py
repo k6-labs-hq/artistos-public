@@ -63,6 +63,7 @@ from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 _ACTIVE_CLAIM_STATUSES = {
     ClaimStatus.IDENTIFIED,
     ClaimStatus.PREPARED,
+    ClaimStatus.FILED,
     ClaimStatus.SUBMITTED,
     ClaimStatus.IN_REVIEW,
     ClaimStatus.ACCEPTED,

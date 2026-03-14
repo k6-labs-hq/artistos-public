@@ -12,6 +12,7 @@ from XR7.models.base import Base
 class ClaimStatus(str, enum.Enum):
     IDENTIFIED = "IDENTIFIED"
     PREPARED = "PREPARED"
+    FILED = "FILED"
     SUBMITTED = "SUBMITTED"
     IN_REVIEW = "IN_REVIEW"
     ACCEPTED = "ACCEPTED"

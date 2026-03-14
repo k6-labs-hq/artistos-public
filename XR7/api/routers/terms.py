@@ -28,6 +28,7 @@ from XR7.legal.terms import TERMS_TEXT, TERMS_VERSION, terms_text_sha256
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.terms_acceptance import TermsAcceptance, TermsAcceptanceSchema
+from XR7.services.artist_lifecycle import promote_to_onboarded
 
 router = APIRouter(tags=["terms"])
 
@@ -150,6 +151,7 @@ def accept_terms(
         user_agent=user_agent,
     )
     db.add(record)
+    promote_to_onboarded(artist)
     db.commit()
     db.refresh(record)
     return record

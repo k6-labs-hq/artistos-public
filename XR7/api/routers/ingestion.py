@@ -44,6 +44,7 @@ from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
+from XR7.services.artist_lifecycle import promote_to_active
 
 router = APIRouter(tags=["ingestion"])
 
@@ -321,6 +322,8 @@ async def upload_statement(
         uploaded_at=datetime.now(timezone.utc),
     )
     db.add(statement)
+    if status != "FAILED":
+        promote_to_active(artist)
     db.commit()
     db.refresh(statement)
 
@@ -419,6 +422,8 @@ async def upload_statement_batch(
 
     # Trigger anomaly detection once after the full batch.
     if processed:
+        promote_to_active(artist)
+        db.commit()
         try:
             rg = RightsGraph()
             AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)

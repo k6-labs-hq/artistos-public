@@ -29,6 +29,7 @@ from XR7.models.parser_plugin import ParserPlugin, ParserPluginSchema
 from XR7.models.payment import Payment
 from XR7.models.statement import Statement
 from XR7.models.sync_job import SyncJob, SyncJobSchema
+from XR7.models.terms_acceptance import TermsAcceptance
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.recovery_automation_engine import automate_recovery
@@ -78,6 +79,44 @@ def _artist_or_404(artist_id: str, db: Session) -> Artist:
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     return artist
+
+@router.get("/artists/{artist_id}/onboarding/status")
+def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
+    artist = _artist_or_404(artist_id, db)
+
+    terms_accepted = (
+        db.query(TermsAcceptance.id)
+        .filter(TermsAcceptance.artist_id == artist_id)
+        .first()
+        is not None
+    )
+    statement_count = db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    connector_count = (
+        db.query(func.count(ConnectorAccountLink.id))
+        .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True))
+        .scalar()
+        or 0
+    )
+
+    return {
+        "artist_id": artist_id,
+        "status": artist.status,
+        "gates": {
+            "terms_accepted": bool(terms_accepted),
+            "statement_uploaded": int(statement_count) > 0,
+            "connector_linked": int(connector_count) > 0,
+        },
+        "progress": {
+            "statements_uploaded": int(statement_count),
+            "active_connectors": int(connector_count),
+        },
+        "timestamps": {
+            "created_at": artist.created_at.isoformat() if artist.created_at else None,
+            "onboarded_at": artist.onboarded_at.isoformat() if artist.onboarded_at else None,
+            "activated_at": artist.activated_at.isoformat() if artist.activated_at else None,
+        },
+        "expected_status_flow": ["NEW", "ONBOARDED", "ACTIVE"],
+    }
 
 
 @router.get("/permissions/ui")

@@ -70,6 +70,59 @@ GET /health/readiness
 
 Returns the status of every connector and notification service.  Use this endpoint to see exactly which credentials are missing.
 
+### Onboarding Lifecycle Status
+
+Track artist onboarding progression through the state machine:
+
+```
+GET /artists/{id}/onboarding/status
+```
+
+Status flow:
+- `NEW` -> artist record created
+- `ONBOARDED` -> terms accepted
+- `ACTIVE` -> first statement successfully ingested
+
+### Analyst Review Queue and Admin Console
+
+Analyst queue (requires `ANALYST_API_KEY` and `X-Analyst-Email`):
+
+```
+GET  /review-queue/items
+POST /review-queue/items
+POST /review-queue/items/{id}/assign
+POST /review-queue/items/{id}/decision
+GET  /review-queue/metrics
+POST /review-queue/threshold-check
+```
+
+Admin operator console (requires `ADMIN_API_KEY` via `X-Admin-Key`):
+
+```
+GET /admin/overview
+GET /admin/artists
+GET /admin/claims
+GET /admin/anomalies
+GET /admin/transactions
+GET /admin/review-queue
+GET /admin/audit-logs
+```
+
+### SDK Generation
+
+Generate OpenAPI clients for Python and TypeScript:
+
+```
+make sdks
+```
+
+Or generate per-language:
+
+```
+make sdk-python
+make sdk-typescript
+```
+
 ---
 
 ## Artist Recovery Dashboard

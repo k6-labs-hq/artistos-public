@@ -14,6 +14,9 @@ from XR7.api.routers import intelligence as intelligence_router
 from XR7.api.routers import expansion as expansion_router
 from XR7.api.routers import onboarding as onboarding_router
 from XR7.api.routers import forensic as forensic_router
+from XR7.api.routers import review_queue as review_queue_router
+from XR7.api.routers import admin_console as admin_console_router
+from xr7_common.settings import settings
 
 
 @asynccontextmanager
@@ -33,6 +36,8 @@ async def lifespan(app: FastAPI):
     import XR7.models.catalog_graph  # noqa: F401
     import XR7.models.forensic_universal_event  # noqa: F401
     import XR7.models.catalog_graph_adj  # noqa: F401
+    import XR7.models.review_queue  # noqa: F401
+    import XR7.models.admin_audit_log  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -95,6 +100,8 @@ app.include_router(intelligence_router.router)
 app.include_router(expansion_router.router)
 app.include_router(onboarding_router.router)
 app.include_router(forensic_router.router)
+app.include_router(review_queue_router.router)
+app.include_router(admin_console_router.router)
 
 
 @app.get("/health")
@@ -114,12 +121,14 @@ def readiness():
     functional.  Individual connector status reflects whether the required
     environment variables are set — it does NOT make real network connections.
     """
+    from XR7.celery_app import celery_app
     from XR7.ingestion.connectors.pro import PROConnector
     from XR7.ingestion.connectors.dsp import DSPConnector
     from XR7.ingestion.connectors.platform import PlatformConnector
     from XR7.ingestion.connectors.ticketing import TicketingConnector
     from XR7.ingestion.connectors.distributor import DistributorConnector
     from XR7.ingestion.connectors.mlc import MLCConnector
+    from XR7.ingestion.statement_parser import SUPPORTED_FORMATS
     from XR7.ingestion.connectors.international_pro import (
         APRAAMCOSConnector,
         JASRACConnector,
@@ -187,6 +196,20 @@ def readiness():
     celero_client = CeleroClient()
     celero_webhook_secret_set = bool(os.environ.get("CELERO_WEBHOOK_SECRET"))
 
+    redis_ready = bool(settings.redis_url)
+    celery_ready = bool(settings.celery_broker_url and settings.celery_result_backend)
+    storage_ready = bool(
+        settings.s3_endpoint_url and settings.s3_access_key_id and settings.s3_secret_access_key
+    )
+    plugin_signature_ready = bool(settings.plugin_signature_secret)
+
+    ml_components = {
+        "anomaly_detector": "ready",
+        "forecaster": "ready",
+        "catalog_scorer": "ready",
+        "confidence_calibrator": "ready",
+    }
+
     # Core platform is always ready (DB + API)
     core_ready = True
 
@@ -199,6 +222,41 @@ def readiness():
             "api": "ready",
             "widget": "ready",
             "statement_upload": "ready",
+        },
+        "ingestion": {
+            "supported_format_count": len(SUPPORTED_FORMATS),
+            "explicit_format_count": len([k for k, v in SUPPORTED_FORMATS.items() if v.get("type") != "generic"]),
+            "batch_upload": "ready",
+            "status": "ready",
+        },
+        "queues": {
+            "redis_configured": redis_ready,
+            "celery_broker_url": settings.celery_broker_url,
+            "celery_result_backend": settings.celery_result_backend,
+            "celery_registered_tasks": sorted(celery_app.tasks.keys())[:50],
+            "status": "ready" if redis_ready and celery_ready else "missing_credentials",
+        },
+        "storage": {
+            "provider": "s3-compatible",
+            "endpoint": settings.s3_endpoint_url,
+            "bucket": settings.s3_bucket,
+            "region": settings.s3_region,
+            "configured": storage_ready,
+            "status": "ready" if storage_ready else "missing_credentials",
+        },
+        "ml": {
+            "status": "ready",
+            "components": ml_components,
+        },
+        "plugins": {
+            "allowed_prefixes": list(settings.plugin_allowed_prefixes),
+            "blocked_prefixes": list(settings.plugin_blocked_prefixes),
+            "signature_enforced": plugin_signature_ready,
+            "status": "ready" if plugin_signature_ready else "signature_optional",
+        },
+        "webhooks": {
+            "celero_webhook_secret_configured": celero_webhook_secret_set,
+            "status": "ready" if celero_webhook_secret_set else "missing_credentials",
         },
         "merchant_of_record": {
             "provider": "Celero Commerce",

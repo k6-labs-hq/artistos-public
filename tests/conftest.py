@@ -19,6 +19,8 @@ from XR7.api.app import app
 import XR7.models.terms_acceptance  # noqa: F401
 import XR7.models.forensic_universal_event  # noqa: F401
 import XR7.models.catalog_graph_adj  # noqa: F401
+import XR7.models.review_queue  # noqa: F401
+import XR7.models.admin_audit_log  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"

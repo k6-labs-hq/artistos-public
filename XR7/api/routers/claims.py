@@ -13,7 +13,9 @@ from XR7.auth.event_notifications import send_event_notification
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.notification_preference import NotificationPreference
+from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.orchestrator import ClaimsOrchestrator
+from XR7.services.review_queue import enqueue_review_item
 
 router = APIRouter(tags=["claims"])
 
@@ -141,6 +143,16 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             f"Claim {updated.id} advanced to {updated.status}.",
             current_hour_utc=datetime.now(timezone.utc).hour,
         )
+        if str(updated.status) in {"IN_REVIEW", "ACCEPTED"}:
+            enqueue_review_item(
+                db,
+                artist_id=updated.artist_id,
+                source_type=ReviewSourceType.CLAIM,
+                source_id=updated.id,
+                reason=f"Claim advanced to {updated.status}; analyst check required",
+                priority_score=float(updated.recovered_amount or 0.0),
+                payload={"claim_id": updated.id, "status": str(updated.status)},
+            )
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -150,7 +162,21 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
 def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
     orchestrator = ClaimsOrchestrator(db)
     try:
-        return orchestrator.generate_evidence_packet(claim_id)
+        packet = orchestrator.generate_evidence_packet(claim_id)
+        claim = db.query(Claim).filter(Claim.id == claim_id).first()
+        if claim:
+            recon = packet.get("reconciliation", {}) if isinstance(packet, dict) else {}
+            discrepancy = float(recon.get("discrepancy_amount") or 0.0)
+            enqueue_review_item(
+                db,
+                artist_id=claim.artist_id,
+                source_type=ReviewSourceType.EVIDENCE,
+                source_id=claim_id,
+                reason="Evidence packet generated; analyst validation pending",
+                priority_score=max(float(claim.recovered_amount or 0.0), discrepancy),
+                payload={"claim_id": claim_id, "reconciliation": recon},
+            )
+        return packet
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 

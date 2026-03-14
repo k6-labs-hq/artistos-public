@@ -1,5 +1,5 @@
 from XR7.models.base import Base, engine, SessionLocal, get_db
-from XR7.models.artist import Artist, ArtistSchema, ArtistCreate
+from XR7.models.artist import Artist, ArtistSchema, ArtistCreate, ArtistLifecycleStatus
 from XR7.models.work import Work, WorkSchema, WorkType
 from XR7.models.event import Event, EventSchema, EventType
 from XR7.models.contract import Contract, ContractSchema, ContractType
@@ -21,7 +21,7 @@ from XR7.models.recovery_intelligence import (
 
 __all__ = [
     "Base", "engine", "SessionLocal", "get_db",
-    "Artist", "ArtistSchema", "ArtistCreate",
+    "Artist", "ArtistSchema", "ArtistCreate", "ArtistLifecycleStatus",
     "Work", "WorkSchema", "WorkType",
     "Event", "EventSchema", "EventType",
     "Contract", "ContractSchema", "ContractType",

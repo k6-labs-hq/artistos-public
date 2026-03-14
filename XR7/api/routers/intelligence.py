@@ -21,6 +21,8 @@ from XR7.models.recovery_intelligence import (
     RoyaltyLedgerEntryCreate,
     RoyaltyLedgerEntrySchema,
 )
+from XR7.models.review_queue import ReviewSourceType
+from XR7.services.review_queue import enqueue_review_item
 
 router = APIRouter(tags=["intelligence"])
 
@@ -150,6 +152,23 @@ def extract_contract_terms(
     for item in created:
         db.refresh(item)
 
+    for item in created:
+        if float(item.confidence_score or 1.0) < 0.6:
+            enqueue_review_item(
+                db,
+                artist_id=artist_id,
+                source_type=ReviewSourceType.ML_CONFIDENCE,
+                source_id=item.id,
+                reason="Low-confidence contract term extraction requires analyst review",
+                priority_score=1.0 - float(item.confidence_score or 0.0),
+                payload={
+                    "contract_id": item.contract_id,
+                    "term_key": item.term_key,
+                    "term_value": item.term_value,
+                    "confidence_score": item.confidence_score,
+                },
+            )
+
     return {
         "artist_id": artist_id,
         "term_count": len(created),
@@ -236,6 +255,23 @@ async def extract_contract_terms_upload(
     db.commit()
     for item in created:
         db.refresh(item)
+
+    for item in created:
+        if float(item.confidence_score or 1.0) < 0.6:
+            enqueue_review_item(
+                db,
+                artist_id=artist_id,
+                source_type=ReviewSourceType.ML_CONFIDENCE,
+                source_id=item.id,
+                reason="Low-confidence uploaded contract extraction requires analyst review",
+                priority_score=1.0 - float(item.confidence_score or 0.0),
+                payload={
+                    "contract_id": item.contract_id,
+                    "term_key": item.term_key,
+                    "term_value": item.term_value,
+                    "confidence_score": item.confidence_score,
+                },
+            )
 
     return {
         "artist_id": artist_id,

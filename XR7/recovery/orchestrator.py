@@ -23,6 +23,7 @@ class ClaimsOrchestrator:
     CLAIM_TRANSITIONS = {
         ClaimStatus.IDENTIFIED: ClaimStatus.PREPARED,
         ClaimStatus.PREPARED: ClaimStatus.SUBMITTED,
+        ClaimStatus.FILED: ClaimStatus.IN_REVIEW,
         ClaimStatus.SUBMITTED: ClaimStatus.IN_REVIEW,
         ClaimStatus.IN_REVIEW: ClaimStatus.ACCEPTED,
         ClaimStatus.ACCEPTED: ClaimStatus.PAID,
