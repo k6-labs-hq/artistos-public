@@ -28,6 +28,31 @@ class UniversalRoyaltyEventSchema(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
+class XR7UniversalRoyaltyEventSchema(BaseModel):
+    """Forensic universal event schema with explicit XR7 contract field names."""
+
+    event_id: str
+    work_id: str | None = None
+    isrc: str | None = None
+    iswc: str | None = None
+    title: str | None = None
+    artist_name: str | None = None
+    writer_name: str | None = None
+    publisher_name: str | None = None
+    distributor: str | None = None
+    platform: str | None = None
+    usage_type: str | None = None
+    usage_count: int = 0
+    payout_amount: float = 0.0
+    payout_currency: str = "USD"
+    statement_period_start: str | None = None
+    statement_period_end: str | None = None
+    source_file_id: str | None = None
+    confidence_score: float = 0.0
+    metadata_flags: dict[str, Any] = Field(default_factory=dict)
+    ingestion_timestamp: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
 class CatalogGraphNodeSchema(BaseModel):
     id: str
     node_type: str

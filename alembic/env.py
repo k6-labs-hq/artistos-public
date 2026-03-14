@@ -25,6 +25,8 @@ import XR7.models.payment  # noqa: F401
 import XR7.models.recovery_intelligence  # noqa: F401
 import XR7.models.statement  # noqa: F401
 import XR7.models.sync_job  # noqa: F401
+import XR7.models.forensic_universal_event  # noqa: F401
+import XR7.models.catalog_graph_adj  # noqa: F401
 import XR7.models.team_access  # noqa: F401
 import XR7.models.terms_acceptance  # noqa: F401
 import XR7.models.universal_royalty_event  # noqa: F401

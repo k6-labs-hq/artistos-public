@@ -1,0 +1,40 @@
+{
+  "artist_id": "artist-123",
+  "nodes": [
+    {
+      "id": "work-1",
+      "node_type": "Work",
+      "label": "Midnight Tape",
+      "attributes": {
+        "isrc": "USAAA1234567",
+        "iswc": "T-000.000.001-0"
+      }
+    },
+    {
+      "id": "writer:example-writer",
+      "node_type": "Writer",
+      "label": "Example Writer",
+      "attributes": {}
+    },
+    {
+      "id": "publisher:example-publishing",
+      "node_type": "Publisher",
+      "label": "Example Publishing",
+      "attributes": {}
+    }
+  ],
+  "edges": [
+    {
+      "source_id": "work-1",
+      "target_id": "writer:example-writer",
+      "edge_type": "written_by",
+      "attributes": {}
+    },
+    {
+      "source_id": "work-1",
+      "target_id": "publisher:example-publishing",
+      "edge_type": "published_by",
+      "attributes": {}
+    }
+  ]
+}

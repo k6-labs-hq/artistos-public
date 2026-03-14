@@ -13,6 +13,7 @@ from XR7.api.routers import terms as terms_router
 from XR7.api.routers import intelligence as intelligence_router
 from XR7.api.routers import expansion as expansion_router
 from XR7.api.routers import onboarding as onboarding_router
+from XR7.api.routers import forensic as forensic_router
 
 
 @asynccontextmanager
@@ -30,6 +31,8 @@ async def lifespan(app: FastAPI):
     import XR7.models.sync_job  # noqa: F401
     import XR7.models.universal_royalty_event  # noqa: F401
     import XR7.models.catalog_graph  # noqa: F401
+    import XR7.models.forensic_universal_event  # noqa: F401
+    import XR7.models.catalog_graph_adj  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -91,6 +94,7 @@ app.include_router(terms_router.router)
 app.include_router(intelligence_router.router)
 app.include_router(expansion_router.router)
 app.include_router(onboarding_router.router)
+app.include_router(forensic_router.router)
 
 
 @app.get("/health")

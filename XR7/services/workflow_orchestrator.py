@@ -19,6 +19,11 @@ from XR7.services.modules import (
     VarianceDetectionService,
 )
 
+# XR7 event flow (orchestrator-level):
+# connect_accounts -> fetch_catalog/statements -> upload_statements -> parse_normalize
+# -> build_catalog_graph -> confirm_catalog -> variance_detection
+# -> generate_evidence_packets -> submit_recovery_actions -> append_immutable_ledger
+
 
 @dataclass
 class WorkflowRunResult:

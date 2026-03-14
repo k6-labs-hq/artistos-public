@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 
 revision = "20260314_0002"
@@ -22,10 +23,18 @@ def _dialect_name() -> str:
     return bind.dialect.name if bind is not None else ""
 
 
+def _has_column(table_name: str, column_name: str) -> bool:
+    bind = op.get_bind()
+    inspector = inspect(bind)
+    columns = inspector.get_columns(table_name)
+    return any(c.get("name") == column_name for c in columns)
+
+
 def upgrade() -> None:
     # Existing environments from 0001 need plugin_signature support.
-    with op.batch_alter_table("parser_plugins") as batch:
-        batch.add_column(sa.Column("plugin_signature", sa.String(), nullable=True))
+    if not _has_column("parser_plugins", "plugin_signature"):
+        with op.batch_alter_table("parser_plugins") as batch:
+            batch.add_column(sa.Column("plugin_signature", sa.String(), nullable=True))
 
     # Enforce consistent status/backends even on non-enum-friendly engines.
     with op.batch_alter_table("sync_jobs") as batch:

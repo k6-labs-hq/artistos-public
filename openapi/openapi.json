@@ -5112,7 +5112,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CatalogConfirmRequest"
+                "$ref": "#/components/schemas/XR7__api__routers__onboarding__CatalogConfirmRequest"
               }
             }
           }
@@ -5491,6 +5491,458 @@
         }
       }
     },
+    "/auth/providers": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Auth Providers",
+        "operationId": "auth_providers_auth_providers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "type": "object",
+                  "title": "Response Auth Providers Auth Providers Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/connect/{provider}": {
+      "post": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Auth Connect",
+        "operationId": "auth_connect_auth_connect__provider__post",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Provider"
+            }
+          },
+          {
+            "name": "redirect_uri",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 5,
+              "title": "Redirect Uri"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthConnectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/statements/upload": {
+      "post": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Statements Upload",
+        "description": "Minimal statement upload endpoint that stores a normalized universal event row.",
+        "operationId": "statements_upload_statements_upload_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForensicUniversalRoyaltyEventCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForensicUniversalRoyaltyEventSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/statements/{statement_id}/status": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Statements Status",
+        "operationId": "statements_status_statements__statement_id__status_get",
+        "parameters": [
+          {
+            "name": "statement_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Statement Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Get Catalog",
+        "operationId": "get_catalog_catalog_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/catalog/confirm": {
+      "post": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Confirm Catalog",
+        "operationId": "confirm_catalog_catalog_confirm_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XR7__api__routers__forensic__CatalogConfirmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/variance": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "List Variance",
+        "operationId": "list_variance_variance_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/variance/{variance_id}/evidence": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Variance Evidence",
+        "operationId": "variance_evidence_variance__variance_id__evidence_get",
+        "parameters": [
+          {
+            "name": "variance_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Variance Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recovery/{claim_id}/submit": {
+      "post": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Recovery Submit",
+        "operationId": "recovery_submit_recovery__claim_id__submit_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoverySubmitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ledger": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "List Ledger",
+        "operationId": "list_ledger_ledger_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ImmutableLedgerEntrySchema"
+                  },
+                  "title": "Response List Ledger Ledger Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ledger/{entry_id}": {
+      "get": {
+        "tags": [
+          "forensic-api"
+        ],
+        "summary": "Get Ledger Entry",
+        "operationId": "get_ledger_entry_ledger__entry_id__get",
+        "parameters": [
+          {
+            "name": "entry_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Entry Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImmutableLedgerEntrySchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -5782,6 +6234,34 @@
         ],
         "title": "ArtistSchema"
       },
+      "AuthConnectResponse": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "authorization_url": {
+            "type": "string",
+            "title": "Authorization Url"
+          },
+          "configured": {
+            "type": "boolean",
+            "title": "Configured"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "authorization_url",
+          "configured",
+          "state"
+        ],
+        "title": "AuthConnectResponse"
+      },
       "Body_extract_contract_terms_upload_artists__artist_id__intelligence_contracts_extract_upload_post": {
         "properties": {
           "file": {
@@ -5901,50 +6381,6 @@
           "files"
         ],
         "title": "Body_upload_statement_batch_artists__artist_id__statements_upload_batch_post"
-      },
-      "CatalogConfirmRequest": {
-        "properties": {
-          "work_id": {
-            "type": "string",
-            "title": "Work Id"
-          },
-          "ownership_confirmed": {
-            "type": "string",
-            "title": "Ownership Confirmed",
-            "default": "confirmed"
-          },
-          "splits_confirmed": {
-            "type": "string",
-            "title": "Splits Confirmed",
-            "default": "confirmed"
-          },
-          "publisher_confirmed": {
-            "type": "string",
-            "title": "Publisher Confirmed",
-            "default": "confirmed"
-          },
-          "admin_confirmed": {
-            "type": "string",
-            "title": "Admin Confirmed",
-            "default": "confirmed"
-          },
-          "correction_notes": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Correction Notes"
-          }
-        },
-        "type": "object",
-        "required": [
-          "work_id"
-        ],
-        "title": "CatalogConfirmRequest"
       },
       "CatalogConfirmationSchema": {
         "properties": {
@@ -6648,6 +7084,382 @@
         },
         "type": "object",
         "title": "ForecastRequest"
+      },
+      "ForensicUniversalRoyaltyEventCreate": {
+        "properties": {
+          "work_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Id"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          },
+          "iswc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iswc"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "artist_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist Name"
+          },
+          "writer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Writer Name"
+          },
+          "publisher_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher Name"
+          },
+          "distributor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distributor"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "usage_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usage Type"
+          },
+          "usage_count": {
+            "type": "integer",
+            "title": "Usage Count",
+            "default": 0
+          },
+          "payout_amount": {
+            "type": "number",
+            "title": "Payout Amount",
+            "default": 0.0
+          },
+          "payout_currency": {
+            "type": "string",
+            "title": "Payout Currency",
+            "default": "USD"
+          },
+          "statement_period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Period Start"
+          },
+          "statement_period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Period End"
+          },
+          "source_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source File Id"
+          },
+          "confidence_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence Score",
+            "default": 0.0
+          },
+          "metadata_flags": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata Flags"
+          }
+        },
+        "type": "object",
+        "title": "ForensicUniversalRoyaltyEventCreate"
+      },
+      "ForensicUniversalRoyaltyEventSchema": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "title": "Event Id"
+          },
+          "work_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Work Id"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          },
+          "iswc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iswc"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "artist_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist Name"
+          },
+          "writer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Writer Name"
+          },
+          "publisher_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher Name"
+          },
+          "distributor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Distributor"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "usage_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Usage Type"
+          },
+          "usage_count": {
+            "type": "integer",
+            "title": "Usage Count",
+            "default": 0
+          },
+          "payout_amount": {
+            "type": "number",
+            "title": "Payout Amount",
+            "default": 0.0
+          },
+          "payout_currency": {
+            "type": "string",
+            "title": "Payout Currency",
+            "default": "USD"
+          },
+          "statement_period_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Period Start"
+          },
+          "statement_period_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Period End"
+          },
+          "source_file_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source File Id"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score",
+            "default": 0.0
+          },
+          "metadata_flags": {
+            "type": "string",
+            "title": "Metadata Flags",
+            "default": "{}"
+          },
+          "ingestion_timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ingestion Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "ingestion_timestamp"
+        ],
+        "title": "ForensicUniversalRoyaltyEventSchema"
       },
       "HTTPValidationError": {
         "properties": {
@@ -7393,6 +8205,40 @@
           "created_at"
         ],
         "title": "RecoveryOutcomeFeedbackSchema"
+      },
+      "RecoverySubmitResponse": {
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "title": "Claim Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "queued": {
+            "type": "boolean",
+            "title": "Queued"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "claim_id",
+          "status",
+          "queued"
+        ],
+        "title": "RecoverySubmitResponse"
       },
       "RegisterRequest": {
         "properties": {
@@ -8290,6 +9136,71 @@
         },
         "type": "object",
         "title": "WorkflowRunRequest"
+      },
+      "XR7__api__routers__forensic__CatalogConfirmRequest": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "works": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Works"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id"
+        ],
+        "title": "CatalogConfirmRequest"
+      },
+      "XR7__api__routers__onboarding__CatalogConfirmRequest": {
+        "properties": {
+          "work_id": {
+            "type": "string",
+            "title": "Work Id"
+          },
+          "ownership_confirmed": {
+            "type": "string",
+            "title": "Ownership Confirmed",
+            "default": "confirmed"
+          },
+          "splits_confirmed": {
+            "type": "string",
+            "title": "Splits Confirmed",
+            "default": "confirmed"
+          },
+          "publisher_confirmed": {
+            "type": "string",
+            "title": "Publisher Confirmed",
+            "default": "confirmed"
+          },
+          "admin_confirmed": {
+            "type": "string",
+            "title": "Admin Confirmed",
+            "default": "confirmed"
+          },
+          "correction_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "work_id"
+        ],
+        "title": "CatalogConfirmRequest"
       }
     }
   }

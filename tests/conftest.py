@@ -17,6 +17,8 @@ from XR7.models.base import Base, get_db
 from XR7.api.app import app
 # Ensure all model tables are registered before create_all
 import XR7.models.terms_acceptance  # noqa: F401
+import XR7.models.forensic_universal_event  # noqa: F401
+import XR7.models.catalog_graph_adj  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"

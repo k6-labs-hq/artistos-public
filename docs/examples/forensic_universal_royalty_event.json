@@ -1,0 +1,26 @@
+{
+  "event_id": "evt-0001",
+  "work_id": "work-1",
+  "isrc": "USAAA1234567",
+  "iswc": "T-000.000.001-0",
+  "title": "Midnight Tape",
+  "artist_name": "Example Artist",
+  "writer_name": "Example Writer",
+  "publisher_name": "Example Publishing",
+  "distributor": "DistroKid",
+  "platform": "Spotify",
+  "usage_type": "stream",
+  "usage_count": 120045,
+  "payout_amount": 487.33,
+  "payout_currency": "USD",
+  "statement_period_start": "2026-01-01",
+  "statement_period_end": "2026-01-31",
+  "source_file_id": "statement-123",
+  "confidence_score": 0.92,
+  "metadata_flags": {
+    "matched_by": "isrc",
+    "territory": "US",
+    "lineage": "statement_row_42"
+  },
+  "ingestion_timestamp": "2026-03-14T00:00:00+00:00"
+}
