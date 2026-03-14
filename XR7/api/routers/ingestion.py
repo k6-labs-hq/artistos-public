@@ -312,6 +312,11 @@ async def upload_statement(
                 ),
                 current_hour_utc=datetime.now(timezone.utc).hour,
             )
+        if int(anomaly_count_before) == 0:
+            try:
+                hubspot_sync_recovery_update.delay(artist_id, event="first_anomalies_detected")
+            except Exception:  # noqa: BLE001
+                pass
 
     # Create audit record
     statement = Statement(

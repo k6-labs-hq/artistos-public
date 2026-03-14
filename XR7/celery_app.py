@@ -25,7 +25,19 @@ celery_app.conf.update(
         "xr7-aggregate-feedback-calibration": {
             "task": "xr7.pipeline.aggregate_feedback_calibration_all",
             "schedule": 900,
-        }
+        },
+        "xr7-auto-escalate-claims": {
+            "task": "xr7.pipeline.auto_escalate_claims",
+            "schedule": 1800,
+        },
+        "xr7-notify-deadline-risk": {
+            "task": "xr7.pipeline.notify_deadline_risk",
+            "schedule": 3600,
+        },
+        "xr7-weekly-artist-digest": {
+            "task": "xr7.pipeline.weekly_artist_digest",
+            "schedule": 604800,
+        },
     },
 )
 

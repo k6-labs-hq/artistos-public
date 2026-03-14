@@ -59,6 +59,7 @@ from XR7.ml.recovery_potential import RecoveryPotentialModel
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.models.contract import Contract
 from XR7.recovery.priority_ranker import build_action_queue
+from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 
 
@@ -134,7 +135,7 @@ class DashboardEngine:
         in_pursuit = self._in_pursuit_section(claims)
         deposited = self._deposited_section(disbursements)
         balance = self._balance_section(in_pursuit, deposited, claims, artist_id)
-        deadlines = self._deadlines_section(anomalies)
+        deadlines = self._deadlines_section(anomalies, claims, contracts, payments)
         priority_actions = self._priority_actions_section(anomalies, claims)
         calibration_health = self._calibration_health_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
@@ -359,7 +360,13 @@ class DashboardEngine:
             ),
         }
 
-    def _deadlines_section(self, anomalies: list[Anomaly]) -> dict:
+    def _deadlines_section(
+        self,
+        anomalies: list[Anomaly],
+        claims: list[Claim],
+        contracts: list[Contract],
+        payments: list[Payment],
+    ) -> dict:
         """
         Statute-of-limitations urgency overview.
 
@@ -402,6 +409,37 @@ class DashboardEngine:
         ]
         urgent_items.sort(key=lambda x: x.get("days_remaining") or 9999)
 
+        deadline_risk = evaluate_deadline_risk(
+            anomalies=anomaly_dicts,
+            claims=[
+                {
+                    "id": c.id,
+                    "status": str(c.status),
+                    "created_at": c.created_at.isoformat() if c.created_at else None,
+                }
+                for c in claims
+            ],
+            contracts=[
+                {
+                    "id": c.id,
+                    "contract_type": str(c.contract_type),
+                    "territory": c.territory,
+                    "terms": c.terms or {},
+                }
+                for c in contracts
+            ],
+            payments=[
+                {
+                    "id": p.id,
+                    "amount": p.amount,
+                    "currency": p.currency,
+                    "source": p.source,
+                    "received_at": p.received_at.isoformat() if p.received_at else None,
+                }
+                for p in payments
+            ],
+        )
+
         return {
             "expired_count": summary["counts_by_status"].get("EXPIRED", 0),
             "urgent_count": summary["counts_by_status"].get("URGENT", 0),
@@ -409,6 +447,7 @@ class DashboardEngine:
             "ok_count": summary["counts_by_status"].get("OK", 0),
             "total_open_anomalies": summary["total_anomalies"],
             "top_urgent_items": urgent_items[:5],
+            "deadline_risk": deadline_risk,
             "note": (
                 "Act immediately on EXPIRED and URGENT items — missed SOL deadlines "
                 "permanently forfeit the right to file a claim."

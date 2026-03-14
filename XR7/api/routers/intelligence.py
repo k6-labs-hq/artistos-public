@@ -92,6 +92,10 @@ class UtilityRankRequest(BaseModel):
     analyst_hourly_cost: float = 75.0
 
 
+class PreSignatureContractReviewRequest(BaseModel):
+    contract_text: str
+
+
 @router.get("/artists/{artist_id}/intelligence/calibration")
 def get_calibration_health(
     artist_id: str,
@@ -473,4 +477,22 @@ def rank_by_expected_utility(
         "ranked": ranked,
         "count": len(ranked),
         "calibration": ranked[0].get("calibration") if ranked else None,
+    }
+
+
+@router.post("/artists/{artist_id}/intelligence/contracts/pre-signature-review")
+def pre_signature_contract_review(
+    artist_id: str,
+    payload: PreSignatureContractReviewRequest,
+    db: Session = Depends(get_db),
+):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    extractor = ContractTermExtractor()
+    review = extractor.pre_signature_review(payload.contract_text)
+    return {
+        "artist_id": artist_id,
+        **review,
     }

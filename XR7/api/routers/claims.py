@@ -11,10 +11,17 @@ from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
 from XR7.models.base import get_db
+from XR7.models.anomaly import Anomaly
 from XR7.models.claim import Claim, ClaimSchema
+from XR7.models.evidence_anchor import EvidenceAnchor
+from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.review_queue import ReviewSourceType
+from XR7.recovery.cash_recovery_forecast import build_claim_forecast
+from XR7.recovery.evidence_strength import score_evidence_strength
+from XR7.recovery.negotiation_intelligence import build_negotiation_intel
 from XR7.recovery.orchestrator import ClaimsOrchestrator
+from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 
@@ -116,7 +123,25 @@ def _resolve_source_file(source_file: str | None) -> Path | None:
 
 @router.get("/artists/{artist_id}/claims")
 def list_claims(artist_id: str, db: Session = Depends(get_db)):
-    return db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    snapshots = (
+        db.query(CalibrationSnapshot)
+        .filter(CalibrationSnapshot.artist_id == artist_id)
+        .all()
+    )
+    historical_claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+
+    payload = []
+    for claim in claims:
+        anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+        forecast = build_claim_forecast(claim, anomaly, snapshots, historical_claims).to_dict()
+        payload.append(
+            {
+                "claim": ClaimSchema.model_validate(claim).model_dump(mode="json"),
+                "forecast": forecast,
+            }
+        )
+    return payload
 
 
 @router.get("/claims/{claim_id}", response_model=ClaimSchema)
@@ -131,6 +156,26 @@ def get_claim(claim_id: str, db: Session = Depends(get_db)):
 def advance_claim(claim_id: str, db: Session = Depends(get_db)):
     orchestrator = ClaimsOrchestrator(db)
     try:
+        existing = db.query(Claim).filter(Claim.id == claim_id).first()
+        if not existing:
+            raise HTTPException(status_code=404, detail="Claim not found")
+
+        # Only enforce stronger evidence quality checks when packet exists.
+        if isinstance(existing.evidence, dict) and existing.evidence:
+            anchor_count = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).count()
+            strength = score_evidence_strength(claim_id, existing.evidence, anchor_count)
+            if float(strength.get("overall_strength_score") or 0.0) < 35.0:
+                enqueue_review_item(
+                    db,
+                    artist_id=existing.artist_id,
+                    source_type=ReviewSourceType.EVIDENCE,
+                    source_id=existing.id,
+                    reason="Claim advance blocked by weak evidence strength score",
+                    priority_score=35.0 - float(strength.get("overall_strength_score") or 0.0),
+                    payload={"claim_id": existing.id, "strength": strength},
+                )
+                raise HTTPException(status_code=400, detail="Evidence strength is too low to advance claim")
+
         updated = orchestrator.advance_claim(claim_id)
         pref = (
             db.query(NotificationPreference)
@@ -169,6 +214,19 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
                 hubspot_sync_recovery_update.delay(updated.artist_id, event=f"claim_{str(updated.status).lower()}")
             except Exception:  # noqa: BLE001
                 pass
+
+        if str(updated.status) in {"SUBMITTED", "FILED", "IN_REVIEW"}:
+            historical = db.query(Claim).filter(Claim.artist_id == updated.artist_id, Claim.id != updated.id).all()
+            intel = build_negotiation_intel(updated, historical)
+            enqueue_review_item(
+                db,
+                artist_id=updated.artist_id,
+                source_type=ReviewSourceType.CLAIM,
+                source_id=updated.id,
+                reason="Negotiation intelligence generated for active claim",
+                priority_score=float((intel.get("settlement_ranges") or {}).get("midpoint") or 0.0),
+                payload={"claim_id": updated.id, "negotiation_intelligence": intel},
+            )
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -292,6 +350,65 @@ def export_evidence_packet(
     )
 
 
+@router.post("/claims/{claim_id}/evidence/export")
+def export_evidence_packet_expert_mode(
+    claim_id: str,
+    mode: str = Query(default="standard", pattern="^(standard|expert)$"),
+    db: Session = Depends(get_db),
+):
+    """Export evidence with optional expert witness mode for arbitration/litigation workflows."""
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    packet = claim.evidence if isinstance(claim.evidence, dict) else ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
+    verification = ClaimsOrchestrator(db).verify_packet_integrity(packet)
+
+    timeline = [
+        {
+            "event": "claim_created",
+            "timestamp": claim.created_at.isoformat() if claim.created_at else None,
+        },
+        {
+            "event": "evidence_last_updated",
+            "timestamp": claim.updated_at.isoformat() if claim.updated_at else None,
+        },
+    ]
+    anchors = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).order_by(EvidenceAnchor.created_at.asc()).all()
+    for anchor in anchors:
+        timeline.append(
+            {
+                "event": "evidence_anchored",
+                "timestamp": anchor.created_at.isoformat() if anchor.created_at else None,
+                "anchor_provider": anchor.anchor_provider,
+                "anchor_reference": anchor.anchor_reference,
+                "chain_hash": anchor.chain_hash,
+            }
+        )
+
+    export_payload = {
+        "claim_id": claim_id,
+        "mode": mode,
+        "tamper_checks": verification,
+        "event_timeline": timeline,
+        "evidence_packet": packet,
+    }
+    if mode == "expert":
+        export_payload["expert_witness_mode"] = {
+            "statement": "Prepared for arbitration/litigation review with tamper-evident timeline.",
+            "chain_of_custody_metadata": [
+                {
+                    "anchor_provider": a.anchor_provider,
+                    "anchor_reference": a.anchor_reference,
+                    "packet_hash": a.packet_hash,
+                    "chain_hash": a.chain_hash,
+                }
+                for a in anchors
+            ],
+        }
+    return export_payload
+
+
 @router.get("/claims/{claim_id}/evidence/verify")
 def verify_evidence_packet(
     claim_id: str,
@@ -330,3 +447,45 @@ def reconcile_claim(claim_id: str, body: ReconcileRequest, db: Session = Depends
         return orchestrator.reconcile_recovered_amount(claim_id, body.recovered_amount, body.currency)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/claims/{claim_id}/forecast")
+def claim_forecast(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+    snapshots = db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == claim.artist_id).all()
+    historical = db.query(Claim).filter(Claim.artist_id == claim.artist_id).all()
+    return {
+        "claim_id": claim_id,
+        "artist_id": claim.artist_id,
+        **build_claim_forecast(claim, anomaly, snapshots, historical).to_dict(),
+    }
+
+
+@router.get("/claims/{claim_id}/playbook")
+def claim_playbook(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+    return build_claim_playbook(claim, anomaly)
+
+
+@router.get("/claims/{claim_id}/evidence/strength")
+def claim_evidence_strength(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    anchor_count = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).count()
+    return score_evidence_strength(claim_id, claim.evidence or {}, anchor_count)
+
+
+@router.get("/claims/{claim_id}/negotiation-intel")
+def claim_negotiation_intel(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    historical = db.query(Claim).filter(Claim.artist_id == claim.artist_id, Claim.id != claim.id).all()
+    return build_negotiation_intel(claim, historical)

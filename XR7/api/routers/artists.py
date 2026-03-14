@@ -10,11 +10,15 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim
 from XR7.models.payment import Payment
 from XR7.models.event import Event
+from XR7.models.notification_preference import NotificationPreference
+from XR7.models.oauth_connector import ConnectorAccountLink, ConnectorAccountStatus
 from XR7.models.work import Work
 from XR7.models.contract import Contract
 from XR7.graph.rights_graph import RightsGraph
 from XR7.earnings.engine import EarningsEngine
+from XR7.ingestion.connectors.partner_ecosystem import normalize_provider, provider_status
 from XR7.ml.catalog_scorer import CatalogScorer
+from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
 from XR7.tasks.hubspot import hubspot_sync_artist, hubspot_sync_recovery_update
 
 router = APIRouter(prefix="/artists", tags=["artists"])
@@ -190,3 +194,134 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
         earnings_summary=earnings_summary,
     )
     return report.to_dict()
+
+
+@router.get("/{artist_id}/digest/weekly")
+def weekly_digest(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    contracts = db.query(Contract).filter(Contract.artist_id == artist_id).all()
+    payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
+    preference = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+
+    digest = build_weekly_digest(
+        artist_id=artist_id,
+        anomalies=anomalies,
+        claims=claims,
+        contracts=[
+            {
+                "id": c.id,
+                "contract_type": str(c.contract_type),
+                "territory": c.territory,
+                "terms": c.terms or {},
+            }
+            for c in contracts
+        ],
+        payments=[
+            {
+                "id": p.id,
+                "amount": p.amount,
+                "currency": p.currency,
+                "source": p.source,
+                "received_at": p.received_at.isoformat() if p.received_at else None,
+            }
+            for p in payments
+        ],
+    )
+
+    delivery = deliver_weekly_digest(
+        digest,
+        preference,
+        email=(preference.email if preference else artist.email),
+        sms_number=(preference.phone if preference else None),
+    )
+    return {
+        "artist_id": artist_id,
+        "delivery": delivery,
+        "digest": digest,
+    }
+
+
+@router.post("/{artist_id}/connect/{provider}")
+def connect_provider(artist_id: str, provider: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    provider_key = normalize_provider(provider)
+    status = provider_status(provider_key)
+    if not status.get("supported"):
+        raise HTTPException(status_code=422, detail=f"Unsupported provider: {provider}")
+
+    external_id = f"manual-{provider_key}-{artist_id}"
+    link = (
+        db.query(ConnectorAccountLink)
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id,
+            ConnectorAccountLink.provider == provider_key,
+            ConnectorAccountLink.tenant_id == "default",
+            ConnectorAccountLink.external_account_id == external_id,
+        )
+        .first()
+    )
+    if not link:
+        link = ConnectorAccountLink(
+            artist_id=artist_id,
+            provider=provider_key,
+            tenant_id="default",
+            external_account_id=external_id,
+            display_name=f"{provider_key} account",
+            granted_scopes="read write",
+            access_token="configured-via-environment",
+            refresh_token="configured-via-environment",
+            token_type="Bearer",
+            status=ConnectorAccountStatus.ACTIVE,
+            is_active=True,
+        )
+        db.add(link)
+    else:
+        link.status = ConnectorAccountStatus.ACTIVE
+        link.is_active = True
+    db.commit()
+    db.refresh(link)
+    return {
+        "artist_id": artist_id,
+        "provider": provider_key,
+        "status": provider_status(provider_key),
+        "link_id": link.id,
+    }
+
+
+@router.get("/{artist_id}/connect/{provider}/status")
+def provider_connection_status(artist_id: str, provider: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    provider_key = normalize_provider(provider)
+    links = (
+        db.query(ConnectorAccountLink)
+        .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.provider == provider_key)
+        .order_by(ConnectorAccountLink.updated_at.desc())
+        .all()
+    )
+    return {
+        "artist_id": artist_id,
+        "provider": provider_key,
+        "status": provider_status(provider_key),
+        "accounts": [
+            {
+                "id": link.id,
+                "external_account_id": link.external_account_id,
+                "display_name": link.display_name,
+                "status": str(link.status),
+                "last_refreshed_at": link.last_refreshed_at.isoformat() if link.last_refreshed_at else None,
+                "is_active": bool(link.is_active),
+            }
+            for link in links
+        ],
+    }

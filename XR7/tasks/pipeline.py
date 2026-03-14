@@ -8,8 +8,13 @@ from XR7.models.anomaly import Anomaly
 from XR7.models.base import SessionLocal
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.artist import Artist
+from XR7.models.contract import Contract
+from XR7.models.notification_preference import NotificationPreference
+from XR7.models.payment import Payment
 from XR7.models.statement import Statement
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
+from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
 from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService
 from XR7.services.ml_feedback import aggregate_feedback_and_update_calibration
 from xr7_common.logging import get_logger
@@ -138,5 +143,115 @@ def aggregate_feedback_calibration_all(self) -> dict:  # noqa: ANN001
         for artist_id in artist_ids:
             summaries.append(aggregate_feedback_and_update_calibration(artist_id, db))
         return {"artist_count": len(artist_ids), "summaries": summaries[:100]}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.auto_escalate_claims", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def auto_escalate_claims(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        artists = db.query(Artist).all()
+        escalated = 0
+        for artist in artists:
+            anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist.id).all()
+            claims = db.query(Claim).filter(Claim.artist_id == artist.id).all()
+            contracts = db.query(Contract).filter(Contract.artist_id == artist.id).all()
+            payments = db.query(Payment).filter(Payment.artist_id == artist.id).all()
+
+            risk = evaluate_deadline_risk(
+                anomalies=[
+                    {
+                        "id": a.id,
+                        "category": str(a.category),
+                        "subtype": a.subtype,
+                        "territory": a.territory,
+                        "created_at": a.created_at.isoformat() if a.created_at else None,
+                        "estimated_recoverable": float(a.estimated_recoverable or 0.0),
+                    }
+                    for a in anomalies
+                ],
+                claims=[
+                    {
+                        "id": c.id,
+                        "status": str(c.status),
+                        "created_at": c.created_at.isoformat() if c.created_at else None,
+                    }
+                    for c in claims
+                ],
+                contracts=[{"id": c.id, "terms": c.terms or {}, "territory": c.territory} for c in contracts],
+                payments=[{"id": p.id, "amount": p.amount, "source": p.source} for p in payments],
+            )
+            if risk.get("risk_color") != "RED":
+                continue
+
+            for claim in claims:
+                if str(claim.status) in {"SUBMITTED", "FILED"}:
+                    claim.status = ClaimStatus.IN_REVIEW
+                    escalated += 1
+            _ledger_event(db, artist.id, "auto_escalate_claims", {"risk": risk, "escalated_claims": escalated})
+        db.commit()
+        return {"escalated_claims": escalated}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.notify_deadline_risk", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def notify_deadline_risk(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        artists = db.query(Artist).all()
+        notified = 0
+        for artist in artists:
+            anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist.id).all()
+            claims = db.query(Claim).filter(Claim.artist_id == artist.id).all()
+            contracts = db.query(Contract).filter(Contract.artist_id == artist.id).all()
+            payments = db.query(Payment).filter(Payment.artist_id == artist.id).all()
+            pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist.id).first()
+
+            risk = evaluate_deadline_risk(
+                anomalies=[{"id": a.id, "category": str(a.category), "subtype": a.subtype, "created_at": a.created_at.isoformat() if a.created_at else None} for a in anomalies],
+                claims=[{"id": c.id, "status": str(c.status), "created_at": c.created_at.isoformat() if c.created_at else None} for c in claims],
+                contracts=[{"id": c.id, "terms": c.terms or {}} for c in contracts],
+                payments=[{"id": p.id, "amount": p.amount} for p in payments],
+            )
+
+            if risk.get("risk_color") in {"RED", "YELLOW"} and pref and pref.notify_urgent_sol:
+                _ledger_event(db, artist.id, "deadline_risk_notification", risk)
+                notified += 1
+        return {"artists_notified": notified}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.weekly_artist_digest", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def weekly_artist_digest(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        artists = db.query(Artist).all()
+        sent = 0
+        for artist in artists:
+            anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist.id).all()
+            claims = db.query(Claim).filter(Claim.artist_id == artist.id).all()
+            contracts = db.query(Contract).filter(Contract.artist_id == artist.id).all()
+            payments = db.query(Payment).filter(Payment.artist_id == artist.id).all()
+            pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist.id).first()
+
+            digest = build_weekly_digest(
+                artist_id=artist.id,
+                anomalies=anomalies,
+                claims=claims,
+                contracts=[{"id": c.id, "terms": c.terms or {}, "territory": c.territory} for c in contracts],
+                payments=[{"id": p.id, "amount": p.amount, "source": p.source} for p in payments],
+            )
+            delivered = deliver_weekly_digest(
+                digest,
+                pref,
+                email=(pref.email if pref else artist.email),
+                sms_number=(pref.phone if pref else None),
+            )
+            _ledger_event(db, artist.id, "weekly_artist_digest", {"delivery": delivered, "digest": digest})
+            sent += 1
+        return {"artists_processed": len(artists), "digests_sent": sent}
     finally:
         db.close()

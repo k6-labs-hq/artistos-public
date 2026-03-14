@@ -115,6 +115,7 @@ def hubspot_sync_recovery_update(self, artist_id: str, event: str = "recovery_up
         claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
 
         total_estimated = sum(float(a.estimated_recoverable or 0.0) for a in anomalies)
+        total_net_recovered = sum(float(c.recovered_amount or 0.0) for c in claims if str(c.status) in {"PAID", "CLOSED"})
         active_claim_count = sum(1 for c in claims if str(c.status) not in {"PAID", "CLOSED"})
         highest_severity = "LOW"
         severity_rank = {"LOW": 1, "MEDIUM": 2, "HIGH": 3, "CRITICAL": 4}
@@ -124,16 +125,27 @@ def hubspot_sync_recovery_update(self, artist_id: str, event: str = "recovery_up
                 highest_severity = sev
 
         client = HubSpotClient()
+        deal_stage = "in_analysis" if statement_count > 0 else "new_artist"
+        if event == "first_statement_uploaded":
+            deal_stage = "onboarding_active"
+        elif event in {"anomalies_detected", "first_anomalies_detected"}:
+            deal_stage = "anomalies_detected"
+        elif event in {"claim_filed", "claim_submitted", "claim_in_review"}:
+            deal_stage = "claims_filed"
+        elif event in {"recovery_paid", "claim_paid", "claim_closed"}:
+            deal_stage = "recovered"
+
         result = client.upsert_deal(
             artist_id=artist_id,
             properties={
                 "dealname": f"Artist Recovery - {artist.name}",
                 "pipeline": "Artist Recovery",
-                "dealstage": "in_analysis" if statement_count > 0 else "new_artist",
+                "dealstage": deal_stage,
                 "onboarding_status": artist.status,
                 "anomaly_count": len(anomalies),
                 "active_claim_count": active_claim_count,
                 "total_estimated_recoverable": round(total_estimated, 2),
+                "total_net_recovered": round(total_net_recovered, 2),
                 "highest_severity": highest_severity,
                 "trigger_event": event,
             },
