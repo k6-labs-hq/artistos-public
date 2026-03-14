@@ -189,17 +189,19 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             f"Claim {updated.id} advanced to {updated.status}.",
             current_hour_utc=datetime.now(timezone.utc).hour,
         )
-        if str(updated.status) in {"IN_REVIEW", "ACCEPTED"}:
+        status_value = updated.status.value if hasattr(updated.status, "value") else str(updated.status)
+
+        if status_value in {"IN_REVIEW", "ACCEPTED"}:
             enqueue_review_item(
                 db,
                 artist_id=updated.artist_id,
                 source_type=ReviewSourceType.CLAIM,
                 source_id=updated.id,
-                reason=f"Claim advanced to {updated.status}; analyst check required",
+                reason=f"Claim advanced to {status_value}; analyst check required",
                 priority_score=float(updated.recovered_amount or 0.0),
-                payload={"claim_id": updated.id, "status": str(updated.status)},
+                payload={"claim_id": updated.id, "status": status_value},
             )
-        if str(updated.status) == "FILED" and float(updated.recovered_amount or 0.0) >= 10000:
+        if status_value == "FILED" and float(updated.recovered_amount or 0.0) >= 10000:
             enqueue_review_item(
                 db,
                 artist_id=updated.artist_id,
@@ -207,15 +209,15 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
                 source_id=updated.id,
                 reason="High-value claim filed; analyst priority review required",
                 priority_score=float(updated.recovered_amount or 0.0),
-                payload={"claim_id": updated.id, "status": str(updated.status), "threshold": 10000},
+                payload={"claim_id": updated.id, "status": status_value, "threshold": 10000},
             )
-        if str(updated.status) in {"FILED", "IN_REVIEW", "PAID", "CLOSED"}:
+        if status_value in {"FILED", "IN_REVIEW", "PAID", "CLOSED"}:
             try:
-                hubspot_sync_recovery_update.delay(updated.artist_id, event=f"claim_{str(updated.status).lower()}")
+                hubspot_sync_recovery_update.delay(updated.artist_id, event=f"claim_{status_value.lower()}")
             except Exception:  # noqa: BLE001
                 pass
 
-        if str(updated.status) in {"SUBMITTED", "FILED", "IN_REVIEW"}:
+        if status_value in {"SUBMITTED", "FILED", "IN_REVIEW"}:
             historical = db.query(Claim).filter(Claim.artist_id == updated.artist_id, Claim.id != updated.id).all()
             intel = build_negotiation_intel(updated, historical)
             enqueue_review_item(

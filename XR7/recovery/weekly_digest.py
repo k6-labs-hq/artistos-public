@@ -14,6 +14,14 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _ensure_utc(dt: datetime | None, fallback: datetime) -> datetime:
+    if dt is None:
+        return fallback
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt
+
+
 def build_weekly_digest(
     artist_id: str,
     anomalies: list[Anomaly],
@@ -25,10 +33,10 @@ def build_weekly_digest(
     now = _utc_now()
     week_ago = now - timedelta(days=7)
 
-    new_anomalies = [a for a in anomalies if (a.created_at or now) >= week_ago]
+    new_anomalies = [a for a in anomalies if _ensure_utc(a.created_at, now) >= week_ago]
     advanced_claims = [
         c for c in claims
-        if (c.updated_at or now) >= week_ago and str(c.status) not in {"IDENTIFIED", "PREPARED"}
+        if _ensure_utc(c.updated_at, now) >= week_ago and str(c.status) not in {"IDENTIFIED", "PREPARED"}
     ]
     expected_additional_recovery = sum(float(a.estimated_recoverable or 0.0) for a in new_anomalies)
 

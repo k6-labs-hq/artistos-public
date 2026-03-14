@@ -89,7 +89,6 @@ app.add_middleware(
     allow_headers=["Content-Type", "X-Admin-Key"],
 )
 
-app.include_router(artists.router)
 app.include_router(earnings.router)
 app.include_router(anomalies.router)
 app.include_router(claims.router)
@@ -102,6 +101,7 @@ app.include_router(dashboard_router.router)
 app.include_router(terms_router.router)
 app.include_router(intelligence_router.router)
 app.include_router(expansion_router.router)
+app.include_router(artists.router)
 app.include_router(onboarding_router.router)
 app.include_router(forensic_router.router)
 app.include_router(review_queue_router.router)
