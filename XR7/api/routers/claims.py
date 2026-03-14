@@ -16,6 +16,7 @@ from XR7.models.notification_preference import NotificationPreference
 from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.orchestrator import ClaimsOrchestrator
 from XR7.services.review_queue import enqueue_review_item
+from XR7.tasks.hubspot import hubspot_sync_recovery_update
 
 router = APIRouter(tags=["claims"])
 
@@ -153,6 +154,21 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
                 priority_score=float(updated.recovered_amount or 0.0),
                 payload={"claim_id": updated.id, "status": str(updated.status)},
             )
+        if str(updated.status) == "FILED" and float(updated.recovered_amount or 0.0) >= 10000:
+            enqueue_review_item(
+                db,
+                artist_id=updated.artist_id,
+                source_type=ReviewSourceType.CLAIM,
+                source_id=updated.id,
+                reason="High-value claim filed; analyst priority review required",
+                priority_score=float(updated.recovered_amount or 0.0),
+                payload={"claim_id": updated.id, "status": str(updated.status), "threshold": 10000},
+            )
+        if str(updated.status) in {"FILED", "IN_REVIEW", "PAID", "CLOSED"}:
+            try:
+                hubspot_sync_recovery_update.delay(updated.artist_id, event=f"claim_{str(updated.status).lower()}")
+            except Exception:  # noqa: BLE001
+                pass
         return updated
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

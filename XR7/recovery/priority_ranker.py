@@ -150,10 +150,14 @@ def _score_item(
     sol_status: str,
     created_at: datetime | None,
     reference_dt: datetime,
+    threshold_adjustment: float = 1.0,
+    effort_adjustment: float = 1.0,
 ) -> float:
     urgency = _SOL_URGENCY.get(sol_status, 1.0)
     decay = _age_factor(created_at, reference_dt)
-    raw = (estimated_recoverable * confidence * urgency) / (1.0 + decay)
+    adjusted_recoverable = estimated_recoverable / max(threshold_adjustment, 1e-6)
+    raw = (adjusted_recoverable * confidence * urgency) / (1.0 + decay)
+    raw = raw / max(effort_adjustment, 1e-6)
     return max(raw, 0.0)
 
 
@@ -204,8 +208,18 @@ def rank_anomalies(
         confidence = float(a.get("confidence_score", 0.5) or 0.5)
         sol_status = str(a.get("sol_status", "UNKNOWN"))
         created_at = _parse_datetime(a.get("created_at"))
+        threshold_adjustment = float(a.get("threshold_adjustment", 1.0) or 1.0)
+        effort_adjustment = float(a.get("effort_adjustment", 1.0) or 1.0)
 
-        score = _score_item(recoverable, confidence, sol_status, created_at, ref)
+        score = _score_item(
+            recoverable,
+            confidence,
+            sol_status,
+            created_at,
+            ref,
+            threshold_adjustment=threshold_adjustment,
+            effort_adjustment=effort_adjustment,
+        )
 
         items.append(
             PriorityItem(
@@ -269,8 +283,18 @@ def rank_claims(
         confidence = float(c.get("confidence_score", 0.7) or 0.7)
         sol_status = str(c.get("sol_status", "UNKNOWN"))
         created_at = _parse_datetime(c.get("created_at"))
+        threshold_adjustment = float(c.get("threshold_adjustment", 1.0) or 1.0)
+        effort_adjustment = float(c.get("effort_adjustment", 1.0) or 1.0)
 
-        score = _score_item(recoverable, confidence, sol_status, created_at, ref)
+        score = _score_item(
+            recoverable,
+            confidence,
+            sol_status,
+            created_at,
+            ref,
+            threshold_adjustment=threshold_adjustment,
+            effort_adjustment=effort_adjustment,
+        )
 
         items.append(
             PriorityItem(

@@ -7,9 +7,11 @@ from XR7.ingestion.sync_jobs import run_sync_job
 from XR7.models.anomaly import Anomaly
 from XR7.models.base import SessionLocal
 from XR7.models.claim import Claim, ClaimStatus
+from XR7.models.artist import Artist
 from XR7.models.statement import Statement
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService
+from XR7.services.ml_feedback import aggregate_feedback_and_update_calibration
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -114,3 +116,27 @@ def run_sync_job_task_alias(self, job_id: str) -> str:  # noqa: ANN001
     """Alias task to bridge queue events into existing sync job execution logic."""
     run_sync_job(job_id)
     return job_id
+
+
+@celery_app.task(name="xr7.pipeline.aggregate_feedback_calibration", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+def aggregate_feedback_calibration(self, artist_id: str) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        summary = aggregate_feedback_and_update_calibration(artist_id, db)
+        _ledger_event(db, artist_id, "aggregate_feedback_calibration", summary)
+        return summary
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.aggregate_feedback_calibration_all", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def aggregate_feedback_calibration_all(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        artist_ids = [a.id for a in db.query(Artist.id).all()]
+        summaries = []
+        for artist_id in artist_ids:
+            summaries.append(aggregate_feedback_and_update_calibration(artist_id, db))
+        return {"artist_count": len(artist_ids), "summaries": summaries[:100]}
+    finally:
+        db.close()

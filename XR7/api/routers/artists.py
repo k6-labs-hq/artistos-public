@@ -15,6 +15,7 @@ from XR7.models.contract import Contract
 from XR7.graph.rights_graph import RightsGraph
 from XR7.earnings.engine import EarningsEngine
 from XR7.ml.catalog_scorer import CatalogScorer
+from XR7.tasks.hubspot import hubspot_sync_artist, hubspot_sync_recovery_update
 
 router = APIRouter(prefix="/artists", tags=["artists"])
 
@@ -32,6 +33,8 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
     artist = Artist(
         id=str(uuid.uuid4()),
         name=artist_in.name,
+        email=artist_in.email,
+        role=artist_in.role,
         ipi_number=artist_in.ipi_number,
         stage_names=artist_in.stage_names,
         created_at=datetime.now(timezone.utc),
@@ -39,6 +42,10 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
     db.add(artist)
     db.commit()
     db.refresh(artist)
+    try:
+        hubspot_sync_artist.delay(artist.id, event="artist_created")
+    except Exception:  # noqa: BLE001
+        pass
     return artist
 
 
@@ -119,10 +126,25 @@ def artist_summary(artist_id: str, db: Session = Depends(get_db)):
     summary = engine.get_earnings_summary(artist_id, db)
     anomaly_count = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()
     claim_count = db.query(Claim).filter(Claim.artist_id == artist_id).count()
+    # Lifetime recovery potential and complexity scoring feed operator and artist planning.
+    potential = float(summary.get("total_expected", 0.0) or 0.0) - float(summary.get("total_received", 0.0) or 0.0)
+    complexity = 0.0
+    complexity += min(1.0, float(db.query(Contract).filter(Contract.artist_id == artist_id).count()) / 10.0)
+    complexity += min(1.0, float(db.query(Event).filter(Event.artist_id == artist_id).count()) / 5000.0)
+    complexity += min(1.0, float(db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()) / 50.0)
+    complexity_score = round(min(1.0, complexity / 3.0), 6)
+
+    try:
+        hubspot_sync_recovery_update.delay(artist_id, event="artist_summary_requested")
+    except Exception:  # noqa: BLE001
+        pass
+
     return {
         **summary,
         "anomaly_count": anomaly_count,
         "claim_count": claim_count,
+        "recovery_potential": round(max(potential, 0.0), 2),
+        "recovery_complexity_score": complexity_score,
     }
 
 

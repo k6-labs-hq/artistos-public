@@ -21,6 +21,8 @@ class Artist(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     name: Mapped[str] = mapped_column(String, nullable=False)
+    email: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    role: Mapped[str | None] = mapped_column(String, nullable=True)
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
     stage_names: Mapped[list | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -37,6 +39,8 @@ class ArtistSchema(BaseModel):
 
     id: str
     name: str
+    email: str | None = None
+    role: str | None = None
     ipi_number: str | None = None
     stage_names: list[str] | None = None
     created_at: datetime
@@ -48,5 +52,7 @@ class ArtistSchema(BaseModel):
 
 class ArtistCreate(BaseModel):
     name: str
+    email: str | None = None
+    role: str | None = None
     ipi_number: str | None = None
     stage_names: list[str] | None = None

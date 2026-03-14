@@ -21,6 +21,10 @@ celery_app.conf.update(
         "xr7-requeue-due-sync-jobs": {
             "task": "xr7.sync_jobs.requeue_due",
             "schedule": max(15, int(settings.sync_requeue_seconds or 60)),
+        },
+        "xr7-aggregate-feedback-calibration": {
+            "task": "xr7.pipeline.aggregate_feedback_calibration_all",
+            "schedule": 900,
         }
     },
 )

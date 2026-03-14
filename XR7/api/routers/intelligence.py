@@ -1,5 +1,6 @@
 import uuid
 from datetime import date
+from fastapi import BackgroundTasks
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -12,6 +13,9 @@ from XR7.ml.recovery_utility_ranker import RecoveryUtilityRanker
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.models.claim import Claim
+from XR7.models.anomaly import Anomaly
+from XR7.models.ml_feedback import MLFeedbackEvent, MLFeedbackEventSchema, MLFeedbackType
 from XR7.models.recovery_intelligence import (
     ContractTermSnapshot,
     RecoveryOutcomeFeedback,
@@ -23,8 +27,18 @@ from XR7.models.recovery_intelligence import (
 )
 from XR7.models.review_queue import ReviewSourceType
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.ml_feedback import ingest_feedback_event
+from XR7.tasks.pipeline import aggregate_feedback_calibration
 
 router = APIRouter(tags=["intelligence"])
+
+
+def _safe_enqueue_calibration(artist_id: str) -> None:
+    try:
+        aggregate_feedback_calibration.delay(artist_id)
+    except Exception:  # noqa: BLE001
+        # Feedback persistence should not fail the request if queue infra is down.
+        return
 
 
 class LedgerIngestRequest(BaseModel):
@@ -46,6 +60,31 @@ class SimulatePayoutRequest(BaseModel):
     default_fx_rate: float = 1.0
     payout_currency: str = "USD"
     received_amount: float | None = None
+    contract_terms: dict | None = None
+
+
+class StructuredFeedbackRequest(BaseModel):
+    # Backward-compatible fields used by RecoveryOutcomeFeedback
+    anomaly_id: str | None = None
+    claim_id: str | None = None
+    outcome: str | None = None
+    recovered_amount: float | None = None
+    reason_code: str | None = None
+    analyst_note: str | None = None
+
+    # New structured ML feedback payload fields
+    feedback_type: MLFeedbackType = MLFeedbackType.CLAIM_OUTCOME
+    source_type: str | None = None
+    source_id: str | None = None
+    subtype: str | None = None
+    category: str | None = None
+    artist_profile_segment: str | None = None
+    model_version: str | None = None
+    model_prediction: float | None = None
+    human_decision: str | None = None
+    estimated_amount: float | None = None
+    actual_amount: float | None = None
+    payload: dict | None = None
 
 
 class UtilityRankRequest(BaseModel):
@@ -309,25 +348,43 @@ def simulate_expected_payout(
         default_fx_rate=payload.default_fx_rate,
         payout_currency=payload.payout_currency,
         received_amount=payload.received_amount,
+        contract_terms=payload.contract_terms,
     )
+    variance_pct = abs(float(result.get("variance_pct") or 0.0))
+    if variance_pct >= 0.35:
+        enqueue_review_item(
+            db,
+            artist_id=artist_id,
+            source_type=ReviewSourceType.ML_CONFIDENCE,
+            source_id=None,
+            reason="Large forecast deviation detected between expected and received payout",
+            priority_score=float(abs(result.get("variance") or 0.0)),
+            payload={
+                "variance": result.get("variance"),
+                "variance_pct": result.get("variance_pct"),
+                "contract_terms_used": result.get("contract_terms_used"),
+            },
+        )
     return {"artist_id": artist_id, **result}
 
 
 @router.post("/artists/{artist_id}/intelligence/feedback", response_model=RecoveryOutcomeFeedbackSchema)
 def create_outcome_feedback(
     artist_id: str,
-    payload: RecoveryOutcomeFeedbackCreate,
+    payload: StructuredFeedbackRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
+    outcome_value = payload.outcome or "DISMISSED"
     feedback = RecoveryOutcomeFeedback(
         artist_id=artist_id,
         anomaly_id=payload.anomaly_id,
         claim_id=payload.claim_id,
-        outcome=payload.outcome,
+        outcome=outcome_value,
         recovered_amount=payload.recovered_amount,
         reason_code=payload.reason_code,
         analyst_note=payload.analyst_note,
@@ -335,7 +392,59 @@ def create_outcome_feedback(
     db.add(feedback)
     db.commit()
     db.refresh(feedback)
+
+    inferred_subtype = payload.subtype
+    inferred_category = payload.category
+    if payload.anomaly_id and (inferred_subtype is None or inferred_category is None):
+        anomaly = db.query(Anomaly).filter(Anomaly.id == payload.anomaly_id).first()
+        if anomaly:
+            inferred_subtype = inferred_subtype or anomaly.subtype
+            inferred_category = inferred_category or str(anomaly.category)
+    if payload.claim_id and inferred_subtype is None:
+        claim = db.query(Claim).filter(Claim.id == payload.claim_id).first()
+        if claim:
+            inferred_subtype = claim.claim_type
+
+    ingest_feedback_event(
+        db,
+        artist_id=artist_id,
+        feedback_type=payload.feedback_type,
+        source_type=payload.source_type,
+        source_id=payload.source_id,
+        anomaly_id=payload.anomaly_id,
+        claim_id=payload.claim_id,
+        subtype=inferred_subtype,
+        category=inferred_category,
+        artist_profile_segment=payload.artist_profile_segment,
+        model_version=payload.model_version,
+        model_prediction=payload.model_prediction,
+        human_decision=payload.human_decision,
+        outcome=payload.outcome,
+        estimated_amount=payload.estimated_amount,
+        actual_amount=payload.actual_amount,
+        payload=payload.payload,
+    )
+
+    # Keep calibration_health warm for downstream reads.
+    background_tasks.add_task(_safe_enqueue_calibration, artist_id)
     return feedback
+
+
+@router.get("/artists/{artist_id}/intelligence/feedback/events", response_model=list[MLFeedbackEventSchema])
+def list_feedback_events(
+    artist_id: str,
+    db: Session = Depends(get_db),
+):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    return (
+        db.query(MLFeedbackEvent)
+        .filter(MLFeedbackEvent.artist_id == artist_id)
+        .order_by(MLFeedbackEvent.created_at.desc())
+        .limit(500)
+        .all()
+    )
 
 
 @router.post("/artists/{artist_id}/intelligence/rank-utility")

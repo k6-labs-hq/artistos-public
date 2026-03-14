@@ -20,6 +20,10 @@ class XR7Settings:
     plugin_allowed_prefixes_raw: str = os.getenv("XR7_PLUGIN_ALLOWED_PREFIXES", "XR7.plugins,tests.plugins")
     plugin_blocked_prefixes_raw: str = os.getenv("XR7_PLUGIN_BLOCKED_PREFIXES", "os,sys,subprocess,builtins,importlib")
     plugin_signature_secret: str = os.getenv("XR7_PLUGIN_SIGNATURE_SECRET", "")
+    hubspot_enabled: bool = os.getenv("HUBSPOT_ENABLED", "0").strip().lower() in {"1", "true", "yes"}
+    hubspot_base_url: str = os.getenv("HUBSPOT_BASE_URL", "https://api.hubapi.com")
+    hubspot_api_key: str | None = os.getenv("HUBSPOT_API_KEY")
+    hubspot_private_app_token: str | None = os.getenv("HUBSPOT_PRIVATE_APP_TOKEN")
 
     @property
     def plugin_allowed_prefixes(self) -> tuple[str, ...]:

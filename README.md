@@ -123,6 +123,31 @@ make sdk-python
 make sdk-typescript
 ```
 
+### ML Feedback and Calibration
+
+Structured ML feedback ingestion endpoint:
+
+```
+POST /artists/{id}/intelligence/feedback
+GET  /artists/{id}/intelligence/feedback/events
+GET  /artists/{id}/intelligence/calibration
+```
+
+Calibration now includes posterior parameters, credible intervals, and scope-level metadata for subtype/category/segment.
+
+### HubSpot CRM Sync
+
+Set environment variables:
+
+```
+HUBSPOT_ENABLED=true
+HUBSPOT_BASE_URL=https://api.hubapi.com
+HUBSPOT_PRIVATE_APP_TOKEN=...
+# or HUBSPOT_API_KEY=...
+```
+
+HubSpot sync is triggered asynchronously from artist creation, widget funnel events, first statement ingestion, anomaly detection, claim milestones, and settled recovery disbursements.
+
 ---
 
 ## Artist Recovery Dashboard

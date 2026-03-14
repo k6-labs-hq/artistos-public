@@ -45,6 +45,7 @@ from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
+from XR7.tasks.hubspot import hubspot_sync_recovery_update
 
 router = APIRouter(tags=["ingestion"])
 
@@ -239,6 +240,12 @@ async def upload_statement(
     anomaly_count_before = (
         db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
     )
+    processed_before = (
+        db.query(func.count(Statement.id))
+        .filter(Statement.artist_id == artist_id, Statement.status == "PROCESSED")
+        .scalar()
+        or 0
+    )
 
     # Parse
     result = parse_csv(content, artist_id)
@@ -326,6 +333,12 @@ async def upload_statement(
         promote_to_active(artist)
     db.commit()
     db.refresh(statement)
+
+    if status != "FAILED" and int(processed_before) == 0:
+        try:
+            hubspot_sync_recovery_update.delay(artist_id, event="first_statement_uploaded")
+        except Exception:  # noqa: BLE001
+            pass
 
     if status == "FAILED":
         raise HTTPException(
@@ -424,6 +437,10 @@ async def upload_statement_batch(
     if processed:
         promote_to_active(artist)
         db.commit()
+        try:
+            hubspot_sync_recovery_update.delay(artist_id, event="statement_batch_uploaded")
+        except Exception:  # noqa: BLE001
+            pass
         try:
             rg = RightsGraph()
             AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)

@@ -56,6 +56,7 @@ from XR7.auth.notification_service import get_notification_service
 from XR7.ml.royalty_estimator import VALID_CAREER_STAGES, VALID_GENRES, estimate_royalties
 from XR7.models.base import get_db
 from XR7.models.widget_lead import WidgetLead, WidgetLeadSchema, hash_phone
+from XR7.tasks.hubspot import hubspot_sync_widget_lead, hubspot_sync_widget_registration
 
 router = APIRouter(prefix="/widget", tags=["widget"])
 
@@ -256,6 +257,15 @@ def register(body: RegisterRequest):
 
     is_dev = os.environ.get("XR7_ENV", "development").lower() != "production"
 
+    try:
+        hubspot_sync_widget_registration.delay(
+            artist_name=body.artist_name,
+            email=body.email,
+            session_id=session.session_id,
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
     return RegisterResponse(
         session_id=session.session_id,
         message=(
@@ -352,6 +362,11 @@ def estimate(body: EstimateRequest, db: Session = Depends(get_db)):
     if email_sent:
         lead.results_emailed = True
         db.commit()
+
+    try:
+        hubspot_sync_widget_lead.delay(lead.id, event="widget_estimate")
+    except Exception:  # noqa: BLE001
+        pass
 
     return {
         "lead_id": lead.id,

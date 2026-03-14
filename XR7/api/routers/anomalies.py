@@ -9,16 +9,33 @@ from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.review_queue import ReviewSourceType
 from XR7.services.review_queue import enqueue_review_item
+from XR7.tasks.hubspot import hubspot_sync_recovery_update
 
 router = APIRouter(tags=["anomalies"])
 
 
 @router.get("/artists/{artist_id}/anomalies")
-def list_anomalies(artist_id: str, status: str | None = None, db: Session = Depends(get_db)):
+def list_anomalies(
+    artist_id: str,
+    status: str | None = None,
+    debug: bool = False,
+    db: Session = Depends(get_db),
+):
     query = db.query(Anomaly).filter(Anomaly.artist_id == artist_id)
     if status:
         query = query.filter(Anomaly.status == status)
-    return query.all()
+    rows = query.all()
+    if not debug:
+        return rows
+    return [
+        {
+            **AnomalySchema.model_validate(r).model_dump(),
+            "anomaly_score": r.anomaly_score,
+            "model_version": r.model_version,
+            "feature_snapshot": r.feature_snapshot,
+        }
+        for r in rows
+    ]
 
 
 @router.get("/anomalies/{anomaly_id}", response_model=AnomalySchema)
@@ -61,5 +78,10 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
                 priority_score=priority,
                 payload=row,
             )
+
+    try:
+        hubspot_sync_recovery_update.delay(artist_id, event="anomalies_detected")
+    except Exception:  # noqa: BLE001
+        pass
 
     return {"artist_id": artist_id, "detected": anomaly_dicts}

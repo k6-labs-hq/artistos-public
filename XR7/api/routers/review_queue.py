@@ -22,6 +22,8 @@ from XR7.models.review_queue import (
     ReviewSourceType,
 )
 from XR7.services.review_queue import enqueue_review_item, queue_metrics
+from XR7.services.ml_feedback import ingest_feedback_event
+from XR7.models.ml_feedback import MLFeedbackType
 
 router = APIRouter(prefix="/review-queue", tags=["review_queue"])
 
@@ -165,6 +167,25 @@ def decide_review_item(
 
     db.commit()
     db.refresh(decision)
+
+    ingest_feedback_event(
+        db,
+        artist_id=item.artist_id,
+        feedback_type=MLFeedbackType.REVIEW_DECISION,
+        source_type=item.source_type,
+        source_id=item.source_id,
+        anomaly_id=item.source_id if item.source_type == "ANOMALY" else None,
+        claim_id=item.source_id if item.source_type == "CLAIM" else None,
+        subtype=(item.payload or {}).get("subtype"),
+        category=(item.payload or {}).get("category"),
+        model_version=(item.payload or {}).get("model_version"),
+        model_prediction=(item.payload or {}).get("model_prediction"),
+        human_decision=payload.decision.value,
+        outcome=payload.decision.value,
+        estimated_amount=(item.payload or {}).get("estimated_amount") or item.priority_score,
+        actual_amount=(item.payload or {}).get("actual_amount"),
+        payload={"notes": payload.notes, "review_item_id": item.id},
+    )
     return decision
 
 
@@ -195,6 +216,33 @@ def review_queue_metrics(
         .all()
     )
     metrics["by_source"] = {source: int(count) for source, count in by_source}
+
+    analyst_rows = (
+        db.query(ReviewDecision.analyst_email, func.count(ReviewDecision.id))
+        .group_by(ReviewDecision.analyst_email)
+        .all()
+    )
+    per_analyst = []
+    for analyst_email, decision_count in analyst_rows:
+        overrides = (
+            db.query(func.count(ReviewDecision.id))
+            .filter(
+                ReviewDecision.analyst_email == analyst_email,
+                ReviewDecision.decision.in_(["ESCALATE", "REJECT"]),
+            )
+            .scalar()
+            or 0
+        )
+        agreement = max(0.0, 1.0 - (float(overrides) / max(float(decision_count), 1.0)))
+        per_analyst.append(
+            {
+                "analyst_email": analyst_email,
+                "decision_count": int(decision_count),
+                "override_rate": round(float(overrides) / max(float(decision_count), 1.0), 6),
+                "agreement_with_model": round(agreement, 6),
+            }
+        )
+    metrics["per_analyst_calibration"] = per_analyst
     return metrics
 
 

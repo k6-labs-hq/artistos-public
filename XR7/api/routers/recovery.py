@@ -27,6 +27,7 @@ from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recoupment_tracker import compute_recoupment, recoupment_summary
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.ml.rate_benchmarker import RateBenchmarker
+from XR7.ml.catalog_segmenter import CatalogSegmenter
 
 router = APIRouter(prefix="/artists", tags=["recovery"])
 
@@ -232,6 +233,22 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
         .all()
     ]
 
+    works = db.query(Work).filter(Work.artist_id == artist_id).all()
+    payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
+    segment = CatalogSegmenter().segment(
+        [{"id": w.id} for w in works],
+        [{"amount": p.amount} for p in payments],
+        anomalies_raw,
+    )
+    for row in anomalies_raw:
+        row["threshold_adjustment"] = segment.get("threshold_adjustment", 1.0)
+        row["effort_adjustment"] = segment.get("effort_adjustment", 1.0)
+        row["segment"] = segment.get("segment")
+    for row in claims_raw:
+        row["threshold_adjustment"] = segment.get("threshold_adjustment", 1.0)
+        row["effort_adjustment"] = segment.get("effort_adjustment", 1.0)
+        row["segment"] = segment.get("segment")
+
     # Enrich anomalies with SOL status before ranking
     classified_anomalies = classify_anomalies(anomalies_raw)
 
@@ -239,6 +256,7 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "segment": segment,
         "total_items": len(queue),
         "total_estimated_recoverable": round(
             sum(item.get("estimated_recoverable", 0.0) or 0.0 for item in queue), 2

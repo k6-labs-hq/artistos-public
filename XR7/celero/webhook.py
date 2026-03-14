@@ -215,6 +215,7 @@ class CeleroWebhookHandler:
         # Import here to avoid circular import at module load time
         from XR7.models.celero_transaction import CeleroTransaction, CeleroTxnStatus
         from XR7.models.claim import Claim, ClaimStatus
+        from XR7.tasks.hubspot import hubspot_sync_recovery_update
 
         # Find the matching transaction record
         txn = (
@@ -257,5 +258,11 @@ class CeleroWebhookHandler:
                 claim.status = ClaimStatus.CLOSED
                 self.db.commit()
                 result["claim_advanced_to"] = "CLOSED"
+
+        if event_type == EVENT_DISBURSEMENT_SETTLED and txn.artist_id:
+            try:
+                hubspot_sync_recovery_update.delay(txn.artist_id, event="first_recovery_paid")
+            except Exception:  # noqa: BLE001
+                pass
 
         return result

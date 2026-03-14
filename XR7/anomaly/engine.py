@@ -4,6 +4,7 @@ from XR7.anomaly.rules import royalties, touring, platforms
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.anomaly_detector import MLAnomalyDetector
+from XR7.models.model_registry import ModelRegistryEntry
 from XR7.models.contract import Contract
 from XR7.models.event import Event
 from XR7.models.payment import Payment
@@ -92,4 +93,47 @@ class AnomalyEngine:
         """Run ML-based anomaly detectors (IsolationForest, drift, missingness)."""
         events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id == artist_id).all())
         payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id == artist_id).all())
-        return self._ml_detector.detect(artist_id, events=events, payments=payments)
+
+        peer_payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id != artist_id).limit(5000).all())
+        peer_events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id != artist_id).limit(5000).all())
+
+        peer_mean_amount = None
+        if peer_payments:
+            peer_mean_amount = sum(float(p.get("amount") or 0.0) for p in peer_payments) / max(len(peer_payments), 1)
+        peer_unit_values = [float(e.get("unit_value") or 0.0) for e in peer_events if float(e.get("unit_value") or 0.0) > 0.0]
+        peer_unit_value_baseline = (sum(peer_unit_values) / max(len(peer_unit_values), 1)) if peer_unit_values else None
+
+        anomalies = self._ml_detector.detect(
+            artist_id,
+            events=events,
+            payments=payments,
+            peer_context={
+                "peer_mean_amount": peer_mean_amount,
+                "peer_unit_value_baseline": peer_unit_value_baseline,
+            },
+        )
+
+        if anomalies:
+            first_version = anomalies[0].get("model_version")
+            if first_version:
+                exists = (
+                    db_session.query(ModelRegistryEntry)
+                    .filter(
+                        ModelRegistryEntry.model_family == "anomaly_detector",
+                        ModelRegistryEntry.model_version == str(first_version),
+                    )
+                    .first()
+                )
+                if not exists:
+                    db_session.add(
+                        ModelRegistryEntry(
+                            model_family="anomaly_detector",
+                            model_version=str(first_version),
+                            training_snapshot_ref="peer-context-live-window",
+                            metrics={"detected_count": len(anomalies)},
+                            metadata={"engine": "MLAnomalyDetector"},
+                        )
+                    )
+                    db_session.commit()
+
+        return anomalies

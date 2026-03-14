@@ -17,6 +17,7 @@ from XR7.api.routers import forensic as forensic_router
 from XR7.api.routers import review_queue as review_queue_router
 from XR7.api.routers import admin_console as admin_console_router
 from xr7_common.settings import settings
+from XR7.services.hubspot_client import HubSpotClient
 
 
 @asynccontextmanager
@@ -38,6 +39,9 @@ async def lifespan(app: FastAPI):
     import XR7.models.catalog_graph_adj  # noqa: F401
     import XR7.models.review_queue  # noqa: F401
     import XR7.models.admin_audit_log  # noqa: F401
+    import XR7.models.ml_feedback  # noqa: F401
+    import XR7.models.model_registry  # noqa: F401
+    import XR7.models.catalog_segment  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -202,6 +206,7 @@ def readiness():
         settings.s3_endpoint_url and settings.s3_access_key_id and settings.s3_secret_access_key
     )
     plugin_signature_ready = bool(settings.plugin_signature_secret)
+    hubspot_client = HubSpotClient()
 
     ml_components = {
         "anomaly_detector": "ready",
@@ -257,6 +262,14 @@ def readiness():
         "webhooks": {
             "celero_webhook_secret_configured": celero_webhook_secret_set,
             "status": "ready" if celero_webhook_secret_set else "missing_credentials",
+        },
+        "crm": {
+            "hubspot": {
+                "enabled": hubspot_client.enabled,
+                "base_url": settings.hubspot_base_url,
+                "auth_mode": "private_app_token" if settings.hubspot_private_app_token else ("api_key" if settings.hubspot_api_key else "none"),
+                "status": "ready" if hubspot_client.enabled else "disabled_or_missing_credentials",
+            }
         },
         "merchant_of_record": {
             "provider": "Celero Commerce",

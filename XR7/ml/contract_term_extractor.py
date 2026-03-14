@@ -6,6 +6,8 @@ class ContractTermExtractor:
     """Lightweight rule-based contract term extractor for initial term snapshots."""
 
     _RATE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%")
+    _MIN_GUARANTEE_RE = re.compile(r"(?:minimum\s+guarantee|min\.?\s+guarantee)\s*(?:of)?\s*\$?([\d,]+(?:\.\d+)?)", re.IGNORECASE)
+    _ESCALATOR_RE = re.compile(r"(?:escalat(?:or|ion)|step\s*up)\s*(?:to)?\s*(\d+(?:\.\d+)?)\s*%", re.IGNORECASE)
     _TERRITORY_RE = re.compile(r"\b(worldwide|world wide|us|usa|uk|eu|global|japan|korea|france)\b", re.IGNORECASE)
     _RECOUP_RE = re.compile(r"\b(recoup(?:ment)?|reserve)\b", re.IGNORECASE)
     _AUDIT_RE = re.compile(r"\b(audit\s+right[s]?|right\s+to\s+audit|books\s+and\s+records)\b", re.IGNORECASE)
@@ -35,6 +37,8 @@ class ContractTermExtractor:
         for regex, ctype, conf in (
             (self._RECOUP_RE, "recoupment", 0.65),
             (self._AUDIT_RE, "audit_rights", 0.7),
+            (self._MIN_GUARANTEE_RE, "minimum_guarantee", 0.72),
+            (self._ESCALATOR_RE, "escalator", 0.68),
         ):
             for match in regex.finditer(text):
                 start = max(0, match.start() - 80)
@@ -99,6 +103,29 @@ class ContractTermExtractor:
                     "term_key": "audit_rights_clause",
                     "term_value": "present",
                     "confidence_score": 0.7,
+                    "effective_start": effective_start,
+                    "effective_end": effective_end,
+                }
+            )
+
+        for match in self._MIN_GUARANTEE_RE.finditer(text):
+            raw = str(match.group(1)).replace(",", "")
+            terms.append(
+                {
+                    "term_key": "minimum_guarantee",
+                    "term_value": raw,
+                    "confidence_score": 0.72,
+                    "effective_start": effective_start,
+                    "effective_end": effective_end,
+                }
+            )
+
+        for match in self._ESCALATOR_RE.finditer(text):
+            terms.append(
+                {
+                    "term_key": "escalator_rate_percent",
+                    "term_value": match.group(1),
+                    "confidence_score": 0.68,
                     "effective_start": effective_start,
                     "effective_end": effective_end,
                 }

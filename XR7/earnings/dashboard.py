@@ -53,8 +53,11 @@ from XR7.models.work import Work
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.catalog_scorer import CatalogScorer
+from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.ml.forecaster import EarningsForecaster
+from XR7.ml.recovery_potential import RecoveryPotentialModel
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
+from XR7.models.contract import Contract
 from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 
@@ -124,6 +127,7 @@ class DashboardEngine:
             .all()
         )
         works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
+        contracts = self.db.query(Contract).filter(Contract.artist_id == artist_id).all()
         payments = self.db.query(Payment).filter(Payment.artist_id == artist_id).all()
 
         leakage = self._leakage_section(anomalies)
@@ -134,6 +138,8 @@ class DashboardEngine:
         priority_actions = self._priority_actions_section(anomalies, claims)
         calibration_health = self._calibration_health_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
+        segment_insight = self._catalog_segment_section(works, payments, anomalies)
+        recovery_potential = self._recovery_potential_section(anomalies, contracts, catalog_health, segment_insight)
         earnings_trend = self._earnings_trend_section(artist_id)
         feed = self._activity_feed(anomalies, claims, disbursements)
 
@@ -148,9 +154,41 @@ class DashboardEngine:
             "priority_actions": priority_actions,
             "calibration_health": calibration_health,
             "catalog_health": catalog_health,
+            "catalog_segments": segment_insight,
+            "recovery_potential": recovery_potential,
             "earnings_trend": earnings_trend,
             "activity_feed": feed,
         }
+
+    def _catalog_segment_section(self, works: list[Work], payments: list[Payment], anomalies: list[Anomaly]) -> dict:
+        segmenter = CatalogSegmenter()
+        return segmenter.segment(
+            [{"id": w.id} for w in works],
+            [{"amount": p.amount} for p in payments],
+            [{"status": a.status, "estimated_recoverable": a.estimated_recoverable} for a in anomalies],
+        )
+
+    def _recovery_potential_section(self, anomalies: list[Anomaly], contracts: list[Contract], catalog_health: dict, segment: dict) -> dict:
+        model = RecoveryPotentialModel()
+        peer_multiplier = 1.15 if segment.get("segment") == "frontline_releases" else 1.0
+        return model.score(
+            anomalies=[
+                {
+                    "estimated_recoverable": a.estimated_recoverable,
+                    "status": a.status,
+                }
+                for a in anomalies
+            ],
+            contracts=[
+                {
+                    "territory": c.territory,
+                    "terms": c.terms,
+                }
+                for c in contracts
+            ],
+            catalog_health_score=float(catalog_health.get("health_score", 0.0) or 0.0),
+            peer_multiplier=peer_multiplier,
+        )
 
     # ------------------------------------------------------------------
     # Section builders

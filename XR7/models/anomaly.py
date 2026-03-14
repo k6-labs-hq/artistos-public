@@ -48,6 +48,9 @@ class Anomaly(Base):
     territory: Mapped[str | None] = mapped_column(String, nullable=True)
     status: Mapped[str] = mapped_column(Enum(AnomalyStatus), default=AnomalyStatus.OPEN)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
+    anomaly_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    model_version: Mapped[str | None] = mapped_column(String, nullable=True)
+    feature_snapshot: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -68,4 +71,7 @@ class AnomalySchema(BaseModel):
     territory: str | None = None
     status: AnomalyStatus
     description: str | None = None
+    anomaly_score: float | None = None
+    model_version: str | None = None
+    feature_snapshot: str | None = None
     created_at: datetime

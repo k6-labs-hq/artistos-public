@@ -35,6 +35,7 @@ _MIN_SAMPLES = 5
 
 # Maximum number of consecutive missing periodic payments before flagging.
 _MAX_CONSECUTIVE_MISSING = 2
+_MODEL_VERSION = "ml-hybrid-iforest-v2"
 
 
 # ---------------------------------------------------------------------------
@@ -81,6 +82,7 @@ def detect_payment_outliers(
     artist_id: str,
     payments: list[dict],
     contamination: float = _IF_CONTAMINATION,
+    peer_mean_amount: float | None = None,
 ) -> list[dict]:
     """
     Use an IsolationForest to find payments whose amount is anomalously high or
@@ -129,7 +131,10 @@ def detect_payment_outliers(
                         f"is statistically anomalous (normalised anomaly score {norm_score:.3f})."
                     ),
                     "ml_model": "IsolationForest",
+                    "model_version": _MODEL_VERSION,
                     "payment_index": idx,
+                    "peer_baseline_amount": peer_mean_amount,
+                    "anomaly_score": round(float(0.8 * norm_score + 0.2 * min(abs((float(p.get('amount') or 0.0) - float(peer_mean_amount or p.get('amount') or 0.0)) / max(float(peer_mean_amount or 1.0), 1e-6)), 1.0)), 4),
                 }
             )
     return anomalies
@@ -143,6 +148,7 @@ def detect_rate_drift(
     artist_id: str,
     events: list[dict],
     zscore_threshold: float = _ZSCORE_THRESHOLD,
+    peer_unit_value_baseline: float | None = None,
 ) -> list[dict]:
     """
     Detect drift in per-unit rates (e.g. per-stream royalty rate) using a
@@ -198,7 +204,26 @@ def detect_rate_drift(
                             f"the historical mean of {arr.mean():.6f}."
                         ),
                         "ml_model": "ZScoreDrift",
+                        "model_version": _MODEL_VERSION,
                         "event_type": event_type,
+                        "peer_unit_value_baseline": peer_unit_value_baseline,
+                        "anomaly_score": round(
+                            float(
+                                min(
+                                    1.0,
+                                    0.7
+                                    * np.clip((abs(z) - zscore_threshold) / max(zscore_threshold, 1e-6), 0.0, 1.0)
+                                    + 0.3
+                                    * np.clip(
+                                        abs(values[idx] - float(peer_unit_value_baseline or values[idx]))
+                                        / max(abs(float(peer_unit_value_baseline or 1.0)), 1e-6),
+                                        0.0,
+                                        1.0,
+                                    ),
+                                )
+                            ),
+                            4,
+                        ),
                     }
                 )
     return anomalies
@@ -281,8 +306,10 @@ def detect_missing_periodic_payments(
                         f"~{missed_periods} missed payment period(s)."
                     ),
                     "ml_model": "PeriodicMissingnessDetector",
+                    "model_version": _MODEL_VERSION,
                     "gap_days": gap.days,
                     "estimated_missed_periods": missed_periods,
+                    "anomaly_score": round(min(1.0, 0.5 + 0.1 * missed_periods), 4),
                 }
             )
     return anomalies
@@ -310,6 +337,7 @@ class MLAnomalyDetector:
         contamination: float = _IF_CONTAMINATION,
         zscore_threshold: float = _ZSCORE_THRESHOLD,
         expected_period_days: int = 30,
+        peer_context: dict | None = None,
     ) -> list[dict]:
         """
         Run all ML detectors and return a merged list of anomaly dicts.
@@ -335,9 +363,32 @@ class MLAnomalyDetector:
         """
         events = events or []
         payments = payments or []
+        peer_context = peer_context or {}
 
         results: list[dict] = []
-        results.extend(detect_payment_outliers(artist_id, payments, contamination))
-        results.extend(detect_rate_drift(artist_id, events, zscore_threshold))
+        results.extend(
+            detect_payment_outliers(
+                artist_id,
+                payments,
+                contamination,
+                peer_mean_amount=peer_context.get("peer_mean_amount"),
+            )
+        )
+        results.extend(
+            detect_rate_drift(
+                artist_id,
+                events,
+                zscore_threshold,
+                peer_unit_value_baseline=peer_context.get("peer_unit_value_baseline"),
+            )
+        )
         results.extend(detect_missing_periodic_payments(artist_id, payments, expected_period_days))
+
+        # Hybrid score fallback when detector-specific anomaly_score is absent.
+        for row in results:
+            if row.get("anomaly_score") is None:
+                confidence = float(row.get("confidence_score", 0.5) or 0.5)
+                rule_signal = 0.6 if "MISSING" in str(row.get("subtype", "")) else 0.3
+                row["anomaly_score"] = round(min(1.0, 0.7 * confidence + 0.3 * rule_signal), 4)
+            row.setdefault("model_version", _MODEL_VERSION)
         return results
