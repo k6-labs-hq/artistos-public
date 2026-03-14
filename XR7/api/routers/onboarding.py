@@ -16,7 +16,7 @@ from XR7.ingestion.fetchers import get_fetcher
 from XR7.ingestion.file_ingestion_pipeline import FileIngestionPipeline
 from XR7.ingestion.missing_data_detector import detect_missing_data
 from XR7.ingestion.parser_engine import get_statement_parser
-from XR7.ingestion.sync_jobs import run_sync_job, run_sync_job_with_session
+from XR7.ingestion.sync_jobs import enqueue_sync_job, run_due_sync_jobs, run_sync_job, run_sync_job_with_session
 from XR7.ml.auto_inference_engine import infer_catalog_relationships
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -32,6 +32,8 @@ from XR7.models.sync_job import SyncJob, SyncJobSchema
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.recovery_automation_engine import automate_recovery
+from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
+from XR7.services.workflow_orchestrator import XR7WorkflowService
 
 router = APIRouter(tags=["onboarding"])
 
@@ -55,6 +57,7 @@ class ParserPluginUpsertRequest(BaseModel):
     parser_type: str
     plugin_name: str
     plugin_entrypoint: str
+    plugin_signature: str | None = None
     enabled: bool = True
 
 
@@ -63,6 +66,11 @@ class SyncJobCreateRequest(BaseModel):
     max_attempts: int = 3
     payload: dict[str, Any] | None = None
     run_async: bool = True
+    queue_backend: str = "background"
+
+
+class WorkflowRunRequest(BaseModel):
+    async_run: bool = False
 
 
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
@@ -198,6 +206,7 @@ async def parse_statement_with_engine(
     _artist_or_404(artist_id, db)
 
     builtins = {"distributor", "pro", "publisher", "mlc"}
+    plugin_entrypoint: str | None = None
     if parser_type.lower() not in builtins:
         plugin = (
             db.query(ParserPlugin)
@@ -210,14 +219,25 @@ async def parse_statement_with_engine(
         )
         if not plugin:
             raise HTTPException(status_code=404, detail="Parser type is not enabled for this artist")
+        plugin_entrypoint = plugin.plugin_entrypoint
 
     content = await file.read()
-    try:
+    if parser_type.lower() in builtins:
         parser = get_statement_parser(parser_type)
-    except ValueError:
-        # Plugin entrypoints are persisted; baseline runtime uses distributor parser fallback.
-        parser = get_statement_parser("distributor")
-    parsed = parser.parse(content, artist_id, file.filename or "statement.csv")
+        parsed = parser.parse(content, artist_id, file.filename or "statement.csv")
+    else:
+        try:
+            parsed = parse_with_plugin(
+                entrypoint=plugin_entrypoint or "",
+                parser_type=parser_type.strip().lower(),
+                content=content,
+                artist_id=artist_id,
+                filename=file.filename or "statement.csv",
+                plugin_signature=plugin.plugin_signature,
+            )
+        except ParserPluginError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
     return {
         "artist_id": artist_id,
         "parser_type": parsed.parser_type,
@@ -248,12 +268,14 @@ def upsert_parser_plugin(
             parser_type=payload.parser_type.strip().lower(),
             plugin_name=payload.plugin_name,
             plugin_entrypoint=payload.plugin_entrypoint,
+            plugin_signature=payload.plugin_signature,
             enabled=payload.enabled,
         )
         db.add(row)
     else:
         row.plugin_name = payload.plugin_name
         row.plugin_entrypoint = payload.plugin_entrypoint
+        row.plugin_signature = payload.plugin_signature
         row.enabled = payload.enabled
     db.commit()
     db.refresh(row)
@@ -297,7 +319,19 @@ def create_sync_job(
     db.refresh(job)
 
     if payload.run_async:
-        background_tasks.add_task(run_sync_job, job.id)
+        if payload.queue_backend == "background":
+            background_tasks.add_task(run_sync_job, job.id)
+        else:
+            enqueue_sync_job(job.id, queue_backend=payload.queue_backend, db=db)
+    else:
+        if payload.queue_backend == "inline":
+            run_sync_job_with_session(db, job.id)
+        else:
+            enqueue_sync_job(job.id, queue_backend=payload.queue_backend, db=db)
+
+    job.queue_backend = payload.queue_backend
+    db.commit()
+    db.refresh(job)
 
     return job
 
@@ -345,6 +379,29 @@ def run_sync_job_now(
     if not row:
         raise HTTPException(status_code=404, detail="Sync job not found after run")
     return row
+
+
+@router.post("/artists/{artist_id}/sync/jobs/requeue-due")
+def requeue_due_sync_jobs(
+    artist_id: str,
+    db: Session = Depends(get_db),
+):
+    _artist_or_404(artist_id, db)
+    due_for_artist = (
+        db.query(SyncJob)
+        .filter(
+            SyncJob.artist_id == artist_id,
+            SyncJob.status == "RETRYING",
+            SyncJob.next_run_at.is_not(None),
+        )
+        .count()
+    )
+    enqueued = run_due_sync_jobs(db=db)
+    return {
+        "artist_id": artist_id,
+        "due_jobs_for_artist": due_for_artist,
+        "enqueued_jobs": enqueued,
+    }
 
 
 @router.get("/artists/{artist_id}/ingestion/missing-data")
@@ -491,3 +548,38 @@ def run_recovery_automation(artist_id: str, db: Session = Depends(get_db)):
 def list_immutable_ledger_entries(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     return ImmutableLedgerService(db).list_entries(artist_id)
+
+
+@router.get("/artists/{artist_id}/workflow/preview")
+def preview_full_workflow(artist_id: str, db: Session = Depends(get_db)):
+    _artist_or_404(artist_id, db)
+    return XR7WorkflowService(db).preview(artist_id)
+
+
+@router.post("/artists/{artist_id}/workflow/run")
+def run_full_workflow(
+    artist_id: str,
+    payload: WorkflowRunRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    _artist_or_404(artist_id, db)
+
+    if payload.async_run:
+        # Keep async mode lightweight while preserving request-scoped DB context.
+        enqueued_jobs = run_due_sync_jobs(db=db)
+        return {
+            "artist_id": artist_id,
+            "queued": True,
+            "mode": "async",
+            "enqueued_jobs": enqueued_jobs,
+            "preview": XR7WorkflowService(db).preview(artist_id),
+        }
+
+    result = XR7WorkflowService(db).run(artist_id)
+    return {
+        "artist_id": result.artist_id,
+        "queued": False,
+        "mode": "inline",
+        "steps": result.steps,
+    }

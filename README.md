@@ -593,6 +593,34 @@ XR7/
 └── api/            # FastAPI application and routers
 ```
 
+Additional architecture assets:
+
+```
+xr7_common/                 # shared settings/logging/schemas package
+alembic/                    # migration environment and versions
+openapi/openapi.json        # generated OpenAPI output
+scripts/export_openapi.py   # OpenAPI export utility
+scripts/seed_data.py        # local/dev seed data utility
+docker-compose.yml          # app + postgres + redis + celery + minio
+Makefile                    # standard build/run/test/migrate targets
+```
+
+Universal schema implementation:
+- Pydantic schemas: `xr7_common/schemas/universal.py`
+- SQLAlchemy tables: `XR7/models/universal_royalty_event.py`, `XR7/models/catalog_graph.py`
+- Alembic baseline migration: `alembic/versions/20260314_0001_onboarding_architecture.py`
+- Alembic enum/signature follow-up migration: `alembic/versions/20260314_0002_enum_consistency_and_plugin_signature.py`
+- JSON examples: `docs/examples/universal_royalty_event.json`, `docs/examples/catalog_graph.json`
+
+Background jobs and storage integration:
+- Celery app: `XR7/celery_app.py`
+- Sync job tasks: `XR7/tasks/sync_jobs.py`
+- Retry orchestration helpers: `XR7/ingestion/sync_jobs.py`
+- MinIO/S3 storage service: `XR7/services/storage_service.py`
+
+Celery beat schedule:
+- `xr7.sync_jobs.requeue_due` is scheduled every `XR7_SYNC_REQUEUE_SECONDS` seconds (minimum 15 seconds) to requeue due retry jobs.
+
 ## Setup
 
 ### Requirements
@@ -630,8 +658,24 @@ Key variables:
 - `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` — enable live Spotify OAuth exchange/refresh in connector layer
 - `YOUTUBE_OAUTH_CLIENT_ID`, `YOUTUBE_OAUTH_CLIENT_SECRET` — enable live YouTube OAuth exchange/refresh
 - `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET` — enable live TikTok OAuth exchange/refresh
+- `REDIS_URL` — Redis URL for queue/cache infrastructure
+- `CELERY_BROKER_URL` — Celery broker URL
+- `CELERY_RESULT_BACKEND` — Celery result backend URL
+- `XR7_SYNC_QUEUE_MODE` — preferred retry queue backend (`celery`, `background`, `inline`)
+- `XR7_SYNC_REQUEUE_SECONDS` — cadence for scheduled retry requeue scanning
+- `S3_ENDPOINT_URL`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`, `S3_USE_SSL` — MinIO/S3 object storage configuration
+- `XR7_PLUGIN_ALLOWED_PREFIXES` — allowed module prefixes for plugin entrypoints
+- `XR7_PLUGIN_BLOCKED_PREFIXES` — blocked module prefixes for plugin entrypoints
+- `XR7_PLUGIN_SIGNATURE_SECRET` — optional HMAC secret to require/verify parser plugin signatures
 
 See `.env.example` for the full list including connector API key variable names.
+
+Production scaffold included in this repository:
+- `docker-compose.yml` (FastAPI + PostgreSQL + Redis + Celery worker/beat + MinIO)
+- `Makefile` (`make run`, `make test`, `make migrate-up`, `make openapi`, `make seed`)
+- `alembic/` + `alembic.ini` for migrations
+- `xr7_common/` shared library for settings, logging, and universal schemas
+- `openapi/openapi.json` generated OpenAPI artifact
 
 ### Running the API
 
@@ -729,6 +773,9 @@ Detailed phased implementation plan and acceptance criteria:
 | POST | `/artists/{id}/intelligence/feedback` | Record recovery outcomes for calibration and learning |
 | POST | `/artists/{id}/intelligence/rank-utility` | Rank actions by expected utility using calibrated success probabilities |
 | GET | `/artists/{id}/intelligence/calibration` | Calibration health summary (overall + subtype posterior success rates) |
+| GET | `/artists/{id}/workflow/preview` | Preview full XR7 end-to-end orchestration inputs and step plan |
+| POST | `/artists/{id}/workflow/run` | Run or queue the full XR7 orchestration workflow |
+| POST | `/artists/{id}/sync/jobs/requeue-due` | Requeue due retry sync jobs for execution |
 | POST | `/widget/register` | Widget Step 1: register + send OTPs |
 | POST | `/widget/verify` | Widget Step 2: verify OTPs → estimate token |
 | POST | `/widget/estimate` | Widget Step 3: generate + persist estimate |
@@ -850,11 +897,21 @@ Parser plugin persistence:
 - `PUT /artists/{id}/parsers/plugins` (register/update plugin metadata)
 - `GET /artists/{id}/parsers/plugins` (list plugin registrations)
 
+Parser plugin sandbox policy:
+- Entry points are restricted to `XR7_PLUGIN_ALLOWED_PREFIXES` and denied when matching `XR7_PLUGIN_BLOCKED_PREFIXES`.
+- When `XR7_PLUGIN_SIGNATURE_SECRET` is set, each plugin requires `plugin_signature` and is verified as `HMAC_SHA256(secret, plugin_entrypoint)`.
+
 Async sync jobs with retries + status tracking:
 - `POST /artists/{id}/sync/jobs` (enqueue job; optional async execution)
 - `GET /artists/{id}/sync/jobs` (list job statuses)
 - `GET /artists/{id}/sync/jobs/{job_id}` (single job detail)
 - `POST /artists/{id}/sync/jobs/{job_id}/run` (manual run/retry)
+- `POST /artists/{id}/sync/jobs/requeue-due` (scan + enqueue due retry jobs)
+
+Queue backend behavior for `POST /artists/{id}/sync/jobs`:
+- `queue_backend=inline` runs immediately in the request
+- `queue_backend=background` uses FastAPI background tasks
+- `queue_backend=celery` enqueues to Celery worker, with safe fallback to background mode if unavailable
 
 - **Missing data detector**:
 `GET /artists/{id}/ingestion/missing-data`
@@ -876,6 +933,10 @@ Async sync jobs with retries + status tracking:
 
 - **Immutable ledger**:
 `GET /artists/{id}/ledger/immutable`
+
+- **End-to-end workflow orchestration**:
+`GET /artists/{id}/workflow/preview`,
+`POST /artists/{id}/workflow/run`
 
 OAuth connector mode behavior:
 - If provider OAuth credentials are configured (env vars above), exchange/refresh calls use live provider token endpoints.

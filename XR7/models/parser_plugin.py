@@ -21,6 +21,7 @@ class ParserPlugin(Base):
     parser_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     plugin_name: Mapped[str] = mapped_column(String, nullable=False)
     plugin_entrypoint: Mapped[str] = mapped_column(Text, nullable=False)
+    plugin_signature: Mapped[str | None] = mapped_column(String, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
@@ -34,6 +35,7 @@ class ParserPluginSchema(BaseModel):
     parser_type: str
     plugin_name: str
     plugin_entrypoint: str
+    plugin_signature: str | None
     enabled: bool
     created_at: datetime
     updated_at: datetime

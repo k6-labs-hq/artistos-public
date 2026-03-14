@@ -28,6 +28,8 @@ async def lifespan(app: FastAPI):
     import XR7.models.immutable_ledger_entry  # noqa: F401
     import XR7.models.parser_plugin  # noqa: F401
     import XR7.models.sync_job  # noqa: F401
+    import XR7.models.universal_royalty_event  # noqa: F401
+    import XR7.models.catalog_graph  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 

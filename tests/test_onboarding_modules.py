@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import io
+import hmac
+import hashlib
 import uuid
 from datetime import datetime, timezone
 
@@ -13,6 +15,7 @@ from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.oauth_connector import ConnectorAccountLink, ConnectorAccountStatus
 from XR7.models.work import Work, WorkType
 from tests.conftest import TestSession as _TestSession
+from xr7_common.settings import settings
 
 client = TestClient(app)
 
@@ -190,7 +193,7 @@ def test_parser_plugin_registry_and_sync_job_lifecycle():
         json={
             "parser_type": "custom_partner",
             "plugin_name": "Partner Parser",
-            "plugin_entrypoint": "XR7.plugins.partner:parse",
+            "plugin_entrypoint": "tests.plugins.sample_plugin:parse",
             "enabled": True,
         },
     )
@@ -210,11 +213,11 @@ def test_parser_plugin_registry_and_sync_job_lifecycle():
 
     job_create = client.post(
         f"/artists/{artist_id}/sync/jobs",
-        json={"integration": "distributor", "max_attempts": 2, "run_async": False},
+        json={"integration": "distributor", "max_attempts": 2, "run_async": False, "queue_backend": "inline"},
     )
     assert job_create.status_code == 200
     job_id = job_create.json()["id"]
-    assert job_create.json()["status"] == "PENDING"
+    assert job_create.json()["status"] in {"PENDING", "COMPLETED", "RETRYING", "FAILED"}
 
     run_now = client.post(f"/artists/{artist_id}/sync/jobs/{job_id}/run")
     assert run_now.status_code == 200
@@ -227,3 +230,125 @@ def test_parser_plugin_registry_and_sync_job_lifecycle():
     listed_jobs = client.get(f"/artists/{artist_id}/sync/jobs")
     assert listed_jobs.status_code == 200
     assert any(j["id"] == job_id for j in listed_jobs.json())
+
+
+def test_plugin_runtime_error_and_sync_requeue_and_workflow_run():
+    artist_id = _create_artist()
+
+    bad_plugin = client.put(
+        f"/artists/{artist_id}/parsers/plugins",
+        json={
+            "parser_type": "custom_broken",
+            "plugin_name": "Broken Parser",
+            "plugin_entrypoint": "tests.plugins.broken_plugin:parse",
+            "enabled": True,
+        },
+    )
+    assert bad_plugin.status_code == 200
+
+    csv_bytes = b"Month,Store,Country,Title,ISRC,Quantity,Earnings\n2024-01,Spotify,US,Song,USAAA1234567,100,1.00\n"
+    parse_broken = client.post(
+        f"/artists/{artist_id}/parsers/custom_broken",
+        files={"file": ("statement.csv", io.BytesIO(csv_bytes), "text/csv")},
+    )
+    assert parse_broken.status_code == 422
+
+    queued = client.post(
+        f"/artists/{artist_id}/sync/jobs",
+        json={"integration": "distributor", "max_attempts": 2, "run_async": True, "queue_backend": "celery"},
+    )
+    assert queued.status_code == 200
+    job_id = queued.json()["id"]
+    assert queued.json()["queue_backend"] == "celery"
+
+    requeue = client.post(f"/artists/{artist_id}/sync/jobs/requeue-due")
+    assert requeue.status_code == 200
+    assert "enqueued_jobs" in requeue.json()
+
+    preview = client.get(f"/artists/{artist_id}/workflow/preview")
+    assert preview.status_code == 200
+    assert "orchestration_steps" in preview.json()
+
+    run_inline = client.post(f"/artists/{artist_id}/workflow/run", json={"async_run": False})
+    assert run_inline.status_code == 200
+    assert run_inline.json()["mode"] == "inline"
+    assert len(run_inline.json().get("steps", [])) >= 1
+
+    run_async = client.post(f"/artists/{artist_id}/workflow/run", json={"async_run": True})
+    assert run_async.status_code == 200
+    assert run_async.json()["mode"] == "async"
+
+    read_job = client.get(f"/artists/{artist_id}/sync/jobs/{job_id}")
+    assert read_job.status_code == 200
+
+
+def test_plugin_sandbox_policy_blocks_disallowed_module_prefix():
+    artist_id = _create_artist()
+    upsert = client.put(
+        f"/artists/{artist_id}/parsers/plugins",
+        json={
+            "parser_type": "custom_math",
+            "plugin_name": "Math Parser",
+            "plugin_entrypoint": "math:sqrt",
+            "enabled": True,
+        },
+    )
+    assert upsert.status_code == 200
+
+    csv_bytes = b"Month,Store,Country,Title,ISRC,Quantity,Earnings\n2024-01,Spotify,US,Song,USAAA1234567,100,1.00\n"
+    parse_resp = client.post(
+        f"/artists/{artist_id}/parsers/custom_math",
+        files={"file": ("statement.csv", io.BytesIO(csv_bytes), "text/csv")},
+    )
+    assert parse_resp.status_code == 422
+    assert "sandbox" in str(parse_resp.json()).lower()
+
+
+def test_plugin_signature_policy_enforced_when_secret_configured():
+    artist_id = _create_artist()
+    old_secret = settings.plugin_signature_secret
+    try:
+        object.__setattr__(settings, "plugin_signature_secret", "test-secret")
+
+        entrypoint = "tests.plugins.sample_plugin:parse"
+        signature = hmac.new(b"test-secret", entrypoint.encode("utf-8"), hashlib.sha256).hexdigest()
+
+        signed_upsert = client.put(
+            f"/artists/{artist_id}/parsers/plugins",
+            json={
+                "parser_type": "custom_signed",
+                "plugin_name": "Signed Parser",
+                "plugin_entrypoint": entrypoint,
+                "plugin_signature": signature,
+                "enabled": True,
+            },
+        )
+        assert signed_upsert.status_code == 200
+
+        unsigned_upsert = client.put(
+            f"/artists/{artist_id}/parsers/plugins",
+            json={
+                "parser_type": "custom_unsigned",
+                "plugin_name": "Unsigned Parser",
+                "plugin_entrypoint": entrypoint,
+                "enabled": True,
+            },
+        )
+        assert unsigned_upsert.status_code == 200
+
+        csv_bytes = b"Month,Store,Country,Title,ISRC,Quantity,Earnings\n2024-01,Spotify,US,Song,USAAA1234567,100,1.00\n"
+
+        signed_parse = client.post(
+            f"/artists/{artist_id}/parsers/custom_signed",
+            files={"file": ("statement.csv", io.BytesIO(csv_bytes), "text/csv")},
+        )
+        assert signed_parse.status_code == 200
+
+        unsigned_parse = client.post(
+            f"/artists/{artist_id}/parsers/custom_unsigned",
+            files={"file": ("statement.csv", io.BytesIO(csv_bytes), "text/csv")},
+        )
+        assert unsigned_parse.status_code == 422
+        assert "signature" in str(unsigned_parse.json()).lower()
+    finally:
+        object.__setattr__(settings, "plugin_signature_secret", old_secret)

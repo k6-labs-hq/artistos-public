@@ -1,0 +1,22 @@
+{
+  "schema_version": "xr7.universal.royalty_event.v1",
+  "artist_id": "artist-123",
+  "source_type": "distributor",
+  "source_name": "spotify",
+  "record_type": "STATEMENT",
+  "event_type": "ROYALTY_EVENT",
+  "amount": 142.56,
+  "quantity": 35234,
+  "unit_value": 0.004046,
+  "currency": "USD",
+  "territory": "US",
+  "work_id": "work-1",
+  "work_title": "Midnight Tape",
+  "isrc": "USAAA1234567",
+  "statement_period": "2026-01",
+  "source_ref": "statement-row-42",
+  "ingested_at": "2026-03-14T00:00:00+00:00",
+  "metadata": {
+    "provider_statement_id": "st-2026-01"
+  }
+}
