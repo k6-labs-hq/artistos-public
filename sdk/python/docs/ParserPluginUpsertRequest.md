@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.parser_plugin_upsert_request import ParserPluginUpsertRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ParserPluginUpsertRequest from a JSON string
 parser_plugin_upsert_request_instance = ParserPluginUpsertRequest.from_json(json)

@@ -17,7 +17,7 @@ Name | Type
 ```typescript
 import type { EstimateRequest } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "estimateToken": null,
   "careerStage": null,

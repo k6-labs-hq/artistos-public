@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.celero_disburse_request import CeleroDisburseRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of CeleroDisburseRequest from a JSON string
 celero_disburse_request_instance = CeleroDisburseRequest.from_json(json)

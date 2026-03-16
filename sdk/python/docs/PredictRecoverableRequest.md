@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.predict_recoverable_request import PredictRecoverableRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of PredictRecoverableRequest from a JSON string
 predict_recoverable_request_instance = PredictRecoverableRequest.from_json(json)

@@ -35,6 +35,7 @@ from fastapi.responses import FileResponse, Response
 from sqlalchemy.orm import Session
 
 from XR7.earnings.dashboard import DashboardEngine
+from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace
 from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -114,7 +115,56 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Artist not found")
 
     engine = DashboardEngine(db)
-    return engine.compute(artist_id)
+    dashboard = engine.compute(artist_id)
+    state = get_latest_artist_state(artist_id)
+    if not state:
+      dashboard.setdefault("agent_orchestra_status", {
+        "current_step": None,
+        "confidence": None,
+        "trace_url": None,
+      })
+      dashboard.setdefault("onboarding_progress", {"steps_total": 0, "steps_completed": 0, "missing": []})
+      dashboard.setdefault("comfort_messages", [])
+      dashboard.setdefault("portal_guidance", [])
+      dashboard.setdefault("fast_track_claim", None)
+      dashboard.setdefault("expected_earnings", {})
+      dashboard.setdefault("public_profile", {})
+      dashboard.setdefault("readiness_score", None)
+      dashboard.setdefault("ugc_opportunities", dashboard.get("ugc_opportunities") or [])
+      dashboard.setdefault("catalog_profile", {})
+      dashboard.setdefault("split_conflicts", [])
+      dashboard.setdefault("registration_actions", [])
+      dashboard.setdefault("follow_up_actions", [])
+      dashboard.setdefault("agent_activity", [])
+      return dashboard
+
+    run_id = str(state.get("run_id") or "")
+    current_step = str(state.get("current_step") or "")
+    conf = (state.get("confidence_scores") or {}).get(current_step)
+    dashboard["agent_orchestra_status"] = {
+      "current_step": current_step,
+      "confidence": conf,
+      "trace_url": f"/artists/{artist_id}/agent-trace/{run_id}" if run_id else None,
+    }
+    dashboard["onboarding_progress"] = state.get("onboarding_progress") or {}
+    dashboard["comfort_messages"] = state.get("comfort_messages") or []
+    dashboard["portal_guidance"] = state.get("portal_guidance") or []
+    dashboard["fast_track_claim"] = state.get("fast_track_claim")
+    dashboard["expected_earnings"] = state.get("expected_earnings") or {}
+    dashboard["public_profile"] = state.get("public_profile") or {}
+    dashboard["readiness_score"] = state.get("readiness_score")
+    dashboard["ugc_opportunities"] = state.get("ugc_opportunities") or dashboard.get("ugc_opportunities") or []
+    dashboard["catalog_profile"] = state.get("catalog_profile") or {}
+    dashboard["split_conflicts"] = state.get("split_conflicts") or []
+    dashboard["registration_actions"] = state.get("registration_actions") or []
+    dashboard["follow_up_actions"] = state.get("follow_up_actions") or []
+    dashboard["agent_activity"] = state.get("agent_activity") or []
+    return dashboard
+
+
+@router.get("/artists/{artist_id}/agent-trace/{run_id}")
+def agent_trace(artist_id: str, run_id: str):
+    return get_run_trace(artist_id, run_id)
 
 
 @router.get("/artists/{artist_id}/dashboard/flow")

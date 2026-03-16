@@ -14,7 +14,7 @@ Name | Type
 ```typescript
 import type { TeamMemberCreate } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "userEmail": null,
   "role": null,

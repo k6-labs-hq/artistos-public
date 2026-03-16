@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.claim_template_request import ClaimTemplateRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ClaimTemplateRequest from a JSON string
 claim_template_request_instance = ClaimTemplateRequest.from_json(json)

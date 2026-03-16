@@ -20,10 +20,10 @@ class TestCeleroTxnStatus(unittest.TestCase):
     """CeleroTxnStatus unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testCeleroTxnStatus(self):
         """Test CeleroTxnStatus"""

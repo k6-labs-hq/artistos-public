@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of AssignReviewItemRequest from a JSON string
 assign_review_item_request_instance = AssignReviewItemRequest.from_json(json)

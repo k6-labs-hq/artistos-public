@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.forecast_request import ForecastRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ForecastRequest from a JSON string
 forecast_request_instance = ForecastRequest.from_json(json)

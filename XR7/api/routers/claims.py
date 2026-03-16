@@ -31,8 +31,10 @@ from XR7.recovery.recovery_automation import build_automation_plan
 from XR7.recovery.sla_predictor import predict_claim_sla_dates
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
+from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["claims"])
+logger = get_logger(__name__)
 
 
 def _safe_pdf_text(text: str) -> str:
@@ -222,7 +224,10 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             try:
                 hubspot_sync_recovery_update.delay(updated.artist_id, event=f"claim_{status_value.lower()}")
             except Exception:  # noqa: BLE001
-                pass
+                logger.exception(
+                    "Failed to enqueue HubSpot claim lifecycle sync",
+                    extra={"artist_id": updated.artist_id, "claim_id": updated.id, "status": status_value},
+                )
 
         if status_value in {"SUBMITTED", "FILED", "IN_REVIEW"}:
             historical = db.query(Claim).filter(Claim.artist_id == updated.artist_id, Claim.id != updated.id).all()

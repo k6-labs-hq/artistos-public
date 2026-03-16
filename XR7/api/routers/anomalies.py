@@ -14,8 +14,10 @@ from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
+from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["anomalies"])
+logger = get_logger(__name__)
 
 
 @router.get("/artists/{artist_id}/anomalies")
@@ -122,7 +124,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
     try:
         hubspot_sync_recovery_update.delay(artist_id, event="anomalies_detected")
     except Exception:  # noqa: BLE001
-        pass
+        logger.exception("Failed to enqueue HubSpot anomalies sync", extra={"artist_id": artist_id})
 
     return {"artist_id": artist_id, "detected": anomaly_dicts}
 

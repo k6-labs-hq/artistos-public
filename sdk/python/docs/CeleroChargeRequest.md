@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.celero_charge_request import CeleroChargeRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of CeleroChargeRequest from a JSON string
 celero_charge_request_instance = CeleroChargeRequest.from_json(json)

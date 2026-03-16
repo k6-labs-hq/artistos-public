@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.variance_scan_request import VarianceScanRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of VarianceScanRequest from a JSON string
 variance_scan_request_instance = VarianceScanRequest.from_json(json)

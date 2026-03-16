@@ -20,10 +20,10 @@ class TestMLFeedbackEventSchema(unittest.TestCase):
     """MLFeedbackEventSchema unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def make_instance(self, include_optional) -> MLFeedbackEventSchema:
         """Test MLFeedbackEventSchema

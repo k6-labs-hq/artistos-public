@@ -27,7 +27,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of RoyaltyLedgerEntryCreate from a JSON string
 royalty_ledger_entry_create_instance = RoyaltyLedgerEntryCreate.from_json(json)

@@ -29,7 +29,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.ml_feedback_event_schema import MLFeedbackEventSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of MLFeedbackEventSchema from a JSON string
 ml_feedback_event_schema_instance = MLFeedbackEventSchema.from_json(json)

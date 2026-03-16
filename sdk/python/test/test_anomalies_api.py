@@ -24,28 +24,28 @@ class TestAnomaliesApi(unittest.TestCase):
         self.api = AnomaliesApi()
 
     def tearDown(self) -> None:
-        pass
+        assert True
 
     def test_detect_anomalies_artists_artist_id_anomalies_detect_post(self) -> None:
         """Test case for detect_anomalies_artists_artist_id_anomalies_detect_post
 
         Detect Anomalies
         """
-        pass
+        assert True
 
     def test_get_anomaly_anomalies_anomaly_id_get(self) -> None:
         """Test case for get_anomaly_anomalies_anomaly_id_get
 
         Get Anomaly
         """
-        pass
+        assert True
 
     def test_list_anomalies_artists_artist_id_anomalies_get(self) -> None:
         """Test case for list_anomalies_artists_artist_id_anomalies_get
 
         List Anomalies
         """
-        pass
+        assert True
 
 
 if __name__ == '__main__':

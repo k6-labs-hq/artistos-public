@@ -18,7 +18,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.evidence_anchor_schema import EvidenceAnchorSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of EvidenceAnchorSchema from a JSON string
 evidence_anchor_schema_instance = EvidenceAnchorSchema.from_json(json)

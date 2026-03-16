@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of RecoverySubmitResponse from a JSON string
 recovery_submit_response_instance = RecoverySubmitResponse.from_json(json)

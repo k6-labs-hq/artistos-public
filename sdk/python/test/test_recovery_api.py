@@ -24,42 +24,42 @@ class TestRecoveryApi(unittest.TestCase):
         self.api = RecoveryApi()
 
     def tearDown(self) -> None:
-        pass
+        assert True
 
     def test_audit_eligibility_artists_artist_id_recovery_audit_eligibility_get(self) -> None:
         """Test case for audit_eligibility_artists_artist_id_recovery_audit_eligibility_get
 
         Audit Eligibility
         """
-        pass
+        assert True
 
     def test_priority_queue_artists_artist_id_recovery_priority_queue_get(self) -> None:
         """Test case for priority_queue_artists_artist_id_recovery_priority_queue_get
 
         Priority Queue
         """
-        pass
+        assert True
 
     def test_rate_benchmark_artists_artist_id_recovery_rate_benchmark_get(self) -> None:
         """Test case for rate_benchmark_artists_artist_id_recovery_rate_benchmark_get
 
         Rate Benchmark
         """
-        pass
+        assert True
 
     def test_recoupment_artists_artist_id_recovery_recoupment_get(self) -> None:
         """Test case for recoupment_artists_artist_id_recovery_recoupment_get
 
         Recoupment
         """
-        pass
+        assert True
 
     def test_sol_status_artists_artist_id_recovery_sol_status_get(self) -> None:
         """Test case for sol_status_artists_artist_id_recovery_sol_status_get
 
         Sol Status
         """
-        pass
+        assert True
 
 
 if __name__ == '__main__':

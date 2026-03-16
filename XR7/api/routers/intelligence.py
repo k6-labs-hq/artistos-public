@@ -36,8 +36,10 @@ from XR7.tasks.pipeline import aggregate_feedback_calibration
 from XR7.tasks.pipeline import run_catalog_audit
 from XR7.intelligence.withholding_estimate import tax_optimizer
 from XR7.registration.auto_fix_agent import AutoFixRegistrationAgent
+from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["intelligence"])
+logger = get_logger(__name__)
 
 
 def _safe_enqueue_calibration(artist_id: str) -> None:
@@ -545,7 +547,7 @@ async def run_catalog_audit_on_demand(
     try:
         run_catalog_audit.delay(artist_id)
     except Exception:  # noqa: BLE001
-        pass
+        logger.exception("Failed to enqueue run_catalog_audit", extra={"artist_id": artist_id})
 
     return audit
 

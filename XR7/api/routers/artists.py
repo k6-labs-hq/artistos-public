@@ -20,8 +20,10 @@ from XR7.ingestion.connectors.partner_ecosystem import normalize_provider, provi
 from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
 from XR7.tasks.hubspot import hubspot_sync_artist, hubspot_sync_recovery_update
+from xr7_common.logging import get_logger
 
 router = APIRouter(prefix="/artists", tags=["artists"])
+logger = get_logger(__name__)
 
 
 @router.get("/{artist_id}", response_model=ArtistSchema)
@@ -49,7 +51,7 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
     try:
         hubspot_sync_artist.delay(artist.id, event="artist_created")
     except Exception:  # noqa: BLE001
-        pass
+        logger.exception("Failed to enqueue HubSpot artist sync", extra={"artist_id": artist.id})
     return artist
 
 
@@ -141,7 +143,7 @@ def artist_summary(artist_id: str, db: Session = Depends(get_db)):
     try:
         hubspot_sync_recovery_update.delay(artist_id, event="artist_summary_requested")
     except Exception:  # noqa: BLE001
-        pass
+        logger.exception("Failed to enqueue HubSpot summary sync", extra={"artist_id": artist_id})
 
     return {
         **summary,

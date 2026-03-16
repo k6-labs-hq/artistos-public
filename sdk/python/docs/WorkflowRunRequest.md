@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.workflow_run_request import WorkflowRunRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of WorkflowRunRequest from a JSON string
 workflow_run_request_instance = WorkflowRunRequest.from_json(json)

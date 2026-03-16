@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.http_validation_error import HTTPValidationError
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of HTTPValidationError from a JSON string
 http_validation_error_instance = HTTPValidationError.from_json(json)

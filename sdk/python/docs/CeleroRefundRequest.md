@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.celero_refund_request import CeleroRefundRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of CeleroRefundRequest from a JSON string
 celero_refund_request_instance = CeleroRefundRequest.from_json(json)

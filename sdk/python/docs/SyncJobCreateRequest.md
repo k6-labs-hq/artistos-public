@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.sync_job_create_request import SyncJobCreateRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of SyncJobCreateRequest from a JSON string
 sync_job_create_request_instance = SyncJobCreateRequest.from_json(json)

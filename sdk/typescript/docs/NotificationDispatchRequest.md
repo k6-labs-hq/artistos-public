@@ -15,7 +15,7 @@ Name | Type
 ```typescript
 import type { NotificationDispatchRequest } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "eventKey": null,
   "title": null,

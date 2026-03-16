@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.contract_extract_request import ContractExtractRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ContractExtractRequest from a JSON string
 contract_extract_request_instance = ContractExtractRequest.from_json(json)

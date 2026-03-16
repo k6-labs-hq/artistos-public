@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run test lint migrate-up migrate-down openapi sdk-python sdk-typescript sdks seed up down worker beat
+.PHONY: install run test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -23,6 +23,12 @@ migrate-down:
 
 openapi:
 	$(PYTHON) scripts/export_openapi.py
+
+api-reference:
+	$(PYTHON) scripts/generate_api_reference.py
+
+docs-check: openapi api-reference
+	git diff --exit-code -- openapi/openapi.json docs/api/reference.md
 
 sdk-python:
 	./scripts/generate_sdk_python.sh

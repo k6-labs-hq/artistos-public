@@ -52,8 +52,10 @@ from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.global_social_regional import GlobalSocialRegionalConnector
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
+from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["ingestion"])
+logger = get_logger(__name__)
 
 # Maximum upload size: 50 MB (most statements are < 5 MB)
 _MAX_UPLOAD_BYTES = 50 * 1024 * 1024
@@ -273,7 +275,7 @@ async def upload_statement(
             anomaly_engine = AnomalyEngine(EarningsEngine(rg), rg)
             anomaly_engine.detect_all(artist_id, db)
         except Exception:  # noqa: BLE001
-            pass  # anomaly detection failure must not block the upload response
+            logger.exception("Anomaly detection after upload failed (non-blocking)", extra={"artist_id": artist_id})
 
     anomaly_count_after = (
         db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
@@ -322,7 +324,7 @@ async def upload_statement(
             try:
                 hubspot_sync_recovery_update.delay(artist_id, event="first_anomalies_detected")
             except Exception:  # noqa: BLE001
-                pass
+                logger.exception("Failed to enqueue HubSpot first anomalies sync", extra={"artist_id": artist_id})
 
     # Create audit record
     statement = Statement(
@@ -349,7 +351,7 @@ async def upload_statement(
         try:
             hubspot_sync_recovery_update.delay(artist_id, event="first_statement_uploaded")
         except Exception:  # noqa: BLE001
-            pass
+            logger.exception("Failed to enqueue HubSpot first statement sync", extra={"artist_id": artist_id})
 
     if status == "FAILED":
         raise HTTPException(
@@ -478,12 +480,12 @@ async def upload_statement_batch(
         try:
             hubspot_sync_recovery_update.delay(artist_id, event="statement_batch_uploaded")
         except Exception:  # noqa: BLE001
-            pass
+            logger.exception("Failed to enqueue HubSpot statement batch sync", extra={"artist_id": artist_id})
         try:
             rg = RightsGraph()
             AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)
         except Exception:  # noqa: BLE001
-            pass
+            logger.exception("Batch anomaly detection failed (non-blocking)", extra={"artist_id": artist_id})
 
     return {
         "artist_id": artist_id,

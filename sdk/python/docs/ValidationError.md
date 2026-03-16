@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.validation_error import ValidationError
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ValidationError from a JSON string
 validation_error_instance = ValidationError.from_json(json)

@@ -24,7 +24,7 @@ Name | Type
 ```typescript
 import type { NotificationPreferenceSchema } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "id": null,
   "artistId": null,

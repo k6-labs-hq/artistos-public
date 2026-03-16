@@ -19,7 +19,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.notification_preference_upsert import NotificationPreferenceUpsert
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of NotificationPreferenceUpsert from a JSON string
 notification_preference_upsert_instance = NotificationPreferenceUpsert.from_json(json)

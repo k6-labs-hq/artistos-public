@@ -20,10 +20,10 @@ class TestAnomalySeverity(unittest.TestCase):
     """AnomalySeverity unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testAnomalySeverity(self):
         """Test AnomalySeverity"""

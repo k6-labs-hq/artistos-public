@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.artist_create import ArtistCreate
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ArtistCreate from a JSON string
 artist_create_instance = ArtistCreate.from_json(json)

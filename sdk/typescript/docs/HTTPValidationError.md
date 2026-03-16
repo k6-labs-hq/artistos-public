@@ -13,7 +13,7 @@ Name | Type
 ```typescript
 import type { HTTPValidationError } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "detail": null,
 } satisfies HTTPValidationError

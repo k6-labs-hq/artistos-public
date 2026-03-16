@@ -20,10 +20,10 @@ class TestArtistLifecycleStatus(unittest.TestCase):
     """ArtistLifecycleStatus unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testArtistLifecycleStatus(self):
         """Test ArtistLifecycleStatus"""

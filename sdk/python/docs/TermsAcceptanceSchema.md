@@ -18,7 +18,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of TermsAcceptanceSchema from a JSON string
 terms_acceptance_schema_instance = TermsAcceptanceSchema.from_json(json)

@@ -20,10 +20,10 @@ class TestArtistCreate(unittest.TestCase):
     """ArtistCreate unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def make_instance(self, include_optional) -> ArtistCreate:
         """Test ArtistCreate

@@ -38,6 +38,18 @@ celery_app.conf.update(
             "task": "xr7.pipeline.weekly_artist_digest",
             "schedule": 604800,
         },
+        "xr7-workflow-incomplete-onboarding": {
+            "task": "xr7.workflow.run_onboarding_for_incomplete_artists",
+            "schedule": 21600,
+        },
+        "xr7-workflow-recovery-new-data": {
+            "task": "xr7.workflow.run_recovery_for_new_data",
+            "schedule": 21600,
+        },
+        "xr7-workflow-follow-up-readiness": {
+            "task": "xr7.workflow.run_follow_up_and_readiness",
+            "schedule": 86400,
+        },
     },
 )
 

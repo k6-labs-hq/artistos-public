@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 
 
 class ParserPluginError(RuntimeError):
-    pass
+    """Raised when parser plugin loading, validation, or execution fails."""
 
 
 @dataclass

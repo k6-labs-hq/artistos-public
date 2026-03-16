@@ -57,8 +57,10 @@ from XR7.ml.royalty_estimator import VALID_CAREER_STAGES, VALID_GENRES, estimate
 from XR7.models.base import get_db
 from XR7.models.widget_lead import WidgetLead, WidgetLeadSchema, hash_phone
 from XR7.tasks.hubspot import hubspot_sync_widget_lead, hubspot_sync_widget_registration
+from xr7_common.logging import get_logger
 
 router = APIRouter(prefix="/widget", tags=["widget"])
+logger = get_logger(__name__)
 
 # ---------------------------------------------------------------------------
 # Admin authentication
@@ -264,7 +266,7 @@ def register(body: RegisterRequest):
             session_id=session.session_id,
         )
     except Exception:  # noqa: BLE001
-        pass
+        logger.exception("Failed to enqueue widget registration HubSpot sync", extra={"session_id": session.session_id})
 
     return RegisterResponse(
         session_id=session.session_id,
@@ -366,7 +368,7 @@ def estimate(body: EstimateRequest, db: Session = Depends(get_db)):
     try:
         hubspot_sync_widget_lead.delay(lead.id, event="widget_estimate")
     except Exception:  # noqa: BLE001
-        pass
+        logger.exception("Failed to enqueue widget lead HubSpot sync", extra={"lead_id": lead.id})
 
     return {
         "lead_id": lead.id,

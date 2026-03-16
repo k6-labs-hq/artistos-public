@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.verify_response import VerifyResponse
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of VerifyResponse from a JSON string
 verify_response_instance = VerifyResponse.from_json(json)

@@ -35,6 +35,7 @@ from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 from XR7.services.ml_feedback import aggregate_feedback_and_update_calibration
 from XR7.ugc.global_scanner import GlobalUGCScanner
+from XR7.agents import onboarding_agents as onboarding
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -558,70 +559,103 @@ async def DeadlineSentinelAgent(state: dict[str, Any]) -> dict[str, Any]:
 
 
 async def PreventionAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "prevention_agent", "prevention_scan": {"status": "ok", "count": 1}}
+    enriched = await onboarding.ArtistReadinessScoreAgent(state)
+    return {
+        "current_step": "prevention_agent",
+        "prevention_scan": {
+            "status": "ok",
+            "readiness_score": enriched.get("readiness_score"),
+            "next_focus": "metadata_and_split_hardening",
+        },
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "prevention_agent": 0.9},
+    }
 
 
 async def PayerResponseReaderAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "payer_response_reader", "payer_responses": [{"status": "no_new_messages"}]}
+    rounds = list(state.get("negotiation_history") or [])
+    last = rounds[-1] if rounds else {"status": "no_history"}
+    status = "follow_up_due" if rounds else "no_new_messages"
+    return {
+        "current_step": "payer_response_reader",
+        "payer_responses": [{"status": status, "last_round": last}],
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "payer_response_reader": 0.88},
+    }
 
 
 async def UGCSyncHunterAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "ugc_sync_hunter", "ugc_sync_hits": [{"platform": "tiktok", "confidence": 0.9}]}
+    collected = await onboarding.SocialUGCCollectorAgent(state)
+    return {
+        "current_step": "ugc_sync_hunter",
+        "ugc_sync_hits": collected.get("ugc_opportunities") or [],
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "ugc_sync_hunter": 0.9},
+    }
 
 
 async def MetadataFixAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "metadata_fix_agent", "metadata_fix_results": {"fixed": 0, "review_required": 0}}
+    fixed = await onboarding.AutoMetadataRegistrarAgent(state)
+    actions = list(fixed.get("registration_actions") or [])
+    return {
+        "current_step": "metadata_fix_agent",
+        "metadata_fix_results": {"fixed": len(actions), "review_required": 0},
+        "registration_actions": actions,
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "metadata_fix_agent": 0.87},
+    }
 
 
 async def CatalogValuationAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "catalog_valuation_agent", "catalog_valuation": {"estimated_value": 0.0}}
+    estimated = await onboarding.EarningsExpectationAgent(state)
+    return {
+        "current_step": "catalog_valuation_agent",
+        "catalog_valuation": {
+            "estimated_value": float((estimated.get("expected_earnings") or {}).get("catalog_value_signal") or 0.0),
+            "quarterly_expected": float((estimated.get("expected_earnings") or {}).get("quarterly_expected") or 0.0),
+        },
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "catalog_valuation_agent": 0.9},
+    }
 
 
 async def FraudDetectorAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "fraud_detector_agent", "fraud_alerts": []}
+    alerts = []
+    for anomaly in state.get("anomalies") or []:
+        if float(anomaly.get("confidence") or 0.0) < 0.5:
+            alerts.append({"anomaly_id": anomaly.get("id"), "risk": "suspicious_confidence_pattern"})
+    return {
+        "current_step": "fraud_detector_agent",
+        "fraud_alerts": alerts,
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "fraud_detector_agent": 0.86},
+    }
 
 
 async def CrossArtistSplitAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "cross_artist_split_agent", "split_conflicts": []}
+    resolved = await onboarding.AutoSplitResolverAgent(state)
+    return {
+        "current_step": "cross_artist_split_agent",
+        "split_conflicts": resolved.get("split_conflicts") or [],
+        "split_suggestions": resolved.get("split_suggestions") or [],
+        "confidence_scores": {**(state.get("confidence_scores") or {}), "cross_artist_split_agent": 0.88},
+    }
 
 
 # Onboarding-focused autonomous agents requested for first-time drag-and-drop flow.
 async def OnboardingWizardAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "onboarding_wizard", "next_steps_for_artist": ["Upload first statement file"]}
+    return await onboarding.OnboardingWizardAgent(state)
 
 
 async def FileClassifierAgent(state: dict[str, Any]) -> dict[str, Any]:
-    files = list(state.get("uploaded_files") or [])
-    classified = [{"file": f, "format": "generic_csv"} for f in files]
-    return {"current_step": "file_classifier", "classified_files": classified}
+    return await onboarding.FileClassifierAgent(state)
 
 
 async def MissingStatementHunterAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "current_step": "missing_statement_hunter",
-        "missing_statements": ["ASCAP", "BMI", "DistroKid"],
-        "portal_links": {
-            "ASCAP": "https://member.ascap.com",
-            "BMI": "https://repertoire.bmi.com",
-            "SESAC": "https://www.sesac.com",
-        },
-    }
+    return await onboarding.MissingStatementHunterAgent(state)
 
 
 async def PROPortalGuideAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {
-        "current_step": "pro_portal_guide",
-        "instructions": [
-            "Open https://member.ascap.com",
-            "Navigate to royalty statements",
-            "Download CSV/PDF and upload to /artists/{id}/statements/upload",
-        ],
-    }
+    return await onboarding.PROPortalGuideAgent(state)
 
 
 async def AutoTermsAcceptorAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "auto_terms_acceptor", "terms_status": "accepted"}
+    return await onboarding.AutoTermsAcceptorAgent(state)
 
 
 async def InitialScanOrchestratorAgent(state: dict[str, Any]) -> dict[str, Any]:
-    return {"current_step": "initial_scan_orchestrator", "onboarding_progress": {"collected": 3, "target": 5}}
+    return await onboarding.InitialScanOrchestratorAgent(state)

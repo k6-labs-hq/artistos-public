@@ -20,10 +20,10 @@ class TestReviewDecisionType(unittest.TestCase):
     """ReviewDecisionType unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testReviewDecisionType(self):
         """Test ReviewDecisionType"""

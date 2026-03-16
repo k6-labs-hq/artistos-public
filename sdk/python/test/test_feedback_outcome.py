@@ -20,10 +20,10 @@ class TestFeedbackOutcome(unittest.TestCase):
     """FeedbackOutcome unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testFeedbackOutcome(self):
         """Test FeedbackOutcome"""

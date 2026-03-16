@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.celero_register_request import CeleroRegisterRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of CeleroRegisterRequest from a JSON string
 celero_register_request_instance = CeleroRegisterRequest.from_json(json)

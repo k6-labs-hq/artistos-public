@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.auth_connect_response import AuthConnectResponse
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of AuthConnectResponse from a JSON string
 auth_connect_response_instance = AuthConnectResponse.from_json(json)

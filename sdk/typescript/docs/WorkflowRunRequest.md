@@ -13,7 +13,7 @@ Name | Type
 ```typescript
 import type { WorkflowRunRequest } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "asyncRun": null,
 } satisfies WorkflowRunRequest

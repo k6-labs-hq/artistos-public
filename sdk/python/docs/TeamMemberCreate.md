@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.team_member_create import TeamMemberCreate
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of TeamMemberCreate from a JSON string
 team_member_create_instance = TeamMemberCreate.from_json(json)

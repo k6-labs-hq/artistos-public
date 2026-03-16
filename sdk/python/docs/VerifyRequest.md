@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.verify_request import VerifyRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of VerifyRequest from a JSON string
 verify_request_instance = VerifyRequest.from_json(json)

@@ -29,7 +29,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.structured_feedback_request import StructuredFeedbackRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of StructuredFeedbackRequest from a JSON string
 structured_feedback_request_instance = StructuredFeedbackRequest.from_json(json)

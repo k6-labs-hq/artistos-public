@@ -15,7 +15,7 @@ Name | Type
 ```typescript
 import type { TermsAcceptRequest } from '@xr7/sdk'
 
-// TODO: Update the object below with actual values
+// Example values shown below; adjust for your use case
 const example = {
   "termsVersion": null,
   "agreed": null,

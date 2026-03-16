@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.utility_rank_request import UtilityRankRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of UtilityRankRequest from a JSON string
 utility_rank_request_instance = UtilityRankRequest.from_json(json)

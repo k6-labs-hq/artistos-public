@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.o_auth_token_exchange_request import OAuthTokenExchangeRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of OAuthTokenExchangeRequest from a JSON string
 o_auth_token_exchange_request_instance = OAuthTokenExchangeRequest.from_json(json)

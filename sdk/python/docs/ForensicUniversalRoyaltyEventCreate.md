@@ -29,7 +29,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.forensic_universal_royalty_event_create import ForensicUniversalRoyaltyEventCreate
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ForensicUniversalRoyaltyEventCreate from a JSON string
 forensic_universal_royalty_event_create_instance = ForensicUniversalRoyaltyEventCreate.from_json(json)

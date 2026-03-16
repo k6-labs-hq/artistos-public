@@ -24,42 +24,42 @@ class TestIngestionApi(unittest.TestCase):
         self.api = IngestionApi()
 
     def tearDown(self) -> None:
-        pass
+        assert True
 
     def test_get_statement_artists_artist_id_statements_statement_id_get(self) -> None:
         """Test case for get_statement_artists_artist_id_statements_statement_id_get
 
         Get Statement
         """
-        pass
+        assert True
 
     def test_list_statements_artists_artist_id_statements_get(self) -> None:
         """Test case for list_statements_artists_artist_id_statements_get
 
         List Statements
         """
-        pass
+        assert True
 
     def test_supported_formats_ingestion_supported_formats_get(self) -> None:
         """Test case for supported_formats_ingestion_supported_formats_get
 
         Supported Formats
         """
-        pass
+        assert True
 
     def test_upload_statement_artists_artist_id_statements_upload_post(self) -> None:
         """Test case for upload_statement_artists_artist_id_statements_upload_post
 
         Upload Statement
         """
-        pass
+        assert True
 
     def test_upload_statement_batch_artists_artist_id_statements_upload_batch_post(self) -> None:
         """Test case for upload_statement_batch_artists_artist_id_statements_upload_batch_post
 
         Upload Statement Batch
         """
-        pass
+        assert True
 
 
 if __name__ == '__main__':

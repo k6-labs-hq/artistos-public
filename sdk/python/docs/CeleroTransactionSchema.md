@@ -27,7 +27,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.celero_transaction_schema import CeleroTransactionSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of CeleroTransactionSchema from a JSON string
 celero_transaction_schema_instance = CeleroTransactionSchema.from_json(json)

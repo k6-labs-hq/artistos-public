@@ -263,6 +263,6 @@ class CeleroWebhookHandler:
             try:
                 hubspot_sync_recovery_update.delay(txn.artist_id, event="first_recovery_paid")
             except Exception:  # noqa: BLE001
-                pass
+                logger.exception("Failed to enqueue HubSpot first_recovery_paid sync", extra={"artist_id": txn.artist_id})
 
         return result

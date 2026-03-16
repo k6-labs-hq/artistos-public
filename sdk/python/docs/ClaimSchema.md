@@ -22,7 +22,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.claim_schema import ClaimSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ClaimSchema from a JSON string
 claim_schema_instance = ClaimSchema.from_json(json)

@@ -26,6 +26,7 @@ from XR7.api.routers import b2b as b2b_router
 from XR7.api.routers import team as team_router
 from XR7.api.routers import connect as connect_router
 from XR7.api.routers import fetchers as fetchers_router
+from XR7.api.routers import workflow as workflow_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -126,6 +127,7 @@ app.include_router(b2b_router.router)
 app.include_router(team_router.router)
 app.include_router(connect_router.router)
 app.include_router(fetchers_router.router)
+app.include_router(workflow_router.router)
 
 
 @app.get("/health")

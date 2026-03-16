@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.estimate_request import EstimateRequest
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of EstimateRequest from a JSON string
 estimate_request_instance = EstimateRequest.from_json(json)

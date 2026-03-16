@@ -20,10 +20,10 @@ class TestReviewItemStatus(unittest.TestCase):
     """ReviewItemStatus unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testReviewItemStatus(self):
         """Test ReviewItemStatus"""

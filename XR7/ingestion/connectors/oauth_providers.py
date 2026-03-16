@@ -49,7 +49,7 @@ PROVIDER_CONFIGS: dict[str, OAuthProviderConfig] = {
 
 
 class OAuthProviderError(RuntimeError):
-    pass
+    """Raised when provider-aware OAuth operations fail."""
 
 
 class OAuthProviderService:

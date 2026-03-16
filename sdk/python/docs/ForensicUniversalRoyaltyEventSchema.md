@@ -31,7 +31,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.forensic_universal_royalty_event_schema import ForensicUniversalRoyaltyEventSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ForensicUniversalRoyaltyEventSchema from a JSON string
 forensic_universal_royalty_event_schema_instance = ForensicUniversalRoyaltyEventSchema.from_json(json)

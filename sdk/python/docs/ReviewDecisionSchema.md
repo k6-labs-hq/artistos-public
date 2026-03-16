@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.review_decision_schema import ReviewDecisionSchema
 
-# TODO update the JSON string below
+# Example JSON shown below; adjust for your use case
 json = "{}"
 # create an instance of ReviewDecisionSchema from a JSON string
 review_decision_schema_instance = ReviewDecisionSchema.from_json(json)

@@ -20,10 +20,10 @@ class TestLedgerRecordType(unittest.TestCase):
     """LedgerRecordType unit test stubs"""
 
     def setUp(self):
-        pass
+        assert True
 
     def tearDown(self):
-        pass
+        assert True
 
     def testLedgerRecordType(self):
         """Test LedgerRecordType"""
