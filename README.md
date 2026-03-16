@@ -189,6 +189,60 @@ Partner connector environment variables are documented in `.env.example` (for ex
 
 ---
 
+## Autonomous AI Onboarding & Recovery Agents
+
+XR7 Engine 2 now includes a fully autonomous, LangGraph-powered agent orchestra that handles
+artist onboarding, catalog preparation, and royalty recovery with minimal friction and
+maximum transparency.
+
+Key capabilities:
+- Zero-friction onboarding: drag-and-drop statements, automatic portal guidance, file repair, and catalog building.
+- Smart expectations: baseline earnings estimates and readiness scoring.
+- Early wins: automatic identification and drafting of the first quick-win claim.
+- Deep intelligence: UGC discovery, rights conflict detection, contract extraction, and metadata registration.
+- Human-in-the-loop only when necessary: high-value claims and legal escalations are paused for review with traceability.
+
+Agents include:
+- ArtistIntentInterpreterAgent
+- PortalAutoNavigatorAgent
+- SmartUploadFixerAgent
+- CatalogAutoBuilderAgent
+- DistributorSyncAgent
+- ArtistExplainerAgent
+- EarningsExpectationAgent
+- AutoSplitResolverAgent
+- ArtistComfortAgent
+- FirstClaimFastTrackAgent
+- ArtistProfileEnricherAgent
+- WelcomeSummaryAgent
+- AutoMetadataRegistrarAgent
+- RightsConflictDetectorAgent
+- SocialUGCCollectorAgent
+- AutoContractExtractorAgent
+- ReleaseTimelineAgent
+- ArtistReadinessScoreAgent
+- AutoFollowUpAgent
+- ArtistPersonaAdapterAgent
+
+LangGraph orchestration details:
+- Stateful execution model with typed graph state and per-node confidence scores.
+- Reflection/self-critique loop when confidence drops below threshold.
+- Checkpointer support via `LANGGRAPH_CHECKPOINTER_URL` and thread-scoped run IDs.
+- Interrupt safety before escalation/disbursement for high-stakes transitions.
+
+Dashboard exposure:
+- `agent_orchestra_status` with current step, confidence, and trace URL.
+- `onboarding_progress`, `comfort_messages`, `portal_guidance`, `fast_track_claim`.
+- `expected_earnings`, `public_profile`, `readiness_score`, `ugc_opportunities`.
+- `catalog_profile`, `split_conflicts`, `registration_actions`, `follow_up_actions`.
+
+Scheduler behavior:
+- Every 6 hours: run onboarding completion + new-data recovery workflows.
+- Every 24 hours: run follow-up/readiness workflows.
+- Event-triggered: statement uploads and UGC fetches enqueue autonomous runs.
+
+Every critical decision is logged with evidence hashes and trace events for auditability.
+
 ## Artist Recovery Dashboard
 
 Every artist has a single endpoint that gives them a complete, real-time
