@@ -77,6 +77,7 @@ _ACTIVE_CLAIM_STATUSES = {
     ClaimStatus.PREPARED,
     ClaimStatus.FILED,
     ClaimStatus.SUBMITTED,
+    ClaimStatus.PROOF_SUBMITTED,
     ClaimStatus.IN_REVIEW,
     ClaimStatus.ACCEPTED,
 }
@@ -867,6 +868,7 @@ def _claim_status_label(status: str) -> str:
         ClaimStatus.IDENTIFIED: "Claim identified — reviewing your case",
         ClaimStatus.PREPARED: "Claim prepared — building your evidence packet",
         ClaimStatus.SUBMITTED: "Claim submitted to the payer",
+        ClaimStatus.PROOF_SUBMITTED: "Proof submitted — awaiting payer response",
         ClaimStatus.IN_REVIEW: "Claim under review by the payer",
         ClaimStatus.ACCEPTED: "Claim accepted — awaiting payment",
         ClaimStatus.PAID: "Payment received from payer",

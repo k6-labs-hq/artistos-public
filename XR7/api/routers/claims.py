@@ -4,7 +4,7 @@ import json
 import asyncio
 from pathlib import Path
 import zipfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel
@@ -16,6 +16,7 @@ from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceA
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
 from XR7.models.base import get_db
 from XR7.models.anomaly import Anomaly
+from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorModel
 from XR7.models.ml_feedback import CalibrationSnapshot
@@ -125,6 +126,134 @@ def _build_simple_pdf(lines: list[str]) -> bytes:
     return output.getvalue()
 
 
+def _build_multipage_pdf(pages: list[list[str]]) -> bytes:
+    if not pages:
+        return _build_simple_pdf(["XR7 Attorney Evidence Package", "No data available."])
+
+    objects: list[bytes] = []
+    output = io.BytesIO()
+
+    # Object layout:
+    # 1: catalog, 2: pages, 3..N: page objects, then font object, then content objects.
+    page_count = len(pages)
+    first_page_obj = 3
+    font_obj = first_page_obj + page_count
+    first_content_obj = font_obj + 1
+
+    page_refs = " ".join([f"{first_page_obj + i} 0 R" for i in range(page_count)])
+    objects.append(b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n")
+    objects.append(f"2 0 obj << /Type /Pages /Count {page_count} /Kids [{page_refs}] >> endobj\n".encode("utf-8"))
+
+    for i in range(page_count):
+        page_obj_id = first_page_obj + i
+        content_obj_id = first_content_obj + i
+        objects.append(
+            (
+                f"{page_obj_id} 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+                f"/Resources << /Font << /F1 {font_obj} 0 R >> >> /Contents {content_obj_id} 0 R >> endobj\n"
+            ).encode("utf-8")
+        )
+
+    objects.append(f"{font_obj} 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n".encode("utf-8"))
+
+    for i, lines in enumerate(pages):
+        content_obj_id = first_content_obj + i
+        page_lines = lines[:46]
+        content_ops = ["BT", "/F1 10 Tf", "50 780 Td", "12 TL"]
+        for line in page_lines:
+            content_ops.append(f"({_safe_pdf_text(str(line))}) Tj")
+            content_ops.append("T*")
+        content_ops.append("ET")
+        content = "\n".join(content_ops).encode("utf-8")
+        objects.append(
+            f"{content_obj_id} 0 obj << /Length {len(content)} >> stream\n".encode("utf-8")
+            + content
+            + b"\nendstream endobj\n"
+        )
+
+    output.write(b"%PDF-1.4\n")
+    offsets = [0]
+    for obj in objects:
+        offsets.append(output.tell())
+        output.write(obj)
+
+    xref_start = output.tell()
+    output.write(f"xref\n0 {len(objects) + 1}\n".encode("utf-8"))
+    output.write(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        output.write(f"{off:010d} 00000 n \n".encode("utf-8"))
+    output.write(
+        (
+            f"trailer << /Size {len(objects) + 1} /Root 1 0 R >>\n"
+            f"startxref\n{xref_start}\n%%EOF"
+        ).encode("utf-8")
+    )
+    return output.getvalue()
+
+
+def _status_matches_proof_submitted(status: str | object) -> bool:
+    value = str(getattr(status, "value", status) or "").strip().lower()
+    return value in {"proof_submitted", "proof submitted"}
+
+
+def _utc(dt: datetime | None) -> datetime | None:
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc)
+
+
+def _attorney_escalation_state(claim: Claim, default_grace_days: int) -> dict:
+    now = datetime.now(timezone.utc)
+    grace_days = int(claim.grace_period_days or default_grace_days or 60)
+    if grace_days < 1:
+        grace_days = 1
+
+    proof_submitted_at = _utc(claim.proof_submitted_at)
+    days_elapsed = 0
+    days_remaining = grace_days
+    progress = 0.0
+    deadline = None
+    if proof_submitted_at is not None:
+        elapsed = now - proof_submitted_at
+        days_elapsed = max(0, int(elapsed.total_seconds() // 86400))
+        days_remaining = max(0, grace_days - days_elapsed)
+        progress = min(1.0, max(0.0, days_elapsed / float(grace_days)))
+        deadline = (proof_submitted_at + timedelta(days=grace_days)).date().isoformat()
+
+    eligible = (
+        _status_matches_proof_submitted(claim.status)
+        and proof_submitted_at is not None
+        and days_elapsed >= grace_days
+        and not bool(claim.attorney_file_generated)
+    )
+
+    return {
+        "is_proof_submitted": _status_matches_proof_submitted(claim.status),
+        "proof_submitted_at": proof_submitted_at.isoformat() if proof_submitted_at else None,
+        "grace_period_days": grace_days,
+        "days_elapsed": days_elapsed,
+        "days_remaining": days_remaining,
+        "progress": progress,
+        "payment_response_deadline": deadline,
+        "eligible_to_prepare": eligible,
+        "attorney_file_generated": bool(claim.attorney_file_generated),
+        "attorney_file_generated_at": _utc(claim.attorney_file_generated_at).isoformat() if claim.attorney_file_generated_at else None,
+        "countdown_message": f"Payer has {days_remaining} days remaining to respond",
+        "countdown_subtext": (
+            f"If payment is not received by {deadline}, you may escalate to your attorney."
+            if deadline
+            else "If payment is not received by the deadline, you may escalate to your attorney."
+        ),
+    }
+
+
+class AttorneyEvidenceRequest(BaseModel):
+    additional_notes: str | None = None
+    attorney_engagement_deadline: datetime | None = None
+
+
 def _evidence_summary_lines(packet: dict) -> list[str]:
     anomaly = packet.get("anomaly", {})
     proof = packet.get("proof", {})
@@ -177,6 +306,8 @@ def _resolve_source_file(source_file: str | None) -> Path | None:
 @router.get("/artists/{artist_id}/claims")
 def list_claims(artist_id: str, db: Session = Depends(get_db)):
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    default_grace_days = int((artist.default_attorney_grace_period_days if artist else 60) or 60)
     snapshots = (
         db.query(CalibrationSnapshot)
         .filter(CalibrationSnapshot.artist_id == artist_id)
@@ -192,6 +323,7 @@ def list_claims(artist_id: str, db: Session = Depends(get_db)):
             {
                 "claim": ClaimSchema.model_validate(claim).model_dump(mode="json"),
                 "forecast": forecast,
+                "attorney_escalation": _attorney_escalation_state(claim, default_grace_days),
             }
         )
     return payload
@@ -311,6 +443,178 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
         return packet
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+def _coalesce_supporting_documents(claim: Claim) -> list[dict]:
+    docs = claim.supporting_documents if isinstance(claim.supporting_documents, list) else []
+    if docs:
+        return docs
+    evidence_docs = ((claim.evidence or {}).get("proof") or {}).get("documents")
+    return evidence_docs if isinstance(evidence_docs, list) else []
+
+
+def _coalesce_communications(claim: Claim) -> list[dict]:
+    rows = claim.communications if isinstance(claim.communications, list) else []
+    if rows:
+        return rows
+    from_evidence = ((claim.evidence or {}).get("communications") or {}).get("timeline")
+    return from_evidence if isinstance(from_evidence, list) else []
+
+
+def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict) -> list[list[str]]:
+    now_iso = datetime.now(timezone.utc).date().isoformat()
+    communications = payload.get("communications") or []
+    docs = payload.get("supportingDocuments") or []
+    anomaly = payload.get("anomalyReport") or {}
+
+    page1 = [
+        "XR7 ATTORNEY EVIDENCE PACKAGE",
+        "",
+        "CONFIDENTIAL - ATTORNEY WORK PRODUCT",
+        "",
+        f"Artist: {artist_name}",
+        f"Claim ID: {claim.id}",
+        f"Generated: {now_iso}",
+        "",
+        "This package is prepared to support legal recovery action",
+        "for documented non-payment after the configured grace window.",
+    ]
+
+    page2 = [
+        "Page 2 - Claim Summary",
+        "",
+        f"Payer: {payload.get('payerName') or 'Unknown payer'}",
+        f"Payer Contact: {payload.get('payerContact') or 'Unknown contact'}",
+        f"Amount Owed: {payload.get('currency') or 'USD'} {float(payload.get('amountOwed') or 0.0):,.2f}",
+        f"Original Due Date: {payload.get('originalDueDate') or 'Not set'}",
+        f"Proof Submitted At: {payload.get('proofSubmittedAt') or 'Not set'}",
+        f"Days Elapsed: {payload.get('daysElapsedSinceProofSubmission')}",
+        f"Grace Period Days: {payload.get('gracePeriodDays')}",
+        "Statement: The grace period window has elapsed with no payment resolution.",
+    ]
+
+    page3 = [
+        "Page 3 - Payment Anomaly Report",
+        "",
+        f"Detected At: {anomaly.get('detectedAt') or 'Not provided'}",
+        f"Type: {anomaly.get('type') or 'Not provided'}",
+        f"Description: {anomaly.get('description') or 'Not provided'}",
+        f"Estimated Leakage: {anomaly.get('estimatedLeakage')}",
+        "",
+        "This section summarizes the platform anomaly findings relevant",
+        "to underpayment and missed-money analysis for this claim.",
+    ]
+
+    page4 = [
+        "Page 4 - Communication Timeline",
+        "",
+        "All known payer communications and non-response events:",
+    ]
+    if communications:
+        for row in communications[:36]:
+            page4.append(f"- {row.get('date') or 'Unknown date'} | {row.get('type') or 'event'} | {row.get('summary') or ''}")
+    else:
+        page4.append("- No communications logged.")
+
+    page5 = [
+        "Page 5 - Supporting Documents Index",
+        "",
+    ]
+    if docs:
+        for row in docs[:36]:
+            page5.append(f"- {row.get('name') or 'document'} | uploaded {row.get('uploadedAt') or 'unknown'} | ref {row.get('fileRef') or 'n/a'}")
+    else:
+        page5.append("- No supporting documents indexed.")
+
+    page6 = [
+        "Page 6 - SOL Deadline Notice",
+        "",
+        f"SOL Deadline: {payload.get('solDeadline') or 'Not set'}",
+        f"Recommended Attorney Engagement Date: {payload.get('attorneyEngagementDeadline') or 'Not set'}",
+        "Jurisdiction Note: Verify governing contract and forum clauses",
+        "with licensed counsel before filing.",
+    ]
+
+    return [page1, page2, page3, page4, page5, page6]
+
+
+@router.post("/claims/{claim_id}/attorney-evidence")
+@router.post("/api/claims/{claim_id}/attorney-evidence")
+def generate_attorney_evidence_file(
+    claim_id: str,
+    body: AttorneyEvidenceRequest,
+    db: Session = Depends(get_db),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+
+    artist = db.query(Artist).filter(Artist.id == claim.artist_id).first()
+    default_grace_days = int((artist.default_attorney_grace_period_days if artist else 60) or 60)
+    state = _attorney_escalation_state(claim, default_grace_days)
+
+    if bool(claim.attorney_file_generated):
+        raise HTTPException(status_code=409, detail="Attorney evidence file already generated for this claim")
+    if not state.get("eligible_to_prepare"):
+        raise HTTPException(status_code=400, detail="Grace period has not elapsed or claim is not in proof_submitted state")
+
+    sol_deadline = _utc(claim.sol_deadline)
+    recommended_deadline = (sol_deadline - timedelta(days=14)) if sol_deadline else None
+    engagement_deadline = _utc(body.attorney_engagement_deadline) or recommended_deadline
+
+    payload = {
+        "claimId": claim.id,
+        "artistName": artist.name if artist else "Unknown Artist",
+        "payerName": claim.payer_name,
+        "payerContact": claim.payer_contact,
+        "amountOwed": float(claim.recovered_amount or 0.0),
+        "currency": claim.currency or "USD",
+        "originalDueDate": _utc(claim.original_due_date).isoformat() if claim.original_due_date else None,
+        "proofSubmittedAt": _utc(claim.proof_submitted_at).isoformat() if claim.proof_submitted_at else None,
+        "gracePeriodDays": int(state.get("grace_period_days") or default_grace_days),
+        "daysElapsedSinceProofSubmission": int(state.get("days_elapsed") or 0),
+        "solDeadline": sol_deadline.isoformat() if sol_deadline else None,
+        "communications": _coalesce_communications(claim),
+        "anomalyReport": claim.anomaly_report if isinstance(claim.anomaly_report, dict) else {},
+        "supportingDocuments": _coalesce_supporting_documents(claim),
+        "additionalNotes": body.additional_notes or "",
+        "attorneyEngagementDeadline": engagement_deadline.date().isoformat() if engagement_deadline else None,
+        "checklist": [
+            "Original payment agreement / contract reference",
+            "Payment history showing the gap",
+            "Proof of non-payment document (upload reference)",
+            "Timeline of all communications with the payer",
+            "Anomaly detection report from the platform",
+            "SOL (statute of limitations) deadline notice",
+        ],
+        "notice": (
+            "The payer was given 60 days to respond after receiving proof of non-payment. "
+            "That window has now closed."
+        ),
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+    }
+
+    pdf_pages = _attorney_pdf_pages(claim, payload["artistName"], payload)
+    pdf_bytes = _build_multipage_pdf(pdf_pages)
+
+    generated_at = datetime.now(timezone.utc)
+    claim.attorney_file_generated = True
+    claim.attorney_file_generated_at = generated_at
+    claim.updated_at = generated_at
+    db.commit()
+
+    safe_artist = "".join(ch if ch.isalnum() or ch in {"_", "-"} else "_" for ch in payload["artistName"]).strip("_") or "artist"
+    filename = f"XR7_Evidence_{claim.id}_{safe_artist}_{generated_at.date().isoformat()}.pdf"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "X-Evidence-File-Ready": "Evidence file ready. Share with your attorney.",
+            "X-Attorney-Evidence-Generated-At": generated_at.isoformat(),
+        },
+    )
 
 
 @router.get("/claims/{claim_id}/evidence/export")

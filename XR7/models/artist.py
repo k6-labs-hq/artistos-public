@@ -4,7 +4,7 @@ import enum
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import JSON, DateTime, String
+from sqlalchemy import JSON, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -32,6 +32,7 @@ class Artist(Base):
     # Celero Commerce — Merchant of Record
     # Populated when the artist is registered via POST /artists/{id}/celero/register
     celero_customer_vault_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    default_attorney_grace_period_days: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
 
 
 class ArtistSchema(BaseModel):
@@ -48,6 +49,7 @@ class ArtistSchema(BaseModel):
     onboarded_at: datetime | None = None
     activated_at: datetime | None = None
     celero_customer_vault_id: str | None = None
+    default_attorney_grace_period_days: int = 60
 
 
 class ArtistCreate(BaseModel):
@@ -56,3 +58,4 @@ class ArtistCreate(BaseModel):
     role: str | None = None
     ipi_number: str | None = None
     stage_names: list[str] | None = None
+    default_attorney_grace_period_days: int = 60

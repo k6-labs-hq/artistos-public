@@ -167,6 +167,158 @@
       line-height: 1.35;
     }
 
+    .claim-list {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .claim-item {
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.65);
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .claim-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .claim-meta {
+      font-size: 0.82rem;
+      line-height: 1.35;
+      opacity: 0.85;
+      display: grid;
+      gap: 2px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.9);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(120deg, #f59e0b, #f97316);
+      transition: width 150ms ease;
+    }
+
+    .subtext {
+      font-size: 0.78rem;
+      opacity: 0.8;
+      line-height: 1.35;
+    }
+
+    .btn-warning-outline {
+      border: 1px solid rgba(217, 119, 6, 0.8);
+      border-radius: 10px;
+      background: rgba(251, 191, 36, 0.1);
+      color: #92400e;
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-disabled {
+      border: 1px solid rgba(107, 114, 128, 0.45);
+      border-radius: 10px;
+      background: rgba(107, 114, 128, 0.12);
+      color: #6b7280;
+      padding: 8px 10px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      cursor: not-allowed;
+    }
+
+    .badge {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      border: 1px solid rgba(15, 118, 110, 0.35);
+      color: #0f766e;
+      background: rgba(15, 118, 110, 0.12);
+    }
+
+    .modal-scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.52);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 60;
+      padding: 12px;
+    }
+
+    .modal-scrim.open {
+      display: flex;
+    }
+
+    .modal {
+      width: min(720px, 100%);
+      max-height: calc(100vh - 24px);
+      overflow-y: auto;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .notice {
+      border: 1px solid rgba(217, 119, 6, 0.45);
+      border-radius: 10px;
+      background: rgba(251, 191, 36, 0.15);
+      color: #7c2d12;
+      padding: 8px;
+      font-size: 0.84rem;
+      line-height: 1.35;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .field textarea,
+    .field input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+
+    .checklist {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 0.84rem;
+      display: grid;
+      gap: 4px;
+    }
+
     .status {
       font-size: 0.86rem;
       margin-top: 3px;
@@ -312,7 +464,47 @@
       <h2>Global Social Opportunities</h2>
       <ul class="list" id="globalList"></ul>
     </section>
+
+    <section class="card">
+      <h2>Claims Needing Payer Response</h2>
+      <ul class="claim-list" id="claimList"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Attorney Escalation Settings</h2>
+      <div class="field">
+        <label for="defaultGraceDays">Default attorney grace period (days)</label>
+        <input id="defaultGraceDays" type="number" min="1" max="365" value="60" />
+      </div>
+      <div class="subtext">
+        We recommend a minimum of 60 days to give payers reasonable time to resolve payment before legal escalation.
+      </div>
+      <button class="btn-dashboard" id="savePreferences" type="button">Save Settings</button>
+      <div class="status" id="settingsStatus"></div>
+    </section>
   </main>
+
+  <div class="modal-scrim" id="attorneyModalScrim" aria-hidden="true">
+    <section class="modal" aria-label="Prepare Attorney Evidence Package">
+      <div class="support-head">
+        <span>Prepare Attorney Evidence Package</span>
+        <button id="attorneyModalClose" type="button">Close</button>
+      </div>
+      <div class="notice" id="attorneyNotice"></div>
+      <div class="claim-meta" id="attorneyClaimSummary"></div>
+      <ul class="checklist" id="attorneyChecklist"></ul>
+      <div class="field">
+        <label for="attorneyNotes">Additional notes for your attorney</label>
+        <textarea id="attorneyNotes" rows="3" placeholder="Optional context for counsel"></textarea>
+      </div>
+      <div class="field">
+        <label for="attorneyDeadline">Attorney engagement deadline</label>
+        <input id="attorneyDeadline" type="date" />
+      </div>
+      <button class="btn-warning-outline" id="generateEvidenceFile" type="button">Generate Evidence File</button>
+      <div class="status" id="attorneyModalStatus"></div>
+    </section>
+  </div>
 
   <button class="support-fab" id="supportToggle" type="button">AI Support</button>
 
@@ -333,6 +525,9 @@
     const statusEl = document.getElementById("status");
     const dashboardMetrics = document.getElementById("dashboardMetrics");
     const globalList = document.getElementById("globalList");
+    const claimList = document.getElementById("claimList");
+    const settingsStatus = document.getElementById("settingsStatus");
+    const defaultGraceDaysInput = document.getElementById("defaultGraceDays");
     const supportToggle = document.getElementById("supportToggle");
     const supportPanel = document.getElementById("supportPanel");
     const supportClose = document.getElementById("supportClose");
@@ -340,7 +535,28 @@
     const supportForm = document.getElementById("supportForm");
     const supportInput = document.getElementById("supportInput");
     const supportQuickReplies = document.getElementById("supportQuickReplies");
+    const attorneyModalScrim = document.getElementById("attorneyModalScrim");
+    const attorneyModalClose = document.getElementById("attorneyModalClose");
+    const attorneyNotice = document.getElementById("attorneyNotice");
+    const attorneyClaimSummary = document.getElementById("attorneyClaimSummary");
+    const attorneyChecklist = document.getElementById("attorneyChecklist");
+    const attorneyNotes = document.getElementById("attorneyNotes");
+    const attorneyDeadline = document.getElementById("attorneyDeadline");
+    const attorneyModalStatus = document.getElementById("attorneyModalStatus");
+    const generateEvidenceFileBtn = document.getElementById("generateEvidenceFile");
+    const savePreferencesBtn = document.getElementById("savePreferences");
     let supportThreadId = null;
+    let loadedClaims = [];
+    let selectedClaimRow = null;
+
+    const attorneyChecklistItems = [
+      "Original payment agreement / contract reference",
+      "Payment history showing the gap",
+      "Proof of non-payment document (upload reference)",
+      "Timeline of all communications with the payer",
+      "Anomaly detection report from the platform",
+      "SOL (statute of limitations) deadline notice",
+    ];
 
     function artistId() {
       return (document.getElementById("artistId").value || "").trim();
@@ -348,6 +564,38 @@
 
     function setStatus(text) {
       statusEl.textContent = text;
+    }
+
+    function setSettingsStatus(text) {
+      settingsStatus.textContent = text;
+    }
+
+    function formatDate(value) {
+      if (!value) {
+        return "not set";
+      }
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) {
+        return "not set";
+      }
+      return d.toISOString().slice(0, 10);
+    }
+
+    function safeNumber(value, fallback = 0) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function recommendedAttorneyDeadline(claim) {
+      if (!claim || !claim.sol_deadline) {
+        return "";
+      }
+      const d = new Date(claim.sol_deadline);
+      if (Number.isNaN(d.getTime())) {
+        return "";
+      }
+      d.setUTCDate(d.getUTCDate() - 14);
+      return d.toISOString().slice(0, 10);
     }
 
     function metricNode(label, value) {
@@ -388,7 +636,247 @@
       dashboardMetrics.appendChild(metricNode("In Pursuit", `$${Number(inPursuit).toFixed(2)}`));
       dashboardMetrics.appendChild(metricNode("Deposited", `$${Number(deposited).toFixed(2)}`));
       dashboardMetrics.appendChild(metricNode("Still Pursuing", `$${Number(balance).toFixed(2)}`));
+      await loadClaims();
+      await loadPreferences();
       setStatus("Dashboard loaded.");
+    }
+
+    async function loadPreferences() {
+      const id = artistId();
+      if (!id) {
+        return;
+      }
+      const res = await fetch(`/artists/${encodeURIComponent(id)}/preferences`);
+      if (!res.ok) {
+        setSettingsStatus(`Could not load settings (${res.status}).`);
+        return;
+      }
+      const data = await res.json();
+      defaultGraceDaysInput.value = String(data.default_attorney_grace_period_days || 60);
+      setSettingsStatus("Settings loaded.");
+    }
+
+    async function savePreferences() {
+      const id = artistId();
+      if (!id) {
+        setSettingsStatus("Enter an artist ID first.");
+        return;
+      }
+      const graceDays = Math.max(1, safeNumber(defaultGraceDaysInput.value, 60));
+      setSettingsStatus("Saving settings...");
+      const res = await fetch(`/artists/${encodeURIComponent(id)}/preferences`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ default_attorney_grace_period_days: graceDays }),
+      });
+      if (!res.ok) {
+        setSettingsStatus(`Save failed (${res.status}).`);
+        return;
+      }
+      setSettingsStatus("Settings saved.");
+      await loadClaims();
+    }
+
+    function badgeNode(text) {
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = text;
+      return badge;
+    }
+
+    function renderClaims(rows) {
+      claimList.innerHTML = "";
+      if (!rows.length) {
+        const li = document.createElement("li");
+        li.className = "claim-item";
+        li.textContent = "No claims are currently waiting in proof-submitted grace windows.";
+        claimList.appendChild(li);
+        return;
+      }
+
+      rows.forEach((row) => {
+        const claim = row.claim || {};
+        const escalation = row.attorney_escalation || {};
+        const item = document.createElement("li");
+        item.className = "claim-item";
+
+        const title = document.createElement("div");
+        title.className = "claim-title";
+        title.textContent = `${claim.payer_name || "Unknown payer"} - ${claim.id}`;
+
+        if (escalation.attorney_file_generated) {
+          title.appendChild(
+            badgeNode(`Evidence file prepared - ${formatDate(escalation.attorney_file_generated_at)}`)
+          );
+        }
+        item.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "claim-meta";
+        meta.innerHTML = [
+          `Amount owed: ${claim.currency || "USD"} ${safeNumber(claim.recovered_amount).toFixed(2)}`,
+          `Original due date: ${formatDate(claim.original_due_date)}`,
+          `Proof submitted: ${formatDate(claim.proof_submitted_at)}`,
+          `Days elapsed: ${safeNumber(escalation.days_elapsed, 0)}`,
+        ].map((line) => `<div>${line}</div>`).join("");
+        item.appendChild(meta);
+
+        if (!escalation.attorney_file_generated && escalation.is_proof_submitted && !escalation.eligible_to_prepare) {
+          const message = document.createElement("div");
+          message.className = "subtext";
+          message.textContent = escalation.countdown_message || "Payer still has time to respond.";
+          item.appendChild(message);
+
+          const track = document.createElement("div");
+          track.className = "progress-track";
+          const fill = document.createElement("div");
+          fill.className = "progress-fill";
+          fill.style.width = `${Math.round(Math.min(1, Math.max(0, safeNumber(escalation.progress, 0))) * 100)}%`;
+          track.appendChild(fill);
+          item.appendChild(track);
+
+          const sub = document.createElement("div");
+          sub.className = "subtext";
+          sub.textContent = escalation.countdown_subtext || "If payment is not received by the deadline, you may escalate to your attorney.";
+          item.appendChild(sub);
+        }
+
+        const actionWrap = document.createElement("div");
+        if (escalation.attorney_file_generated) {
+          const btn = document.createElement("button");
+          btn.className = "btn-disabled";
+          btn.type = "button";
+          btn.disabled = true;
+          btn.textContent = "Evidence File Already Generated";
+          actionWrap.appendChild(btn);
+        } else if (escalation.eligible_to_prepare) {
+          const btn = document.createElement("button");
+          btn.className = "btn-warning-outline";
+          btn.type = "button";
+          btn.textContent = "[Briefcase] Prepare Evidence File";
+          btn.addEventListener("click", () => openAttorneyModal(row));
+          actionWrap.appendChild(btn);
+        }
+        item.appendChild(actionWrap);
+        claimList.appendChild(item);
+      });
+    }
+
+    async function loadClaims() {
+      const id = artistId();
+      if (!id) {
+        return;
+      }
+      const res = await fetch(`/artists/${encodeURIComponent(id)}/claims`);
+      if (!res.ok) {
+        setStatus(`Claims load failed (${res.status}).`);
+        return;
+      }
+      loadedClaims = await res.json();
+      renderClaims(Array.isArray(loadedClaims) ? loadedClaims : []);
+    }
+
+    function openAttorneyModal(row) {
+      selectedClaimRow = row;
+      const claim = row.claim || {};
+      const escalation = row.attorney_escalation || {};
+      const grace = safeNumber(escalation.grace_period_days, claim.grace_period_days || 60);
+
+      attorneyNotice.textContent = `The payer was given ${grace} days to respond after receiving proof of non-payment. That window has now closed.`;
+      attorneyClaimSummary.innerHTML = [
+        `Payer: ${claim.payer_name || "Unknown payer"}`,
+        `Amount owed: ${claim.currency || "USD"} ${safeNumber(claim.recovered_amount).toFixed(2)}`,
+        `Original due date: ${formatDate(claim.original_due_date)}`,
+        `Proof submitted: ${formatDate(claim.proof_submitted_at)}`,
+        `Days elapsed since proof: ${safeNumber(escalation.days_elapsed, 0)}`,
+      ].map((line) => `<div>${line}</div>`).join("");
+
+      attorneyChecklist.innerHTML = "";
+      attorneyChecklistItems.forEach((line) => {
+        const li = document.createElement("li");
+        li.textContent = line;
+        attorneyChecklist.appendChild(li);
+      });
+
+      attorneyNotes.value = "";
+      attorneyDeadline.value = recommendedAttorneyDeadline(claim);
+      attorneyModalStatus.textContent = "";
+      attorneyModalScrim.classList.add("open");
+      attorneyModalScrim.setAttribute("aria-hidden", "false");
+    }
+
+    function closeAttorneyModal() {
+      selectedClaimRow = null;
+      attorneyModalScrim.classList.remove("open");
+      attorneyModalScrim.setAttribute("aria-hidden", "true");
+    }
+
+    async function generateAttorneyEvidenceFile() {
+      if (!selectedClaimRow || !selectedClaimRow.claim) {
+        return;
+      }
+      const claim = selectedClaimRow.claim;
+      const id = claim.id;
+      const payload = {
+        claimId: claim.id,
+        payerName: claim.payer_name,
+        payerContact: claim.payer_contact,
+        amountOwed: safeNumber(claim.recovered_amount),
+        currency: claim.currency || "USD",
+        originalDueDate: claim.original_due_date,
+        proofSubmittedAt: claim.proof_submitted_at,
+        gracePeriodDays: safeNumber(claim.grace_period_days, 60),
+        solDeadline: claim.sol_deadline,
+        communications: claim.communications || [],
+        anomalyReport: claim.anomaly_report || {},
+        supportingDocuments: claim.supporting_documents || [],
+        additional_notes: (attorneyNotes.value || "").trim(),
+        attorney_engagement_deadline: attorneyDeadline.value ? new Date(`${attorneyDeadline.value}T00:00:00Z`).toISOString() : null,
+      };
+
+      attorneyModalStatus.textContent = "Generating evidence file...";
+      generateEvidenceFileBtn.disabled = true;
+
+      let res = await fetch(`/api/claims/${encodeURIComponent(id)}/attorney-evidence`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.status === 404) {
+        res = await fetch(`/claims/${encodeURIComponent(id)}/attorney-evidence`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
+
+      if (!res.ok) {
+        attorneyModalStatus.textContent = `Evidence generation failed (${res.status}).`;
+        generateEvidenceFileBtn.disabled = false;
+        return;
+      }
+
+      const blob = await res.blob();
+      const cd = res.headers.get("Content-Disposition") || "";
+      const match = cd.match(/filename=\"([^\"]+)\"/);
+      const fallbackName = `XR7_Evidence_${claim.id}_${(claim.payer_name || "artist").replace(/[^a-zA-Z0-9_-]/g, "_")}_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const filename = (match && match[1]) ? match[1] : fallbackName;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      attorneyModalStatus.textContent = "Evidence file ready. Share with your attorney.";
+      await loadClaims();
+      setStatus("Evidence file ready. Share with your attorney.");
+      closeAttorneyModal();
+      generateEvidenceFileBtn.disabled = false;
     }
 
     async function scanGlobalSocial() {
@@ -500,6 +988,14 @@
 
     document.getElementById("loadDashboard").addEventListener("click", loadDashboard);
     document.getElementById("scanGlobal").addEventListener("click", scanGlobalSocial);
+    savePreferencesBtn.addEventListener("click", savePreferences);
+    attorneyModalClose.addEventListener("click", closeAttorneyModal);
+    attorneyModalScrim.addEventListener("click", (event) => {
+      if (event.target === attorneyModalScrim) {
+        closeAttorneyModal();
+      }
+    });
+    generateEvidenceFileBtn.addEventListener("click", generateAttorneyEvidenceFile);
   </script>
 </body>
 </html>

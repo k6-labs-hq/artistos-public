@@ -619,6 +619,106 @@
         }
       }
     },
+    "/api/claims/{claim_id}/attorney-evidence": {
+      "post": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Generate Attorney Evidence File",
+        "operationId": "generate_attorney_evidence_file_api_claims__claim_id__attorney_evidence_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttorneyEvidenceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/claims/{claim_id}/attorney-evidence": {
+      "post": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Generate Attorney Evidence File",
+        "operationId": "generate_attorney_evidence_file_claims__claim_id__attorney_evidence_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AttorneyEvidenceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/claims/{claim_id}/evidence/export": {
       "get": {
         "tags": [
@@ -6841,6 +6941,94 @@
         }
       }
     },
+    "/artists/{artist_id}/preferences": {
+      "get": {
+        "tags": [
+          "artists"
+        ],
+        "summary": "Get Artist Preferences",
+        "operationId": "get_artist_preferences_artists__artist_id__preferences_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "artists"
+        ],
+        "summary": "Update Artist Preferences",
+        "operationId": "update_artist_preferences_artists__artist_id__preferences_put",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtistPreferenceUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/connect": {
       "post": {
         "tags": [
@@ -12149,6 +12337,11 @@
               }
             ],
             "title": "Stage Names"
+          },
+          "default_attorney_grace_period_days": {
+            "type": "integer",
+            "title": "Default Attorney Grace Period Days",
+            "default": 60
           }
         },
         "type": "object",
@@ -12165,6 +12358,19 @@
           "ACTIVE"
         ],
         "title": "ArtistLifecycleStatus"
+      },
+      "ArtistPreferenceUpdateRequest": {
+        "properties": {
+          "default_attorney_grace_period_days": {
+            "type": "integer",
+            "maximum": 365.0,
+            "minimum": 1.0,
+            "title": "Default Attorney Grace Period Days",
+            "default": 60
+          }
+        },
+        "type": "object",
+        "title": "ArtistPreferenceUpdateRequest"
       },
       "ArtistSchema": {
         "properties": {
@@ -12265,6 +12471,11 @@
               }
             ],
             "title": "Celero Customer Vault Id"
+          },
+          "default_attorney_grace_period_days": {
+            "type": "integer",
+            "title": "Default Attorney Grace Period Days",
+            "default": 60
           }
         },
         "type": "object",
@@ -12288,6 +12499,35 @@
           "analyst_email"
         ],
         "title": "AssignReviewItemRequest"
+      },
+      "AttorneyEvidenceRequest": {
+        "properties": {
+          "additional_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Additional Notes"
+          },
+          "attorney_engagement_deadline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attorney Engagement Deadline"
+          }
+        },
+        "type": "object",
+        "title": "AttorneyEvidenceRequest"
       },
       "AuthConnectResponse": {
         "properties": {
@@ -12937,6 +13177,128 @@
             ],
             "title": "Evidence"
           },
+          "payer_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payer Name"
+          },
+          "payer_contact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payer Contact"
+          },
+          "original_due_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Due Date"
+          },
+          "proof_submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proof Submitted At"
+          },
+          "grace_period_days": {
+            "type": "integer",
+            "title": "Grace Period Days",
+            "default": 60
+          },
+          "sol_deadline": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sol Deadline"
+          },
+          "communications": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Communications"
+          },
+          "anomaly_report": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anomaly Report"
+          },
+          "supporting_documents": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Supporting Documents"
+          },
+          "attorney_file_generated": {
+            "type": "boolean",
+            "title": "Attorney File Generated",
+            "default": false
+          },
+          "attorney_file_generated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attorney File Generated At"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -12968,6 +13330,7 @@
           "PREPARED",
           "FILED",
           "SUBMITTED",
+          "PROOF_SUBMITTED",
           "IN_REVIEW",
           "ACCEPTED",
           "PAID",

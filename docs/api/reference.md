@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 229
+Total endpoints: 233
 
 ## Endpoint Table
 
@@ -17,6 +17,7 @@ Total endpoints: 229
 | admin | GET | /admin/transactions | List Transactions | list_transactions_admin_transactions_get | - | - | curl -X GET http://localhost:8000/admin/transactions |
 | anomalies | GET | /anomalies/{anomaly_id} | Get Anomaly | get_anomaly_anomalies__anomaly_id__get | - | AnomalySchema | curl -X GET http://localhost:8000/anomalies/<anomaly_id> |
 | anomalies | GET | /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint | anomaly_recovery_probability_endpoint_anomalies__anomaly_id__recovery_probability_get | - | - | curl -X GET http://localhost:8000/anomalies/<anomaly_id>/recovery-probability |
+| claims | POST | /api/claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File | generate_attorney_evidence_file_api_claims__claim_id__attorney_evidence_post | AttorneyEvidenceRequest | - | curl -X POST http://localhost:8000/api/claims/<claim_id>/attorney-evidence -H 'Content-Type: application/json' -d '{}' |
 | artists | POST | /artists/ | Create Artist | create_artist_artists__post | ArtistCreate | ArtistSchema | curl -X POST http://localhost:8000/artists/ -H 'Content-Type: application/json' -d '{}' |
 | artists | GET | /artists/{artist_id} | Get Artist | get_artist_artists__artist_id__get | - | ArtistSchema | curl -X GET http://localhost:8000/artists/<artist_id> |
 | public | POST | /artists/{artist_id}/advocacy/kit | Advocacy Kit | advocacy_kit_artists__artist_id__advocacy_kit_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/advocacy/kit |
@@ -115,6 +116,8 @@ Total endpoints: 229
 | onboarding | GET | /artists/{artist_id}/parsers/plugins | List Parser Plugins | list_parser_plugins_artists__artist_id__parsers_plugins_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/parsers/plugins |
 | onboarding | PUT | /artists/{artist_id}/parsers/plugins | Upsert Parser Plugin | upsert_parser_plugin_artists__artist_id__parsers_plugins_put | ParserPluginUpsertRequest | ParserPluginSchema | curl -X PUT http://localhost:8000/artists/<artist_id>/parsers/plugins -H 'Content-Type: application/json' -d '{}' |
 | onboarding | POST | /artists/{artist_id}/parsers/{parser_type} | Parse Statement With Engine | parse_statement_with_engine_artists__artist_id__parsers__parser_type__post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/parsers/{parser_type} |
+| artists | GET | /artists/{artist_id}/preferences | Get Artist Preferences | get_artist_preferences_artists__artist_id__preferences_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/preferences |
+| artists | PUT | /artists/{artist_id}/preferences | Update Artist Preferences | update_artist_preferences_artists__artist_id__preferences_put | ArtistPreferenceUpdateRequest | - | curl -X PUT http://localhost:8000/artists/<artist_id>/preferences -H 'Content-Type: application/json' -d '{}' |
 | recovery | GET | /artists/{artist_id}/recovery/attribution | Recovery Attribution | recovery_attribution_artists__artist_id__recovery_attribution_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/recovery/attribution |
 | expansion | GET | /artists/{artist_id}/recovery/audit-demand-letter | Generate Audit Demand Letter | generate_audit_demand_letter_artists__artist_id__recovery_audit_demand_letter_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/recovery/audit-demand-letter |
 | recovery | GET | /artists/{artist_id}/recovery/audit-eligibility | Audit Eligibility | audit_eligibility_artists__artist_id__recovery_audit_eligibility_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/recovery/audit-eligibility |
@@ -182,6 +185,7 @@ Total endpoints: 229
 | claims | GET | /claims/{claim_id} | Get Claim | get_claim_claims__claim_id__get | - | ClaimSchema | curl -X GET http://localhost:8000/claims/<claim_id> |
 | claims | POST | /claims/{claim_id}/activate-agent | Activate Negotiator Agent | activate_negotiator_agent_claims__claim_id__activate_agent_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/activate-agent |
 | claims | POST | /claims/{claim_id}/advance | Advance Claim | advance_claim_claims__claim_id__advance_post | - | ClaimSchema | curl -X POST http://localhost:8000/claims/<claim_id>/advance |
+| claims | POST | /claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File | generate_attorney_evidence_file_claims__claim_id__attorney_evidence_post | AttorneyEvidenceRequest | - | curl -X POST http://localhost:8000/claims/<claim_id>/attorney-evidence -H 'Content-Type: application/json' -d '{}' |
 | claims | GET | /claims/{claim_id}/automation-plan | Claim Automation Plan | claim_automation_plan_claims__claim_id__automation_plan_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/automation-plan |
 | claims | POST | /claims/{claim_id}/escalate-legal | Escalate Legal | escalate_legal_claims__claim_id__escalate_legal_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/escalate-legal |
 | claims | POST | /claims/{claim_id}/evidence | Generate Evidence | generate_evidence_claims__claim_id__evidence_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/evidence |

@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from XR7.models.artist import Artist, ArtistCreate, ArtistSchema
@@ -26,6 +27,21 @@ router = APIRouter(prefix="/artists", tags=["artists"])
 logger = get_logger(__name__)
 
 
+class ArtistPreferenceUpdateRequest(BaseModel):
+    default_attorney_grace_period_days: int = Field(default=60, ge=1, le=365)
+
+
+def _attorney_grace_period_settings_payload(artist: Artist) -> dict:
+    return {
+        "artist_id": artist.id,
+        "default_attorney_grace_period_days": int(artist.default_attorney_grace_period_days or 60),
+        "helper_text": (
+            "We recommend a minimum of 60 days to give payers reasonable time "
+            "to resolve payment before legal escalation."
+        ),
+    }
+
+
 @router.get("/{artist_id}", response_model=ArtistSchema)
 def get_artist(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
@@ -43,6 +59,7 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
         role=artist_in.role,
         ipi_number=artist_in.ipi_number,
         stage_names=artist_in.stage_names,
+        default_attorney_grace_period_days=max(1, int(artist_in.default_attorney_grace_period_days or 60)),
         created_at=datetime.now(timezone.utc),
     )
     db.add(artist)
@@ -53,6 +70,30 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
     except Exception:  # noqa: BLE001
         logger.exception("Failed to enqueue HubSpot artist sync", extra={"artist_id": artist.id})
     return artist
+
+
+@router.get("/{artist_id}/preferences")
+def get_artist_preferences(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    return _attorney_grace_period_settings_payload(artist)
+
+
+@router.put("/{artist_id}/preferences")
+def update_artist_preferences(
+    artist_id: str,
+    payload: ArtistPreferenceUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    artist.default_attorney_grace_period_days = max(1, int(payload.default_attorney_grace_period_days))
+    db.commit()
+    db.refresh(artist)
+    return _attorney_grace_period_settings_payload(artist)
 
 
 @router.post("/{artist_id}/connect")
