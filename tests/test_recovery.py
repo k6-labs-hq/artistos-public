@@ -242,7 +242,16 @@ def test_claim_evidence_export_zip_and_pdf():
     assert packet["integrity"]["packet_hash"]
     assert packet["proof"]["missing_money_amount"] == pytest.approx(100.0)
     assert "legal_authority_sections" in packet
+    assert "legal_methodology_summary" in packet
+    assert "legal_compliance_statements" in packet
+    assert "legal_risk_score" in packet
+    assert "settlement_probability" in packet
+    assert "escalation_readiness_score" in packet
     assert "legal_structured_packet" in packet
+    assert "attorney_briefing_packet" in packet
+    assert "predicted_expected_value" in packet
+    assert "predicted_recovery_low" in packet
+    assert "predicted_recovery_high" in packet
     assert "attorney_export_package" in packet
     assert "narrative_summary" in packet
 

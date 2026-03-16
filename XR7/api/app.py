@@ -96,8 +96,16 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
     allow_credentials=False,
-    allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Content-Type", "X-Admin-Key"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=[
+        "Content-Type",
+        "Authorization",
+        "X-Admin-Key",
+        "X-Admin-Actor",
+        "X-Analyst-Key",
+        "X-Analyst-Email",
+        "X-Celero-Signature",
+    ],
 )
 
 app.include_router(earnings.router)

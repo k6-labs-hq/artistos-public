@@ -14,7 +14,7 @@ XR7 Engine 2 is a comprehensive platform designed to detect, recover, and preven
 | **Billing Engine** | ✅ Ready | 10% contingency fee, invoice generation, wired to Celero |
 | **Recovery Tools** | ✅ Ready | SOL tracker, audit eligibility, rate benchmark, recoupment, priority queue |
 | **ML Suite** | ✅ Ready | Isolation Forest anomaly detector, earnings forecaster, catalog scorer, rate benchmarker |
-| **Statement Upload** | ✅ Ready | CSV ingestion for 15 explicit formats (major distributors + PROs + Spotify) plus generic fallback |
+| **Statement Upload** | ✅ Ready | CSV/TSV/XLSX ingestion for 15 explicit formats (major distributors + PROs + Spotify + SoundCloud) plus generic fallback |
 | **Global Social Scanning** | ✅ Ready | Endpoint + mobile dashboard UI for global UGC signal scanning and auto-claim workflows |
 | **White-Label Mode** | ✅ Ready | Tenant-level branding flag exposed via settings and readiness endpoint |
 | **Celero Commerce (MoR)** | 🔑 Key needed | Integration built; needs `CELERO_SECURITY_KEY` from Celero onboarding |
@@ -28,7 +28,7 @@ XR7 Engine 2 is a comprehensive platform designed to detect, recover, and preven
 The platform is **fully operational today** using the statement file upload workflow.  Artists download their royalty statements from distributors and PRO portals and upload them as CSV files:
 
 ```
-POST /artists/{id}/statements/upload   # Upload a CSV statement
+POST /artists/{id}/statements/upload   # Upload a CSV/TSV/XLSX statement
 GET  /artists/{id}/statements          # See all uploaded statements
 ```
 
@@ -47,6 +47,7 @@ Supported formats are auto-detected from the column headers:
 - **ASCAP** — performance royalty statements
 - **BMI** — royalty statement downloads
 - **Spotify for Artists** — stream revenue CSV
+- **SoundCloud** — monetization exports (CSV/TSV/XLSX)
 - **Generic** — any CSV with date, source/platform, quantity, and amount columns
 
 Get the full machine-readable format catalog (including key columns and descriptions):
@@ -712,7 +713,7 @@ Look for the `merchant_of_record` section:
 ## Features
 
 - **End-to-End Recovery Lifecycle**: Ingestion -> anomaly detection -> claim orchestration -> billing -> Celero payout tracking in a single API surface.
-- **15-Format Statement Ingestion + Generic Fallback**: Explicit parsers for DistroKid, TuneCore, CD Baby, Amuse, United Masters, ONErpm, Stem, LANDR, Ditto, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, plus generic CSV detection.
+- **15-Format Statement Ingestion + Generic Fallback**: Explicit parsers for DistroKid, TuneCore, CD Baby, Amuse, United Masters, ONErpm, Stem, LANDR, Ditto, ReverbNation, Bandcamp, ASCAP, BMI, Spotify, SoundCloud, plus generic statement detection.
 - **Terms & Conditions Compliance Gate**: Required agreement acceptance (`GET /terms`, `POST /artists/{id}/terms/accept`) is enforced before statement upload.
 - **Artist Recovery Dashboard**: Unified artist dashboard with leakage discovered, claims in pursuit, deposited funds, calibration health, pursuing balance, deadlines, priority actions, catalog health, earnings trend, and activity feed.
 - **Connector Readiness & Credential Visibility**: `GET /health/readiness` and `POST /artists/{id}/connect` expose integration readiness without making external network calls.
