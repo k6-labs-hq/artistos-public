@@ -6926,6 +6926,175 @@
         }
       }
     },
+    "/artists/{artist_id}/connect/global-social": {
+      "post": {
+        "tags": [
+          "connect"
+        ],
+        "summary": "Connect Global Social",
+        "operationId": "connect_global_social_artists__artist_id__connect_global_social_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Platform"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/connect/global-social/status": {
+      "get": {
+        "tags": [
+          "connect"
+        ],
+        "summary": "Connect Global Social Status",
+        "operationId": "connect_global_social_status_artists__artist_id__connect_global_social_status_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/connect/soundcloud": {
+      "post": {
+        "tags": [
+          "connect"
+        ],
+        "summary": "Connect Soundcloud",
+        "operationId": "connect_soundcloud_artists__artist_id__connect_soundcloud_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/connect/soundcloud/status": {
+      "get": {
+        "tags": [
+          "connect"
+        ],
+        "summary": "Connect Soundcloud Status",
+        "operationId": "connect_soundcloud_status_artists__artist_id__connect_soundcloud_status_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}": {
       "get": {
         "tags": [
@@ -12062,175 +12231,6 @@
             }
           }
         },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/connect/global-social": {
-      "post": {
-        "tags": [
-          "connect"
-        ],
-        "summary": "Connect Global Social",
-        "operationId": "connect_global_social_artists__artist_id__connect_global_social_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          },
-          {
-            "name": "platform",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Platform"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/connect/global-social/status": {
-      "get": {
-        "tags": [
-          "connect"
-        ],
-        "summary": "Connect Global Social Status",
-        "operationId": "connect_global_social_status_artists__artist_id__connect_global_social_status_get",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/connect/soundcloud": {
-      "post": {
-        "tags": [
-          "connect"
-        ],
-        "summary": "Connect Soundcloud",
-        "operationId": "connect_soundcloud_artists__artist_id__connect_soundcloud_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/connect/soundcloud/status": {
-      "get": {
-        "tags": [
-          "connect"
-        ],
-        "summary": "Connect Soundcloud Status",
-        "operationId": "connect_soundcloud_status_artists__artist_id__connect_soundcloud_status_get",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -18148,6 +18148,18 @@
           "status_url": {
             "type": "string",
             "title": "Status Url"
+          },
+          "branding": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Branding"
           }
         },
         "type": "object",
