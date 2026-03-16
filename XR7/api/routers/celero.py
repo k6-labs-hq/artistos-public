@@ -68,6 +68,7 @@ from XR7.models.celero_transaction import (
 )
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.notification_preference import NotificationPreference
+from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["celero"])
 
@@ -247,7 +248,7 @@ def get_celero_status(artist_id: str, db: Session = Depends(get_db)):
         )
         .all()
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "celero_registered": bool(artist.celero_customer_vault_id),
         "celero_customer_vault_id": artist.celero_customer_vault_id,
@@ -255,7 +256,7 @@ def get_celero_status(artist_id: str, db: Session = Depends(get_db)):
         "transaction_count": txn_count,
         "total_fees_charged": round(sum(t.amount for t in total_charged), 2),
         "total_disbursed": round(sum(t.amount for t in total_disbursed), 2),
-    }
+    })
 
 
 @router.put(

@@ -20,6 +20,7 @@ from XR7.earnings.engine import EarningsEngine
 from XR7.ingestion.connectors.partner_ecosystem import normalize_provider, provider_status
 from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
+from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
 from XR7.tasks.hubspot import hubspot_sync_artist, hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -77,7 +78,7 @@ def get_artist_preferences(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
-    return _attorney_grace_period_settings_payload(artist)
+    return inject_branding_metadata(db, _attorney_grace_period_settings_payload(artist))
 
 
 @router.put("/{artist_id}/preferences")
@@ -93,7 +94,7 @@ def update_artist_preferences(
     artist.default_attorney_grace_period_days = max(1, int(payload.default_attorney_grace_period_days))
     db.commit()
     db.refresh(artist)
-    return _attorney_grace_period_settings_payload(artist)
+    return inject_branding_metadata(db, _attorney_grace_period_settings_payload(artist))
 
 
 @router.post("/{artist_id}/connect")
@@ -147,7 +148,7 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
     )
 
     configured_count = sum(1 for s in sources if s["configured"])
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "status": "ready" if configured_count > 0 else "no_connectors_configured",
         "configured_sources": configured_count,
@@ -160,7 +161,7 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
             if configured_count == 0
             else "Use POST /artists/{artist_id}/statements/upload to ingest data from configured sources."
         ),
-    }
+    })
 
 
 @router.get("/{artist_id}/summary")
@@ -188,6 +189,7 @@ def artist_summary(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         **summary,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "anomaly_count": anomaly_count,
         "claim_count": claim_count,
         "recovery_potential": round(max(potential, 0.0), 2),
@@ -236,7 +238,10 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
         claims=claims,
         earnings_summary=earnings_summary,
     )
-    return report.to_dict()
+    return {
+        **report.to_dict(),
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+    }
 
 
 @router.get("/{artist_id}/digest/weekly")
@@ -284,6 +289,7 @@ def weekly_digest(artist_id: str, db: Session = Depends(get_db)):
     )
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "delivery": delivery,
         "digest": digest,
     }
@@ -331,12 +337,12 @@ def connect_provider(artist_id: str, provider: str, db: Session = Depends(get_db
         link.is_active = True
     db.commit()
     db.refresh(link)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "provider": provider_key,
         "status": provider_status(provider_key),
         "link_id": link.id,
-    }
+    })
 
 
 @router.get("/{artist_id}/connect/{provider}/status")
@@ -352,7 +358,7 @@ def provider_connection_status(artist_id: str, provider: str, db: Session = Depe
         .order_by(ConnectorAccountLink.updated_at.desc())
         .all()
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "provider": provider_key,
         "status": provider_status(provider_key),
@@ -367,4 +373,4 @@ def provider_connection_status(artist_id: str, provider: str, db: Session = Depe
             }
             for link in links
         ],
-    }
+    })

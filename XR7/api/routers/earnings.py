@@ -16,6 +16,7 @@ from XR7.services.post_repair_forecast_pipeline import (
     FORECAST_DISCLAIMER,
     PostRepairForecastPipeline,
 )
+from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
 
 router = APIRouter(tags=["earnings"])
 
@@ -35,7 +36,14 @@ def get_earnings_summary(artist_id: str, db: Session = Depends(get_db)):
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     engine = get_engine()
-    return engine.get_earnings_summary(artist_id, db)
+    result = engine.get_earnings_summary(artist_id, db)
+    if isinstance(result, dict):
+        return inject_branding_metadata(db, result)
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        "summary": result,
+    }
 
 
 @router.get("/artists/{artist_id}/earnings/history")
@@ -45,7 +53,14 @@ def get_earnings_history(artist_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Artist not found")
     engine = get_engine()
     end = datetime.now(timezone.utc)
-    return engine.reconstruct_historical(artist_id, _DEFAULT_HISTORICAL_START_DATE, end, db)
+    result = engine.reconstruct_historical(artist_id, _DEFAULT_HISTORICAL_START_DATE, end, db)
+    if isinstance(result, dict):
+        return inject_branding_metadata(db, result)
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        "records": result,
+    }
 
 
 class ReconstructRequest(BaseModel):
@@ -115,6 +130,7 @@ def reconstruct_earnings(artist_id: str, body: ReconstructRequest, db: Session =
         },
         "rate_benchmark": rate_report,
         "post_repair_forecast_pipeline": post_repair_forecast,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
     }
 
 
@@ -137,6 +153,7 @@ def get_post_repair_forecast(artist_id: str, db: Session = Depends(get_db)):
         end,
     )
     forecast = pipeline.get("forecast") or {}
+    brand = get_branding_for_artist(db, artist_id)
 
     return {
         "artist_id": artist_id,
@@ -157,6 +174,7 @@ def get_post_repair_forecast(artist_id: str, db: Session = Depends(get_db)):
             "forecast_disclaimer": pipeline.get("metadata", {}).get("forecast_disclaimer") or FORECAST_DISCLAIMER,
             "model": pipeline.get("metadata", {}).get("model", "PostRepairEarningsForecaster"),
         },
+        "branding": branding_metadata(brand),
     }
 
 
@@ -185,5 +203,5 @@ def forecast_earnings(artist_id: str, body: ForecastRequest, db: Session = Depen
         result = forecaster.forecast(
             historical, horizon_days=body.horizon_days, confidence=body.confidence
         )
-    return {"artist_id": artist_id, "forecast": result}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "forecast": result})
 

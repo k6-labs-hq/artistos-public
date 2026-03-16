@@ -37,6 +37,7 @@ from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
 from XR7.services.workflow_orchestrator import XR7WorkflowService
+from XR7.services.branding import apply_brand_placeholders, branding_metadata, get_branding_for_artist, inject_branding_metadata
 
 router = APIRouter(tags=["onboarding"])
 
@@ -106,9 +107,19 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
         or 0
     )
 
+    brand = get_branding_for_artist(db, artist_id)
     return {
         "artist_id": artist_id,
         "status": artist.status,
+        "branding": branding_metadata(brand),
+        "ui_copy": apply_brand_placeholders(
+            {
+                "login_title": "Welcome to {{BRAND.NAME}}",
+                "onboarding_title": "{{BRAND.NAME}} Onboarding",
+                "legal_disclaimer": "{{BRAND.LEGAL_DISCLAIMER}}",
+            },
+            brand,
+        ),
         "gates": {
             "terms_accepted": bool(terms_accepted),
             "statement_uploaded": int(statement_count) > 0,
@@ -137,6 +148,7 @@ def get_permissions_dashboard_ui():
 @router.get("/artists/{artist_id}/connect/permissions-dashboard")
 def permissions_dashboard(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
+    brand = get_branding_for_artist(db, artist_id)
     rows = db.query(ConnectorAccountLink).filter(ConnectorAccountLink.artist_id == artist_id).all()
 
     connected_accounts = [
@@ -158,6 +170,7 @@ def permissions_dashboard(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(brand),
         "connected_accounts": connected_accounts,
         "missing_connections": missing_connections,
         "connection_health": {
@@ -177,7 +190,7 @@ def run_data_fetcher(
     _artist_or_404(artist_id, db)
     fetcher = get_fetcher(integration)
     bundle = fetcher.fetch_all(artist_id)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "integration": integration,
         "historical_statements": bundle.historical_statements,
@@ -185,7 +198,7 @@ def run_data_fetcher(
         "registrations": bundle.registrations,
         "usage_data": bundle.usage_data,
         "normalized_universal_events": bundle.normalized_events,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/ingestion/upload-any")
@@ -196,6 +209,7 @@ async def upload_any_statement(
     db: Session = Depends(get_db),
 ):
     _artist_or_404(artist_id, db)
+    brand = get_branding_for_artist(db, artist_id)
     if not files:
         raise HTTPException(status_code=400, detail="At least one file is required")
 
@@ -222,6 +236,15 @@ async def upload_any_statement(
         )
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(brand),
+        "upload_ui": apply_brand_placeholders(
+            {
+                "title": "{{BRAND.NAME}} Statement Upload",
+                "support": "For upload issues contact {{BRAND.SUPPORT_EMAIL}}",
+                "legal_disclaimer": "{{BRAND.LEGAL_DISCLAIMER}}",
+            },
+            brand,
+        ),
         "virus_scan_passed": report.virus_scan_passed,
         "scanner": report.scanned_with,
         "documents": [
@@ -285,13 +308,13 @@ async def parse_statement_with_engine(
         except ParserPluginError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "parser_type": parsed.parser_type,
         "event_count": parsed.event_count,
         "warnings": parsed.warnings,
         "events": parsed.events[:100],
-    }
+    })
 
 
 @router.put("/artists/{artist_id}/parsers/plugins", response_model=ParserPluginSchema)
@@ -444,11 +467,11 @@ def requeue_due_sync_jobs(
         .count()
     )
     enqueued = run_due_sync_jobs(db=db)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "due_jobs_for_artist": due_for_artist,
         "enqueued_jobs": enqueued,
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/ingestion/missing-data")
@@ -496,7 +519,7 @@ def build_catalog_work_graph(artist_id: str, db: Session = Depends(get_db)):
         registrations=[{"registration_id": w.iswc, "work_id": w.id, "source": "internal"} for w in works],
         statements=[{"statement_id": s.id, "work_id": None, "source": s.format_detected} for s in statements],
     )
-    return {"artist_id": artist_id, **graph}
+    return inject_branding_metadata(db, {"artist_id": artist_id, **graph})
 
 
 @router.post("/artists/{artist_id}/catalog/confirm", response_model=CatalogConfirmationSchema)
@@ -544,18 +567,21 @@ def infer_catalog(artist_id: str, db: Session = Depends(get_db)):
 @router.get("/artists/{artist_id}/catalog/metadata-health")
 def catalog_metadata_health(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
-    return MetadataRepairEngine(db).get_metadata_health(artist_id)
+    payload = MetadataRepairEngine(db).get_metadata_health(artist_id)
+    if isinstance(payload, dict):
+        return inject_branding_metadata(db, {"artist_id": artist_id, **payload})
+    return inject_branding_metadata(db, {"artist_id": artist_id, "metadata_health": payload})
 
 
 @router.get("/artists/{artist_id}/catalog/repairs")
 def catalog_repairs(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     repairs = MetadataRepairEngine(db).catalog_repairs(artist_id)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "metadata_repair_ledger": repairs,
         "count": len(repairs),
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/splits/repair")
@@ -590,7 +616,7 @@ def apply_split_repairs(
         },
     )
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "mismatch_count": result.mismatch_count,
         "corrections_applied": result.corrections_applied,
@@ -598,7 +624,7 @@ def apply_split_repairs(
         "proposed_corrections": result.corrections,
         "low_confidence_review_queue": review_flags,
         "ledger_entry_hash": entry.entry_hash,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/variance/scan")
@@ -613,7 +639,7 @@ def variance_scan(
     ledger = ImmutableLedgerService(db)
     ledger.append(artist_id, "variance_scan", report)
 
-    return {"artist_id": artist_id, **report}
+    return inject_branding_metadata(db, {"artist_id": artist_id, **report})
 
 
 @router.post("/claims/{claim_id}/evidence/generate-audit")
@@ -660,7 +686,10 @@ def list_immutable_ledger_entries(artist_id: str, db: Session = Depends(get_db))
 @router.get("/artists/{artist_id}/workflow/preview")
 def preview_full_workflow(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
-    return XR7WorkflowService(db).preview(artist_id)
+    payload = XR7WorkflowService(db).preview(artist_id)
+    if isinstance(payload, dict):
+        return inject_branding_metadata(db, {"artist_id": artist_id, **payload})
+    return inject_branding_metadata(db, {"artist_id": artist_id, "preview": payload})
 
 
 @router.post("/artists/{artist_id}/workflow/run")
@@ -675,18 +704,18 @@ def run_full_workflow(
     if payload.async_run:
         # Keep async mode lightweight while preserving request-scoped DB context.
         enqueued_jobs = run_due_sync_jobs(db=db)
-        return {
+        return inject_branding_metadata(db, {
             "artist_id": artist_id,
             "queued": True,
             "mode": "async",
             "enqueued_jobs": enqueued_jobs,
             "preview": XR7WorkflowService(db).preview(artist_id),
-        }
+        })
 
     result = XR7WorkflowService(db).run(artist_id)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": result.artist_id,
         "queued": False,
         "mode": "inline",
         "steps": result.steps,
-    }
+    })

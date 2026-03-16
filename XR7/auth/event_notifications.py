@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from XR7.auth.notification_service import get_notification_service
 from XR7.models.notification_preference import NotificationPreference
+from XR7.services.branding import apply_brand_placeholders, communication_templates, get_branding_profile
 
 
 def _is_within_quiet_hours(pref: NotificationPreference, hour_24: int) -> bool:
@@ -28,6 +29,8 @@ def send_event_notification(
     body: str,
     *,
     current_hour_utc: int,
+    org_id: str | None = None,
+    db=None,
 ) -> dict:
     if not pref:
         return {"sent": False, "reason": "no_preferences"}
@@ -49,13 +52,31 @@ def send_event_notification(
     sms_sent = False
     email_sent = False
 
+    brand = get_branding_profile(db, org_id)
+    template_key = {
+        "anomaly_detected": "anomaly_alert",
+        "urgent_sol": "sol_urgency",
+        "deposit_received": "deposit_notification",
+        "claim_advanced": "claim_update",
+    }.get(event_key)
+    templates = communication_templates()
+    selected = templates.get(template_key or "", {})
+    source_title = selected.get("subject") or title
+    source_body = selected.get("body") or body
+    branded_title = apply_brand_placeholders(source_title, brand)
+    branded_body = apply_brand_placeholders(source_body, brand)
+
     if pref.phone:
-        sms_sent = svc.send_sms(pref.phone, f"{title}: {body}")
+        sms_sent = svc.send_sms(pref.phone, f"{branded_title}: {branded_body}")
     if pref.email:
-        email_sent = svc.send_email(pref.email, title, body)
+        email_sent = svc.send_email(pref.email, branded_title, branded_body)
 
     return {
         "sent": bool(sms_sent or email_sent),
         "sms_sent": sms_sent,
         "email_sent": email_sent,
+        "rendered": {
+            "title": branded_title,
+            "body": branded_body,
+        },
     }

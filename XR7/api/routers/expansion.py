@@ -43,6 +43,7 @@ from XR7.models.payment import Payment
 from XR7.models.team_access import TeamMember, TeamMemberCreate, TeamMemberSchema, TeamRole
 from XR7.recovery.audit_tracker import analyze_audit_eligibility
 from XR7.recovery.statute_tracker import classify_anomalies
+from XR7.services.branding import branding_metadata, get_branding_for_artist, get_branding_profile, inject_branding_metadata
 
 router = APIRouter(tags=["expansion"])
 
@@ -319,7 +320,7 @@ def dispatch_notification(
         payload.body,
         current_hour_utc=datetime.now(timezone.utc).hour,
     )
-    return {"artist_id": artist_id, "event_key": payload.event_key, **result}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "event_key": payload.event_key, **result})
 
 
 @router.post("/artists/{artist_id}/notifications/urgent-sol-check")
@@ -355,7 +356,7 @@ def urgent_sol_notification_check(
     urgent = [x for x in classified if x.get("sol_status") in {"EXPIRED", "URGENT"}]
 
     if not urgent:
-        return {"artist_id": artist_id, "sent": False, "reason": "no_urgent_items"}
+        return inject_branding_metadata(db, {"artist_id": artist_id, "sent": False, "reason": "no_urgent_items"})
 
     top = urgent[0]
     amount = float(top.get("estimated_recoverable") or 0.0)
@@ -370,7 +371,7 @@ def urgent_sol_notification_check(
         body,
         current_hour_utc=datetime.now(timezone.utc).hour,
     )
-    return {"artist_id": artist_id, "urgent_count": len(urgent), **result}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "urgent_count": len(urgent), **result})
 
 
 @router.get("/artists/{artist_id}/dashboard/charts")
@@ -426,6 +427,7 @@ def dashboard_charts_data(
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "leakage_by_month": leakage_series,
         "recovered_by_month": recovered_series,
         "forecast_confidence_bands": forecast,
@@ -543,7 +545,7 @@ def create_oauth_session(
         scopes=requested_scopes,
         tenant_id=payload.tenant_id,
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "session_id": oauth_session.id,
         "provider": payload.provider,
@@ -555,7 +557,7 @@ def create_oauth_session(
         "provider_configured": provider_service.configured(),
         "expires_at": oauth_session.expires_at.isoformat(),
         "note": "Use this state token for callback validation, then call exchange endpoint to store linked account tokens.",
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/connect/oauth-session/{session_id}/exchange")
@@ -690,7 +692,7 @@ def exchange_oauth_code(
     db.commit()
     db.refresh(account)
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "provider": oauth_session.provider,
         "session_id": oauth_session.id,
@@ -705,7 +707,7 @@ def exchange_oauth_code(
         "oauth_code_consumed": bool(payload.code),
         "provider_configured": provider_service.configured(),
         "provider_exchange_mode": "live" if token_data and not token_data.get("simulated") else "simulated",
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/connect/accounts")
@@ -746,11 +748,11 @@ def list_connected_accounts(
         item["needs_refresh"] = needs_refresh
         accounts.append(item)
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "count": len(accounts),
         "accounts": accounts,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/connect/accounts/{account_id}/refresh")
@@ -780,13 +782,13 @@ def refresh_connected_account_token(
     now = _utc_now()
     token_expires_at = _as_utc(account.token_expires_at)
     if not payload.force and token_expires_at and token_expires_at > now + timedelta(minutes=2):
-        return {
+        return inject_branding_metadata(db, {
             "artist_id": artist_id,
             "account_id": account_id,
             "refreshed": False,
             "reason": "token_still_valid",
             "token_expires_at": token_expires_at.isoformat(),
-        }
+        })
 
     provider_service = OAuthProviderService(account.provider)
     try:
@@ -807,7 +809,7 @@ def refresh_connected_account_token(
 
     db.commit()
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "account_id": account_id,
         "provider": account.provider,
@@ -817,7 +819,7 @@ def refresh_connected_account_token(
         "rotated_refresh_token": payload.rotate_refresh_token,
         "provider_configured": provider_service.configured(),
         "provider_refresh_mode": "live" if not refreshed.get("simulated") else "simulated",
-    }
+    })
 
 
 @router.delete("/artists/{artist_id}/connect/accounts/{account_id}")
@@ -843,11 +845,11 @@ def disconnect_connected_account(
     account.updated_at = _utc_now()
     db.commit()
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "account_id": account_id,
         "disconnected": True,
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/connect/fallbacks")
@@ -865,7 +867,7 @@ def list_connect_fallbacks(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "fallbacks": [
             {
@@ -886,7 +888,7 @@ def list_connect_fallbacks(
                 ],
             },
         ],
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/team/members", response_model=TeamMemberSchema, status_code=201)
@@ -993,14 +995,14 @@ def benchmark_percentiles(
     avg_unit = db.query(func.coalesce(func.avg(Event.unit_value), 0.0)).filter(Event.artist_id == artist_id).scalar() or 0.0
     # Heuristic percentile band for MVP. Replace with cohort model when dataset scales.
     percentile = max(1, min(99, int((float(avg_unit) / 0.02) * 100)))
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "benchmarks": {
             "effective_rate_percentile": percentile,
             "message": f"Your effective rate is around the {percentile}th percentile among similar catalogs.",
         },
         "privacy": {"minimum_cohort_size_enforced": True},
-    }
+    })
 
 
 @router.get("/stats/public/recovery")
@@ -1048,7 +1050,7 @@ def generate_claim_template(
         f"Evidence:\n{payload.evidence_summary or 'XR7 evidence packet available upon request.'}\n\n"
         "Please confirm next steps and settlement timeline.\n"
     )
-    return {"artist_id": artist_id, "letter": letter, "email": email_body}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "letter": letter, "email": email_body})
 
 
 @router.post("/artists/{artist_id}/intelligence/withholding-estimate")
@@ -1071,7 +1073,7 @@ def estimate_withholding(
     withheld = gross * max(0.0, payload.withholding_rate)
     net_source = gross - withheld
     net_payout = net_source * max(0.0, payload.fx_rate)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "gross_amount": round(gross, 2),
         "source_currency": payload.source_currency,
@@ -1081,7 +1083,7 @@ def estimate_withholding(
         "fx_rate": payload.fx_rate,
         "payout_currency": payload.payout_currency,
         "net_payout_amount": round(net_payout, 2),
-    }
+    })
 
 
 @router.post(
@@ -1140,7 +1142,7 @@ def predict_total_recoverable(
     residual = max(float(leakage) - float(recovered), 0.0)
     projected = (residual + anomaly_count * 120.0 + catalog_size * 35.0) * genre_multiplier
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "predicted_total_recoverable": round(projected, 2),
         "inputs": {
@@ -1149,7 +1151,7 @@ def predict_total_recoverable(
             "catalog_size": catalog_size,
             "genre": payload.genre,
         },
-    }
+    })
 
 
 @router.get("/education/guides")
@@ -1178,9 +1180,10 @@ def education_guide_detail(guide_id: str):
 @router.get("/b2b/portfolio/{org_id}")
 def white_label_portfolio(org_id: str, db: Session = Depends(get_db)):
     artists = db.query(Artist).order_by(Artist.created_at.desc()).limit(50).all()
+    brand = get_branding_profile(db, org_id)
     return {
         "org_id": org_id,
-        "branding": {"mode": "white_label_ready"},
+        "branding": {**branding_metadata(brand), "mode": "white_label_ready"},
         "artists": [{"id": a.id, "name": a.name, "created_at": a.created_at.isoformat()} for a in artists],
     }
 
@@ -1209,7 +1212,7 @@ def generate_audit_demand_letter(
         f"{note}\n\n"
         "Sincerely,\nXR7 Recovery Operations\n"
     )
-    return {"artist_id": artist_id, "letter": letter}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "letter": letter})
 
 
 @router.get("/partnerships/targets")

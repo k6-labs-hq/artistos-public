@@ -200,3 +200,45 @@ External counsel can verify independently when provided:
 5. Confirm required files are present.
 6. Archive ZIP and verification result immutably.
 7. Handoff to legal.
+
+## Branding Troubleshooting
+
+Use this checklist when an org reports default XR7 branding in responses where white-label branding is expected.
+
+### Validation Steps
+
+1. Confirm the org profile exists.
+
+```bash
+curl "http://localhost:8000/branding/{org_id}"
+```
+
+Expected:
+- `branding.name` matches tenant brand
+- `branding.white_label_enabled=true` for fully white-labeled presentation
+
+2. Confirm artist-to-org mapping.
+
+The artist role must follow `org:{org_id}` so artist-scoped responses resolve the org branding profile.
+
+3. Confirm endpoint payload branding contract.
+
+Any non-admin response containing `artist_id` or `org_id` should include top-level `branding` metadata.
+
+### Observability Signals
+
+Branding service emits counters/log events for fallback conditions:
+- `default_branding_used`
+- `missing_branding_profile`
+- `white_label_disabled`
+- `artist_not_found`
+
+For operational debugging in a Python shell:
+
+```python
+from XR7.services.branding import branding_observability_snapshot
+print(branding_observability_snapshot())
+```
+
+High `missing_branding_profile` indicates tenant setup gaps.
+High `default_branding_used` with missing org ids indicates identity propagation issues.

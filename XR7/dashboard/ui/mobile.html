@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>XR7 Mobile Recovery Console</title>
+  <title>{{BRAND.NAME}} Mobile Recovery Console</title>
   <style>
     :root {
       --ink: #111827;
       --paper: #f8fafc;
-      --teal: #0f766e;
-      --coral: #ea580c;
-      --sky: #0ea5e9;
+      --teal: {{BRAND.PRIMARY_COLOR}};
+      --coral: {{BRAND.ACCENT_COLOR}};
+      --sky: {{BRAND.SECONDARY_COLOR}};
       --card: rgba(255, 255, 255, 0.82);
       --line: rgba(17, 24, 39, 0.15);
     }
@@ -441,8 +441,9 @@
 <body>
   <main class="shell">
     <section class="headline">
-      <h1>XR7 Mobile Recovery Console</h1>
+      <h1>{{BRAND.NAME}} Mobile Recovery Console</h1>
       <p>Fast access to dashboard totals and global-social monetization opportunities from one mobile-first view.</p>
+      <p class="subtext">{{BRAND.LEGAL_DISCLAIMER}}</p>
     </section>
 
     <section class="controls">
@@ -530,11 +531,11 @@
     </section>
   </div>
 
-  <button class="support-fab" id="supportToggle" type="button">AI Support</button>
+  <button class="support-fab" id="supportToggle" type="button">{{BRAND.NAME}} Support</button>
 
-  <aside class="support-panel" id="supportPanel" aria-label="AI Support Agent">
+  <aside class="support-panel" id="supportPanel" aria-label="{{BRAND.NAME}} Support Agent">
     <div class="support-head">
-      <span>XR7 Support Agent</span>
+      <span>{{BRAND.NAME}} Support Agent</span>
       <button id="supportClose" type="button">Close</button>
     </div>
     <div class="support-messages" id="supportMessages"></div>

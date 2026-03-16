@@ -63,6 +63,7 @@ from XR7.services.rate_drift_correction_engine import RateDriftCorrectionEngine
 from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.models.ml_feedback import CalibrationSnapshot
+from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
 
 router = APIRouter(prefix="/artists", tags=["recovery"])
 
@@ -178,6 +179,7 @@ def sol_status(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "summary": summary,
         "anomalies": classified,
     }
@@ -202,7 +204,11 @@ def rate_benchmark(artist_id: str, db: Session = Depends(get_db)):
     ]
     benchmarker = RateBenchmarker()
     report = benchmarker.benchmark(artist_id, events)
-    return report.to_dict()
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        **report.to_dict(),
+    }
 
 
 @router.get("/{artist_id}/recovery/audit-eligibility")
@@ -230,6 +236,7 @@ def audit_eligibility(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "summary": summary,
         "recommendations": [r.to_dict() for r in recommendations],
     }
@@ -262,6 +269,7 @@ def recoupment(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "summary": summary,
         "positions": [p.to_dict() for p in positions],
     }
@@ -369,6 +377,7 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "segment": segment,
         "claim_forecasts": forecast_index,
         "total_items": len(queue),
@@ -390,6 +399,7 @@ def playbook_summary(artist_id: str, db: Session = Depends(get_db)):
     anomalies_by_id = {a.id: a for a in anomaly_rows}
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **summarize_artist_playbooks(claims, anomalies_by_id),
     }
 
@@ -426,6 +436,7 @@ def deadline_risk(artist_id: str, db: Session = Depends(get_db)):
     risk = evaluate_deadline_risk(anomalies, claims, contracts, payments)
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **risk,
     }
 
@@ -498,6 +509,7 @@ async def split_verification(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **verification,
         "split_conflict_anomalies_created": len(new_anomalies),
     }
@@ -517,6 +529,7 @@ def split_conflicts(artist_id: str, db: Session = Depends(get_db)):
     )
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "count": len(rows),
         "conflicts": [
             {
@@ -550,6 +563,7 @@ def recovery_expected_value(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **portfolio_expected_recovery_value(
             anomalies=anomalies,
             claims=claims,
@@ -580,6 +594,7 @@ def recovery_funnel(artist_id: str, db: Session = Depends(get_db)):
     ]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **compute_recovery_funnel(anomalies, claims, deposits),
     }
 
@@ -610,6 +625,7 @@ def catalog_integrity(artist_id: str, db: Session = Depends(get_db)):
     ]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **assess_catalog_integrity(works, contracts, events),
     }
 
@@ -630,6 +646,7 @@ def rate_benchmark_advanced(artist_id: str, db: Session = Depends(get_db)):
     ]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **advanced_rate_benchmark(events),
     }
 
@@ -650,6 +667,7 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
     statements = [_statement_to_dict(s) for s in db.query(Statement).filter(Statement.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **run_fraud_scan(claims, statements),
     }
 
@@ -662,6 +680,7 @@ def sla_status(artist_id: str, db: Session = Depends(get_db)):
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **sla_status_for_artist(claims),
     }
 
@@ -675,6 +694,7 @@ def underpayment_heatmap(artist_id: str, db: Session = Depends(get_db)):
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **build_underpayment_heatmap(anomalies, claims),
     }
 
@@ -688,6 +708,7 @@ def recovery_roi(artist_id: str, db: Session = Depends(get_db)):
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **recovery_roi_summary(claims, anomalies),
     }
 
@@ -719,6 +740,7 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **reconstruct_historical_underpayment(events, payments),
         "metadata_audit": {
             "issues_found": metadata_result.issues_found,
@@ -758,6 +780,7 @@ def recovery_attribution(artist_id: str, db: Session = Depends(get_db)):
     ]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **attribute_recovery(anomalies, claims),
     }
 
@@ -792,6 +815,7 @@ def artist_benchmarking(artist_id: str, db: Session = Depends(get_db)):
     }
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **cross_artist_benchmarks(artist_summary, peer_population),
     }
 
@@ -806,6 +830,7 @@ def recovery_playbook(artist_id: str, db: Session = Depends(get_db)):
     deadline = deadline_risk(artist_id, db)
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **generate_recovery_playbook(
             priority_items=queue.get("queue") or [],
             deadline_risk=deadline,
@@ -828,6 +853,7 @@ async def ugc_monitor(artist_id: str, db: Session = Depends(get_db)):
     uses = await monitor.scan_for_uses(artist_id, days_back=30)
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "viral_usage": uses,
         "ugc_opportunities": [
             {**u, "estimated_recoverable": monitor.calculate_lost_sync_value(u)}
@@ -843,7 +869,14 @@ async def ugc_claim(artist_id: str, use_data: dict, platform: str = "tiktok", db
         raise HTTPException(status_code=404, detail="Artist not found")
     generator = UGCClaimGenerator(db)
     claim_id = await generator.create_claim(artist_id, platform, use_data)
-    return {"artist_id": artist_id, "claim_id": claim_id, "evidence_export": f"/claims/{claim_id}/evidence/export?format=zip"}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "claim_id": claim_id,
+            "evidence_export": f"/claims/{claim_id}/evidence/export?format=zip",
+        },
+    )
 
 
 @router.post("/{artist_id}/ugc/global-scan")
@@ -856,6 +889,7 @@ async def ugc_global_scan(artist_id: str, db: Session = Depends(get_db)):
     packets = [scanner.auto_generate_evidence_packet(u) for u in uses]
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "detected_uses": uses,
         "global_ugc_potential": round(sum(float(p.get("estimated_recoverable") or 0.0) for p in packets), 2),
         "evidence_packets": packets,
@@ -869,7 +903,14 @@ async def ugc_auto_claim(artist_id: str, platform: str, use_id: str, db: Session
         raise HTTPException(status_code=404, detail="Artist not found")
     use_data = {"use_id": use_id, "platform": platform, "views": 1000000, "url": f"https://example.com/{platform}/{use_id}"}
     claim_id = await UGCClaimGenerator(db).create_claim(artist_id, platform, use_data)
-    return {"artist_id": artist_id, "claim_id": claim_id, "quick_approve_url": f"/claims/{claim_id}/advance"}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "claim_id": claim_id,
+            "quick_approve_url": f"/claims/{claim_id}/advance",
+        },
+    )
 
 
 @router.post("/{artist_id}/recovery/touring-audit")
@@ -881,7 +922,15 @@ async def touring_audit(artist_id: str, settlement_csv: str = "", merch_csv: str
     discrepancies = auditor.detect_settlement_discrepancies(settlement_csv, merch_csv)
     overages = auditor.analyze_recoupment_overages(artist_id)
     letter = await auditor.generate_audit_demand_letter(artist_id, {"discrepancies": discrepancies, "overages": overages})
-    return {"artist_id": artist_id, "discrepancies": discrepancies, "recoupment": overages, "audit_letter": letter}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "discrepancies": discrepancies,
+            "recoupment": overages,
+            "audit_letter": letter,
+        },
+    )
 
 
 @router.get("/{artist_id}/recovery/recoupment-deep-audit")
@@ -889,7 +938,12 @@ def recoupment_deep_audit(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
-    return TouringRecoupmentAuditor(db).analyze_recoupment_overages(artist_id)
+    payload = TouringRecoupmentAuditor(db).analyze_recoupment_overages(artist_id)
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        **payload,
+    }
 
 
 @router.post("/{artist_id}/recovery/hiphop-brand-audit")
@@ -900,18 +954,47 @@ async def hiphop_brand_audit(artist_id: str, db: Session = Depends(get_db)):
     auditor = HipHopBrandAuditor(db)
     rows = await auditor.scan_brand_deals_and_ugc(artist_id)
     claim_ids = [await auditor.auto_create_claim(artist_id, item) for item in rows]
-    return {"artist_id": artist_id, "anomalies": rows, "claim_ids": claim_ids, "brand_ugc_potential": sum(float(r.get("estimated_value") or 0.0) for r in rows)}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "anomalies": rows,
+            "claim_ids": claim_ids,
+            "brand_ugc_potential": sum(float(r.get("estimated_value") or 0.0) for r in rows),
+        },
+    )
 
 
 @router.post("/{artist_id}/recovery/edm-festival-audit")
-async def edm_festival_audit(artist_id: str, settlements: list[dict] | None = None, merch: list[dict] | None = None, packages: list[dict] | None = None):
+async def edm_festival_audit(
+    artist_id: str,
+    settlements: list[dict] | None = None,
+    merch: list[dict] | None = None,
+    packages: list[dict] | None = None,
+    db: Session = Depends(get_db),
+):
     auditor = EDMFestivalAuditor()
     discrepancies = auditor.detect_settlement_and_merch_discrepancies(settlements or [], merch or [])
     recoup = auditor.analyze_recoupment_for_tour_packages(packages or [])
     letter = await auditor.generate_audit_letter(artist_id, {"discrepancies": discrepancies, "recoupment": recoup})
-    return {"artist_id": artist_id, "discrepancies": discrepancies, "recoupment": recoup, "audit_letter": letter}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "discrepancies": discrepancies,
+            "recoupment": recoup,
+            "audit_letter": letter,
+        },
+    )
 
 
 @router.post("/{artist_id}/network/pooled-claim")
-def pooled_claim(artist_id: str, anomaly_ids: list[str]):
-    return CoopRecoveryNetwork().pooled_claim_submission(artist_id, anomaly_ids)
+def pooled_claim(artist_id: str, anomaly_ids: list[str], db: Session = Depends(get_db)):
+    payload = CoopRecoveryNetwork().pooled_claim_submission(artist_id, anomaly_ids)
+    if isinstance(payload, dict):
+        return inject_branding_metadata(db, {"artist_id": artist_id, **payload})
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        "result": payload,
+    }

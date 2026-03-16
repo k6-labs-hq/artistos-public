@@ -13,6 +13,27 @@
 - Beat: celery -A XR7.celery_app.celery_app beat -l info
 - Tests: pytest -q
 
+## Branding Contract (Required)
+
+- Any non-admin endpoint returning a top-level dict with `artist_id` or `org_id` must include top-level `branding` metadata.
+- Preferred implementation: wrap payloads with `inject_branding_metadata(db, payload)`.
+- Direct `branding_metadata(...)` is acceptable where explicit brand objects are already present.
+
+## Branding Performance + Observability
+
+- Branding resolution uses request-scoped caching via SQLAlchemy `Session.info` in `XR7/services/branding.py`.
+- This avoids repeated profile and artist-org lookups in a single API request path.
+- Branding observability counters/logs are available through:
+	- `branding_observability_snapshot()`
+	- `reset_branding_observability()`
+
+## CI Guardrails
+
+- Branding contract checks run in GitHub Actions via `.github/workflows/branding-contract.yml`.
+- Local equivalent:
+	- `pytest -q tests/test_branding.py tests/test_branding_contract_guard.py tests/test_branding_service.py`
+- The guard test statically scans router endpoints and fails when identity payloads miss branding injection.
+
 ## Add a New Agent
 1. Implement async agent in XR7/agents/onboarding_agents.py.
 2. Update typed state in XR7/agents/state.py.

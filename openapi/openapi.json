@@ -3933,12 +3933,40 @@
         "summary": "Get Dashboard Ui",
         "description": "Serve the standalone artist recovery dashboard UI page.",
         "operationId": "get_dashboard_ui_dashboard_ui_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -11400,6 +11428,612 @@
         }
       }
     },
+    "/management/{org_id}/dashboard": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Dashboard",
+        "operationId": "management_dashboard_management__org_id__dashboard_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/artists/{artist_id}": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Artist Drilldown",
+        "operationId": "management_artist_drilldown_management__org_id__artists__artist_id__get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/catalog": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Catalog Drilldown",
+        "operationId": "management_catalog_drilldown_management__org_id__catalog_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/anomalies": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Anomalies Drilldown",
+        "operationId": "management_anomalies_drilldown_management__org_id__anomalies_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "severity",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Severity"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 250,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/claims": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Claims Drilldown",
+        "operationId": "management_claims_drilldown_management__org_id__claims_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "sol_window_days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 30,
+              "title": "Sol Window Days"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 250,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/forecast": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Forecast",
+        "operationId": "management_forecast_management__org_id__forecast_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/xr7/operator/dashboard": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Xr7 Operator Dashboard",
+        "operationId": "xr7_operator_dashboard_xr7_operator_dashboard_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/network/invite": {
       "post": {
         "tags": [
@@ -12105,6 +12739,313 @@
                 "schema": {
                   "$ref": "#/components/schemas/SupportSuggestionResponse"
                 }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/branding/{org_id}": {
+      "get": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "Get Branding",
+        "operationId": "get_branding_branding__org_id__get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "Create Branding",
+        "operationId": "create_branding_branding__org_id__post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandingProfileUpsertRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "Patch Branding",
+        "operationId": "patch_branding_branding__org_id__patch",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandingProfilePatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/branding/{org_id}/help-articles": {
+      "get": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "List Help Articles",
+        "operationId": "list_help_articles_branding__org_id__help_articles_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "Create Help Article",
+        "operationId": "create_help_article_branding__org_id__help_articles_post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HelpArticleCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ui/shell": {
+      "get": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "Ui Shell",
+        "operationId": "ui_shell_ui_shell_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "xr7-default",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/branding/{org_id}/templates": {
+      "get": {
+        "tags": [
+          "branding"
+        ],
+        "summary": "Branding Templates",
+        "operationId": "branding_templates_branding__org_id__templates_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           },
@@ -12902,6 +13843,216 @@
           "files"
         ],
         "title": "Body_upload_statement_batch_artists__artist_id__statements_upload_batch_post"
+      },
+      "BrandingProfilePatchRequest": {
+        "properties": {
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "primary_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Color"
+          },
+          "secondary_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Secondary Color"
+          },
+          "accent_color": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Accent Color"
+          },
+          "dashboard_header_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dashboard Header Text"
+          },
+          "dashboard_footer_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dashboard Footer Text"
+          },
+          "support_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Support Email"
+          },
+          "support_phone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Support Phone"
+          },
+          "legal_disclaimer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Disclaimer"
+          },
+          "custom_domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Domain"
+          },
+          "white_label_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "White Label Enabled"
+          }
+        },
+        "type": "object",
+        "title": "BrandingProfilePatchRequest"
+      },
+      "BrandingProfileUpsertRequest": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "title": "Display Name",
+            "default": "XR7"
+          },
+          "logo_url": {
+            "type": "string",
+            "title": "Logo Url",
+            "default": "https://assets.xr7.ai/logo.svg"
+          },
+          "primary_color": {
+            "type": "string",
+            "title": "Primary Color",
+            "default": "#1f7a5a"
+          },
+          "secondary_color": {
+            "type": "string",
+            "title": "Secondary Color",
+            "default": "#2f9c74"
+          },
+          "accent_color": {
+            "type": "string",
+            "title": "Accent Color",
+            "default": "#f59e0b"
+          },
+          "dashboard_header_text": {
+            "type": "string",
+            "title": "Dashboard Header Text",
+            "default": "Artist Recovery Dashboard"
+          },
+          "dashboard_footer_text": {
+            "type": "string",
+            "title": "Dashboard Footer Text",
+            "default": "Powered by XR7 Engine"
+          },
+          "support_email": {
+            "type": "string",
+            "title": "Support Email",
+            "default": "support@xr7.ai"
+          },
+          "support_phone": {
+            "type": "string",
+            "title": "Support Phone",
+            "default": "+1-800-XR7-HELP"
+          },
+          "legal_disclaimer": {
+            "type": "string",
+            "title": "Legal Disclaimer",
+            "default": "Forecasts and recovery estimates are provided for operational guidance only. Actual outcomes may vary based on payer behavior, legal deadlines, and data quality."
+          },
+          "custom_domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Domain"
+          },
+          "white_label_enabled": {
+            "type": "boolean",
+            "title": "White Label Enabled",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "BrandingProfileUpsertRequest"
       },
       "BulkOnboardRequest": {
         "properties": {
@@ -14302,6 +15453,29 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HelpArticleCreateRequest": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "faq"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "body"
+        ],
+        "title": "HelpArticleCreateRequest"
       },
       "ImmutableLedgerEntrySchema": {
         "properties": {

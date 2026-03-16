@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>XR7 Recovery Dashboard</title>
+  <title>{{BRAND.NAME}} Recovery Dashboard</title>
   <style>
     :root {
       --bg: #f4f7f4;
@@ -375,7 +375,7 @@
   <main class="wrap">
     <section class="top">
       <div class="hero">
-        <div class="eyebrow">XR7 Intelligence</div>
+        <div class="eyebrow">{{BRAND.NAME}} Intelligence</div>
         <h1>Recovery Dashboard</h1>
         <p class="sub">A confidence-first control center for leakage detection, recovery momentum, and model trust. Use filters to focus on what matters this week.</p>
       </div>
@@ -833,7 +833,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `XR7_dashboard_${state.artistId}.csv`;
+      a.download = `{{BRAND.NAME}}_dashboard_${state.artistId}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();

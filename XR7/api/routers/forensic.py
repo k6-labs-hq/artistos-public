@@ -22,6 +22,7 @@ from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry, ImmutableLed
 from XR7.models.statement import Statement
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService, build_minimal_catalog_graph
+from XR7.services.branding import inject_branding_metadata
 from XR7.tasks.pipeline import submit_recovery_action
 
 router = APIRouter(tags=["forensic-api"])
@@ -109,7 +110,7 @@ async def statements_status(statement_id: str, db: Session = Depends(get_db)):
     statement = db.query(Statement).filter(Statement.id == statement_id).first()
     if not statement:
         raise HTTPException(status_code=404, detail="Statement not found")
-    return {
+    return inject_branding_metadata(db, {
         "statement_id": statement.id,
         "artist_id": statement.artist_id,
         "status": statement.status,
@@ -117,13 +118,13 @@ async def statements_status(statement_id: str, db: Session = Depends(get_db)):
         "events_created": statement.events_created,
         "payments_created": statement.payments_created,
         "uploaded_at": statement.uploaded_at,
-    }
+    })
 
 
 @router.get("/catalog")
 async def get_catalog(artist_id: str = Query(...), db: Session = Depends(get_db)):
     graph = CatalogGraphAdjacencyService(db).fetch(artist_id)
-    return {"artist_id": artist_id, "nodes": graph.nodes, "edges": graph.edges}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "nodes": graph.nodes, "edges": graph.edges})
 
 
 @router.post("/catalog/confirm")
@@ -135,7 +136,7 @@ async def confirm_catalog(payload: CatalogConfirmRequest, db: Session = Depends(
         "catalog_confirmed",
         {"works": len(payload.works), "created_nodes": summary["created_nodes"], "created_edges": summary["created_edges"]},
     )
-    return {"artist_id": payload.artist_id, **summary}
+    return inject_branding_metadata(db, {"artist_id": payload.artist_id, **summary})
 
 
 @router.get("/variance")
@@ -146,7 +147,7 @@ async def list_variance(artist_id: str = Query(...), db: Session = Depends(get_d
         .order_by(Anomaly.created_at.desc())
         .all()
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "count": len(rows),
         "items": [
@@ -160,7 +161,7 @@ async def list_variance(artist_id: str = Query(...), db: Session = Depends(get_d
             }
             for a in rows
         ],
-    }
+    })
 
 
 @router.get("/variance/{variance_id}/evidence")

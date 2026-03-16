@@ -1761,6 +1761,109 @@ Reference: `docs/white_label_deployment_guide.md`
 - `GET /b2b/portfolio/{org_id}`
 - `GET /partnerships/targets`
 
+## White-Label Mode (Branding Profiles)
+
+XR7 supports partner-branded deployments for management companies, labels, publishers, PROs, law firms, and enterprise teams.
+
+### Branding Profile API
+
+- `GET /branding/{org_id}`
+- `POST /branding/{org_id}`
+- `PATCH /branding/{org_id}`
+
+Branding profile fields:
+
+- `display_name`, `logo_url`
+- `primary_color`, `secondary_color`, `accent_color`
+- `dashboard_header_text`, `dashboard_footer_text`
+- `support_email`, `support_phone`
+- `legal_disclaimer`
+- `custom_domain` (optional)
+- `white_label_enabled` (bool)
+
+### Placeholder Syntax
+
+Placeholder tokens are supported across UI and communication templates:
+
+- `{{BRAND.NAME}}`
+- `{{BRAND.LOGO}}`
+- `{{BRAND.PRIMARY_COLOR}}`
+- `{{BRAND.SUPPORT_EMAIL}}`
+- `{{BRAND.LEGAL_DISCLAIMER}}`
+
+### Adaptive Surfaces
+
+When `white_label_enabled=true`, the platform injects partner branding into:
+
+- Artist dashboard JSON and UI
+- Management and operator dashboard JSON
+- Onboarding/login copy and statement-upload responses
+- Forecasting responses and forecast UI copy
+- Evidence packet exports (PDF/ZIP manifest/header/footer/signature context)
+- Outbound notifications (email/SMS/push template rendering)
+- Mobile shell labels, palette placeholders, and support sender naming
+
+### UI Shell and Custom Domains
+
+- `GET /ui/shell?org_id={org_id}` returns a reusable branded shell with logo, palette, navigation, support links, and legal text.
+- `custom_domain` can be configured in branding profiles and is returned in shell/dashboard branding metadata for gateway routing.
+
+### Partner Help Content
+
+White-label organizations can upload their own help articles/FAQs:
+
+- `GET /branding/{org_id}/help-articles`
+- `POST /branding/{org_id}/help-articles`
+
+### Fallback and Merge Logic
+
+- No profile found: XR7 defaults are applied.
+- Partial profile provided: defaults are merged with provided overrides.
+- Dashboard JSON always includes a `branding` block so clients can render safely without branching.
+
+### Management Company Dashboard & XR7 Operator Dashboard
+
+Management-facing routes (organization scoped):
+
+- `GET /management/{org_id}/dashboard`
+- `GET /management/{org_id}/artists/{artist_id}`
+- `GET /management/{org_id}/catalog`
+- `GET /management/{org_id}/anomalies`
+- `GET /management/{org_id}/claims`
+- `GET /management/{org_id}/forecast`
+
+Global operator route:
+
+- `GET /xr7/operator/dashboard`
+
+Required headers for these routes:
+
+- `X-Org-Key`: shared organization API key (`XR7_ORG_KEY`)
+- `X-Org-Role`: role for RBAC enforcement
+- `X-Org-Actor`: actor/email for traceability
+
+Supported org/operator roles:
+
+- `ORG_ADMIN`
+- `ORG_ANALYST`
+- `ORG_MANAGER`
+- `XR7_OPERATOR`
+- `XR7_ENGINEER`
+
+Management dashboard highlights:
+
+- Portfolio-level recoverable totals and active claims
+- Wow-factor analytics: metadata health score, SOL risk map, UGC scanner, money-left index, repair ledger, evidence vault
+- Organization-level post-repair forecasting with disclaimer and per-artist rollups
+- Drilldown links for catalog, anomalies, claims, and forecast operations
+
+Operator dashboard highlights:
+
+- Global feed of open anomalies, active claims, and metadata backlog
+- System health with ingestion/sync queue depth and retry pressure
+- Activity map (open anomalies by category + recent claim activity)
+- Pipeline overview for active/recent orchestration runs
+
 ## Multi-Tenancy & White-Label Isolation Model
 
 Isolation reference: `docs/multi_tenancy_isolation_model.md`

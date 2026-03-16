@@ -12,6 +12,7 @@ from XR7.models.base import get_db
 from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
+from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
@@ -31,11 +32,13 @@ def list_anomalies(
     if status:
         query = query.filter(Anomaly.status == status)
     rows = query.all()
+    brand_meta = branding_metadata(get_branding_for_artist(db, artist_id))
 
     payload = []
     for r in rows:
         obj = {
             **AnomalySchema.model_validate(r).model_dump(mode="json"),
+            "branding": brand_meta,
             "recovery_probability": anomaly_recovery_probability(
                 {
                     "estimated_recoverable": r.estimated_recoverable,
@@ -126,7 +129,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
     except Exception:  # noqa: BLE001
         logger.exception("Failed to enqueue HubSpot anomalies sync", extra={"artist_id": artist_id})
 
-    return {"artist_id": artist_id, "detected": anomaly_dicts}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "detected": anomaly_dicts})
 
 
 @router.post("/artists/{artist_id}/ai-music/scan-influence")
@@ -144,13 +147,13 @@ async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
         claim_ids.append(claim_id)
         evidence.append(await detector.generate_influence_evidence(match))
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "potential_claims": matches,
         "claim_ids": claim_ids,
         "evidence_packets": evidence,
         "leakage_discovered_increment": len(claim_ids),
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/anomalies/fraud-scan")
@@ -158,4 +161,7 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
-    return FraudInflationDetector().flag_anomalies_for_report(artist_id)
+    result = FraudInflationDetector().flag_anomalies_for_report(artist_id)
+    if isinstance(result, dict):
+        return inject_branding_metadata(db, {"artist_id": artist_id, **result})
+    return inject_branding_metadata(db, {"artist_id": artist_id, "result": result})

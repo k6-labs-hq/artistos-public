@@ -54,6 +54,7 @@ from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.global_social_regional import GlobalSocialRegionalConnector
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
+from XR7.services.branding import inject_branding_metadata
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["ingestion"])
@@ -523,7 +524,7 @@ async def upload_statement_batch(
         except Exception:  # noqa: BLE001
             logger.exception("Batch anomaly detection failed (non-blocking)", extra={"artist_id": artist_id})
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "requested": len(files),
         "expanded_files": len(expanded),
@@ -532,7 +533,7 @@ async def upload_statement_batch(
         "duplicate_count": duplicates,
         "processed": processed,
         "failed": failed,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/connect/soundexchange-mlc")
@@ -543,12 +544,23 @@ async def connect_soundexchange_mlc(artist_id: str, years_back: int = 10, db: Se
     connector = SoundExchangeMLCConnector()
     rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
     anomalies = await connector.detect_unreported_uses(["USRC17607839", "USRC17607840"])
-    return {"artist_id": artist_id, "rows_fetched": len(rows), "anomalies": anomalies, "leakage_discovered_update": len(anomalies)}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "rows_fetched": len(rows),
+            "anomalies": anomalies,
+            "leakage_discovered_update": len(anomalies),
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/connect/soundexchange-mlc/status")
-def soundexchange_mlc_status(artist_id: str):
-    return {"artist_id": artist_id, "status": "ready_with_csv_fallback", "simulated_mode": True}
+def soundexchange_mlc_status(artist_id: str, db: Session = Depends(get_db)):
+    return inject_branding_metadata(
+        db,
+        {"artist_id": artist_id, "status": "ready_with_csv_fallback", "simulated_mode": True},
+    )
 
 
 @router.post("/artists/{artist_id}/connect/regional-global")
@@ -559,12 +571,28 @@ async def connect_regional_global(artist_id: str, genre: str = "latin", territor
     connector = RegionalGlobalConnector()
     rows = await connector.fetch_statements(artist_id, genre, territory)
     anomalies = await connector.auto_detect_genre_specific_anomalies(artist_id, genre, territory)
-    return {"artist_id": artist_id, "rows": rows, "anomalies": anomalies, "territory": territory, "genre": genre}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "rows": rows,
+            "anomalies": anomalies,
+            "territory": territory,
+            "genre": genre,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/connect/regional-global/status")
-def regional_global_status(artist_id: str):
-    return {"artist_id": artist_id, "status": "ready_with_csv_fallback", "territories": ["LATAM", "JP", "KR", "AFRICA", "IN", "CN"]}
+def regional_global_status(artist_id: str, db: Session = Depends(get_db)):
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "status": "ready_with_csv_fallback",
+            "territories": ["LATAM", "JP", "KR", "AFRICA", "IN", "CN"],
+        },
+    )
 
 
 

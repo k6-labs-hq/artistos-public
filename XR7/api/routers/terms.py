@@ -28,6 +28,7 @@ from XR7.legal.terms import TERMS_TEXT, TERMS_VERSION, terms_text_sha256
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.terms_acceptance import TermsAcceptance, TermsAcceptanceSchema
+from XR7.services.branding import inject_branding_metadata
 from XR7.services.artist_lifecycle import promote_to_onboarded
 
 router = APIRouter(tags=["terms"])
@@ -182,23 +183,23 @@ def terms_status(artist_id: str, db: Session = Depends(get_db)) -> dict:
     )
 
     if record:
-        return {
+        return inject_branding_metadata(db, {
             "artist_id": artist_id,
             "accepted": True,
             "terms_version": record.terms_version,
             "accepted_at": record.accepted_at.isoformat(),
             "text_sha256": record.text_sha256,
             "pending_version": None,
-        }
+        })
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "accepted": False,
         "terms_version": None,
         "accepted_at": None,
         "text_sha256": None,
         "pending_version": TERMS_VERSION,
-    }
+    })
 
 
 # ---------------------------------------------------------------------------

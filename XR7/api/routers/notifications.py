@@ -9,6 +9,13 @@ from XR7.models.base import get_db
 from XR7.models.notification_preference import NotificationPreference, NotificationPreferenceSchema
 from XR7.notifications.push_voice import register_push_token, voice_balance_query
 from XR7.earnings.dashboard import DashboardEngine
+from XR7.services.branding import (
+    apply_brand_placeholders,
+    branding_metadata,
+    communication_templates,
+    get_branding_for_artist,
+    inject_branding_metadata,
+)
 
 router = APIRouter(tags=["notifications"])
 
@@ -45,10 +52,15 @@ def dispatch_notifications(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
+    brand = get_branding_for_artist(db, artist_id)
+    templates = communication_templates()
     return {
         "artist_id": artist_id,
         "channels": ["twilio_sms", "smtp_email"],
         "status": "queued",
+        "branding": branding_metadata(brand),
+        "templates": templates,
+        "rendered_templates": apply_brand_placeholders(templates, brand),
     }
 
 
@@ -57,7 +69,13 @@ def push_register(artist_id: str, token: str, platform: str = "firebase", db: Se
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
-    return register_push_token(artist_id, token, platform)
+    out = register_push_token(artist_id, token, platform)
+    brand = get_branding_for_artist(db, artist_id)
+    return {
+        **out,
+        "push_sender_name": brand.get("display_name"),
+        "branding": branding_metadata(brand),
+    }
 
 
 @router.post("/artists/{artist_id}/notifications/voice-query")
@@ -66,4 +84,7 @@ def voice_query(artist_id: str, question: str, db: Session = Depends(get_db)):
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     dashboard = DashboardEngine(db).compute(artist_id)
-    return voice_balance_query(artist_id, question, dashboard)
+    result = voice_balance_query(artist_id, question, dashboard)
+    if isinstance(result, dict):
+        return inject_branding_metadata(db, {"artist_id": artist_id, **result})
+    return inject_branding_metadata(db, {"artist_id": artist_id, "response": result})

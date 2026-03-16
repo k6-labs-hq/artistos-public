@@ -32,6 +32,13 @@ from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.recovery_automation import build_automation_plan
 from XR7.recovery.sla_predictor import predict_claim_sla_dates
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.branding import (
+    apply_brand_placeholders,
+    branding_metadata,
+    get_branding_for_artist,
+    inject_branding_metadata,
+    org_id_for_artist,
+)
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -254,15 +261,16 @@ class AttorneyEvidenceRequest(BaseModel):
     attorney_engagement_deadline: datetime | None = None
 
 
-def _evidence_summary_lines(packet: dict) -> list[str]:
+def _evidence_summary_lines(packet: dict, brand: dict | None = None) -> list[str]:
+    brand_payload = brand or {}
     anomaly = packet.get("anomaly", {})
     proof = packet.get("proof", {})
     totals = proof.get("totals", {})
     recon = packet.get("reconciliation", {})
     integrity = packet.get("integrity", {})
 
-    return [
-        "XR7 Evidence Packet",
+    lines = [
+        "{{BRAND.NAME}} Evidence Packet",
         f"Claim ID: {packet.get('claim_id')}",
         f"Generated At: {packet.get('generated_at')}",
         f"Anomaly: {anomaly.get('category')} / {anomaly.get('subtype')}",
@@ -286,7 +294,10 @@ def _evidence_summary_lines(packet: dict) -> list[str]:
         f"Prior Packet Hash: {integrity.get('prior_packet_hash')}",
         f"Chain Hash: {integrity.get('chain_hash')}",
         f"Signature: {integrity.get('signature')}",
+        "",
+        "{{BRAND.LEGAL_DISCLAIMER}}",
     ]
+    return apply_brand_placeholders(lines, brand_payload)
 
 
 def _resolve_source_file(source_file: str | None) -> Path | None:
@@ -370,9 +381,11 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
         send_event_notification(
             pref,
             "claim_advanced",
-            "Claim status updated",
-            f"Claim {updated.id} advanced to {updated.status}.",
+            "{{BRAND.NAME}} claim status updated",
+            f"Claim {updated.id} advanced to {updated.status}. {{BRAND.LEGAL_DISCLAIMER}}",
             current_hour_utc=datetime.now(timezone.utc).hour,
+            org_id=org_id_for_artist(db, updated.artist_id),
+            db=db,
         )
         status_value = updated.status.value if hasattr(updated.status, "value") else str(updated.status)
 
@@ -461,14 +474,15 @@ def _coalesce_communications(claim: Claim) -> list[dict]:
     return from_evidence if isinstance(from_evidence, list) else []
 
 
-def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict) -> list[list[str]]:
+def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict, brand: dict | None = None) -> list[list[str]]:
+    brand_payload = brand or {}
     now_iso = datetime.now(timezone.utc).date().isoformat()
     communications = payload.get("communications") or []
     docs = payload.get("supportingDocuments") or []
     anomaly = payload.get("anomalyReport") or {}
 
     page1 = [
-        "XR7 ATTORNEY EVIDENCE PACKAGE",
+        "{{BRAND.NAME}} ATTORNEY EVIDENCE PACKAGE",
         "",
         "CONFIDENTIAL - ATTORNEY WORK PRODUCT",
         "",
@@ -478,6 +492,7 @@ def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict) -> list[l
         "",
         "This package is prepared to support legal recovery action",
         "for documented non-payment after the configured grace window.",
+        "{{BRAND.LEGAL_DISCLAIMER}}",
     ]
 
     page2 = [
@@ -535,7 +550,7 @@ def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict) -> list[l
         "with licensed counsel before filing.",
     ]
 
-    return [page1, page2, page3, page4, page5, page6]
+    return apply_brand_placeholders([page1, page2, page3, page4, page5, page6], brand_payload)
 
 
 @router.post("/claims/{claim_id}/attorney-evidence")
@@ -594,7 +609,8 @@ def generate_attorney_evidence_file(
         "generatedAt": datetime.now(timezone.utc).isoformat(),
     }
 
-    pdf_pages = _attorney_pdf_pages(claim, payload["artistName"], payload)
+    brand = get_branding_for_artist(db, claim.artist_id)
+    pdf_pages = _attorney_pdf_pages(claim, payload["artistName"], payload, brand=brand)
     pdf_bytes = _build_multipage_pdf(pdf_pages)
 
     generated_at = datetime.now(timezone.utc)
@@ -604,7 +620,7 @@ def generate_attorney_evidence_file(
     db.commit()
 
     safe_artist = "".join(ch if ch.isalnum() or ch in {"_", "-"} else "_" for ch in payload["artistName"]).strip("_") or "artist"
-    filename = f"XR7_Evidence_{claim.id}_{safe_artist}_{generated_at.date().isoformat()}.pdf"
+    filename = f"{str(brand.get('display_name') or 'XR7').replace(' ', '_')}_Evidence_{claim.id}_{safe_artist}_{generated_at.date().isoformat()}.pdf"
 
     return Response(
         content=pdf_bytes,
@@ -640,7 +656,8 @@ def export_evidence_packet(
         packet = claim.evidence
     packet = {**packet, **_export_agent_fields(export_state)}
 
-    lines = _evidence_summary_lines(packet)
+    brand = get_branding_for_artist(db, claim.artist_id)
+    lines = _evidence_summary_lines(packet, brand=brand)
     pdf_bytes = _build_simple_pdf(lines)
 
     if format == "pdf":
@@ -700,6 +717,20 @@ def export_evidence_packet(
         zf.writestr("evidence_packet.pdf", pdf_bytes)
         zf.writestr("integrity_manifest.json", json.dumps(packet.get("integrity", {}), indent=2, sort_keys=True))
         zf.writestr(
+            "branding_manifest.json",
+            json.dumps(
+                {
+                    "branding": branding_metadata(brand),
+                    "signature_block": f"Prepared by {brand.get('display_name')} Evidence Operations",
+                    "header": f"{brand.get('display_name')} Evidence Packet",
+                    "footer": brand.get("dashboard_footer_text"),
+                    "legal_disclaimer": brand.get("legal_disclaimer"),
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
+        zf.writestr(
             "blockchain_manifest.json",
             json.dumps(
                 {
@@ -732,7 +763,10 @@ def export_evidence_packet(
     return Response(
         content=zip_buffer.getvalue(),
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="evidence_{claim_id}.zip"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="evidence_{claim_id}.zip"',
+            "X-Brand-Name": str(brand.get("display_name") or "XR7"),
+        },
     )
 
 
@@ -882,11 +916,11 @@ def claim_forecast(claim_id: str, db: Session = Depends(get_db)):
     anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
     snapshots = db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == claim.artist_id).all()
     historical = db.query(Claim).filter(Claim.artist_id == claim.artist_id).all()
-    return {
+    return inject_branding_metadata(db, {
         "claim_id": claim_id,
         "artist_id": claim.artist_id,
         **build_claim_forecast(claim, anomaly, snapshots, historical).to_dict(),
-    }
+    })
 
 
 @router.get("/claims/{claim_id}/playbook")

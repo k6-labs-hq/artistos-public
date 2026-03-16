@@ -36,6 +36,7 @@ from XR7.tasks.pipeline import aggregate_feedback_calibration
 from XR7.tasks.pipeline import run_catalog_audit
 from XR7.intelligence.withholding_estimate import tax_optimizer
 from XR7.registration.auto_fix_agent import AutoFixRegistrationAgent
+from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["intelligence"])
@@ -129,6 +130,7 @@ def get_calibration_health(
     summary = calibrator.calibration_summary(artist_id, db)
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **summary,
     }
 
@@ -173,6 +175,7 @@ def ingest_royalty_ledger(
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "created_count": len(created),
         "entries": [RoyaltyLedgerEntrySchema.model_validate(e).model_dump() for e in created],
     }
@@ -234,6 +237,7 @@ def extract_contract_terms(
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "term_count": len(created),
         "highlights": highlights,
         "terms": [
@@ -338,6 +342,7 @@ async def extract_contract_terms_upload(
 
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "term_count": len(created),
         "extraction_method": extracted.get("method"),
         "warnings": extracted.get("warnings", []),
@@ -389,7 +394,8 @@ def simulate_expected_payout(
                 "contract_terms_used": result.get("contract_terms_used"),
             },
         )
-    return {"artist_id": artist_id, **result}
+    return {"artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)), **result}
 
 
 @router.post("/artists/{artist_id}/intelligence/feedback", response_model=RecoveryOutcomeFeedbackSchema)
@@ -494,6 +500,7 @@ def rank_by_expected_utility(
     ranked = ranker.rank(items_for_ranking, analyst_hourly_cost=payload.analyst_hourly_cost)
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "ranked": ranked,
         "count": len(ranked),
         "calibration": ranked[0].get("calibration") if ranked else None,
@@ -514,6 +521,7 @@ def pre_signature_contract_review(
     review = extractor.pre_signature_review(payload.contract_text)
     return {
         "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         **review,
     }
 
@@ -549,7 +557,11 @@ async def run_catalog_audit_on_demand(
     except Exception:  # noqa: BLE001
         logger.exception("Failed to enqueue run_catalog_audit", extra={"artist_id": artist_id})
 
-    return audit
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        **audit,
+    }
 
 
 @router.post("/artists/{artist_id}/intelligence/tax-optimizer")
@@ -557,13 +569,18 @@ def run_tax_optimizer(artist_id: str, payload: TaxOptimizerRequest, db: Session 
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
-    return tax_optimizer(
+    result = tax_optimizer(
         artist_id,
         gross_amount=payload.gross_amount,
         us_withholding_rate=payload.us_withholding_rate,
         global_withholding_rate=payload.global_withholding_rate,
         fx_rate=payload.fx_rate,
     )
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        **result,
+    }
 
 
 @router.post("/artists/{artist_id}/registration/auto-fix")
@@ -574,7 +591,7 @@ def registration_auto_fix(artist_id: str, db: Session = Depends(get_db)):
     agent = AutoFixRegistrationAgent(db)
     issues = agent.scan_registration_gaps(artist_id)
     payload = agent.auto_register_or_prepare_submission(artist_id, issues)
-    return {"artist_id": artist_id, "issues": issues, **payload}
+    return inject_branding_metadata(db, {"artist_id": artist_id, "issues": issues, **payload})
 
 
 @router.get("/artists/{artist_id}/registration/status")
@@ -583,7 +600,14 @@ def registration_status(artist_id: str, db: Session = Depends(get_db)):
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     issues = AutomatedRegistrationFixer(db).detect_missing_metadata(artist_id)
-    return {"artist_id": artist_id, "open_registration_issues": len(issues), "issues": issues}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "open_registration_issues": len(issues),
+            "issues": issues,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/ml/catalog-valuation")
@@ -594,7 +618,14 @@ async def catalog_valuation(artist_id: str, db: Session = Depends(get_db)):
     engine = CatalogValuationEngine(db)
     value = engine.calculate_catalog_value(artist_id)
     report = await engine.export_valuation_report_with_anchor(artist_id)
-    return {"artist_id": artist_id, "valuation": value, "anchored_report": report}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "valuation": value,
+            "anchored_report": report,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/ml/financing-matches")
@@ -605,7 +636,14 @@ def financing_matches(artist_id: str, db: Session = Depends(get_db)):
     engine = CatalogValuationEngine(db)
     value = engine.calculate_catalog_value(artist_id)
     matches = engine.generate_financing_matches(value)
-    return {"artist_id": artist_id, "financing_opportunities": matches, "estimated_advance": sum(float(m.get("estimated_advance") or 0.0) for m in matches)}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "financing_opportunities": matches,
+            "estimated_advance": sum(float(m.get("estimated_advance") or 0.0) for m in matches),
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/ml/simulate-optimization")
@@ -615,4 +653,11 @@ def simulate_optimization(artist_id: str, payload: OptimizationSimulationRequest
         raise HTTPException(status_code=404, detail="Artist not found")
     opt = RoyaltyOptimizer()
     simulation = opt.simulate_scenario(artist_id, payload.changes)
-    return {"artist_id": artist_id, "simulation": simulation, "visualization": opt.visualize_delta(simulation)}
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "simulation": simulation,
+            "visualization": opt.visualize_delta(simulation),
+        },
+    )

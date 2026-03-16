@@ -30,8 +30,8 @@ import json
 import io
 import zipfile
 
-from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse, Response
+from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import FileResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
 
 from XR7.earnings.dashboard import DashboardEngine
@@ -43,6 +43,13 @@ from XR7.models.support_message import SupportMessage, SupportMessageRole
 from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
+from XR7.services.branding import (
+  apply_brand_placeholders,
+  branding_metadata,
+  get_branding_for_artist,
+  get_branding_profile,
+  inject_branding_metadata,
+)
 
 router = APIRouter(tags=["dashboard"])
 
@@ -68,8 +75,22 @@ def _support_proactive_tip(dashboard: dict) -> str:
 
 
 @router.get("/dashboard/ui")
-def get_dashboard_ui():
+def get_dashboard_ui(org_id: str | None = Query(default=None), db: Session = Depends(get_db)):
   """Serve the standalone artist recovery dashboard UI page."""
+  if org_id:
+    brand = get_branding_profile(db, org_id)
+    ui_path = _MOBILE_UI_PATH if _MOBILE_UI_PATH.exists() else _DASHBOARD_UI_PATH
+    if not ui_path.exists():
+      raise HTTPException(status_code=404, detail="Dashboard UI not found")
+    raw = ui_path.read_text(encoding="utf-8")
+    branded = apply_brand_placeholders(
+      raw,
+      {
+        **brand,
+        "dashboard_header_text": brand.get("dashboard_header_text") or "{{BRAND.NAME}} Dashboard",
+      },
+    )
+    return HTMLResponse(content=branded)
   if _MOBILE_UI_PATH.exists():
     return FileResponse(str(_MOBILE_UI_PATH), media_type="text/html")
   if not _DASHBOARD_UI_PATH.exists():
@@ -134,6 +155,13 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
 
     engine = DashboardEngine(db)
     dashboard = engine.compute(artist_id)
+    brand = get_branding_for_artist(db, artist_id)
+    dashboard["branding"] = branding_metadata(brand)
+    dashboard["dashboard_title"] = (
+      f"{brand.get('display_name')} Dashboard"
+      if bool(brand.get("white_label_enabled"))
+      else "Artist Recovery Dashboard"
+    )
     unread_support_messages = (
       db.query(SupportMessage)
       .filter(
@@ -221,24 +249,34 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/artists/{artist_id}/agent-trace/{run_id}")
-def agent_trace(artist_id: str, run_id: str):
-    return get_run_trace(artist_id, run_id)
+def agent_trace(artist_id: str, run_id: str, db: Session = Depends(get_db)):
+  trace = get_run_trace(artist_id, run_id)
+  if isinstance(trace, dict):
+    return inject_branding_metadata(db, {"artist_id": artist_id, **trace})
+  return inject_branding_metadata(db, {"artist_id": artist_id, "trace": trace})
 
 
 @router.get("/artists/{artist_id}/dashboard/flow")
-def dashboard_flow(artist_id: str):
-    return DataFlowVisualizer().generate_pipeline_status(artist_id)
+def dashboard_flow(artist_id: str, db: Session = Depends(get_db)):
+    flow = DataFlowVisualizer().generate_pipeline_status(artist_id)
+    flow["branding"] = branding_metadata(get_branding_for_artist(db, artist_id))
+    return flow
 
 
 @router.get("/artists/{artist_id}/benchmarks")
-def dashboard_benchmarks(artist_id: str):
+def dashboard_benchmarks(artist_id: str, db: Session = Depends(get_db)):
     engine = IndustryBenchmarkEngine()
     b = engine.get_benchmarks(artist_id)
-    return {"artist_id": artist_id, "benchmarks": b, "message": engine.generate_comparison_report(b)}
+    return {
+        "artist_id": artist_id,
+        "benchmarks": b,
+        "message": engine.generate_comparison_report(b),
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+    }
 
 
 @router.get("/artists/{artist_id}/dashboard/export-guidance")
-def export_guidance(artist_id: str, platform: str = "youtube"):
+def export_guidance(artist_id: str, platform: str = "youtube", db: Session = Depends(get_db)):
     links = {
         "youtube": "https://studio.youtube.com/",
         "tiktok": "https://www.tiktok.com/tiktokstudio/",
@@ -251,6 +289,7 @@ def export_guidance(artist_id: str, platform: str = "youtube"):
     return {
         "artist_id": artist_id,
         "platform": platform,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "steps": [
             "Login to platform portal",
             "Open analytics/reports",
@@ -268,7 +307,10 @@ async def chat_royalties(artist_id: str, question: str, db: Session = Depends(ge
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     dashboard = DashboardEngine(db).compute(artist_id)
-    return await royalty_chat_agent.handle_query(artist_id, question, context=dashboard)
+    result = await royalty_chat_agent.handle_query(artist_id, question, context=dashboard)
+    if isinstance(result, dict):
+      return inject_branding_metadata(db, {"artist_id": artist_id, **result})
+    return inject_branding_metadata(db, {"artist_id": artist_id, "response": result})
 
 
 @router.get("/artists/{artist_id}/export/full-transparency")
@@ -278,6 +320,8 @@ async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)
         raise HTTPException(status_code=404, detail="Artist not found")
 
     dashboard = DashboardEngine(db).compute(artist_id)
+    brand = get_branding_for_artist(db, artist_id)
+    dashboard["branding"] = branding_metadata(brand)
     ledger = ImmutableLedgerViewer(db).get_full_ledger(artist_id, include_raw_statements=True)
     summary = await royalty_chat_agent.handle_query(
         artist_id,
@@ -287,9 +331,16 @@ async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)
 
     zip_buf = io.BytesIO()
     with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-        zf.writestr("summary.md", f"# Transparency Summary\n\n{summary.get('response')}")
+        zf.writestr(
+            "summary.md",
+            apply_brand_placeholders(
+                f"# {{BRAND.NAME}} Transparency Summary\n\n{summary.get('response')}\n\n{{BRAND.LEGAL_DISCLAIMER}}",
+                brand,
+            ),
+        )
         zf.writestr("dashboard.json", json.dumps(dashboard, indent=2, default=str))
         zf.writestr("full_ledger.json", json.dumps(ledger, indent=2, default=str))
+        zf.writestr("branding_manifest.json", json.dumps(branding_metadata(brand), indent=2, default=str))
 
     return Response(
         content=zip_buf.getvalue(),

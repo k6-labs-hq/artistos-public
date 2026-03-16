@@ -14,6 +14,18 @@ class GlobalSocialRegionalConnector(IngestionConnector):
         super().__init__(config=config or {})
         self.simulated = os.environ.get("XR7_GLOBAL_SOCIAL_SIMULATED", "1").strip().lower() in {"1", "true", "yes"}
 
+    def connect(self) -> bool:
+        return True
+
+    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict[str, Any]]:
+        return []
+
+    def fetch_recent(self, artist_id: str, since: datetime) -> list[dict[str, Any]]:
+        return []
+
+    def normalize(self, raw_data: list[dict]) -> list[dict]:
+        return raw_data
+
     async def oauth_flow(self, artist_id: str, platform: str) -> str:
         return f"https://auth.example.com/{platform}/oauth?artist_id={artist_id}"
 

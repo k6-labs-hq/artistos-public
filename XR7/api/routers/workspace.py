@@ -13,6 +13,7 @@ from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.models.anomaly import Anomaly
 from XR7.models.contract import Contract
 from XR7.models.payment import Payment
+from XR7.services.branding import branding_metadata, get_branding_profile
 
 router = APIRouter(prefix="/workspace", tags=["workspace"])
 
@@ -39,6 +40,7 @@ def workspace_overview(role: str = Depends(_require_workspace_role), db: Session
     open_claims = db.query(Claim).filter(Claim.status.notin_(["PAID", "CLOSED"]))
     return {
         "role": role,
+        "branding": branding_metadata(get_branding_profile(None, None)),
         "artists": artists,
         "claims": claims,
         "anomalies": anomalies,
@@ -51,6 +53,7 @@ def workspace_artists(role: str = Depends(_require_workspace_role), db: Session 
     rows = db.query(Artist).order_by(Artist.created_at.desc()).limit(500).all()
     return {
         "role": role,
+        "branding": branding_metadata(get_branding_profile(None, None)),
         "artists": [
             {
                 "id": r.id,
@@ -69,6 +72,7 @@ def workspace_claims(role: str = Depends(_require_workspace_role), db: Session =
     rows = db.query(Claim).order_by(Claim.updated_at.desc()).limit(1000).all()
     return {
         "role": role,
+        "branding": branding_metadata(get_branding_profile(None, None)),
         "claims": [
             {
                 "id": c.id,
@@ -119,5 +123,6 @@ def workspace_deadlines(role: str = Depends(_require_workspace_role), db: Sessio
 
     return {
         "role": role,
+        "branding": branding_metadata(get_branding_profile(None, None)),
         "deadlines": out,
     }

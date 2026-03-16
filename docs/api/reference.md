@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 237
+Total endpoints: 251
 
 ## Endpoint Table
 
@@ -183,6 +183,12 @@ Total endpoints: 237
 | b2b | POST | /b2b/org/{org_id}/artists/bulk-onboard | Bulk Onboard | bulk_onboard_b2b_org__org_id__artists_bulk_onboard_post | BulkOnboardRequest | - | curl -X POST http://localhost:8000/b2b/org/{org_id}/artists/bulk-onboard -H 'Content-Type: application/json' -d '{}' |
 | b2b | GET | /b2b/org/{org_id}/dashboard | B2B Dashboard | b2b_dashboard_b2b_org__org_id__dashboard_get | - | - | curl -X GET http://localhost:8000/b2b/org/{org_id}/dashboard |
 | expansion | GET | /b2b/portfolio/{org_id} | White Label Portfolio | white_label_portfolio_b2b_portfolio__org_id__get | - | - | curl -X GET http://localhost:8000/b2b/portfolio/{org_id} |
+| branding | GET | /branding/{org_id} | Get Branding | get_branding_branding__org_id__get | - | - | curl -X GET http://localhost:8000/branding/{org_id} |
+| branding | PATCH | /branding/{org_id} | Patch Branding | patch_branding_branding__org_id__patch | BrandingProfilePatchRequest | - | curl -X PATCH http://localhost:8000/branding/{org_id} -H 'Content-Type: application/json' -d '{}' |
+| branding | POST | /branding/{org_id} | Create Branding | create_branding_branding__org_id__post | BrandingProfileUpsertRequest | - | curl -X POST http://localhost:8000/branding/{org_id} -H 'Content-Type: application/json' -d '{}' |
+| branding | GET | /branding/{org_id}/help-articles | List Help Articles | list_help_articles_branding__org_id__help_articles_get | - | - | curl -X GET http://localhost:8000/branding/{org_id}/help-articles |
+| branding | POST | /branding/{org_id}/help-articles | Create Help Article | create_help_article_branding__org_id__help_articles_post | HelpArticleCreateRequest | - | curl -X POST http://localhost:8000/branding/{org_id}/help-articles -H 'Content-Type: application/json' -d '{}' |
+| branding | GET | /branding/{org_id}/templates | Branding Templates | branding_templates_branding__org_id__templates_get | - | - | curl -X GET http://localhost:8000/branding/{org_id}/templates |
 | forensic-api | GET | /catalog | Get Catalog | get_catalog_catalog_get | - | - | curl -X GET http://localhost:8000/catalog |
 | forensic-api | POST | /catalog/confirm | Confirm Catalog | confirm_catalog_catalog_confirm_post | XR7__api__routers__forensic__CatalogConfirmRequest | - | curl -X POST http://localhost:8000/catalog/confirm -H 'Content-Type: application/json' -d '{}' |
 | celero | POST | /celero/webhook | Celero Webhook | celero_webhook_celero_webhook_post | - | - | curl -X POST http://localhost:8000/celero/webhook |
@@ -214,6 +220,12 @@ Total endpoints: 237
 | ingestion | GET | /ingestion/supported-formats | Supported Formats | supported_formats_ingestion_supported_formats_get | - | object | curl -X GET http://localhost:8000/ingestion/supported-formats |
 | forensic-api | GET | /ledger | List Ledger | list_ledger_ledger_get | - | array | curl -X GET http://localhost:8000/ledger |
 | forensic-api | GET | /ledger/{entry_id} | Get Ledger Entry | get_ledger_entry_ledger__entry_id__get | - | ImmutableLedgerEntrySchema | curl -X GET http://localhost:8000/ledger/{entry_id} |
+| b2b | GET | /management/{org_id}/anomalies | Management Anomalies Drilldown | management_anomalies_drilldown_management__org_id__anomalies_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/anomalies |
+| b2b | GET | /management/{org_id}/artists/{artist_id} | Management Artist Drilldown | management_artist_drilldown_management__org_id__artists__artist_id__get | - | - | curl -X GET http://localhost:8000/management/{org_id}/artists/<artist_id> |
+| b2b | GET | /management/{org_id}/catalog | Management Catalog Drilldown | management_catalog_drilldown_management__org_id__catalog_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/catalog |
+| b2b | GET | /management/{org_id}/claims | Management Claims Drilldown | management_claims_drilldown_management__org_id__claims_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/claims |
+| b2b | GET | /management/{org_id}/dashboard | Management Dashboard | management_dashboard_management__org_id__dashboard_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/dashboard |
+| b2b | GET | /management/{org_id}/forecast | Management Forecast | management_forecast_management__org_id__forecast_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/forecast |
 | b2b | GET | /org/{org_id}/portfolio | Org Portfolio | org_portfolio_org__org_id__portfolio_get | - | - | curl -X GET http://localhost:8000/org/{org_id}/portfolio |
 | expansion | GET | /partnerships/targets | Partnership Targets | partnership_targets_partnerships_targets_get | - | - | curl -X GET http://localhost:8000/partnerships/targets |
 | payers | GET | /payers/{payer_id}/behavior | Payer Behavior | payer_behavior_payers__payer_id__behavior_get | - | - | curl -X GET http://localhost:8000/payers/{payer_id}/behavior |
@@ -234,6 +246,7 @@ Total endpoints: 237
 | expansion | GET | /stats/public/recovery | Public Recovery Stats | public_recovery_stats_stats_public_recovery_get | - | - | curl -X GET http://localhost:8000/stats/public/recovery |
 | public | GET | /stats/public/success-stories | Public Success Stories | public_success_stories_stats_public_success_stories_get | - | - | curl -X GET http://localhost:8000/stats/public/success-stories |
 | terms | GET | /terms | Get Terms | get_terms_terms_get | - | object | curl -X GET http://localhost:8000/terms |
+| branding | GET | /ui/shell | Ui Shell | ui_shell_ui_shell_get | - | - | curl -X GET http://localhost:8000/ui/shell |
 | forensic-api | GET | /variance | List Variance | list_variance_variance_get | - | - | curl -X GET http://localhost:8000/variance |
 | forensic-api | GET | /variance/{variance_id}/evidence | Variance Evidence | variance_evidence_variance__variance_id__evidence_get | - | - | curl -X GET http://localhost:8000/variance/{variance_id}/evidence |
 | widget | POST | /widget/claim | Claim | claim_widget_claim_post | ClaimRequest | - | curl -X POST http://localhost:8000/widget/claim -H 'Content-Type: application/json' -d '{}' |
@@ -245,6 +258,7 @@ Total endpoints: 237
 | workspace | GET | /workspace/claims | Workspace Claims | workspace_claims_workspace_claims_get | - | - | curl -X GET http://localhost:8000/workspace/claims |
 | workspace | GET | /workspace/deadlines | Workspace Deadlines | workspace_deadlines_workspace_deadlines_get | - | - | curl -X GET http://localhost:8000/workspace/deadlines |
 | workspace | GET | /workspace/overview | Workspace Overview | workspace_overview_workspace_overview_get | - | - | curl -X GET http://localhost:8000/workspace/overview |
+| b2b | GET | /xr7/operator/dashboard | Xr7 Operator Dashboard | xr7_operator_dashboard_xr7_operator_dashboard_get | - | - | curl -X GET http://localhost:8000/xr7/operator/dashboard |
 
 ## Regeneration
 
