@@ -18,7 +18,7 @@ class PreventiveAgent:
 
     async def predict_future_leaks(self, artist_id: str) -> list[dict[str, Any]]:
         ugc = await self.ugc.scan_for_uses(artist_id, days_back=14)
-        trend = self.forecaster.forecast_90d([])
+        trend = self.forecaster.forecast([], horizon_days=90)
         risk = evaluate_deadline_risk([], [], [], [])
         risks: list[dict[str, Any]] = []
         if ugc:

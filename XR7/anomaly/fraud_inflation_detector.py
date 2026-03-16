@@ -25,7 +25,7 @@ class FraudInflationDetector:
     def flag_anomalies_for_report(self, artist_id: str) -> dict[str, Any]:
         m = self.monitor_stream_patterns(artist_id)
         impact = self.calculate_pool_drain_impact(m)
-        adjusted = self.forecaster.forecast_90d([])
+        adjusted = self.forecaster.forecast([], horizon_days=90)
         adjusted["predicted_total"] = max(0.0, float(adjusted.get("predicted_total") or 0.0) - impact)
         return {
             "artist_id": artist_id,

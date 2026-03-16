@@ -484,7 +484,7 @@ async def anchor_evidence_packet(claim_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Evidence packet missing")
 
     try:
-        result = await BlockchainEvidenceAnchor().anchor_claim(claim_id)
+        result = await BlockchainEvidenceAnchor().anchor_claim(claim_id, db=db)
         return {
             **result,
             "on_chain_proof_link": result.get("etherscan_link"),

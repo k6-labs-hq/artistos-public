@@ -41,7 +41,7 @@ class CatalogValuationEngine:
         payments = self.db.query(Payment).filter(Payment.artist_id == artist_id).all()
         claims = self.db.query(Claim).filter(Claim.artist_id == artist_id).all()
         trailing = sum(float(p.amount or 0.0) for p in payments)
-        forecast = self.forecaster.forecast_90d([])
+        forecast = self.forecaster.forecast([], horizon_days=90)
         projected = float(forecast.get("predicted_total") or 0.0)
         multiple = 4.2
         total = round((trailing + projected) * multiple + sum(float(c.recovered_amount or 0.0) for c in claims), 2)

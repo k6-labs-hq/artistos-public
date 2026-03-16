@@ -10,6 +10,7 @@ from typing import Any
 
 from XR7.celery_app import celery_app
 from XR7.models.base import SessionLocal
+from sqlalchemy.orm import Session
 from XR7.models.claim import Claim
 from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorRow
 from xr7_common.logging import get_logger
@@ -108,10 +109,10 @@ class EvidenceAnchor:
         """Anchor packet hash on-chain and return transaction hash."""
 
         def _anchor() -> str:
-            w3 = self._web3()
-            if not self.contract_address:
+            if not self.contract_address or Web3 is None:
                 # Fallback pseudo tx hash for offline/dev environments.
                 return "0x" + hashlib.sha256(f"{claim_id}:{packet_hash}:{prior_hash}".encode("utf-8")).hexdigest()
+            w3 = self._web3()
 
             if not self.private_key:
                 raise RuntimeError("WEB3_PRIVATE_KEY is required for on-chain anchoring")
@@ -159,9 +160,10 @@ class EvidenceAnchor:
             logger.exception("On-chain verification failed")
             return False
 
-    async def anchor_claim(self, claim_id: str) -> dict[str, Any]:
-        """Anchor latest claim evidence packet and persist CID/tx data to DB."""
-        db = SessionLocal()
+    async def anchor_claim(self, claim_id: str, db: "Session | None" = None) -> dict[str, Any]:
+        _owned = db is None
+        if _owned:
+            db = SessionLocal()
         try:
             claim = db.query(Claim).filter(Claim.id == claim_id).first()
             if not claim:
@@ -213,7 +215,8 @@ class EvidenceAnchor:
             logger.exception("Failed to anchor claim evidence")
             raise
         finally:
-            db.close()
+            if _owned:
+                db.close()
 
 
 @celery_app.task(name="xr7.pipeline.anchor_claim_evidence", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})

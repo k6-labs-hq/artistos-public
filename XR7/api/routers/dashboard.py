@@ -117,74 +117,74 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     return engine.compute(artist_id)
 
 
-  @router.get("/artists/{artist_id}/dashboard/flow")
-  def dashboard_flow(artist_id: str):
+@router.get("/artists/{artist_id}/dashboard/flow")
+def dashboard_flow(artist_id: str):
     return DataFlowVisualizer().generate_pipeline_status(artist_id)
 
 
-  @router.get("/artists/{artist_id}/benchmarks")
-  def dashboard_benchmarks(artist_id: str):
+@router.get("/artists/{artist_id}/benchmarks")
+def dashboard_benchmarks(artist_id: str):
     engine = IndustryBenchmarkEngine()
     b = engine.get_benchmarks(artist_id)
     return {"artist_id": artist_id, "benchmarks": b, "message": engine.generate_comparison_report(b)}
 
 
-  @router.get("/artists/{artist_id}/dashboard/export-guidance")
-  def export_guidance(artist_id: str, platform: str = "youtube"):
+@router.get("/artists/{artist_id}/dashboard/export-guidance")
+def export_guidance(artist_id: str, platform: str = "youtube"):
     links = {
-      "youtube": "https://studio.youtube.com/",
-      "tiktok": "https://www.tiktok.com/tiktokstudio/",
-      "instagram": "https://business.facebook.com/",
-      "melon": "https://artist.melon.com/",
-      "boomplay": "https://creators.boomplay.com/",
-      "tencent": "https://y.tencentmusic.com/",
+        "youtube": "https://studio.youtube.com/",
+        "tiktok": "https://www.tiktok.com/tiktokstudio/",
+        "instagram": "https://business.facebook.com/",
+        "melon": "https://artist.melon.com/",
+        "boomplay": "https://creators.boomplay.com/",
+        "tencent": "https://y.tencentmusic.com/",
     }
     link = links.get(platform.lower(), "https://example.com/export")
     return {
-      "artist_id": artist_id,
-      "platform": platform,
-      "steps": [
-        "Login to platform portal",
-        "Open analytics/reports",
-        "Export CSV for selected time window",
-        f"Upload to /artists/{artist_id}/statements/upload",
-      ],
-      "export_link": link,
-      "upload_link": f"/artists/{artist_id}/statements/upload",
+        "artist_id": artist_id,
+        "platform": platform,
+        "steps": [
+            "Login to platform portal",
+            "Open analytics/reports",
+            "Export CSV for selected time window",
+            f"Upload to /artists/{artist_id}/statements/upload",
+        ],
+        "export_link": link,
+        "upload_link": f"/artists/{artist_id}/statements/upload",
     }
 
 
-  @router.post("/artists/{artist_id}/chat/royalties")
-  async def chat_royalties(artist_id: str, question: str, db: Session = Depends(get_db)):
+@router.post("/artists/{artist_id}/chat/royalties")
+async def chat_royalties(artist_id: str, question: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
-      raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Artist not found")
     dashboard = DashboardEngine(db).compute(artist_id)
     return await royalty_chat_agent.handle_query(artist_id, question, context=dashboard)
 
 
-  @router.get("/artists/{artist_id}/export/full-transparency")
-  async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)):
+@router.get("/artists/{artist_id}/export/full-transparency")
+async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
-      raise HTTPException(status_code=404, detail="Artist not found")
+        raise HTTPException(status_code=404, detail="Artist not found")
 
     dashboard = DashboardEngine(db).compute(artist_id)
     ledger = ImmutableLedgerViewer(db).get_full_ledger(artist_id, include_raw_statements=True)
     summary = await royalty_chat_agent.handle_query(
-      artist_id,
-      "Here is everything XR7 knows about your royalties in plain English.",
-      context=dashboard,
+        artist_id,
+        "Here is everything XR7 knows about your royalties in plain English.",
+        context=dashboard,
     )
 
     zip_buf = io.BytesIO()
     with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-      zf.writestr("summary.md", f"# Transparency Summary\n\n{summary.get('response')}")
-      zf.writestr("dashboard.json", json.dumps(dashboard, indent=2, default=str))
-      zf.writestr("full_ledger.json", json.dumps(ledger, indent=2, default=str))
+        zf.writestr("summary.md", f"# Transparency Summary\n\n{summary.get('response')}")
+        zf.writestr("dashboard.json", json.dumps(dashboard, indent=2, default=str))
+        zf.writestr("full_ledger.json", json.dumps(ledger, indent=2, default=str))
 
     return Response(
-      content=zip_buf.getvalue(),
-      media_type="application/zip",
-      headers={"Content-Disposition": f'attachment; filename="transparency_{artist_id}.zip"'},
+        content=zip_buf.getvalue(),
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="transparency_{artist_id}.zip"'},
     )

@@ -10,7 +10,7 @@ class RoyaltyOptimizer:
         self.forecaster = EarningsForecaster()
 
     def simulate_scenario(self, artist_id: str, changes: dict[str, Any]) -> dict[str, Any]:
-        baseline = self.forecaster.forecast_90d([])
+        baseline = self.forecaster.forecast([], horizon_days=90)
         base_total = float(baseline.get("predicted_total") or 0.0)
         uplift = 0.0
         if changes.get("distro_switch"):
