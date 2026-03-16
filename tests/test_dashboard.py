@@ -199,6 +199,15 @@ class TestDashboardEngineLeakage:
         ld = DashboardEngine(db).compute(artist.id)["leakage_discovered"]
         assert len(ld["recent_discoveries"]) == 10
 
+    def test_dashboard_includes_post_repair_forecast_section(self, db, artist):
+        data = DashboardEngine(db).compute(artist.id)
+        assert "forecasted_royalties_post_repair" in data
+        section = data["forecasted_royalties_post_repair"]
+        assert "predicted_total_next_90_days" in section
+        assert "per_stream_forecast" in section
+        assert "forecast_disclaimer" in section
+        assert "forecast_disclaimer" in data
+
 
 class TestDashboardEngineInPursuit:
     def test_empty_in_pursuit(self, db, artist):

@@ -25,6 +25,10 @@ from XR7.recovery.split_verification import verify_splits
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.services.post_repair_forecast_pipeline import (
+    FORECAST_DISCLAIMER,
+    PostRepairForecastPipeline,
+)
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.ugc_repair_engine import UGCRepairEngine
 from XR7.services.hubspot_client import HubSpotClient
@@ -324,6 +328,8 @@ async def ArtistExplainerAgent(state: XR7State) -> XR7State:
             "What happened: your onboarding data was normalized and mapped to your catalog.",
             "What is next: XR7 will verify evidence and draft claims.",
             deep,
+            "Why your forecast improved after repairs: metadata fixes improved identifier matching; unified catalog graph reduced fragmentation; corrected splits increased expected payouts; UGC monetization is now properly attributed; foreign registrations are now complete.",
+            f"Forecast disclaimer: {FORECAST_DISCLAIMER}",
         ],
         "comfort_messages": ["You are on track. XR7 is handling the heavy lifting while you stay in control."],
     }
@@ -335,20 +341,31 @@ async def EarningsExpectationAgent(state: XR7State) -> XR7State:
     profile = dict(state.get("catalog_profile") or {})
     db = SessionLocal()
     try:
-        payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
-        records = [{"amount": float(p.amount or 0.0), "event_type": str(p.payment_type)} for p in payments]
-        forecast = EarningsForecaster().forecast(records, horizon_days=90)
+        pipeline = PostRepairForecastPipeline(db).run(
+            artist_id,
+            datetime(2000, 1, 1, tzinfo=timezone.utc),
+            datetime.now(timezone.utc),
+        )
+        forecast = (pipeline.get("forecast") or {})
         valuation = CatalogValuationEngine(db).calculate_catalog_value(artist_id)
     finally:
         db.close()
 
     expected = {
-        "monthly_expected": round(float(forecast.get("predicted_total") or 0.0) / 3.0, 2),
-        "quarterly_expected": round(float(forecast.get("predicted_total") or 0.0), 2),
+        "monthly_expected": round(float(forecast.get("predicted_total_next_90_days") or 0.0) / 3.0, 2),
+        "quarterly_expected": round(float(forecast.get("predicted_total_next_90_days") or 0.0), 2),
         "confidence_interval": {
             "low": float(forecast.get("predicted_low") or 0.0),
             "high": float(forecast.get("predicted_high") or 0.0),
         },
+        "horizons": forecast.get("horizons") or {},
+        "per_work_forecast": forecast.get("per_work_forecast") or [],
+        "per_revenue_stream_forecast": forecast.get("per_stream_forecast") or {},
+        "trend_indicator": forecast.get("trend_indicator") or "STABLE",
+        "confidence_band": forecast.get("confidence_band") or "LOW",
+        "forecast_adjusted_for_repairs": bool(forecast.get("forecast_adjusted_for_repairs")),
+        "leakage_avoided_metrics": forecast.get("leakage_avoided_metrics") or {},
+        "forecast_disclaimer": pipeline.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
         "catalog_value_signal": valuation,
         "based_on": {
             "catalog_size": int(profile.get("work_count") or 0),

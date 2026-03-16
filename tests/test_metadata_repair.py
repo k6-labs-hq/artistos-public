@@ -291,3 +291,37 @@ def test_split_repair_endpoint_applies_high_confidence_corrections():
         assert "ledger_entry_hash" in body
     finally:
         db.close()
+
+
+def test_post_repair_forecast_endpoint_returns_disclaimer_and_adjustment_fields():
+    db = TestSession()
+    try:
+        artist, _, _, _ = _seed_artist_with_metadata_drift(db)
+
+        # Run reconstruction first so metadata repair + graph update happen.
+        recon = client.post(
+            f"/artists/{artist.id}/earnings/reconstruct",
+            json={
+                "start_date": (datetime.now(timezone.utc) - timedelta(days=365)).isoformat(),
+                "end_date": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+        assert recon.status_code == 200
+
+        resp = client.get(f"/artists/{artist.id}/earnings/forecast")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert "predicted_total_next_90_days" in body
+        assert "predicted_low" in body
+        assert "predicted_high" in body
+        assert "confidence_band" in body
+        assert "trend_indicator" in body
+        assert "per_stream_forecast" in body
+        assert "horizons" in body
+        assert "forecast_disclaimer" in body
+        assert "approximate estimates" in str(body.get("forecast_disclaimer") or "").lower()
+        assert "forecast_adjusted_for_repairs" in body
+        assert "metadata" in body
+        assert body["metadata"].get("forecast_disclaimer")
+    finally:
+        db.close()

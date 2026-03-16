@@ -449,6 +449,62 @@ XR7 is not just a recovery engine. It is a repair engine that learns from histor
 - The platform explains repairs in plain language via ArtistComfortAgent messaging.
 - The mission is aligned with artist outcomes: less leakage, more certainty, more control.
 
+## Post-Repair Royalty Forecasting
+
+XR7 forecasts royalties after reconstruction and repair, not before. This means earnings projections reflect cleaned history, corrected metadata, split repairs, and cross-system registration improvements.
+
+### How XR7 forecasts earnings
+
+- Pipeline stage: `post_repair_forecast_pipeline`
+- Runs after:
+  - historical reconstruction
+  - metadata repair
+  - catalog graph updates
+- Inputs include:
+  - cleaned historical earnings
+  - repaired metadata (ISRC/ISWC/UPC)
+  - unified work nodes
+  - corrected splits
+  - corrected rate benchmarks
+  - UGC monetization signals
+  - foreign royalty crosswalks
+- Outputs include:
+  - 30/60/90/180-day forecast horizons
+  - low/expected/high bands
+  - confidence intervals
+  - per-work forecast
+  - per-revenue-stream forecast
+
+### Why forecasts improve after repairs
+
+- Metadata fixes improve identifier matching and payment attribution.
+- Unified catalog graph reduces duplicate/fragmented work histories.
+- Corrected splits raise expected payable shares.
+- UGC monetization and fingerprint repairs bring missing activity into scope.
+- Foreign crosswalk packets improve international registration coverage.
+
+### How artists benefit from future visibility
+
+- Better planning for release cycles and cash flow.
+- Faster prioritization of high-impact repair tasks.
+- Transparent expected-value ranges instead of opaque single-point guesses.
+- Clear trend indicator: `GROWING`, `STABLE`, or `DECLINING`.
+
+### How forecast confidence is calculated
+
+- PostRepairEarningsForecaster combines:
+  - trend fit over historical net earnings
+  - platform seasonality adjustment
+  - catalog-age decay assumptions
+  - UGC virality multipliers
+  - foreign society lag factors
+  - repair-quality adjustment factors
+- Confidence bands are generated from model dispersion and data volume.
+
+### Forecast disclaimer
+
+Forecasted royalties are **approximate estimates** based on historical data, metadata quality, catalog repairs, platform seasonality, and machine learning models. Actual future earnings may vary due to market conditions, platform behavior, release schedules, and other external factors.
+
 ## Pre-Populated Intake Form Integrations
 
 XR7 supports optional OAuth-assisted intake prefill. This speeds onboarding while keeping credential use scoped and transparent.

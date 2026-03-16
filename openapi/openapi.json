@@ -136,6 +136,46 @@
         }
       }
     },
+    "/artists/{artist_id}/earnings/forecast": {
+      "get": {
+        "tags": [
+          "earnings"
+        ],
+        "summary": "Get Post Repair Forecast",
+        "operationId": "get_post_repair_forecast_artists__artist_id__earnings_forecast_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/ml/forecast": {
       "post": {
         "tags": [

@@ -71,6 +71,10 @@ from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.prevention.agent import PreventiveAgent
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.services.post_repair_forecast_pipeline import (
+    FORECAST_DISCLAIMER,
+    PostRepairForecastPipeline,
+)
 from XR7.ml.future_leakage_predictor import FutureLeakagePredictor
 
 
@@ -151,6 +155,7 @@ class DashboardEngine:
         priority_actions = self._priority_actions_section(anomalies, claims)
         calibration_health = self._calibration_health_section(artist_id)
         metadata_health_prevention = self._metadata_health_prevention_section(artist_id)
+        post_repair_forecast = self._post_repair_forecast_section(artist_id)
         future_leakage_prevention = self._future_leakage_prevention_section(artist_id, works, anomalies, payments)
         repair_transparency_panel = self._repair_transparency_panel_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
@@ -179,6 +184,8 @@ class DashboardEngine:
             "expected_recovery_value": expected_value,
             "calibration_health": calibration_health,
             "metadata_health_future_leakage_prevention": metadata_health_prevention,
+            "forecasted_royalties_post_repair": post_repair_forecast,
+            "forecast_disclaimer": post_repair_forecast.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
             "future_leakage_prevention": future_leakage_prevention,
             "repair_transparency_panel": repair_transparency_panel,
             "catalog_health": catalog_health,
@@ -764,6 +771,29 @@ class DashboardEngine:
             "consistency_score": health.get("consistency_score"),
             "identifier_coverage": health.get("identifier_coverage"),
             "recommended_fixes": health.get("recommended_fixes"),
+        }
+
+    def _post_repair_forecast_section(self, artist_id: str) -> dict[str, Any]:
+        now = datetime.now(timezone.utc)
+        run = PostRepairForecastPipeline(self.db).run(
+            artist_id,
+            datetime(2000, 1, 1, tzinfo=timezone.utc),
+            now,
+        )
+        forecast = run.get("forecast") or {}
+        return {
+            "predicted_total_next_90_days": forecast.get("predicted_total_next_90_days"),
+            "predicted_low": forecast.get("predicted_low"),
+            "predicted_high": forecast.get("predicted_high"),
+            "confidence_band": forecast.get("confidence_band"),
+            "trend_indicator": forecast.get("trend_indicator"),
+            "per_stream_forecast": forecast.get("per_stream_forecast") or {},
+            "per_work_forecast": forecast.get("per_work_forecast") or [],
+            "horizons": forecast.get("horizons") or {},
+            "confidence_intervals": forecast.get("confidence_intervals") or {},
+            "forecast_adjusted_for_repairs": bool(forecast.get("forecast_adjusted_for_repairs")),
+            "leakage_avoided_metrics": forecast.get("leakage_avoided_metrics") or {},
+            "forecast_disclaimer": run.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
         }
 
     def _future_leakage_prevention_section(

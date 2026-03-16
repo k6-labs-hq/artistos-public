@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 236
+Total endpoints: 237
 
 ## Endpoint Table
 
@@ -73,6 +73,7 @@ Total endpoints: 236
 | dashboard | GET | /artists/{artist_id}/dashboard/flow | Dashboard Flow | dashboard_flow_artists__artist_id__dashboard_flow_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/dashboard/flow |
 | artists | GET | /artists/{artist_id}/digest/weekly | Weekly Digest | weekly_digest_artists__artist_id__digest_weekly_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/digest/weekly |
 | earnings | GET | /artists/{artist_id}/earnings | Get Earnings Summary | get_earnings_summary_artists__artist_id__earnings_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/earnings |
+| earnings | GET | /artists/{artist_id}/earnings/forecast | Get Post Repair Forecast | get_post_repair_forecast_artists__artist_id__earnings_forecast_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/earnings/forecast |
 | earnings | GET | /artists/{artist_id}/earnings/history | Get Earnings History | get_earnings_history_artists__artist_id__earnings_history_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/earnings/history |
 | earnings | POST | /artists/{artist_id}/earnings/reconstruct | Reconstruct Earnings | reconstruct_earnings_artists__artist_id__earnings_reconstruct_post | ReconstructRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/earnings/reconstruct -H 'Content-Type: application/json' -d '{}' |
 | dashboard | GET | /artists/{artist_id}/export/full-transparency | Export Full Transparency | export_full_transparency_artists__artist_id__export_full_transparency_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/export/full-transparency |

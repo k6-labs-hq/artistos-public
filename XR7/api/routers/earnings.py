@@ -12,6 +12,10 @@ from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.event import Event
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.services.post_repair_forecast_pipeline import (
+    FORECAST_DISCLAIMER,
+    PostRepairForecastPipeline,
+)
 
 router = APIRouter(tags=["earnings"])
 
@@ -91,6 +95,12 @@ def reconstruct_earnings(artist_id: str, body: ReconstructRequest, db: Session =
         "consistency_score": metadata_health.get("consistency_score"),
         "identifier_coverage": metadata_health.get("identifier_coverage"),
     }
+    post_repair_forecast = PostRepairForecastPipeline(db).run(
+        artist_id,
+        body.start_date,
+        body.end_date,
+        historical_records=results,
+    )
 
     return {
         "artist_id": artist_id,
@@ -104,6 +114,7 @@ def reconstruct_earnings(artist_id: str, body: ReconstructRequest, db: Session =
             "metadata_health": metadata_health,
         },
         "rate_benchmark": rate_report,
+        "post_repair_forecast_pipeline": post_repair_forecast,
     }
 
 
@@ -111,6 +122,42 @@ class ForecastRequest(BaseModel):
     horizon_days: int = 90
     confidence: float = 0.95
     by_category: bool = False
+
+
+@router.get("/artists/{artist_id}/earnings/forecast")
+def get_post_repair_forecast(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    end = datetime.now(timezone.utc)
+    pipeline = PostRepairForecastPipeline(db).run(
+        artist_id,
+        _DEFAULT_HISTORICAL_START_DATE,
+        end,
+    )
+    forecast = pipeline.get("forecast") or {}
+
+    return {
+        "artist_id": artist_id,
+        "predicted_total_next_90_days": forecast.get("predicted_total_next_90_days"),
+        "predicted_low": forecast.get("predicted_low"),
+        "predicted_high": forecast.get("predicted_high"),
+        "confidence_band": forecast.get("confidence_band"),
+        "trend_indicator": forecast.get("trend_indicator"),
+        "per_stream_forecast": forecast.get("per_stream_forecast") or {},
+        "per_work_forecast": forecast.get("per_work_forecast") or [],
+        "horizons": forecast.get("horizons") or {},
+        "confidence_intervals": forecast.get("confidence_intervals") or {},
+        "forecast_adjusted_for_repairs": bool(forecast.get("forecast_adjusted_for_repairs")),
+        "leakage_avoided_metrics": forecast.get("leakage_avoided_metrics") or {},
+        "forecast_disclaimer": pipeline.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
+        "metadata": {
+            "stage": pipeline.get("stage"),
+            "forecast_disclaimer": pipeline.get("metadata", {}).get("forecast_disclaimer") or FORECAST_DISCLAIMER,
+            "model": pipeline.get("metadata", {}).get("model", "PostRepairEarningsForecaster"),
+        },
+    }
 
 
 @router.post("/artists/{artist_id}/ml/forecast")

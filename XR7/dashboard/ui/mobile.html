@@ -483,6 +483,13 @@
     </section>
 
     <section class="card">
+      <h2>Forecasted Royalties (Post-Repair)</h2>
+      <div class="metric-grid" id="forecastMetrics"></div>
+      <ul class="list" id="forecastStreams"></ul>
+      <div class="subtext" id="forecastDisclaimer"></div>
+    </section>
+
+    <section class="card">
       <h2>Claims Needing Payer Response</h2>
       <ul class="claim-list" id="claimList"></ul>
     </section>
@@ -547,6 +554,9 @@
     const futureLeakageMetrics = document.getElementById("futureLeakageMetrics");
     const futureLeakageList = document.getElementById("futureLeakageList");
     const repairTransparencyList = document.getElementById("repairTransparencyList");
+    const forecastMetrics = document.getElementById("forecastMetrics");
+    const forecastStreams = document.getElementById("forecastStreams");
+    const forecastDisclaimer = document.getElementById("forecastDisclaimer");
     const claimList = document.getElementById("claimList");
     const settingsStatus = document.getElementById("settingsStatus");
     const defaultGraceDaysInput = document.getElementById("defaultGraceDays");
@@ -719,6 +729,32 @@
           repairTransparencyList.appendChild(li);
         }
       }
+
+      const postForecast = data?.forecasted_royalties_post_repair || {};
+      forecastMetrics.innerHTML = "";
+      forecastMetrics.appendChild(metricNode("Next 90 Days", `$${Number(postForecast.predicted_total_next_90_days || 0).toFixed(2)}`));
+      forecastMetrics.appendChild(metricNode("Low", `$${Number(postForecast.predicted_low || 0).toFixed(2)}`));
+      forecastMetrics.appendChild(metricNode("High", `$${Number(postForecast.predicted_high || 0).toFixed(2)}`));
+      forecastMetrics.appendChild(metricNode("Confidence", String(postForecast.confidence_band || "LOW")));
+      forecastMetrics.appendChild(metricNode("Trend", String(postForecast.trend_indicator || "STABLE")));
+
+      forecastStreams.innerHTML = "";
+      const streamForecast = postForecast.per_stream_forecast || {};
+      const streamOrder = [
+        ["streaming", "Streaming"],
+        ["mechanicals", "Mechanicals"],
+        ["pro_performance", "PRO Performance"],
+        ["ugc_monetization", "UGC Monetization"],
+        ["sync_backend", "Sync Backend"],
+        ["foreign_royalties", "Foreign Royalties"],
+      ];
+      for (const [key, label] of streamOrder) {
+        const li = document.createElement("li");
+        li.textContent = `${label}: $${Number(streamForecast[key] || 0).toFixed(2)}`;
+        forecastStreams.appendChild(li);
+      }
+
+      forecastDisclaimer.textContent = postForecast.forecast_disclaimer || data?.forecast_disclaimer || "";
       await loadClaims();
       await loadPreferences();
       setStatus("Dashboard loaded.");
