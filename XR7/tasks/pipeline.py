@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 
 from XR7.celery_app import celery_app
@@ -17,6 +18,8 @@ from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
 from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService
 from XR7.services.ml_feedback import aggregate_feedback_and_update_calibration
+from XR7.llm.claim_drafter import claim_drafter
+from XR7.ml.catalog_auditor import CatalogAuditor
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -54,7 +57,66 @@ def parse_statement(self, statement_id: str) -> dict:  # noqa: ANN001
             "parse_statement",
             {"statement_id": statement.id, "format_detected": statement.format_detected, "events_created": statement.events_created},
         )
+        try:
+            run_catalog_audit.delay(statement.artist_id)
+        except Exception:  # noqa: BLE001
+            logger.exception("Unable to enqueue catalog audit task")
         return {"statement_id": statement.id, "parsed": True, "events_created": statement.events_created}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.llm_generate_demand_letter", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def llm_generate_demand_letter_task(self, claim_id: str, anomaly: dict, evidence: dict, artist_id: str) -> dict:  # noqa: ANN001
+    """Generate and persist demand-letter markdown asynchronously."""
+    db = SessionLocal()
+    try:
+        markdown = claim_drafter.generate_demand_letter(anomaly, evidence, artist_id)
+        claim = db.query(Claim).filter(Claim.id == claim_id).first()
+        if claim:
+            claim.evidence = claim.evidence or {}
+            claim.evidence.setdefault("llm_outputs", {})
+            claim.evidence["llm_outputs"]["demand_letter_markdown"] = markdown
+            claim.evidence["llm_outputs"]["demand_letter_task_generated"] = datetime.now(timezone.utc).isoformat()
+            db.commit()
+        return {"claim_id": claim_id, "generated": bool(markdown)}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.llm_generate_negotiation_script", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def llm_generate_negotiation_script_task(self, claim_id: str, claim_payload: dict) -> dict:  # noqa: ANN001
+    """Generate and persist negotiation script asynchronously."""
+    db = SessionLocal()
+    try:
+        script = claim_drafter.generate_negotiation_script(claim_payload)
+        claim = db.query(Claim).filter(Claim.id == claim_id).first()
+        if claim:
+            claim.evidence = claim.evidence or {}
+            claim.evidence.setdefault("llm_outputs", {})
+            claim.evidence["llm_outputs"]["negotiation_script"] = script
+            claim.evidence["llm_outputs"]["negotiation_script_task_generated"] = datetime.now(timezone.utc).isoformat()
+            db.commit()
+        return {"claim_id": claim_id, "generated": bool(script)}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.llm_generate_advice", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def llm_generate_advice_task(self, artist_id: str, dashboard: dict, history: list[dict]) -> dict:  # noqa: ANN001
+    """Generate advice asynchronously for warm-cache or batch usage."""
+    advice = claim_drafter.generate_personalized_advice({**dashboard, "conversation_history": history[-10:]})
+    return {"artist_id": artist_id, "generated": bool(advice), "length": len(advice or "")}
+
+
+@celery_app.task(name="xr7.pipeline.run_catalog_audit", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+def run_catalog_audit(self, artist_id: str) -> dict:  # noqa: ANN001
+    """Run catalog auditor and return structured catalog_health payload."""
+    db = SessionLocal()
+    try:
+        audit = asyncio.run(CatalogAuditor(db).run(artist_id))
+        _ledger_event(db, artist_id, "run_catalog_audit", {"issue_count": len(audit.get("issues") or [])})
+        return audit
     finally:
         db.close()
 

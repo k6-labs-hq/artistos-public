@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import asyncio
 from pathlib import Path
 import zipfile
 from datetime import datetime, timezone
@@ -10,10 +11,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
+from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.models.base import get_db
 from XR7.models.anomaly import Anomaly
 from XR7.models.claim import Claim, ClaimSchema
-from XR7.models.evidence_anchor import EvidenceAnchor
+from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorModel
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.review_queue import ReviewSourceType
@@ -165,7 +167,7 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
 
         # Only enforce stronger evidence quality checks when packet exists.
         if isinstance(existing.evidence, dict) and existing.evidence:
-            anchor_count = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).count()
+            anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
             strength = score_evidence_strength(claim_id, existing.evidence, anchor_count)
             if float(strength.get("overall_strength_score") or 0.0) < 35.0:
                 enqueue_review_item(
@@ -289,6 +291,12 @@ def export_evidence_packet(
 
     proof_rows = packet.get("proof", {}).get("ledger_evidence", [])
     citations = packet.get("legal_support", {}).get("source_citations", [])
+    latest_anchor = (
+        db.query(EvidenceAnchorModel)
+        .filter(EvidenceAnchorModel.claim_id == claim_id)
+        .order_by(EvidenceAnchorModel.created_at.desc())
+        .first()
+    )
 
     proof_csv = io.StringIO()
     proof_headers = [
@@ -330,6 +338,18 @@ def export_evidence_packet(
         zf.writestr("source_citations.csv", citations_csv.getvalue())
         zf.writestr("evidence_packet.pdf", pdf_bytes)
         zf.writestr("integrity_manifest.json", json.dumps(packet.get("integrity", {}), indent=2, sort_keys=True))
+        zf.writestr(
+            "blockchain_manifest.json",
+            json.dumps(
+                {
+                    "ipfs_cid": latest_anchor.cid if latest_anchor else None,
+                    "tx_hash": latest_anchor.tx_hash if latest_anchor else None,
+                    "etherscan_link": f"https://polygonscan.com/tx/{latest_anchor.tx_hash}" if latest_anchor and latest_anchor.tx_hash else None,
+                },
+                indent=2,
+                sort_keys=True,
+            ),
+        )
 
         attached_files: set[str] = set()
         for citation in citations:
@@ -379,7 +399,7 @@ def export_evidence_packet_expert_mode(
             "timestamp": claim.updated_at.isoformat() if claim.updated_at else None,
         },
     ]
-    anchors = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).order_by(EvidenceAnchor.created_at.asc()).all()
+    anchors = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).order_by(EvidenceAnchorModel.created_at.asc()).all()
     for anchor in anchors:
         timeline.append(
             {
@@ -437,7 +457,40 @@ def verify_evidence_packet(
     verification["claim_id"] = claim_id
     verification["packet_version"] = claim.evidence.get("metadata", {}).get("packet_version")
     verification["revision"] = claim.evidence.get("metadata", {}).get("revision")
+    latest_anchor = (
+        db.query(EvidenceAnchorModel)
+        .filter(EvidenceAnchorModel.claim_id == claim_id)
+        .order_by(EvidenceAnchorModel.created_at.desc())
+        .first()
+    )
+    verification["blockchain_status"] = latest_anchor.blockchain_status if latest_anchor else "NOT_ANCHORED"
+    verification["ipfs_cid"] = latest_anchor.cid if latest_anchor else None
+    verification["tx_hash"] = latest_anchor.tx_hash if latest_anchor else None
+    if latest_anchor:
+        verification["on_chain_verified"] = asyncio.run(BlockchainEvidenceAnchor().verify_on_chain(claim_id))
+    else:
+        verification["on_chain_verified"] = False
     return verification
+
+
+@router.post("/claims/{claim_id}/evidence/anchor")
+async def anchor_evidence_packet(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    if not isinstance(claim.evidence, dict) or not claim.evidence:
+        raise HTTPException(status_code=400, detail="Evidence packet missing")
+
+    try:
+        result = await BlockchainEvidenceAnchor().anchor_claim(claim_id)
+        return {
+            **result,
+            "on_chain_proof_link": result.get("etherscan_link"),
+        }
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=502, detail=f"Evidence anchoring failed: {exc}") from exc
 
 
 class ReconcileRequest(BaseModel):
@@ -483,7 +536,7 @@ def claim_evidence_strength(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
-    anchor_count = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).count()
+    anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
     return score_evidence_strength(claim_id, claim.evidence or {}, anchor_count)
 
 
@@ -501,7 +554,7 @@ def claim_strength_explainer(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
-    anchor_count = db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id == claim_id).count()
+    anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
     strength = score_evidence_strength(claim_id, claim.evidence or {}, anchor_count)
 
     contributing = []

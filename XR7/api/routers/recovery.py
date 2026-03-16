@@ -19,6 +19,7 @@ from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
 from XR7.models.contract import Contract
+from XR7.models.catalog_graph import CatalogGraphSnapshot
 from XR7.models.event import Event
 from XR7.models.payment import Payment
 from XR7.models.statement import Statement
@@ -42,6 +43,7 @@ from XR7.recovery.sla_guarantee import sla_status_for_artist
 from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recoupment_tracker import compute_recoupment, recoupment_summary
 from XR7.recovery.split_verification import upsert_split_conflict_anomalies, verify_splits
+from XR7.blockchain.split_verifier import SplitVerifier
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.recovery.underpayment_heatmap import build_underpayment_heatmap
 from XR7.recovery.underpayment_reconstruction import reconstruct_historical_underpayment
@@ -416,7 +418,7 @@ def deadline_risk(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/{artist_id}/splits/verification")
-def split_verification(artist_id: str, db: Session = Depends(get_db)):
+async def split_verification(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
@@ -456,6 +458,24 @@ def split_verification(artist_id: str, db: Session = Depends(get_db)):
         )
 
     verification = verify_splits(artist_id, rights_rows, payout_rows)
+    chain_payload = {
+        "artist_splits": {"artist": expected_split, "counterparty": max(0.0, 1.0 - expected_split)},
+        "contract_address": (
+            db.query(CatalogGraphSnapshot.contract_address)
+            .filter(CatalogGraphSnapshot.artist_id == artist_id)
+            .order_by(CatalogGraphSnapshot.created_at.desc())
+            .scalar()
+        ),
+    }
+    verifier = SplitVerifier(db)
+    verification["on_chain_verified"] = await verifier.verify_on_chain(chain_payload)
+
+    if not chain_payload.get("contract_address"):
+        try:
+            deployed_address = await verifier.deploy_testnet_contract(artist_id)
+            verification["contract_address"] = deployed_address
+        except Exception as exc:  # noqa: BLE001
+            verification["contract_deploy_error"] = str(exc)
     existing = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
     new_anomalies = upsert_split_conflict_anomalies(artist_id, verification, existing)
     for anomaly in new_anomalies:

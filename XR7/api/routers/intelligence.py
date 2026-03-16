@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from XR7.ml.contract_document_ingestion import ContractDocumentIngestion
 from XR7.ml.contract_term_extractor import ContractTermExtractor
+from XR7.ml.catalog_auditor import CatalogAuditor
 from XR7.ml.expected_payout_simulator import ExpectedPayoutSimulator
 from XR7.ml.recovery_utility_ranker import RecoveryUtilityRanker
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
@@ -29,6 +30,7 @@ from XR7.models.review_queue import ReviewSourceType
 from XR7.services.review_queue import enqueue_review_item
 from XR7.services.ml_feedback import ingest_feedback_event
 from XR7.tasks.pipeline import aggregate_feedback_calibration
+from XR7.tasks.pipeline import run_catalog_audit
 
 router = APIRouter(tags=["intelligence"])
 
@@ -496,3 +498,37 @@ def pre_signature_contract_review(
         "artist_id": artist_id,
         **review,
     }
+
+
+@router.post("/artists/{artist_id}/ml/catalog-audit")
+async def run_catalog_audit_on_demand(
+    artist_id: str,
+    db: Session = Depends(get_db),
+):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    audit = await CatalogAuditor(db).run(artist_id)
+    db.add(
+        MLFeedbackEvent(
+            artist_id=artist_id,
+            feedback_type=MLFeedbackType.RECOVERY_RESULT.value,
+            source_type="catalog_audit",
+            source_id=None,
+            outcome="CATALOG_AUDIT_COMPLETED",
+            payload={
+                "catalog_health": audit.get("catalog_health"),
+                "signals": audit.get("signals"),
+                "issue_count": len(audit.get("issues") or []),
+            },
+        )
+    )
+    db.commit()
+
+    try:
+        run_catalog_audit.delay(artist_id)
+    except Exception:  # noqa: BLE001
+        pass
+
+    return audit

@@ -19,6 +19,9 @@ class EvidenceAnchor(Base):
     chain_hash: Mapped[str] = mapped_column(String, nullable=False)
     anchor_provider: Mapped[str] = mapped_column(String, default="INTERNAL_IMMUTABLE_LOG")
     anchor_reference: Mapped[str] = mapped_column(String, nullable=False)
+    cid: Mapped[str | None] = mapped_column(String, nullable=True)
+    tx_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    blockchain_status: Mapped[str] = mapped_column(String, default="PENDING")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
@@ -31,4 +34,7 @@ class EvidenceAnchorSchema(BaseModel):
     chain_hash: str
     anchor_provider: str
     anchor_reference: str
+    cid: str | None = None
+    tx_hash: str | None = None
+    blockchain_status: str
     created_at: datetime

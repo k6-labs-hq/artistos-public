@@ -21,6 +21,7 @@ class CatalogGraphSnapshot(Base):
     duplicates_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     missing_metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     ownership_conflicts_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    contract_address: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -35,4 +36,5 @@ class CatalogGraphSnapshotSchema(BaseModel):
     duplicates_json: str
     missing_metadata_json: str
     ownership_conflicts_json: str
+    contract_address: str | None = None
     created_at: datetime
