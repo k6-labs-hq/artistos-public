@@ -97,6 +97,16 @@ class XR7State(TypedDict, total=False):
     attorney_export_manifest: dict[str, Any]
     attorney_export_summary: str
 
+    support_mode: bool
+    support_thread_id: str
+    support_user_message: str
+    dashboard_context: dict[str, Any]
+    support_messages: Annotated[list[dict[str, Any]], add]
+    support_response: str
+    support_confidence: float
+    support_suggested_replies: Annotated[list[str], add]
+    support_escalation_recommended: bool
+
 
 def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
     rid = run_id or str(uuid4())
@@ -190,6 +200,15 @@ def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
         "attorney_export_package": {},
         "attorney_export_manifest": {},
         "attorney_export_summary": "",
+        "support_mode": False,
+        "support_thread_id": "",
+        "support_user_message": "",
+        "dashboard_context": {},
+        "support_messages": [],
+        "support_response": "",
+        "support_confidence": 0.0,
+        "support_suggested_replies": [],
+        "support_escalation_recommended": False,
     }
 
 

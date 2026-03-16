@@ -244,6 +244,178 @@ Scheduler behavior:
 
 Every critical decision is logged with evidence hashes and trace events for auditability.
 
+## Ultra-Simple Artist Onboarding Flow
+
+XR7 is now the **Merchant of Record** path for recovery operations, which removes traditional payment underwriting friction during onboarding. Artists can start immediately with a lightweight intake and statement upload flow.
+
+### 3-Step Onboarding (Under 5 Minutes)
+
+1. **Accept terms**
+2. **Upload statements** (`CSV`, `TSV`, `XLSX`)
+3. **Get first anomaly + first claim auto-drafted**
+
+```text
++-------------------+      +------------------------+      +-----------------------------+
+| 1) Accept Terms   | ---> | 2) Upload Statements   | ---> | 3) Auto Insight + Draft     |
+| /terms + /accept  |      | /statements/upload     |      | anomaly + fast-track claim  |
++-------------------+      +------------------------+      +-----------------------------+
+```
+
+### API Walkthrough
+
+```bash
+# 1) Terms
+curl -X GET  http://localhost:8000/terms
+curl -X POST http://localhost:8000/artists/{artist_id}/terms/accept
+
+# 2) Statement upload
+curl -X POST "http://localhost:8000/artists/{artist_id}/statements/upload" \
+  -F "file=@statement.csv"
+
+# 3) Dashboard value appears as ingestion/anomaly pipeline runs
+curl -X GET "http://localhost:8000/artists/{artist_id}/dashboard"
+```
+
+### What XR7 Does Automatically
+
+- **Format detection** across explicit and generic statement schemas
+- **Metadata repair** for missing/ambiguous title, ISRC, and source fields
+- **Catalog graph building** and inferred work-linking
+- **Split verification** and conflict surfacing
+- **UGC opportunity scanning** and related monetization candidates
+- **SOL classification** with urgency ranking
+- **Anomaly detection** and recoverable estimate scoring
+- **FirstClaimFastTrackAgent draft** generation for the highest-value quick win
+
+### What Artists Do NOT Need To Do
+
+- **No underwriting workflow**
+- **No bank setup during onboarding**
+- **No tax-form upload before first insight**
+- **No API keys**
+- **No direct portal integrations to get started**
+- **No manual anomaly triage for first draft**
+
+## Pre-Populated Intake Form Integrations
+
+XR7 supports optional OAuth-assisted intake prefill. This speeds onboarding while keeping credential use scoped and transparent.
+
+### Providers and Scopes
+
+| Provider | Purpose | Suggested Scopes | Prefilled Fields |
+|---|---|---|---|
+| **Google OAuth** | Basic profile prefill | `openid`, `email`, `profile` | Name, email, avatar |
+| **Apple Sign-In** | Privacy-forward identity prefill | `name`, `email` | Name, Apple relay email |
+| **Spotify for Artists OAuth** | Public artist profile and catalog hints | `user-read-email`, `user-read-private` (and partner-approved artist scopes when available) | Display name, artist URI, public catalog metadata |
+| **YouTube OAuth** | Channel metadata for UGC matching seed | `openid`, `email`, `https://www.googleapis.com/auth/youtube.readonly` | Channel title/id, public branding metadata |
+
+### Data Handling Rules
+
+- XR7 stores only **non-sensitive profile metadata** for intake prefill.
+- OAuth tokens are used for **prefill only**, not for direct royalty settlement ingestion.
+- Token retention is minimized; refresh is only used when user explicitly reconnects.
+- Artists can revoke or disconnect at any time.
+
+### Manual Entry Fallback
+
+If OAuth is skipped or unavailable, artists can use manual entry with the same onboarding outcome.
+
+```text
+Manual mode fields: legal name, stage name(s), email, optional IPI/PRO hints, country
+```
+
+## Artist Identity Auto-Matching
+
+XR7 auto-matches artist identity footprints across ingestion and public metadata sources to reduce setup friction and improve anomaly precision.
+
+### Matching Dimensions
+
+- Artist/stage name variants (normalized and phonetic)
+- PRO writer identifiers (IPI/CAE where present)
+- Distributor account aliases
+- ISRC / ISWC / UPC crosswalk links
+
+### Confidence and User Confirmation
+
+| Confidence Band | Behavior |
+|---|---|
+| `>= 0.90` | Auto-accept with audit log entry |
+| `0.70 - 0.89` | Soft-confirm prompt in onboarding/dashboard |
+| `< 0.70` | Requires artist confirmation before linkage |
+
+```json
+{
+  "candidate": "UMG Distribution - Artist Alias",
+  "match_type": "distributor_account",
+  "confidence": 0.82,
+  "status": "needs_confirmation"
+}
+```
+
+## Zero-Friction Mobile Onboarding
+
+XR7 onboarding is mobile-first for artist and manager workflows.
+
+### Mobile Capabilities
+
+- **One-thumb upload flow** for statements and exports
+- **Camera-based scan path** for PDF/image uploads with OCR fallback
+- **Auto-cropping and orientation correction** before extraction
+- **Mobile UGC alerts** for newly discovered opportunities
+- **Offline-safe upload retries** with resumable background retry when connection returns
+
+### Mobile Retry Behavior
+
+```text
+Upload queued -> connection drops -> local retry ticket created -> auto retry on reconnect -> final server receipt
+```
+
+## Instant Value Delivery
+
+Artists should see value before full ingestion is complete.
+
+### First 5 Minutes Experience
+
+1. XR7 computes a **baseline earnings estimate** from available profile + benchmark priors.
+2. Dashboard shows **predicted leakage bands** while ingestion finishes.
+3. FirstClaimFastTrackAgent prepares a **first-claim draft candidate**.
+4. Artist receives clear next-step guidance with confidence labels.
+
+### Example Early Dashboard Signals
+
+```json
+{
+  "estimated_leakage_pre_ingestion": 3200.0,
+  "confidence_band": "medium",
+  "fast_track_claim": {
+    "status": "drafted",
+    "reason": "high recoverable + low friction + urgent SOL"
+  }
+}
+```
+
+## Artist Trust & Transparency Layer
+
+XR7 is designed so artists always understand what happened, why it happened, and what action is next.
+
+### Transparency Guarantees
+
+- **Plain-language anomaly explanations** in dashboard and support surfaces
+- **Human-readable evidence summaries** alongside technical packet artifacts
+- **ArtistComfortAgent messaging** for each onboarding/recovery stage
+- **Decision override controls** for artist/manager where policy allows
+- **No irreversible or financial action without explicit approval**
+
+### Approval Model
+
+| Action Type | Autonomous | Explicit Approval Required |
+|---|---|---|
+| Read-only recommendations | Yes | No |
+| Draft generation | Yes | No |
+| Claim submission | Conditional | Yes |
+| Payment charge/disbursement initiation | No | Yes |
+
+
 ## Artist Recovery Dashboard
 
 Every artist has a single endpoint that gives them a complete, real-time
@@ -862,6 +1034,1131 @@ The API will be available at `http://localhost:8000`. Interactive docs at `http:
 ```bash
 pytest tests/ -v
 ```
+
+## Local Development Quickstart (End-to-End)
+
+Goal: go from zero to seeded local environment in under 15 minutes.
+
+### Bring Up Stack
+
+```bash
+docker compose up -d --build
+docker compose ps
+```
+
+Expected healthy shape:
+
+| Service | Expected State |
+|---|---|
+| `api` | healthy / running |
+| `postgres` | healthy / accepting connections |
+| `redis` | healthy / ready |
+| `celery-worker` | running |
+| `celery-beat` | running |
+| `minio` | healthy / ready |
+
+### Seed Data
+
+```bash
+make seed
+```
+
+Seed creates representative demo data: artist, statements, anomalies, claims, invoice/billing rows, activity feed entries.
+
+### First Meaningful Endpoint
+
+```bash
+curl "http://localhost:8000/artists/{seeded_artist_id}/dashboard"
+```
+
+### Common Local Failures and Fixes
+
+| Symptom | Likely Cause | Fix |
+|---|---|---|
+| Port bind failure | Local service already on `5432/6379/9000/8000` | Stop conflicting process or remap ports in compose |
+| API boots but jobs stall | Redis not ready when worker starts | Restart worker after Redis healthy |
+| Celery tasks not picked up | Wrong broker URL/env mismatch | Verify `REDIS_URL`, `CELERY_BROKER_URL`, restart worker/beat |
+
+### Full Test Suite + Coverage
+
+```bash
+pytest tests/ -v --maxfail=1 --disable-warnings
+pytest --cov=XR7 --cov-report=term-missing
+```
+
+Coverage interpretation:
+- prioritize low-coverage business-critical modules (`recovery`, `billing`, `celero`, `anomaly`, `ingestion`)
+- enforce thresholds in CI (see Integration Test Harness section)
+
+### Debugging FastAPI + Celery Together
+
+- VS Code: two launch configs, one for `uvicorn`, one for `celery worker`.
+- PyCharm: compound run configuration (`API + Worker`) with shared `.env`.
+
+## Database Schema & Migration Guide
+
+Detailed reference: `docs/database_schema_and_migrations.md`
+
+### Generate, Apply, Roll Back
+
+```bash
+make migrate-new MSG="add payer breakdown indexes"
+make migrate-up
+make migrate-down
+alembic history --verbose
+```
+
+### Canonical Relationship Chain
+
+```text
+Artist -> Statement -> AnomalyEvent -> Claim -> EvidencePacket -> CeleroTransaction -> Invoice
+```
+
+### Immutability Rules
+
+| Table/Entity | Mutability | Why |
+|---|---|---|
+| Evidence anchors / chain hashes | Append-only | Legal integrity + provenance |
+| Admin/audit logs | Append-only | Compliance and forensic replay |
+| Lineage events | Append-only | End-to-end traceability |
+
+### High-Volume Indexing Notes
+
+- `anomalies(artist_id, status, created_at)`
+- `claims(artist_id, status, updated_at)`
+- `activity_feed(artist_id, timestamp)`
+- `universal_royalty_events(artist_id, source_name, ingested_at)`
+
+### Universal vs Distributor-Specific Rows
+
+`universal_royalty_event` is the normalized canonical layer. Distributor-specific rows map into universal rows via parser metadata + source references.
+
+## Statement Upload — Deep Dive
+
+Catalog reference: `docs/ingestion_format_catalog.md`
+
+### Explicit Formats
+
+XR7 supports 15 explicit formats plus generic fallback. Use machine-readable catalog:
+
+```http
+GET /ingestion/supported-formats
+```
+
+### Generic Fallback Behavior
+
+If no explicit parser matches, XR7 applies generic schema detection using date/source/amount/quantity signals and still runs anomaly detection with reduced confidence.
+
+### Duplicate Detection
+
+Duplicate heuristic uses statement identity hash over source, period, row signature, and normalized totals.
+
+| Duplicate Outcome | Behavior |
+|---|---|
+| Exact duplicate | Reject ingest, return duplicate reference |
+| Partial overlap | Ingest delta rows only |
+| Conflict | Queue analyst review |
+
+### Upload Constraints
+
+- File size limits: environment-configurable
+- Row count limits: environment-configurable guardrails
+- Encodings: UTF-8 preferred; fallback detection enabled
+
+### Response Shape (Before/After Detection)
+
+```json
+{
+  "statement_id": "st_123",
+  "ingestion_status": "accepted",
+  "anomaly_status": "processing",
+  "next_poll": "/artists/{id}/statements/st_123"
+}
+```
+
+```json
+{
+  "statement_id": "st_123",
+  "ingestion_status": "complete",
+  "anomaly_status": "complete",
+  "anomalies_detected": 12
+}
+```
+
+### SmartUploadFixerAgent Behavior
+
+- Repairs malformed delimiters/headers/date formats
+- Logs repair plan and confidence
+- Emits explicit failure report when unable to repair deterministically
+
+## Anomaly Detection Rule Engine — Full Catalog
+
+Full catalog: `docs/anomaly_rule_catalog.md`
+
+### Rule Catalog Contract
+
+| Field | Description |
+|---|---|
+| `rule_id` | Stable identifier |
+| `category` | Royalty/touring/sync/etc. |
+| `subtype` | Specific anomaly class |
+| `severity_default` | LOW/MEDIUM/HIGH/CRITICAL |
+| `recoverable_formula_default` | Baseline estimation expression |
+
+### Rule Combination and Weighting
+
+When multiple rules fire on same row:
+- weighted aggregation computes final anomaly score
+- highest severity contributes to escalation threshold
+- duplicate semantic rules are deduplicated before claim drafting
+
+### False-Positive Suppression
+
+Artist-scoped suppression allows disabling one rule for one artist without global disable.
+
+### Custom Rule Onboarding
+
+1. Implement rule contract
+2. Register in rule registry
+3. Add unit + integration fixture
+4. Validate expected recoverable and severity outputs
+
+### Isolation Forest Interaction
+
+Isolation Forest **supplements** rules and adds model score; it does not silently override deterministic rule findings.
+
+## Claims Lifecycle — State Machine Reference
+
+Reference flow and triggers: `docs/claims_state_machine.md`
+
+```text
+IDENTIFIED -> VALIDATED -> IN_DISPUTE -> NEGOTIATING -> ACCEPTED -> PAID -> CLOSED
+                     \-> REJECTED
+                     \-> WITHDRAWN
+                     \-> ESCALATED
+```
+
+### Transition Authorities
+
+| Transition Type | Trigger |
+|---|---|
+| Manual advance | Analyst/authorized role |
+| Webhook-driven | Celero event handlers |
+| Agent-driven | Orchestrator node action |
+| Queue-approved | Review queue decision |
+
+### Approval Boundaries
+
+- High-risk transitions require analyst queue approval.
+- Administrative closures require explicit role checks.
+
+### Required Fields by State
+
+| State | Required Fields |
+|---|---|
+| IDENTIFIED | anomaly link, estimated recoverable |
+| NEGOTIATING | evidence packet, counterparty context |
+| ACCEPTED | settlement metadata |
+| PAID | recovered amount, transaction references |
+| CLOSED | reconciliation + ledger linkage |
+
+Evidence packet version increments at major lifecycle checkpoints. ESCALATED claims are routed with attorney role visibility.
+
+## ML Model Cards
+
+Model cards index: `docs/ml_model_cards.md`
+
+Covered models:
+- Isolation Forest anomaly detector
+- Earnings forecaster
+- Catalog scorer
+- Rate benchmarker
+
+Each model card includes:
+- training data windows and labels
+- features + preprocessing
+- benchmark metrics and baselines
+- failure modes / OOD warnings
+- retraining and fine-tuning path via feedback endpoints
+- calibration impact via beta posterior blend
+
+## Celero Integration — Failure Handling Playbook
+
+Playbook: `docs/celero_failure_playbook.md`
+
+### Failure Scenarios
+
+| Scenario | Default Behavior |
+|---|---|
+| Charge declined | Keep claim payable state, queue retry/analyst path |
+| Disbursement failed | Mark txn failed, queue retry and notify artist |
+| Stuck non-terminal transaction | Reconciliation task + operator intervention path |
+
+### Refund vs Void
+
+- **Void**: pre-settlement reversal window
+- **Refund**: post-settlement reversal
+
+### Sandbox vs Production
+
+Sandbox can produce deterministic simulated events not always matching live processor timing.
+
+## Statute of Limitations — Jurisdiction Reference
+
+Reference: `docs/sol_jurisdiction_reference.md`
+
+Modeled jurisdictions include US federal + state baselines, UK, EU baseline, Canada baseline, Australia baseline.
+
+If jurisdiction is ambiguous, XR7 applies conservative default SOL window by anomaly category and marks confidence.
+
+Attorneys can override classification for a specific anomaly with audit logging.
+
+**Disclaimer:** SOL outputs are operational guidance, not legal advice.
+
+## Authentication & Authorization
+
+### Auth Model Overview
+
+XR7 uses header-based role access for operator and scoped routes plus endpoint-specific flows.
+
+| Header | Purpose | Typical Route Groups |
+|---|---|---|
+| `X-Admin-Key` | Admin console authentication | `/admin/*`, widget lead admin views |
+| `X-Analyst-Email` (+ analyst key) | Analyst attribution and review ownership | `/review-queue/*` |
+| `X-Actor-Email` | Artist/team member scoping | expansion + support + artist-scoped protected routes |
+| `X-Actor-Role` | Optional role assertion | validated against team membership |
+
+### Header Issuance and Rotation
+
+- Admin and analyst secrets are issued by operator secrets manager.
+- Rotation cadence: at least every 90 days or immediately on exposure.
+- Audit all header-based admin/analyst actions in immutable logs.
+
+### Widget OTP Token Expiry and Refresh
+
+- OTP verification emits short-lived estimate session token.
+- Expired token requires re-verify path; no silent extension.
+- Lockout policy applies after repeated failed attempts.
+
+## Error Codes & Error Handling Reference
+
+### Standard Error Contract
+
+```json
+{
+  "status_code": 400,
+  "error_code": "TERMS_NOT_ACCEPTED",
+  "message": "Artist must accept current terms before statement upload.",
+  "trace_id": "req_abc123"
+}
+```
+
+### Domain Error Codes
+
+| Error Code | Meaning | Retryable |
+|---|---|---|
+| `TERMS_NOT_ACCEPTED` | Terms gate not satisfied | No |
+| `SOL_EXPIRED` | Claim window expired | No |
+| `CELERO_VAULT_NOT_FOUND` | Missing Celero vault profile | No (until registration complete) |
+| `ANOMALY_DETECTION_FAILED` | Detection pipeline failed | Yes |
+| `WEBHOOK_SIGNATURE_INVALID` | Signature verification failed | No |
+
+### Retry Guidance
+
+- Retryable: transient upstream, queue, timeout, or background processing errors
+- Non-retryable: validation, permission, legal-state failures
+
+### Background Task Error Surfacing
+
+Long-running Celery flows expose status via job/activity endpoints and reflected dashboard signals.
+
+## Pagination, Filtering & Sorting
+
+### Standard Query Contract
+
+- `page`, `page_size`
+- `cursor`
+- `sort_by`, `sort_dir`
+- `filter_*`
+
+### Response Envelope
+
+```json
+{
+  "total": 230,
+  "page": 2,
+  "page_size": 25,
+  "next_cursor": "2026-03-16T11:00:00Z",
+  "items": []
+}
+```
+
+### Pagination Mode Guidance
+
+| Endpoint Class | Mode |
+|---|---|
+| Activity/history feeds | Cursor preferred |
+| Bounded admin lists | Offset/page |
+| Large event logs | Cursor required |
+
+## Rate Limiting & Throttling
+
+### Rate Tier Defaults
+
+| Tier | Intended Surface |
+|---|---|
+| Widget funnel | strict anti-abuse limits |
+| Artist-scoped | moderate |
+| Analyst/admin | higher trusted quotas |
+
+### OTP Lockout Rules
+
+- failed-attempt thresholds trigger temporary lockout
+- escalating lock windows on repeated abuse
+
+### Rate Headers
+
+On throttled or tracked responses:
+- `X-RateLimit-Limit`
+- `X-RateLimit-Remaining`
+- `Retry-After`
+
+## API Versioning Strategy
+
+Current versioning: URL namespace and OpenAPI contract version (`v1` route strategy for external consumers where enabled).
+
+### Change Classification
+
+| Change Type | Classification |
+|---|---|
+| Add optional field | Non-breaking |
+| Add endpoint | Non-breaking |
+| Remove/rename required field | Breaking |
+| Semantic behavior contract change | Breaking |
+
+Deprecation notices are announced with migration guidance and sunset timeline.
+
+## Webhook Reliability & Idempotency
+
+### Idempotency for Transactional POST Operations
+
+Use idempotency keys for claim-impacting financial actions to avoid duplicate side effects.
+
+### Duplicate Delivery Handling
+
+- Celero webhook retries are expected
+- XR7 deduplicates by event signature + event key + transaction identity
+
+### Ordering Guarantees
+
+Webhooks are treated as potentially out-of-order. XR7 applies state machine guards before transitions.
+
+### HMAC-SHA256 Verification Example
+
+```python
+import hmac
+import hashlib
+
+def verify(signature_header: str, body: bytes, secret: str) -> bool:
+    expected = hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(signature_header, expected)
+```
+
+## Observability & Monitoring Stack
+
+Reference: `docs/observability_monitoring_stack.md`
+
+### Structured Logging Fields
+
+- `request_id`
+- `artist_id`
+- `claim_id`
+- `duration_ms`
+- `level`
+
+### Recommended Metrics
+
+- claim lifecycle transition counts
+- anomaly detection latency
+- Celero transaction success/failure rates
+- ML inference latency
+
+### Tracing Strategy
+
+OpenTelemetry spans should cover ingestion pipeline stages and agent orchestra steps.
+
+### Alerting Recommendations
+
+- SOL breach risk spikes
+- Celery queue depth and retry storms
+- failed or stuck disbursements
+
+## Data Retention, Privacy & Compliance
+
+Privacy reference: `docs/data_retention_privacy_compliance.md`
+
+### PII Scope
+
+Stored PII includes artist contact profile and Celero vault references (tokenized references, not raw card data).
+
+### Retention Policy Matrix
+
+| Entity | Retention Baseline |
+|---|---|
+| Statements | contractual + audit window |
+| Anomalies/claims | lifecycle + legal window |
+| Evidence packets | immutable legal retention |
+| Audit logs | compliance retention policy |
+
+### Erasure Handling
+
+Right-to-erasure applies to erasable PII, while immutable evidence/ledger records remain retained where legally required.
+
+See also: **Regulatory Compliance Matrix**.
+
+## Disaster Recovery & Backup Strategy
+
+Reference: `docs/disaster_recovery_backup_strategy.md`
+
+### Backup Cadence
+
+- PostgreSQL: scheduled backups + PITR-ready WAL strategy
+- Object storage: replication and versioned backups for evidence artifacts
+- Redis: persistence mode selected for queue durability requirements
+
+### Recovery Targets
+
+- define and monitor `RTO` and `RPO` per environment tier
+- run failover simulation drills on schedule
+
+## White-Label Deployment Guide
+
+Reference: `docs/white_label_deployment_guide.md`
+
+### Tenant Branding Controls
+
+| Setting | Purpose |
+|---|---|
+| Logo URL | Brand display |
+| Color scheme | UI theming |
+| Tenant domain | Branded entrypoint |
+
+### Readiness Gate
+
+`white_label` readiness flag indicates whether tenant-aware configuration is active and validated.
+
+### B2B Onboarding Surface
+
+- `GET /b2b/portfolio/{org_id}`
+- `GET /partnerships/targets`
+
+## Multi-Tenancy & White-Label Isolation Model
+
+Isolation reference: `docs/multi_tenancy_isolation_model.md`
+
+- tenant ID propagates through artist-scoped entities
+- strict application-level scoping (and DB-level controls where configured)
+- public aggregate stats use privacy-safe rollups only
+
+Contract termination flow includes tenant export, retention policy enforcement, and scoped purge workflow.
+
+## LangGraph Agent Orchestra — Developer Operations
+
+Developer ops reference: `docs/langgraph_agent_devops.md`
+
+### Inspecting Runs
+
+- Use trace URLs from dashboard `agent_orchestra_status`
+- query checkpointer namespace by artist/thread identifiers
+
+### Replay from Checkpoint
+
+Recover failed runs by restoring checkpoint state and replaying deterministic nodes.
+
+### Adding a New Node
+
+1. Implement node interface contract
+2. Emit confidence + trace events
+3. Wire node in orchestra supervisor routing
+4. Add tests for success/fallback/reflection paths
+
+### Dry-Run Mode
+
+Use simulation/no-side-effect mode for validating orchestration transitions.
+
+## AI & Agent Governance Framework
+
+Governance reference: `docs/ai_agent_governance_framework.md`
+
+### Decision Authority Matrix
+
+| Action | Autonomous | Human Approval |
+|---|---|---|
+| Recommendations/explanations | Yes | No |
+| Draft generation | Yes | No |
+| Financial/destructive actions | No | Yes |
+
+### Governance Controls
+
+- override and rollback pathways
+- action audit schema (state hashes, confidence, trace URL)
+- fairness monitoring and drift alarms
+- explainability outputs for prioritization decisions
+- agent graph versioning and rollback support
+
+## SDK Usage Examples
+
+SDK generation:
+
+```bash
+make sdks
+```
+
+### Python SDK Example
+
+```python
+from xr7_sdk import XR7Client
+
+client = XR7Client(base_url="http://localhost:8000")
+artist_id = "artist_123"
+
+client.artists.accept_terms(artist_id)
+client.statements.upload(artist_id, "statement.csv")
+anomalies = client.anomalies.list(artist_id)
+claim = client.claims.advance(claim_id="claim_abc")
+```
+
+### TypeScript SDK Example
+
+```ts
+import { XR7Client } from "@xr7/sdk";
+
+const client = new XR7Client({ baseUrl: "http://localhost:8000" });
+const artistId = "artist_123";
+
+await client.terms.accept(artistId);
+await client.statements.upload(artistId, file);
+const anomalies = await client.anomalies.list(artistId);
+await client.claims.advance("claim_abc");
+```
+
+Generated SDKs provide base API parity; hand-maintained layers add opinionated helpers.
+
+## OpenAPI Specification — Maintenance & Extension Guide
+
+Reference: `docs/openapi_maintenance_guide.md`
+
+### Regenerate Spec
+
+```bash
+make openapi
+```
+
+### Route Doc Conventions
+
+Document request/response examples in route decorators so they flow into generated spec.
+
+### Security Scheme Declaration
+
+Define per-route security requirements (admin/analyst/actor headers) in OpenAPI metadata.
+
+### CI Validation
+
+Spec diff + schema validation should fail CI on undocumented breaking contract changes.
+
+### Consumer Onboarding
+
+Third-party labels/managers/attorneys should consume OpenAPI for client generation and contract tests.
+
+Postman collection can be generated from OpenAPI and published with SDK artifacts.
+
+## CHANGELOG
+
+Changelog lives in `CHANGELOG.md`.
+
+Initial structure should include:
+- universal schema migrations (`20260314_0001`, `20260314_0002`)
+- LangGraph orchestra rollout
+- expansion endpoints release
+- evidence packet `v1.1` with RSA signing support
+
+## Production Deployment Guide (Beyond Docker Compose)
+
+Deployment reference: `docs/production_deployment_guide.md`
+
+### Kubernetes Component Mapping
+
+| Component | Recommended Workload Type |
+|---|---|
+| FastAPI API | Deployment |
+| Celery workers | Deployment |
+| Celery beat | Singleton Deployment |
+| Redis | StatefulSet |
+| PostgreSQL | Managed DB or StatefulSet |
+| MinIO | StatefulSet |
+| Migration step | Job |
+
+### Cloud Reference Paths
+
+- AWS: ECS Fargate + RDS + ElastiCache + S3
+- GCP: Cloud Run + Cloud SQL + Memorystore + GCS
+- Azure: Container Apps + Azure Database + Azure Cache + Blob
+
+### Zero-Downtime Release Sequence
+
+1. Run pre-deploy migration job
+2. Deploy backward-compatible app build
+3. Shift traffic gradually
+4. Validate readiness and smoke checks
+
+### Secrets Management
+
+Use provider secret stores or Vault for `CELERO_SECURITY_KEY` and RSA private keys.
+
+### Horizontal Scaling Rules
+
+- API and worker pools scale horizontally
+- Celery beat remains singleton
+
+### CDN/Static Assets
+
+Serve `/dashboard/ui` and `/widget` static assets behind CDN with cache-control strategy.
+
+## CI/CD Pipeline Reference
+
+Pipeline reference: `docs/cicd_pipeline_reference.md`
+
+### Recommended GitHub Actions Stages
+
+`lint -> type-check -> unit -> integration -> openapi -> sdk -> build -> staging -> smoke -> production`
+
+### Migration in Pipeline
+
+Use pre-deploy migration job gate before app rollout.
+
+### Required Merge Checks
+
+- tests passing
+- coverage threshold
+- contract/spec checks
+- security scanning gates
+
+### SDK Publishing
+
+Version and publish generated SDKs to PyPI/npm/internal registry according to release policy.
+
+### Security Gates
+
+- secret age/rotation checks
+- image signing + vulnerability scan (Trivy/Snyk)
+- agent topology snapshot validation for orchestration integrity
+
+## Feature Flags & Configuration Management
+
+Flags reference: `docs/feature_flags_configuration.md`
+
+### Flag Strategy
+
+- env-based baseline + optional LaunchDarkly/Flagsmith integration
+- kill switches for ML inference, agent orchestra, Celero live mode
+- tenant-scoped flags for white-label rollouts
+
+### Safe Rollout Pattern
+
+Roll out new anomaly rules to small artist cohort before global enable.
+
+### Flag Audit Trail
+
+Track who changed flag, when, prior/new values, and observed downstream effects.
+
+## Billing & Contingency Fee Model — Complete Reference
+
+Reference: `docs/billing_contingency_fee_model.md`
+
+Contingency fee is **10%** of gross recovered amount.
+
+### Calculation
+
+```text
+fee = gross_recovered * 0.10
+net_disbursed = gross_recovered - fee
+```
+
+### Worked Example
+
+| Gross | Fee (10%) | Net |
+|---:|---:|---:|
+| 45,000.00 | 4,500.00 | 40,500.00 |
+
+### Partial Recovery Handling
+
+Fee and net are prorated per installment.
+
+### Invoice Lifecycle
+
+- invoice generated on paid settlement events
+- disputes route to analyst queue
+- due dates and status exposed on invoice endpoints
+
+### Tax and Revenue Recognition
+
+Celero (MoR) handles tax processing; XR7 recognizes fee revenue per configured accounting policy after settlement conditions.
+
+### White-Label Variable Fees
+
+Tenant-level fee configuration may be enabled by contract policy.
+
+## Data Lineage & Provenance Tracking
+
+Lineage reference: `docs/data_lineage_provenance_tracking.md`
+
+### Provenance Guarantees
+
+- Universal rows link to source statement, parser version, and ingestion timestamp
+- anomalies reference exact source events/rules
+- claims link to anomaly set + evidence packet chain data
+- agent actions emit lineage events with trace IDs
+
+### Lineage Query Surface
+
+```http
+GET /artists/{id}/lineage/{entity_type}/{entity_id}
+GET /admin/lineage/audit?artist_id=...&date_range=...
+```
+
+Lineage summaries are embedded in exported evidence manifests.
+
+## Regulatory Compliance Matrix
+
+| Regulation | Applicability to XR7 | Current Status / Implementation | Gaps / Next Steps |
+|---|---|---|---|
+| PCI DSS | XR7 avoids raw card handling; Celero vault integration | Out of direct card-data scope by architecture | Maintain integration controls and annual assessment |
+| GDPR | Artist profile and account metadata may be personal data | Data subject workflows and retention policies implemented at platform level | Expand jurisdiction-specific workflows |
+| CCPA / CPRA | California artist data may qualify | Service-provider style processing posture | Improve self-service DSAR tooling |
+| SOC 2 (Security/Availability/Confidentiality) | Applicable for enterprise sales | Logging, access controls, backup/recovery controls in place | Formal audit readiness program |
+| MMA / MLC obligations | Relevant for rights/royalty processing context | MLC-related ingestion and lineage support in architecture | Formal policy mappings and controls evidence |
+| State royalty transparency laws | Relevant for claim evidence and reporting | Evidence packet and reconciliation exports available | Jurisdiction-specific legal review updates |
+| Money transmitter / payment facilitator status | Celero is MoR and payment processor | XR7 does not directly custody payments by design | Continue legal review for new geographies |
+| DMCA safe harbor for UGC workflows | Relevant for UGC claim automation | UGC workflows include traceability and policy checks | Add policy-tier controls per platform contract |
+
+**This matrix is not legal advice; consult qualified counsel.**
+
+## Security Threat Model
+
+Threat model reference: `docs/security_threat_model.md`
+
+### Sensitive Asset Inventory
+
+- artist PII
+- vault reference identifiers
+- evidence packets + chain hashes
+- ML calibration and outcome data
+
+### Trust Boundaries
+
+- XR7 application/data plane
+- Celero payment domain
+- artist-controlled account sources and uploads
+
+### Key Threat Scenarios and Mitigations
+
+| Threat | Mitigation |
+|---|---|
+| Unauthorized claim manipulation | role-scoped auth + immutable audit logs |
+| Evidence packet tampering | chain hash + signature verification |
+| Analyst impersonation | header key controls + actor audit |
+| Plugin injection | allowlist/blocklist + optional signature secret |
+| Celery task spoofing | broker isolation + signed/internal task controls |
+
+Accepted risks should be documented with compensating controls and review cadence.
+
+Responsible disclosure contact should be published in security policy docs.
+
+## Performance & Scalability Benchmarks
+
+Benchmarks reference: `docs/performance_scalability_benchmarks.md`
+
+### Target SLO Bands
+
+| Operation | p50 | p95 | p99 |
+|---|---:|---:|---:|
+| Dashboard load | <= 300ms | <= 900ms | <= 1500ms |
+| Statement upload accept | <= 500ms | <= 1500ms | <= 2500ms |
+| Evidence export start | <= 700ms | <= 2000ms | <= 3500ms |
+
+### Capacity Guidance
+
+- tune worker concurrency per queue type (ML inference vs sync vs digest)
+- size DB connection pools relative to worker concurrency
+- load-test against statement/anomaly/claim volume targets before release
+
+Known bottlenecks and mitigations are tracked in roadmap backlog.
+
+## Incident Response Runbook Index
+
+Runbook index reference: `docs/incident_response_runbook_index.md`
+
+Runbook stubs:
+- failed disbursement recovery
+- compromised signing key rotation
+- corrupt evidence packet investigation
+- celery backlog emergency drain
+- database connection exhaustion recovery
+- GDPR/CCPA erasure request handling
+- false-positive mass suppression workflow
+
+## Support, SLAs & Escalation Paths
+
+Support reference: `docs/support_slas_escalation_paths.md`
+
+### Support Tiers
+
+| Tier | Coverage |
+|---|---|
+| Self-serve | docs + guides |
+| Standard | email SLA |
+| Premium | dedicated analyst |
+| Enterprise white-label | dedicated CSM + escalation path |
+
+### Escalation Paths
+
+- in-product escalation for stalled claims
+- support ticket escalation
+- attorney referral path where policy allows
+
+Support outcomes feed calibration and agent training datasets.
+
+## Integration Test Harness & Contract Testing Guide
+
+Testing reference: `docs/integration_test_harness_guide.md`
+
+### Run Modes
+
+- live local stack integration tests
+- mocked external services for deterministic CI
+
+### Full Flow Fixtures
+
+Ingestion -> anomaly -> claim -> evidence -> Celero event handling
+
+### Adding Distributor Format Tests
+
+1. Add sample input file fixture
+2. Add expected normalized rows
+3. Assert expected anomaly outcomes
+
+### LangGraph Flow Testing
+
+Inject checkpoint state fixtures and validate node transitions and confidence behavior.
+
+### Coverage Enforcement
+
+Coverage thresholds should fail CI when below policy baseline.
+
+## Dependency Management & Supply Chain Security
+
+Supply chain reference: `docs/dependency_supply_chain_security.md`
+
+### Dependency Hygiene
+
+- pinned Python dependencies with review cadence
+- automated vulnerability alerts (Dependabot/Snyk/Safety)
+- controlled major version upgrade sequences
+
+### Plugin Entrypoint Security
+
+`XR7_PLUGIN_ALLOWED_PREFIXES` and `XR7_PLUGIN_SIGNATURE_SECRET` reduce plugin injection risk.
+
+### Container and SBOM
+
+- base image update cadence + CVE response SLA
+- generate and publish SBOM for released images
+
+## Internationalization & Multi-Currency Reference
+
+Reference: `docs/internationalization_multi_currency.md`
+
+### Currency and FX Handling
+
+- store source currency and normalized values
+- define exchange-rate source and timestamp policy (ingest-time or display-time)
+
+### Tax/Withholding Estimates
+
+`POST /artists/{id}/intelligence/withholding-estimate` models supported country pairs and assumptions.
+
+### Locale and Encoding
+
+- Unicode-safe parser handling for artist/track metadata
+- date normalization across multiple source formats
+- locale-aware exports for reports/PDF artifacts
+
+## Partner & Distributor Integration Onboarding Guide
+
+Reference: `docs/partner_distributor_integration_guide.md`
+
+### Partner Tiers
+
+| Tier | Description |
+|---|---|
+| Data partner | file export agreement |
+| API partner | direct connector integration |
+| White-label partner | tenant deployment |
+
+### New Distributor Format Checklist
+
+- sample files
+- column specification
+- parser registration ID
+- validation fixtures
+
+### New PRO Connector Checklist
+
+- env var contract
+- connector interface implementation
+- readiness registration
+
+Partnership visibility endpoint:
+
+```http
+GET /partnerships/targets
+```
+
+## Artist-Facing UX Flow Documentation
+
+UX reference: `docs/artist_facing_ux_flow.md`
+
+### Complete Artist Journey
+
+```text
+Discovery -> Widget Funnel -> Onboarding -> First Upload -> First Anomaly -> First Claim -> First Deposit
+```
+
+### Widget Funnel Screens & States
+
+- register
+- OTP verify
+- estimate results
+- claim submission + confirmation
+
+Include error and success states with confidence-building copy.
+
+### Dashboard States
+
+- Empty
+- Processing
+- Active claims
+- Success (deposit received)
+- Includes **Payers Owing** priority card
+
+### Agent Comfort Messaging
+
+> WelcomeSummaryAgent: "You are fully onboarded. We found 3 immediate opportunities worth reviewing first."
+
+> ArtistComfortAgent: "No action is required right now; we are monitoring payer responses and deadlines for you."
+
+### Mobile and Accessibility
+
+- prioritize high-signal cards on small screens
+- maintain WCAG 2.1 AA targets for widget/dashboard surfaces
+
+Screenshot placeholders:
+
+![Widget Register Screen](docs/screenshots/widget-register.png)
+![Widget OTP Verify Screen](docs/screenshots/widget-otp-verify.png)
+![Dashboard Active Claims Screen](docs/screenshots/dashboard-active-claims.png)
+
+## Demo Environment & Sales Engineering Guide
+
+Reference: `docs/demo_environment_sales_guide.md`
+
+### Demo Stack
+
+Use seeded demo environment with multi-format statements, active lifecycle claims, and one completed deposit.
+
+### 10-Minute Demo Script
+
+1. Dashboard overview
+2. Anomaly detail
+3. Claim advance
+4. Evidence export
+5. Celero transaction status
+
+### Reset Between Demos
+
+Use seed reset workflow to return to known state.
+
+### MFA-Friendly Demo Mode
+
+Widget demo mode supports OTP simulation path for non-production demos.
+
+## Competitive Positioning & Differentiation Summary
+
+Reference: `docs/competitive_positioning_summary.md`
+
+XR7 differentiation:
+- automation scale beyond manual royalty audit firms
+- end-to-end recovery workflow beyond accounting-only SaaS tooling
+- defensible moat: evidence-chain integrity + calibrated ML prioritization
+- contingency fee model lowers adoption friction
+- white-label B2B distribution amplifies reach and data quality flywheel
+
+## Roadmap Prioritization Rationale
+
+Reference: `docs/roadmap_prioritization_rationale.md`
+
+### Scoring Criteria
+
+- artist impact
+- revenue impact
+- partnership dependency
+- technical risk
+- regulatory urgency
+
+### PMF Leading Indicators
+
+- anomalies per artist per month
+- claim conversion rate
+- average recovery value
+- upload-to-first-deposit cycle time
+
+### 12-Month Milestone Framing
+
+Roadmap phases should map to measurable adoption, recovery yield, and partner expansion targets.
+
+## Regulatory and Legal Posture Notes
+
+- XR7 provides operational tooling, analytics, and workflow orchestration.
+- Jurisdiction-specific legal interpretations require qualified counsel.
+- Payment and tax handling follows Celero Merchant-of-Record boundaries.
+
+## Glossary
+
+| Term | Definition |
+|---|---|
+| Leakage | Recoverable earnings discrepancy between expected and paid amounts |
+| Anomaly | Detected outlier or rule-triggered discrepancy candidate |
+| Claim | Structured recovery action tied to one or more anomalies |
+| Evidence Packet | Structured legal/financial proof bundle for a claim |
+| Chain Hash | Hash linking packet lineage across revisions |
+| Calibration | Alignment between predicted success and actual outcomes |
+| Posterior Success Rate | Updated success estimate after incorporating outcomes |
+| Expected Utility | Priority score balancing recoverable value, confidence, and effort |
+| Recoupment | Contractual recovery by counterparty before artist payout |
+| SOL | Statute of limitations window for pursuing recovery |
+| PRO | Performing Rights Organization |
+| DSP | Digital Service Provider |
+| MLC | Mechanical Licensing Collective |
+| UGC | User-generated content |
+| Vault ID | Tokenized payment/customer reference in Celero |
+| Contingency Fee | Recovery fee charged as percentage of gross recovered |
+| Universal Royalty Event | Canonical normalized royalty row |
+| Catalog Graph | Relationship graph across works, rights, and sources |
+| Isolation Forest | Unsupervised anomaly detection model |
+| Beta Posterior Blend | Bayesian calibration approach for success probability updates |
+| Artist Readiness Score | Operational readiness score for accelerated recovery |
+| Comfort Score | Confidence-oriented guidance quality indicator for artist messaging |
+| Fast Track Claim | High-confidence, high-ROI claim drafted for immediate action |
 
 ## Roadmap (Market-Driven Additions)
 

@@ -183,6 +183,107 @@
       .buttons { grid-template-columns: 1fr; }
       .metric-grid { grid-template-columns: 1fr; }
     }
+
+    .support-fab {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 14px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #ffffff;
+      background: linear-gradient(130deg, #0f766e, #0ea5e9);
+      box-shadow: 0 10px 24px rgba(15, 118, 110, 0.3);
+      z-index: 40;
+      cursor: pointer;
+    }
+
+    .support-panel {
+      position: fixed;
+      right: 18px;
+      bottom: 70px;
+      width: min(420px, calc(100vw - 24px));
+      height: min(560px, calc(100vh - 120px));
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(6px);
+      box-shadow: 0 14px 36px rgba(17, 24, 39, 0.2);
+      display: none;
+      z-index: 45;
+      overflow: hidden;
+    }
+
+    .support-panel.open {
+      display: grid;
+      grid-template-rows: auto 1fr auto auto;
+    }
+
+    .support-head {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 0.86rem;
+      font-weight: 700;
+    }
+
+    .support-messages {
+      padding: 10px;
+      overflow-y: auto;
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .support-msg {
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      padding: 8px;
+      font-size: 0.86rem;
+      line-height: 1.35;
+    }
+
+    .support-msg.user {
+      background: rgba(14, 165, 233, 0.12);
+      border-color: rgba(14, 165, 233, 0.35);
+    }
+
+    .support-msg.assistant {
+      background: rgba(15, 118, 110, 0.08);
+      border-color: rgba(15, 118, 110, 0.25);
+    }
+
+    .support-input {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 6px;
+      padding: 8px;
+      border-top: 1px solid var(--line);
+    }
+
+    .support-quick {
+      padding: 8px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .support-quick button {
+      white-space: nowrap;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--ink);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -213,10 +314,33 @@
     </section>
   </main>
 
+  <button class="support-fab" id="supportToggle" type="button">AI Support</button>
+
+  <aside class="support-panel" id="supportPanel" aria-label="AI Support Agent">
+    <div class="support-head">
+      <span>XR7 Support Agent</span>
+      <button id="supportClose" type="button">Close</button>
+    </div>
+    <div class="support-messages" id="supportMessages"></div>
+    <div class="support-quick" id="supportQuickReplies"></div>
+    <form class="support-input" id="supportForm">
+      <input id="supportInput" placeholder="Ask about anomalies, payer friction, SOL deadlines..." />
+      <button type="submit">Send</button>
+    </form>
+  </aside>
+
   <script>
     const statusEl = document.getElementById("status");
     const dashboardMetrics = document.getElementById("dashboardMetrics");
     const globalList = document.getElementById("globalList");
+    const supportToggle = document.getElementById("supportToggle");
+    const supportPanel = document.getElementById("supportPanel");
+    const supportClose = document.getElementById("supportClose");
+    const supportMessages = document.getElementById("supportMessages");
+    const supportForm = document.getElementById("supportForm");
+    const supportInput = document.getElementById("supportInput");
+    const supportQuickReplies = document.getElementById("supportQuickReplies");
+    let supportThreadId = null;
 
     function artistId() {
       return (document.getElementById("artistId").value || "").trim();
@@ -299,6 +423,80 @@
       }
       setStatus(`Scan complete: ${rows.length} opportunities.`);
     }
+
+    function addSupportMessage(role, text) {
+      const item = document.createElement("div");
+      item.className = `support-msg ${role}`;
+      item.textContent = text;
+      supportMessages.appendChild(item);
+      supportMessages.scrollTop = supportMessages.scrollHeight;
+    }
+
+    function setQuickReplies(replies) {
+      supportQuickReplies.innerHTML = "";
+      for (const reply of replies || []) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = reply;
+        btn.addEventListener("click", () => {
+          supportInput.value = reply;
+          supportForm.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+        });
+        supportQuickReplies.appendChild(btn);
+      }
+    }
+
+    async function sendSupportMessage(message) {
+      const id = artistId();
+      if (!id) {
+        setStatus("Enter an artist ID before using AI Support.");
+        return;
+      }
+      addSupportMessage("user", message);
+
+      const body = { message };
+      if (supportThreadId) {
+        body.thread_id = supportThreadId;
+      }
+
+      const res = await fetch(`/artists/${encodeURIComponent(id)}/support/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        addSupportMessage("assistant", `Support request failed (${res.status}).`);
+        return;
+      }
+      const data = await res.json();
+      supportThreadId = data.thread_id || supportThreadId;
+      addSupportMessage("assistant", data.response || "No response available.");
+      setQuickReplies(data.suggested_quick_replies || []);
+      if (data.escalate_recommended) {
+        addSupportMessage("assistant", "Confidence is limited here. Want me to escalate this to human review?");
+      }
+    }
+
+    supportToggle.addEventListener("click", () => {
+      supportPanel.classList.toggle("open");
+      if (supportPanel.classList.contains("open") && supportMessages.children.length === 0) {
+        addSupportMessage("assistant", "I can explain anomalies, payer friction, SOL deadlines, and suggest your next best action.");
+      }
+    });
+
+    supportClose.addEventListener("click", () => {
+      supportPanel.classList.remove("open");
+    });
+
+    supportForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const message = (supportInput.value || "").trim();
+      if (!message) {
+        return;
+      }
+      supportInput.value = "";
+      await sendSupportMessage(message);
+    });
 
     document.getElementById("loadDashboard").addEventListener("click", loadDashboard);
     document.getElementById("scanGlobal").addEventListener("click", scanGlobalSocial);

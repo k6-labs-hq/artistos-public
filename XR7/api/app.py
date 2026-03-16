@@ -27,6 +27,7 @@ from XR7.api.routers import team as team_router
 from XR7.api.routers import connect as connect_router
 from XR7.api.routers import fetchers as fetchers_router
 from XR7.api.routers import workflow as workflow_router
+from XR7.api.routers import support as support_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -53,6 +54,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.ml_feedback  # noqa: F401
     import XR7.models.model_registry  # noqa: F401
     import XR7.models.catalog_segment  # noqa: F401
+    import XR7.models.support_message  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -139,6 +141,8 @@ app.add_middleware(
         "X-Admin-Actor",
         "X-Analyst-Key",
         "X-Analyst-Email",
+        "X-Actor-Email",
+        "X-Actor-Role",
         "X-Celero-Signature",
     ],
 )
@@ -171,6 +175,7 @@ app.include_router(team_router.router)
 app.include_router(connect_router.router)
 app.include_router(fetchers_router.router)
 app.include_router(workflow_router.router)
+app.include_router(support_router.router)
 
 
 @app.get("/health")

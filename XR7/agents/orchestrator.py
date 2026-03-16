@@ -53,6 +53,7 @@ from XR7.agents.onboarding_agents import (
     WelcomeSummaryAgent,
 )
 from XR7.agents.state import XR7State, add_trace_event, initial_state
+from XR7.graph.nodes.support_agent import ArtistSupportAgent
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -128,6 +129,7 @@ AGENTS: dict[str, AgentFn] = {
     "escalation_agent": EscalationAgent,
     "disbursement_agent": DisbursementAgent,
     "calibration_agent": CalibrationAgent,
+    "artist_support": ArtistSupportAgent,
     "reflection": ReflectionNode,
 }
 
@@ -227,6 +229,8 @@ def _merge_state(base: XR7State, patch: XR7State) -> XR7State:
             "recommended_packet_emphasis",
             "attorney_exhibits_index",
             "narrative_highlights",
+            "support_messages",
+            "support_suggested_replies",
         } and isinstance(value, list):
             merged[key] = list(merged.get(key) or []) + list(value)
         elif key == "confidence_scores" and isinstance(value, dict):
@@ -290,6 +294,11 @@ def _should_reflect(state: XR7State, node_name: str) -> bool:
 
 
 def _supervisor_next(state: XR7State) -> str:
+    if bool(state.get("support_mode")):
+        if str(state.get("current_step") or "") == "artist_support":
+            return END
+        return "artist_support"
+
     if state.get("next_action") == "human_review":
         return END
     if state.get("next_action") == "reflection":
@@ -478,6 +487,60 @@ async def run_xr7_recovery_orchestra(artist_id: str, run_id: str | None = None) 
     return final_state
 
 
+async def run_support_agent_turn(
+    artist_id: str,
+    *,
+    message: str,
+    thread_id: str,
+    dashboard_context: dict[str, Any] | None = None,
+) -> XR7State:
+    rid = str(uuid4())
+    state = initial_state(artist_id, rid)
+    state.update(
+        {
+            "support_mode": True,
+            "support_thread_id": thread_id,
+            "support_user_message": message,
+            "dashboard_context": dashboard_context or {},
+            "current_step": "support_request",
+        }
+    )
+
+    _RUN_STATE[rid] = state
+    _ARTIST_LATEST_RUN[artist_id] = rid
+    _RUN_TRACE[rid] = []
+
+    if xr7_recovery_orchestra is None:
+        out = await _run_node(state, "artist_support")
+        if float(out.get("support_confidence") or 0.0) < 0.75:
+            out = await _run_node(out, "reflection")
+        _RUN_STATE[rid] = out
+        return out
+
+    cfg = {
+        "configurable": {
+            "thread_id": f"support-{artist_id}-{thread_id}",
+            "checkpoint_ns": f"support_{artist_id}",
+        }
+    }
+    final_state = dict(state)
+    try:
+        async for evt in xr7_recovery_orchestra.astream_events(state, config=cfg, version="v2"):
+            _RUN_TRACE[rid].append(dict(evt))
+            if "data" in evt and isinstance(evt["data"], dict):
+                maybe_state = evt["data"].get("output") or evt["data"].get("state")
+                if isinstance(maybe_state, dict):
+                    final_state = _merge_state(final_state, maybe_state)
+        if not final_state.get("support_response"):
+            final_state = await _run_node(state, "artist_support")
+    except Exception:  # noqa: BLE001
+        logger.exception("Support agent graph execution failed; using fallback", extra={"artist_id": artist_id, "thread_id": thread_id})
+        final_state = await _run_node(state, "artist_support")
+
+    _RUN_STATE[rid] = final_state
+    return final_state
+
+
 async def run_export_prep_pipeline(artist_id: str, run_id: str | None = None) -> XR7State:
     rid = run_id or _ARTIST_LATEST_RUN.get(artist_id) or str(uuid4())
     state = dict(_RUN_STATE.get(rid) or initial_state(artist_id, rid))
@@ -517,3 +580,20 @@ def run_xr7_recovery_orchestra_sync(artist_id: str, run_id: str | None = None) -
 
 def run_export_prep_pipeline_sync(artist_id: str, run_id: str | None = None) -> XR7State:
     return asyncio.run(run_export_prep_pipeline(artist_id, run_id))
+
+
+def run_support_agent_turn_sync(
+    artist_id: str,
+    *,
+    message: str,
+    thread_id: str,
+    dashboard_context: dict[str, Any] | None = None,
+) -> XR7State:
+    return asyncio.run(
+        run_support_agent_turn(
+            artist_id,
+            message=message,
+            thread_id=thread_id,
+            dashboard_context=dashboard_context,
+        )
+    )

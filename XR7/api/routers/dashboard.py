@@ -39,6 +39,7 @@ from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace
 from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.models.support_message import SupportMessage, SupportMessageRole
 from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
@@ -47,6 +48,23 @@ router = APIRouter(tags=["dashboard"])
 
 _DASHBOARD_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "recovery_dashboard.html"
 _MOBILE_UI_PATH = Path(__file__).resolve().parents[2] / "dashboard" / "ui" / "mobile.html"
+
+
+def _support_proactive_tip(dashboard: dict) -> str:
+  deadlines = dashboard.get("deadlines") or {}
+  urgent = int(deadlines.get("urgent_count") or 0)
+  if urgent > 0:
+    return f"You have {urgent} urgent SOL items. Ask Support to prioritize your next best move."
+
+  payers = dashboard.get("payers_owing") or []
+  if isinstance(payers, list) and payers:
+    top = sorted(payers, key=lambda r: float((r or {}).get("recoverable_estimate") or 0.0), reverse=True)[0]
+    return (
+      f"Your top payer is {top.get('payer_name')} at "
+      f"${float(top.get('recoverable_estimate') or 0.0):,.2f}."
+    )
+
+  return "Ask Support for a quick summary of your highest-value recovery opportunities."
 
 
 @router.get("/dashboard/ui")
@@ -116,6 +134,20 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
 
     engine = DashboardEngine(db)
     dashboard = engine.compute(artist_id)
+    unread_support_messages = (
+      db.query(SupportMessage)
+      .filter(
+        SupportMessage.artist_id == artist_id,
+        SupportMessage.role == SupportMessageRole.ASSISTANT,
+        SupportMessage.is_read.is_(False),
+      )
+      .count()
+    )
+    dashboard["support"] = {
+      "agent_available": True,
+      "unread_support_messages": unread_support_messages,
+      "proactive_tip": _support_proactive_tip(dashboard),
+    }
     state = get_latest_artist_state(artist_id)
     if not state:
       dashboard.setdefault("agent_orchestra_status", {
