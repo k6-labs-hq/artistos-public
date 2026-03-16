@@ -34,11 +34,59 @@ def verify_splits(
     }
 
     mismatches: list[dict[str, Any]] = []
+    missing_contributors: list[dict[str, Any]] = []
+    incorrect_percentages: list[dict[str, Any]] = []
+    pro_publisher_mismatches: list[dict[str, Any]] = []
+    unregistered_works: list[dict[str, Any]] = []
+    conflicting_registrations: list[dict[str, Any]] = []
     for row in rights_rows:
         key = (_canonical_work_id(row.get("work_id")), str(row.get("territory") or "GLOBAL"), str(row.get("platform") or "ALL"))
         expected = float(row.get("expected_split") or 0.0)
         actual = float(payout_index.get(key, expected))
         delta = abs(expected - actual)
+        contributors = list(row.get("contributors") or [])
+        if not contributors:
+            missing_contributors.append(
+                {
+                    "work_id": key[0],
+                    "issue": "MISSING_CONTRIBUTORS",
+                }
+            )
+        if expected > 1.0 or expected < 0.0:
+            incorrect_percentages.append(
+                {
+                    "work_id": key[0],
+                    "issue": "INCORRECT_PERCENTAGES",
+                    "expected_split": expected,
+                }
+            )
+        if not bool(row.get("pro_registered", True)):
+            unregistered_works.append(
+                {
+                    "work_id": key[0],
+                    "issue": "UNREGISTERED_WORK",
+                }
+            )
+        pro = str(row.get("pro") or "").upper().strip()
+        publisher = str(row.get("publisher") or "").upper().strip()
+        if pro and publisher and pro not in {"ASCAP", "BMI", "SESAC", "PRS", "GEMA", "SACEM", "SOCAN", "APRA", "JASRAC"}:
+            pro_publisher_mismatches.append(
+                {
+                    "work_id": key[0],
+                    "issue": "PRO_PUBLISHER_MISMATCH",
+                    "pro": pro,
+                    "publisher": publisher,
+                }
+            )
+        societies = sorted({str(s).upper().strip() for s in (row.get("societies") or []) if str(s).strip()})
+        if len(societies) > 1:
+            conflicting_registrations.append(
+                {
+                    "work_id": key[0],
+                    "issue": "CONFLICTING_REGISTRATIONS_ACROSS_SOCIETIES",
+                    "societies": societies,
+                }
+            )
         if delta >= mismatch_threshold:
             estimated_value = float(row.get("estimated_value") or 0.0)
             mismatches.append(
@@ -60,6 +108,11 @@ def verify_splits(
         "estimated_total_recoverable": round(total_recoverable, 2),
         "metadata_repair_links_applied": len(repair_map),
         "mismatches": mismatches,
+        "missing_contributors": missing_contributors,
+        "incorrect_percentages": incorrect_percentages,
+        "pro_publisher_mismatches": pro_publisher_mismatches,
+        "unregistered_works": unregistered_works,
+        "conflicting_registrations_across_societies": conflicting_registrations,
     }
 
 

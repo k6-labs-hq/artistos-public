@@ -34,6 +34,7 @@ from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.recovery_automation_engine import automate_recovery
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
 from XR7.services.workflow_orchestrator import XR7WorkflowService
 
@@ -73,6 +74,12 @@ class SyncJobCreateRequest(BaseModel):
 
 class WorkflowRunRequest(BaseModel):
     async_run: bool = False
+
+
+class SplitRepairRequest(BaseModel):
+    rights_rows: list[dict[str, Any]]
+    payout_rows: list[dict[str, Any]]
+    apply_threshold: float = 0.85
 
 
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
@@ -538,6 +545,60 @@ def infer_catalog(artist_id: str, db: Session = Depends(get_db)):
 def catalog_metadata_health(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     return MetadataRepairEngine(db).get_metadata_health(artist_id)
+
+
+@router.get("/artists/{artist_id}/catalog/repairs")
+def catalog_repairs(artist_id: str, db: Session = Depends(get_db)):
+    _artist_or_404(artist_id, db)
+    repairs = MetadataRepairEngine(db).catalog_repairs(artist_id)
+    return {
+        "artist_id": artist_id,
+        "metadata_repair_ledger": repairs,
+        "count": len(repairs),
+    }
+
+
+@router.post("/artists/{artist_id}/splits/repair")
+def apply_split_repairs(
+    artist_id: str,
+    payload: SplitRepairRequest,
+    db: Session = Depends(get_db),
+):
+    _artist_or_404(artist_id, db)
+    metadata_repairs = MetadataRepairEngine(db).recent_repair_logs(artist_id, limit=300)
+    engine = SplitRightsRepairEngine(confidence_threshold=payload.apply_threshold)
+    result = engine.apply_high_confidence_repairs(
+        artist_id,
+        payload.rights_rows,
+        payload.payout_rows,
+        metadata_repairs=metadata_repairs,
+    )
+
+    review_flags = [
+        c for c in result.corrections if float(c.get("confidence") or 0.0) < payload.apply_threshold
+    ]
+    ledger = ImmutableLedgerService(db)
+    entry = ledger.append(
+        artist_id,
+        "split_rights_repair",
+        {
+            "mismatch_count": result.mismatch_count,
+            "corrections_applied": result.corrections_applied,
+            "low_confidence_flags": result.low_confidence_flags,
+            "registration_packets": result.registration_packets,
+            "corrections": result.corrections,
+        },
+    )
+
+    return {
+        "artist_id": artist_id,
+        "mismatch_count": result.mismatch_count,
+        "corrections_applied": result.corrections_applied,
+        "registration_packets": result.registration_packets,
+        "proposed_corrections": result.corrections,
+        "low_confidence_review_queue": review_flags,
+        "ledger_entry_hash": entry.entry_hash,
+    }
 
 
 @router.post("/artists/{artist_id}/variance/scan")

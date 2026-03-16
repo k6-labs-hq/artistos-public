@@ -472,6 +472,17 @@
     </section>
 
     <section class="card">
+      <h2>Future Leakage Prevention</h2>
+      <div class="metric-grid" id="futureLeakageMetrics"></div>
+      <ul class="list" id="futureLeakageList"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Repair Transparency Panel</h2>
+      <ul class="list" id="repairTransparencyList"></ul>
+    </section>
+
+    <section class="card">
       <h2>Claims Needing Payer Response</h2>
       <ul class="claim-list" id="claimList"></ul>
     </section>
@@ -533,6 +544,9 @@
     const globalList = document.getElementById("globalList");
     const metadataHealthMetrics = document.getElementById("metadataHealthMetrics");
     const metadataHealthList = document.getElementById("metadataHealthList");
+    const futureLeakageMetrics = document.getElementById("futureLeakageMetrics");
+    const futureLeakageList = document.getElementById("futureLeakageList");
+    const repairTransparencyList = document.getElementById("repairTransparencyList");
     const claimList = document.getElementById("claimList");
     const settingsStatus = document.getElementById("settingsStatus");
     const defaultGraceDaysInput = document.getElementById("defaultGraceDays");
@@ -667,6 +681,42 @@
           const li = document.createElement("li");
           li.textContent = `${rec.issue_type || "Issue"}: ${rec.reason || "Review recommended"} (confidence ${Number(rec.confidence || 0).toFixed(2)})`;
           metadataHealthList.appendChild(li);
+        }
+      }
+
+      const future = data?.future_leakage_prevention || {};
+      futureLeakageMetrics.innerHTML = "";
+      futureLeakageMetrics.appendChild(metricNode("Predicted Avoided", `$${Number(future.predicted_leakage_avoided || 0).toFixed(2)}`));
+      const autoFixes = Array.isArray(future.auto_applied_fixes) ? future.auto_applied_fixes : [];
+      futureLeakageMetrics.appendChild(metricNode("Auto Fixes", String(autoFixes.length)));
+      const recRepairs = Array.isArray(future.recommended_repairs) ? future.recommended_repairs : [];
+      futureLeakageMetrics.appendChild(metricNode("Recommended Repairs", String(recRepairs.length)));
+
+      futureLeakageList.innerHTML = "";
+      if (!recRepairs.length) {
+        const li = document.createElement("li");
+        li.textContent = "No high-risk works predicted right now.";
+        futureLeakageList.appendChild(li);
+      } else {
+        for (const row of recRepairs.slice(0, 5)) {
+          const li = document.createElement("li");
+          li.textContent = `Work ${row.work_id || "unknown"}: ${row.risk_band || "LOW"} risk (${Math.round(Number(row.probability || 0) * 100)}%)`;
+          futureLeakageList.appendChild(li);
+        }
+      }
+
+      const panel = data?.repair_transparency_panel || {};
+      const entries = Array.isArray(panel.entries) ? panel.entries : [];
+      repairTransparencyList.innerHTML = "";
+      if (!entries.length) {
+        const li = document.createElement("li");
+        li.textContent = "No repair ledger entries yet.";
+        repairTransparencyList.appendChild(li);
+      } else {
+        for (const item of entries.slice(0, 5)) {
+          const li = document.createElement("li");
+          li.textContent = `${item.what_was_fixed || "Repair"}: ${item.why_it_was_fixed || "Reason unavailable"} (confidence ${Number(item.confidence_score || 0).toFixed(2)})`;
+          repairTransparencyList.appendChild(li);
         }
       }
       await loadClaims();

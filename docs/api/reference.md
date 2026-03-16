@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 234
+Total endpoints: 236
 
 ## Endpoint Table
 
@@ -36,6 +36,7 @@ Total endpoints: 234
 | onboarding | POST | /artists/{artist_id}/catalog/infer | Infer Catalog | infer_catalog_artists__artist_id__catalog_infer_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/catalog/infer |
 | recovery | GET | /artists/{artist_id}/catalog/integrity | Catalog Integrity | catalog_integrity_artists__artist_id__catalog_integrity_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/integrity |
 | onboarding | GET | /artists/{artist_id}/catalog/metadata-health | Catalog Metadata Health | catalog_metadata_health_artists__artist_id__catalog_metadata_health_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/metadata-health |
+| onboarding | GET | /artists/{artist_id}/catalog/repairs | Catalog Repairs | catalog_repairs_artists__artist_id__catalog_repairs_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/repairs |
 | celero | POST | /artists/{artist_id}/celero/charge | Charge Contingency Fee | charge_contingency_fee_artists__artist_id__celero_charge_post | CeleroChargeRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/charge -H 'Content-Type: application/json' -d '{}' |
 | celero | PUT | /artists/{artist_id}/celero/customer | Update Celero Customer | update_celero_customer_artists__artist_id__celero_customer_put | CeleroRegisterRequest | ArtistSchema | curl -X PUT http://localhost:8000/artists/<artist_id>/celero/customer -H 'Content-Type: application/json' -d '{}' |
 | celero | POST | /artists/{artist_id}/celero/disburse | Disburse To Artist | disburse_to_artist_artists__artist_id__celero_disburse_post | CeleroDisburseRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/disburse -H 'Content-Type: application/json' -d '{}' |
@@ -147,6 +148,7 @@ Total endpoints: 234
 | expansion | GET | /artists/{artist_id}/reports/summary | Export Summary Report | export_summary_report_artists__artist_id__reports_summary_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/reports/summary |
 | recovery | GET | /artists/{artist_id}/sla/status | Sla Status | sla_status_artists__artist_id__sla_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/sla/status |
 | recovery | GET | /artists/{artist_id}/splits/conflicts | Split Conflicts | split_conflicts_artists__artist_id__splits_conflicts_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/splits/conflicts |
+| onboarding | POST | /artists/{artist_id}/splits/repair | Apply Split Repairs | apply_split_repairs_artists__artist_id__splits_repair_post | SplitRepairRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/splits/repair -H 'Content-Type: application/json' -d '{}' |
 | recovery | GET | /artists/{artist_id}/splits/verification | Split Verification | split_verification_artists__artist_id__splits_verification_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/splits/verification |
 | ingestion | GET | /artists/{artist_id}/statements | List Statements | list_statements_artists__artist_id__statements_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/statements |
 | ingestion | POST | /artists/{artist_id}/statements/upload | Upload Statement | upload_statement_artists__artist_id__statements_upload_post | - | StatementSchema | curl -X POST http://localhost:8000/artists/<artist_id>/statements/upload |

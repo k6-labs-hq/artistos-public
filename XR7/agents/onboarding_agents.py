@@ -23,7 +23,10 @@ from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.split_verification import verify_splits
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
+from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
+from XR7.services.ugc_repair_engine import UGCRepairEngine
 from XR7.services.hubspot_client import HubSpotClient
 from XR7.ugc.global_scanner import GlobalUGCScanner
 from XR7.ugc.usage_monitor import UGCUsageMonitor
@@ -360,6 +363,7 @@ async def AutoSplitResolverAgent(state: XR7State) -> XR7State:
     db = SessionLocal()
     try:
         repairs = MetadataRepairEngine(db).recent_repair_logs(artist_id, limit=200)
+        split_engine = SplitRightsRepairEngine(confidence_threshold=0.85)
         works = db.query(Work).filter(Work.artist_id == artist_id).all()
         rights_rows = [
             {
@@ -368,6 +372,11 @@ async def AutoSplitResolverAgent(state: XR7State) -> XR7State:
                 "platform": "ALL",
                 "expected_split": 1.0,
                 "estimated_value": 1000.0,
+                "contributors": [{"name": "Primary Artist", "split": 1.0}],
+                "pro_registered": bool(w.iswc),
+                "pro": "ASCAP" if w.iswc else "",
+                "publisher": "Independent",
+                "societies": ["ASCAP"] if w.iswc else [],
             }
             for w in works
         ]
@@ -386,6 +395,12 @@ async def AutoSplitResolverAgent(state: XR7State) -> XR7State:
             payout_rows,
             metadata_repairs=repairs,
             mismatch_threshold=0.03,
+        )
+        repaired = split_engine.apply_high_confidence_repairs(
+            artist_id,
+            rights_rows,
+            payout_rows,
+            metadata_repairs=repairs,
         )
     finally:
         db.close()
@@ -407,12 +422,29 @@ async def AutoSplitResolverAgent(state: XR7State) -> XR7State:
         }
         for row in conflict_rows
     ]
+    for correction in repaired.corrections:
+        suggestions.append(
+            {
+                "work_id": correction.get("work_id"),
+                "suggestion": "Apply corrected split and update society registrations.",
+                "proposed_split": correction.get("after_split"),
+                "confidence": correction.get("confidence"),
+            }
+        )
+
     score = 0.91 if not conflict_rows else 0.83
     return _finalize(
         state,
         agent_name="auto_split_resolver",
         score=score,
-        updates={"split_conflicts": conflict_rows, "split_suggestions": suggestions},
+        updates={
+            "split_conflicts": conflict_rows,
+            "split_suggestions": suggestions,
+            "split_registration_packets": repaired.registration_packets,
+            "split_low_confidence_flags": [
+                c for c in repaired.corrections if float(c.get("confidence") or 0.0) < 0.85
+            ],
+        },
         decision=f"split conflicts={len(conflict_rows)}",
     )
 
@@ -421,8 +453,24 @@ async def ArtistComfortAgent(state: XR7State) -> XR7State:
     progress = dict(state.get("onboarding_progress") or {})
     done = int(progress.get("steps_completed") or 0)
     total = int(progress.get("steps_total") or 10)
-    msg = f"Progress update: {done} of {total} setup milestones completed. XR7 is continuously checking quality and deadlines for you."
-    return _finalize(state, agent_name="artist_comfort", score=0.95, updates={"comfort_messages": [msg]}, decision="comfort update published")
+    metadata_health = dict(state.get("metadata_health") or {})
+    prevented = float(metadata_health.get("projected_leakage_avoided") or 0.0)
+    msg = (
+        f"Progress update: {done} of {total} setup milestones completed. "
+        f"XR7 repaired core catalog issues and is preventing an estimated ${prevented:,.2f} in future leakage."
+    )
+    plain_language = (
+        "What was fixed: identifier and catalog mismatches. "
+        "Why it was fixed: these mismatches can silently route money away from you. "
+        "Impact: cleaner registrations and lower future loss risk."
+    )
+    return _finalize(
+        state,
+        agent_name="artist_comfort",
+        score=0.95,
+        updates={"comfort_messages": [msg, plain_language]},
+        decision="comfort update published",
+    )
 
 
 async def FirstClaimFastTrackAgent(state: XR7State) -> XR7State:
@@ -518,6 +566,7 @@ async def AutoMetadataRegistrarAgent(state: XR7State) -> XR7State:
     db = SessionLocal()
     try:
         health = MetadataRepairEngine(db).get_metadata_health(artist_id)
+        foreign = ForeignSocietyCrosswalkEngine(db).analyze(artist_id)
     finally:
         db.close()
 
@@ -533,12 +582,24 @@ async def AutoMetadataRegistrarAgent(state: XR7State) -> XR7State:
             }
         )
     actions.append({"type": "pro_registration_packet", "action": "Generate ASCAP/BMI registration payload for unregistered works"})
+    actions.append(
+        {
+            "type": "foreign_society_registration_packets",
+            "action": "Generate PRS/GEMA/SACEM/SOCAN/APRA/JASRAC packets",
+            "count": len(foreign.registration_packets),
+        }
+    )
     score = 0.9 if isrcs else 0.8
     return _finalize(
         state,
         agent_name="auto_metadata_registrar",
         score=score,
-        updates={"registration_actions": actions, "metadata_health": health},
+        updates={
+            "registration_actions": actions,
+            "metadata_health": health,
+            "foreign_crosswalk_findings": foreign.findings,
+            "foreign_registration_packets": foreign.registration_packets,
+        },
         decision="metadata registration plan prepared",
     )
 
@@ -573,6 +634,22 @@ async def SocialUGCCollectorAgent(state: XR7State) -> XR7State:
             }
         )
     return _finalize(state, agent_name="social_ugc_collector", score=0.9, updates={"ugc_opportunities": opportunities}, decision=f"ugc opportunities={len(opportunities)}")
+
+
+async def AutoUGCRegistrarAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
+    report = await UGCRepairEngine().analyze(artist_id)
+    updates = {
+        "ugc_opportunities": list(report.get("findings") or []),
+        "ugc_auto_actions": list(report.get("auto_actions") or []),
+    }
+    return _finalize(
+        state,
+        agent_name="auto_ugc_registrar",
+        score=0.91,
+        updates=updates,
+        decision=f"ugc auto-registrations prepared={int(report.get('auto_claim_count') or 0)}",
+    )
 
 
 async def AutoContractExtractorAgent(state: XR7State) -> XR7State:

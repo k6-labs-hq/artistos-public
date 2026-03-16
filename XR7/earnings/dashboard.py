@@ -71,6 +71,7 @@ from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.prevention.agent import PreventiveAgent
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.ml.future_leakage_predictor import FutureLeakagePredictor
 
 
 # Claim statuses that are still "in pursuit" (open / active)
@@ -150,6 +151,8 @@ class DashboardEngine:
         priority_actions = self._priority_actions_section(anomalies, claims)
         calibration_health = self._calibration_health_section(artist_id)
         metadata_health_prevention = self._metadata_health_prevention_section(artist_id)
+        future_leakage_prevention = self._future_leakage_prevention_section(artist_id, works, anomalies, payments)
+        repair_transparency_panel = self._repair_transparency_panel_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
         expected_value = self._expected_value_section(anomalies, claims, contracts, catalog_health)
         segment_insight = self._catalog_segment_section(works, payments, anomalies)
@@ -176,6 +179,8 @@ class DashboardEngine:
             "expected_recovery_value": expected_value,
             "calibration_health": calibration_health,
             "metadata_health_future_leakage_prevention": metadata_health_prevention,
+            "future_leakage_prevention": future_leakage_prevention,
+            "repair_transparency_panel": repair_transparency_panel,
             "catalog_health": catalog_health,
             "catalog_segments": segment_insight,
             "recovery_potential": recovery_potential,
@@ -759,6 +764,97 @@ class DashboardEngine:
             "consistency_score": health.get("consistency_score"),
             "identifier_coverage": health.get("identifier_coverage"),
             "recommended_fixes": health.get("recommended_fixes"),
+        }
+
+    def _future_leakage_prevention_section(
+        self,
+        artist_id: str,
+        works: list[Work],
+        anomalies: list[Anomaly],
+        payments: list[Payment],
+    ) -> dict[str, Any]:
+        health = MetadataRepairEngine(self.db).get_metadata_health(artist_id)
+        predictor = FutureLeakagePredictor()
+
+        works_rows = [{"id": w.id, "isrc": w.isrc, "iswc": w.iswc} for w in works]
+        metadata_completeness = float(health.get("completeness_score") or 0.0)
+        identifier_coverage = float((health.get("identifier_coverage") or {}).get("both_coverage") or 0.0)
+        anomaly_density = float(len(anomalies)) / max(float(len(works) or 1), 1.0)
+        amounts = [float(p.amount or 0.0) for p in payments if float(p.amount or 0.0) > 0.0]
+        payment_regularity = 0.5
+        if len(amounts) > 1:
+            mean = sum(amounts) / len(amounts)
+            if mean > 0:
+                variance = sum((a - mean) ** 2 for a in amounts) / len(amounts)
+                cv = (variance**0.5) / mean
+                payment_regularity = max(0.0, min(1.0, 1.0 - (cv / 2.0)))
+
+        # Fallback heuristic where historical release metadata is unavailable.
+        catalog_age_years = 4.0 if works else 0.0
+        distributors = {
+            str(p.source or "").strip().lower()
+            for p in payments
+            if str(p.source or "").strip()
+        }
+
+        predictions = predictor.predict_per_work(
+            works_rows,
+            metadata_completeness=metadata_completeness,
+            identifier_coverage=identifier_coverage,
+            anomaly_density=anomaly_density,
+            payment_regularity=payment_regularity,
+            catalog_age_years=catalog_age_years,
+            distributor_footprint=len(distributors),
+        )
+
+        auto_applied = [
+            i
+            for i in self.db.query(MetadataIssue).filter(MetadataIssue.artist_id == artist_id).all()
+            if str(i.repair_status) == "AUTO_REPAIRED"
+        ]
+        predicted_avoided = round(
+            sum(float(i.projected_leakage_avoided or 0.0) for i in auto_applied),
+            2,
+        )
+
+        return {
+            "predicted_leakage_avoided": predicted_avoided,
+            "recommended_repairs": [
+                {
+                    "work_id": p.work_id,
+                    "risk_band": p.risk_band,
+                    "probability": p.probability,
+                    "actions": p.recommended_repairs,
+                }
+                for p in predictions[:20]
+            ],
+            "auto_applied_fixes": [
+                {
+                    "issue_id": i.id,
+                    "issue_type": i.issue_type,
+                    "confidence_score": i.confidence_score,
+                }
+                for i in auto_applied[:20]
+            ],
+        }
+
+    def _repair_transparency_panel_section(self, artist_id: str) -> dict[str, Any]:
+        repairs = MetadataRepairEngine(self.db).catalog_repairs(artist_id, limit=100)
+        entries = []
+        for row in repairs[:20]:
+            entries.append(
+                {
+                    "repair_id": row.get("repair_id"),
+                    "what_was_fixed": row.get("issue_type"),
+                    "why_it_was_fixed": row.get("repair_rationale") or "Prevent future leakage and mismatched payouts.",
+                    "how_it_prevents_future_loss": "Improves identifier and registry matching across rights systems.",
+                    "confidence_score": row.get("confidence_score"),
+                    "evidence_link": f"/artists/{artist_id}/catalog/repairs#{row.get('repair_id')}",
+                }
+            )
+        return {
+            "entries": entries,
+            "count": len(repairs),
         }
 
     def _calibration_health_section(self, artist_id: str) -> dict:

@@ -219,3 +219,75 @@ def test_evidence_packet_includes_metadata_repair_logs():
         assert "chain_of_custody_hash" in logs[0]
     finally:
         db.close()
+
+
+def test_catalog_repairs_endpoint_returns_metadata_repair_ledger():
+    db = TestSession()
+    try:
+        artist, _, _, _ = _seed_artist_with_metadata_drift(db)
+        db.add(
+            MetadataIssue(
+                artist_id=artist.id,
+                issue_type="ARTIST_ALIAS_UNIFICATION",
+                severity="LOW",
+                issue_key=f"alias:{uuid.uuid4()}",
+                before_value_json=json.dumps({"aliases": ["Artist", "Artist X"]}),
+                after_value_json=json.dumps({"canonical_alias": "Artist"}),
+                confidence_score=0.93,
+                repair_status="AUTO_REPAIRED",
+                repair_rationale="Unified artist aliases",
+                chain_of_custody_hash="def456",
+            )
+        )
+        db.commit()
+
+        resp = client.get(f"/artists/{artist.id}/catalog/repairs")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body.get("artist_id") == artist.id
+        ledger = body.get("metadata_repair_ledger") or []
+        assert len(ledger) >= 1
+        assert "before" in ledger[0]
+        assert "after" in ledger[0]
+        assert "chain_of_custody_hash" in ledger[0]
+    finally:
+        db.close()
+
+
+def test_split_repair_endpoint_applies_high_confidence_corrections():
+    db = TestSession()
+    try:
+        artist, _, work_primary, _ = _seed_artist_with_metadata_drift(db)
+        payload = {
+            "rights_rows": [
+                {
+                    "work_id": work_primary.id,
+                    "territory": "GLOBAL",
+                    "platform": "ALL",
+                    "expected_split": 1.0,
+                    "estimated_value": 2000.0,
+                    "contributors": [{"name": "Primary Artist", "split": 1.0}],
+                    "pro_registered": True,
+                    "pro": "ASCAP",
+                    "publisher": "Independent",
+                    "societies": ["ASCAP"],
+                }
+            ],
+            "payout_rows": [
+                {
+                    "work_id": work_primary.id,
+                    "territory": "GLOBAL",
+                    "platform": "ALL",
+                    "actual_split": 0.9,
+                }
+            ],
+            "apply_threshold": 0.8,
+        }
+        resp = client.post(f"/artists/{artist.id}/splits/repair", json=payload)
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body.get("corrections_applied", 0) >= 1
+        assert isinstance(body.get("registration_packets"), list)
+        assert "ledger_entry_hash" in body
+    finally:
+        db.close()

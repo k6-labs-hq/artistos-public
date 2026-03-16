@@ -8156,6 +8156,96 @@
         }
       }
     },
+    "/artists/{artist_id}/catalog/repairs": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Catalog Repairs",
+        "operationId": "catalog_repairs_artists__artist_id__catalog_repairs_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/splits/repair": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Apply Split Repairs",
+        "operationId": "apply_split_repairs_artists__artist_id__splits_repair_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SplitRepairRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/variance/scan": {
       "post": {
         "tags": [
@@ -12516,6 +12606,11 @@
             "type": "integer",
             "title": "Default Attorney Grace Period Days",
             "default": 60
+          },
+          "xr7_future_leakage_prevented": {
+            "type": "number",
+            "title": "Xr7 Future Leakage Prevented",
+            "default": 0.0
           }
         },
         "type": "object",
@@ -15694,6 +15789,37 @@
           "usage_rows"
         ],
         "title": "SimulatePayoutRequest"
+      },
+      "SplitRepairRequest": {
+        "properties": {
+          "rights_rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rights Rows"
+          },
+          "payout_rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Payout Rows"
+          },
+          "apply_threshold": {
+            "type": "number",
+            "title": "Apply Threshold",
+            "default": 0.85
+          }
+        },
+        "type": "object",
+        "required": [
+          "rights_rows",
+          "payout_rows"
+        ],
+        "title": "SplitRepairRequest"
       },
       "StatementSchema": {
         "properties": {

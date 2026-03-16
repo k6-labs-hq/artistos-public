@@ -57,7 +57,9 @@ from XR7.blockchain.split_verifier import SplitVerifier
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.recovery.underpayment_heatmap import build_underpayment_heatmap
 from XR7.recovery.underpayment_reconstruction import reconstruct_historical_underpayment
+from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
+from XR7.services.rate_drift_correction_engine import RateDriftCorrectionEngine
 from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.models.ml_feedback import CalibrationSnapshot
@@ -712,6 +714,8 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
     start = datetime(2000, 1, 1, tzinfo=timezone.utc)
     metadata_result = MetadataRepairEngine(db).run_historical_audit_and_repair(artist_id, start, end)
     metadata_health = MetadataRepairEngine(db).get_metadata_health(artist_id)
+    rate_drift = RateDriftCorrectionEngine(db).detect_and_record(artist_id)
+    foreign_crosswalk = ForeignSocietyCrosswalkEngine(db).analyze(artist_id)
 
     return {
         "artist_id": artist_id,
@@ -723,6 +727,17 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
             "projected_leakage_avoided": metadata_result.projected_leakage_avoided,
             "catalog_graph_version": metadata_result.graph_version,
             "metadata_health": metadata_health,
+        },
+        "rate_drift_correction": {
+            "issues_found": rate_drift.issues_found,
+            "contract_discrepancies": rate_drift.contract_discrepancies,
+            "discrepancy_reports": rate_drift.discrepancy_reports,
+            "projected_future_leakage": rate_drift.projected_future_leakage,
+            "future_risk_anomaly_subtype": "RATE_DRIFT_FUTURE_RISK",
+        },
+        "foreign_society_crosswalk": {
+            "findings": foreign_crosswalk.findings,
+            "auto_registration_packets": foreign_crosswalk.registration_packets,
         },
     }
 

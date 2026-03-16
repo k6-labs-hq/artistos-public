@@ -30,13 +30,18 @@ class XR7State(TypedDict, total=False):
     expected_earnings: dict[str, Any]
     split_conflicts: Annotated[list[dict[str, Any]], add]
     split_suggestions: Annotated[list[dict[str, Any]], add]
+    split_registration_packets: Annotated[list[dict[str, Any]], add]
+    split_low_confidence_flags: Annotated[list[dict[str, Any]], add]
     comfort_messages: Annotated[list[str], add]
     fast_track_claim: dict[str, Any] | None
     public_profile: dict[str, Any]
     welcome_summary: str | None
     registration_actions: Annotated[list[dict[str, Any]], add]
+    foreign_crosswalk_findings: Annotated[list[dict[str, Any]], add]
+    foreign_registration_packets: Annotated[list[dict[str, Any]], add]
     rights_conflicts: Annotated[list[dict[str, Any]], add]
     ugc_opportunities: Annotated[list[dict[str, Any]], add]
+    ugc_auto_actions: Annotated[list[dict[str, Any]], add]
     contract_terms: dict[str, Any]
     release_timeline: Annotated[list[dict[str, Any]], add]
     readiness_score: float | None
@@ -135,13 +140,18 @@ def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
         "expected_earnings": {},
         "split_conflicts": [],
         "split_suggestions": [],
+        "split_registration_packets": [],
+        "split_low_confidence_flags": [],
         "comfort_messages": [],
         "fast_track_claim": None,
         "public_profile": {},
         "welcome_summary": None,
         "registration_actions": [],
+        "foreign_crosswalk_findings": [],
+        "foreign_registration_packets": [],
         "rights_conflicts": [],
         "ugc_opportunities": [],
+        "ugc_auto_actions": [],
         "contract_terms": {},
         "release_timeline": [],
         "readiness_score": None,

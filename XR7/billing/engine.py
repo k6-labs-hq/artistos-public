@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.celero_transaction import CeleroTransaction, CeleroTxnType, CeleroTxnStatus
+from XR7.models.metadata_issue import MetadataIssue
 
 
 class BillingEngine:
@@ -41,12 +42,30 @@ class BillingEngine:
         total_recovered = sum(c.recovered_amount or 0.0 for c in paid_claims)
         total_fees = sum(c.contingency_fee or 0.0 for c in paid_claims)
         net_to_artist = total_recovered - total_fees
+        leakage_prevented = (
+            self.db_session.query(MetadataIssue)
+            .filter(
+                MetadataIssue.artist_id == artist_id,
+                MetadataIssue.repair_status == "AUTO_REPAIRED",
+            )
+            .all()
+        )
+        xr7_future_leakage_prevented = round(
+            sum(float(i.projected_leakage_avoided or 0.0) for i in leakage_prevented),
+            2,
+        )
         return {
             "artist_id": artist_id,
             "total_recovered": total_recovered,
             "total_fees": total_fees,
             "net_to_artist": net_to_artist,
             "claim_count": len(paid_claims),
+            "xr7_future_leakage_prevented": xr7_future_leakage_prevented,
+            "xr7_future_leakage_prevented_billable": False,
+            "billing_policy": {
+                "repairs_are_free": True,
+                "charges_apply_only_to_recovered_money": True,
+            },
         }
 
     def process_payment(self, invoice_id: str) -> dict:

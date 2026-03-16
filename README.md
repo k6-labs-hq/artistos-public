@@ -409,6 +409,46 @@ Returns:
 - recommended fixes
 - projected leakage avoided through auto-repairs
 
+## XR7 Repair Engine — Fixing the Cracks in the System
+
+XR7 is not just a recovery engine. It is a repair engine that learns from historical leakage and fixes the underlying causes so the same losses do not recur.
+
+### Why repairs matter
+
+- Recovery alone is reactive: it finds what was already lost.
+- Repairs are preventive: they close the operational and metadata gaps that create recurring leakage.
+- Artists get cleaner systems, fewer disputes, and faster future payouts.
+
+### How XR7 learns from historical data
+
+- Historical statements, events, contracts, and claim outcomes are audited for recurring failure patterns.
+- Metadata Repair Ledger records before/after values, confidence, rationale, timestamps, and chain hashes.
+- Split and rights diagnostics identify contributor gaps, incorrect percentages, registration conflicts, and society mismatches.
+- Rate Drift Correction compares expected contract terms with observed rates to surface future risk.
+- Foreign Society Crosswalk produces auto-registration packets for PRS, GEMA, SACEM, SOCAN, APRA, and JASRAC.
+
+### How XR7 prevents future loss
+
+- Future Leakage Predictor scores probability of future leakage per work.
+- Dashboard sections expose:
+  - Future Leakage Prevention
+  - Repair Transparency Panel
+- High-confidence fixes are auto-applied; low-confidence fixes are escalated to review queues.
+- UGC repair workflows auto-file monetization claims, register missing fingerprints, and package dispute evidence.
+
+### Why repairs are free
+
+- XR7 does not charge artists for repairs.
+- XR7 only charges contingency on recovered money.
+- Future leakage prevention is tracked as `xr7_future_leakage_prevented` and is explicitly non-billable.
+
+### How this builds trust with artists
+
+- Artists can see what changed, why it changed, confidence levels, and linked evidence.
+- Repair decisions are transparent and auditable.
+- The platform explains repairs in plain language via ArtistComfortAgent messaging.
+- The mission is aligned with artist outcomes: less leakage, more certainty, more control.
+
 ## Pre-Populated Intake Form Integrations
 
 XR7 supports optional OAuth-assisted intake prefill. This speeds onboarding while keeping credential use scoped and transparent.
