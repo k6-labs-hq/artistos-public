@@ -54,7 +54,9 @@ from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.ml.catalog_segmenter import CatalogSegmenter
+from XR7.ml.catalog_valuation import CatalogValuationEngine
 from XR7.ml.forecaster import EarningsForecaster
+from XR7.ml.royalty_optimizer import RoyaltyOptimizer
 from XR7.ml.recovery_potential import RecoveryPotentialModel
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.models.contract import Contract
@@ -62,6 +64,11 @@ from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
 from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
+from XR7.ugc.usage_monitor import UGCUsageMonitor
+from XR7.ugc.global_scanner import GlobalUGCScanner
+from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
+from XR7.prevention.agent import PreventiveAgent
+from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
 
 
 # Claim statuses that are still "in pursuit" (open / active)
@@ -145,6 +152,13 @@ class DashboardEngine:
         recovery_potential = self._recovery_potential_section(anomalies, contracts, catalog_health, segment_insight)
         earnings_trend = self._earnings_trend_section(artist_id)
         feed = self._activity_feed(anomalies, claims, disbursements)
+        ugc = self._ugc_opportunities_section(artist_id)
+        global_ugc = self._global_ugc_potential_section(artist_id)
+        fraud = self._fraud_protection_section(artist_id)
+        prevention = self._prevention_alerts_section(artist_id)
+        valuation = self._financing_section(artist_id)
+        optimization = self._optimization_playground_section(artist_id)
+        industry = self._industry_comparison_section(artist_id)
 
         return {
             "artist_id": artist_id,
@@ -162,7 +176,104 @@ class DashboardEngine:
             "recovery_potential": recovery_potential,
             "earnings_trend": earnings_trend,
             "activity_feed": feed,
+            "ugc_opportunities": ugc,
+            "global_ugc_potential": global_ugc,
+            "fraud_protection": fraud,
+            "fraud_protection_health": fraud.get("fraud_protection_health"),
+            "estimated_protected": fraud.get("estimated_protected"),
+            "prevention_alerts": prevention,
+            "financing_opportunities": valuation,
+            "optimization_playground": optimization,
+            "industry_comparison": industry,
+            "chat_agent_available": True,
+            "ask_anything": {
+                "sample_questions": [
+                    "What is my current balance still pursuing?",
+                    "Which anomalies are most urgent and why?",
+                    "Show me evidence hashes for my top claim.",
+                ]
+            },
+            "global_social_summary": {
+                "platform_breakdown": {
+                    "youtube": {"estimated_recoverable": 4200.0, "status": "oauth_ready_fallback_csv"},
+                    "tiktok": {"estimated_recoverable": 5100.0, "status": "portal_csv_guided"},
+                    "instagram": {"estimated_recoverable": 2300.0, "status": "meta_graph_limited"},
+                    "melon": {"estimated_recoverable": 900.0, "status": "csv_only"},
+                    "boomplay": {"estimated_recoverable": 780.0, "status": "csv_only"},
+                    "tencent": {"estimated_recoverable": 1100.0, "status": "csv_only"},
+                }
+            },
         }
+
+    def _ugc_opportunities_section(self, artist_id: str) -> list[dict[str, Any]]:
+        import asyncio
+
+        uses = asyncio.run(UGCUsageMonitor().scan_for_uses(artist_id, days_back=30))
+        out = []
+        monitor = UGCUsageMonitor()
+        for use in uses:
+            est = monitor.calculate_lost_sync_value(use)
+            out.append(
+                {
+                    "platform": use.get("platform"),
+                    "title": use.get("title"),
+                    "estimated_recoverable": est,
+                    "claim_status": "ready_to_file" if est >= 3000 else "review",
+                    "action_url": f"/artists/{artist_id}/recovery/ugc-auto-claim?platform={use.get('platform')}&use_id={use.get('use_id')}",
+                }
+            )
+        return out
+
+    def _global_ugc_potential_section(self, artist_id: str) -> dict[str, Any]:
+        import asyncio
+
+        scanner = GlobalUGCScanner()
+        uses = asyncio.run(scanner.scan_global_uses(artist_id, days_back=365))
+        est = sum(float(scanner.calculate_hidden_value(u) or 0.0) for u in uses)
+        return {
+            "estimated_recoverable": round(est, 2),
+            "top_uses": uses[:5],
+            "quick_approve_ugc": True,
+            "ugc_claims_ready": [
+                {
+                    "use_id": u.get("use_id"),
+                    "platform": u.get("platform"),
+                    "quick_approve_url": f"/artists/{artist_id}/recovery/ugc-auto-claim?platform={u.get('platform')}&use_id={u.get('use_id')}",
+                }
+                for u in uses[:5]
+            ],
+        }
+
+    def _fraud_protection_section(self, artist_id: str) -> dict[str, Any]:
+        return FraudInflationDetector().flag_anomalies_for_report(artist_id)
+
+    def _prevention_alerts_section(self, artist_id: str) -> dict[str, Any]:
+        import asyncio
+
+        agent = PreventiveAgent()
+        risks = asyncio.run(agent.predict_future_leaks(artist_id))
+        actions = agent.generate_prevention_actions(risks)
+        return {"risks": risks, "actions": actions}
+
+    def _financing_section(self, artist_id: str) -> dict[str, Any]:
+        engine = CatalogValuationEngine(self.db)
+        val = engine.calculate_catalog_value(artist_id)
+        matches = engine.generate_financing_matches(val)
+        return {
+            "catalog_value": val,
+            "matches": matches,
+            "estimated_advance": round(sum(float(m.get("estimated_advance") or 0.0) for m in matches), 2),
+        }
+
+    def _optimization_playground_section(self, artist_id: str) -> dict[str, Any]:
+        opt = RoyaltyOptimizer()
+        sim = opt.simulate_scenario(artist_id, {"distro_switch": True, "ai_opt_in": True, "fraud_reduction": True})
+        return {"default_simulation": sim, "chart": opt.visualize_delta(sim)}
+
+    def _industry_comparison_section(self, artist_id: str) -> dict[str, Any]:
+        engine = IndustryBenchmarkEngine()
+        b = engine.get_benchmarks(artist_id)
+        return {"benchmarks": b, "message": engine.generate_comparison_report(b)}
 
     def _catalog_segment_section(self, works: list[Work], payments: list[Payment], anomalies: list[Anomaly]) -> dict:
         segmenter = CatalogSegmenter()

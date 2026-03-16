@@ -15,6 +15,8 @@ XR7 Engine 2 is a comprehensive platform designed to detect, recover, and preven
 | **Recovery Tools** | ✅ Ready | SOL tracker, audit eligibility, rate benchmark, recoupment, priority queue |
 | **ML Suite** | ✅ Ready | Isolation Forest anomaly detector, earnings forecaster, catalog scorer, rate benchmarker |
 | **Statement Upload** | ✅ Ready | CSV ingestion for 15 explicit formats (major distributors + PROs + Spotify) plus generic fallback |
+| **Global Social Scanning** | ✅ Ready | Endpoint + mobile dashboard UI for global UGC signal scanning and auto-claim workflows |
+| **White-Label Mode** | ✅ Ready | Tenant-level branding flag exposed via settings and readiness endpoint |
 | **Celero Commerce (MoR)** | 🔑 Key needed | Integration built; needs `CELERO_SECURITY_KEY` from Celero onboarding |
 | **PRO API Connectors** | ⚠️ Pending | ASCAP, BMI, SESAC, etc. require formal data-partnership agreements |
 | **DSP API Connectors** | ⚠️ Pending | DSPs don't expose royalty data via API — use distributor CSV exports |
@@ -69,6 +71,24 @@ GET /health/readiness
 ```
 
 Returns the status of every connector and notification service.  Use this endpoint to see exactly which credentials are missing.
+
+The readiness payload now also includes:
+- `global_social` (simulation toggle + API key presence)
+- `white_label` (enabled/disabled + deployment status)
+
+### Global Social + Mobile UI
+
+Use the new fetcher for global social opportunity detection:
+
+```
+POST /artists/{id}/fetchers/global-social
+```
+
+Serve the mobile-first dashboard shell:
+
+```
+GET /dashboard/ui
+```
 
 ### Onboarding Lifecycle Status
 

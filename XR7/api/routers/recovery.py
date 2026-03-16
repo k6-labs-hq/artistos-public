@@ -24,6 +24,14 @@ from XR7.models.event import Event
 from XR7.models.payment import Payment
 from XR7.models.statement import Statement
 from XR7.models.work import Work
+from XR7.network.coop_recovery import CoopRecoveryNetwork
+from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
+from XR7.recovery.edm_festival_auditor import EDMFestivalAuditor
+from XR7.recovery.touring_auditor import TouringRecoupmentAuditor
+from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
+from XR7.ugc.global_scanner import GlobalUGCScanner
+from XR7.ugc.hiphop_brand_auditor import HipHopBrandAuditor
+from XR7.ugc.usage_monitor import UGCUsageMonitor
 from XR7.recovery.audit_tracker import analyze_audit_eligibility, audit_summary
 from XR7.recovery.benchmarking import cross_artist_benchmarks
 from XR7.recovery.cash_recovery_forecast import build_claim_forecast
@@ -778,3 +786,101 @@ def recovery_playbook(artist_id: str, db: Session = Depends(get_db)):
             negotiation_strategy="anchor_high_then_settle_midpoint_with_deadline_pressure",
         ),
     }
+
+
+@router.get("/{artist_id}/ugc/monitor")
+async def ugc_monitor(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    monitor = UGCUsageMonitor()
+    uses = await monitor.scan_for_uses(artist_id, days_back=30)
+    return {
+        "artist_id": artist_id,
+        "viral_usage": uses,
+        "ugc_opportunities": [
+            {**u, "estimated_recoverable": monitor.calculate_lost_sync_value(u)}
+            for u in uses
+        ],
+    }
+
+
+@router.post("/{artist_id}/ugc/claim")
+async def ugc_claim(artist_id: str, use_data: dict, platform: str = "tiktok", db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    generator = UGCClaimGenerator(db)
+    claim_id = await generator.create_claim(artist_id, platform, use_data)
+    return {"artist_id": artist_id, "claim_id": claim_id, "evidence_export": f"/claims/{claim_id}/evidence/export?format=zip"}
+
+
+@router.post("/{artist_id}/ugc/global-scan")
+async def ugc_global_scan(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    scanner = GlobalUGCScanner()
+    uses = await scanner.scan_global_uses(artist_id)
+    packets = [scanner.auto_generate_evidence_packet(u) for u in uses]
+    return {
+        "artist_id": artist_id,
+        "detected_uses": uses,
+        "global_ugc_potential": round(sum(float(p.get("estimated_recoverable") or 0.0) for p in packets), 2),
+        "evidence_packets": packets,
+    }
+
+
+@router.post("/{artist_id}/recovery/ugc-auto-claim")
+async def ugc_auto_claim(artist_id: str, platform: str, use_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    use_data = {"use_id": use_id, "platform": platform, "views": 1000000, "url": f"https://example.com/{platform}/{use_id}"}
+    claim_id = await UGCClaimGenerator(db).create_claim(artist_id, platform, use_data)
+    return {"artist_id": artist_id, "claim_id": claim_id, "quick_approve_url": f"/claims/{claim_id}/advance"}
+
+
+@router.post("/{artist_id}/recovery/touring-audit")
+async def touring_audit(artist_id: str, settlement_csv: str = "", merch_csv: str = "", db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    auditor = TouringRecoupmentAuditor(db)
+    discrepancies = auditor.detect_settlement_discrepancies(settlement_csv, merch_csv)
+    overages = auditor.analyze_recoupment_overages(artist_id)
+    letter = await auditor.generate_audit_demand_letter(artist_id, {"discrepancies": discrepancies, "overages": overages})
+    return {"artist_id": artist_id, "discrepancies": discrepancies, "recoupment": overages, "audit_letter": letter}
+
+
+@router.get("/{artist_id}/recovery/recoupment-deep-audit")
+def recoupment_deep_audit(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    return TouringRecoupmentAuditor(db).analyze_recoupment_overages(artist_id)
+
+
+@router.post("/{artist_id}/recovery/hiphop-brand-audit")
+async def hiphop_brand_audit(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    auditor = HipHopBrandAuditor(db)
+    rows = await auditor.scan_brand_deals_and_ugc(artist_id)
+    claim_ids = [await auditor.auto_create_claim(artist_id, item) for item in rows]
+    return {"artist_id": artist_id, "anomalies": rows, "claim_ids": claim_ids, "brand_ugc_potential": sum(float(r.get("estimated_value") or 0.0) for r in rows)}
+
+
+@router.post("/{artist_id}/recovery/edm-festival-audit")
+async def edm_festival_audit(artist_id: str, settlements: list[dict] | None = None, merch: list[dict] | None = None, packages: list[dict] | None = None):
+    auditor = EDMFestivalAuditor()
+    discrepancies = auditor.detect_settlement_and_merch_discrepancies(settlements or [], merch or [])
+    recoup = auditor.analyze_recoupment_for_tour_packages(packages or [])
+    letter = await auditor.generate_audit_letter(artist_id, {"discrepancies": discrepancies, "recoupment": recoup})
+    return {"artist_id": artist_id, "discrepancies": discrepancies, "recoupment": recoup, "audit_letter": letter}
+
+
+@router.post("/{artist_id}/network/pooled-claim")
+def pooled_claim(artist_id: str, anomaly_ids: list[str]):
+    return CoopRecoveryNetwork().pooled_claim_submission(artist_id, anomaly_ids)

@@ -14,6 +14,7 @@ from XR7.models.catalog_graph import CatalogGraphSnapshot
 from XR7.models.claim import Claim
 from XR7.models.payment import Payment
 from XR7.models.work import Work
+from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
 
 try:
@@ -229,4 +230,65 @@ class CatalogAuditor:
             "issues": issues,
             "fixes": fixes,
             "generated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+
+class AutomatedRegistrationFixer:
+    """Detect and apply metadata/registration fixes with downloadable package outputs."""
+
+    def __init__(self, db_session):
+        self.db = db_session
+
+    def detect_missing_metadata(self, artist_id: str) -> list[dict[str, Any]]:
+        works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
+        issues: list[dict[str, Any]] = []
+        for w in works:
+            if not w.isrc:
+                issues.append({"type": "missing_isrc", "work_id": w.id, "title": w.title, "suggested_source": "MusicBrainz"})
+            if not w.iswc:
+                issues.append({"type": "missing_iswc", "work_id": w.id, "title": w.title, "suggested_source": "PRO portal"})
+        if not works:
+            issues.append({"type": "catalog_empty", "detail": "No works registered for artist"})
+        return issues
+
+    def auto_suggest_and_apply_fixes(self, artist_id: str, issues: list[dict[str, Any]]) -> dict[str, Any]:
+        rows = []
+        instructions = []
+        for issue in issues:
+            issue_type = str(issue.get("type") or "unknown")
+            if issue_type == "missing_isrc":
+                rows.append({"work_id": issue.get("work_id"), "action": "populate_isrc", "source": "musicbrainz_lookup"})
+                instructions.append("Upload generated ISRC CSV to DistroKid/label portal and re-sync catalog.")
+            elif issue_type == "missing_iswc":
+                rows.append({"work_id": issue.get("work_id"), "action": "submit_pro_registration", "source": "pro_simulation"})
+                instructions.append("Submit generated PRO registration payload in your PRO dashboard.")
+            else:
+                rows.append({"work_id": issue.get("work_id"), "action": "manual_review", "source": "system"})
+
+        package = {
+            "artist_instructions": list(dict.fromkeys(instructions)) or ["No fixes required."],
+            "fix_csv_rows": rows,
+            "downloadable_fix_package": {
+                "filename": f"registration_fixes_{artist_id}.csv",
+                "row_count": len(rows),
+            },
+            "pro_submission_simulation": {
+                "submitted": sum(1 for r in rows if r.get("action") == "submit_pro_registration"),
+                "status": "simulated",
+            },
+        }
+        ImmutableLedgerService(self.db).append(artist_id, "catalog_registration_fixes", package)
+        return package
+
+    def run_preventive_audit(self, artist_id: str) -> dict[str, Any]:
+        issues = self.detect_missing_metadata(artist_id)
+        fixes = self.auto_suggest_and_apply_fixes(artist_id, issues)
+        audit = CatalogAuditor(self.db)
+        report = __import__("asyncio").run(audit.run(artist_id))
+        return {
+            "artist_id": artist_id,
+            "issues": issues,
+            "fixes": fixes,
+            "updated_catalog_health_score": (report.get("catalog_health") or {}).get("health_score"),
+            "catalog_health": report.get("catalog_health"),
         }

@@ -339,3 +339,89 @@ class ClaimDrafter:
 
 
 claim_drafter = ClaimDrafter()
+
+
+class AILicensingAdvisor:
+    """Advises on AI licensing strategy and agreement drafting."""
+
+    def __init__(self):
+        self.drafter = claim_drafter
+
+    async def analyze_opt_in_value(self, artist_catalog: dict) -> dict[str, Any]:
+        baseline = float((artist_catalog.get("earnings") or {}).get("trailing_12m") or 0.0)
+        projected = round(baseline * 0.12, 2)
+        prompt_context = {
+            "trend_year": 2026,
+            "models": ["influence-based licensing", "tiered royalty floors", "synthetic voice safeguards"],
+            "catalog": artist_catalog,
+        }
+        guidance = await self.drafter.async_generate_personalized_advice(prompt_context)
+        return {
+            "recommendation": "OPT_IN_GUARDED" if projected > 0 else "HOLD",
+            "estimated_new_revenue": projected,
+            "pros": ["New AI training/licensing revenue stream", "Negotiated usage controls"],
+            "cons": ["Model leakage risk", "Potential brand dilution without strict controls"],
+            "advisor_note": guidance,
+        }
+
+    async def draft_ai_license_agreement(self, artist_id: str, terms: dict) -> str:
+        context = {
+            "artist_id": artist_id,
+            "terms": terms,
+            "trends_2026": ["influence-based", "tiered royalties", "right-to-audit model outputs"],
+            "include_blockchain_anchor_option": True,
+        }
+        base = await self.drafter.async_generate_personalized_advice(context)
+        return (
+            "# AI License Agreement Draft\n\n"
+            f"Artist: {artist_id}\n"
+            "## Core Terms\n"
+            "- Usage-based royalties with tiered rates by model usage volume\n"
+            "- Influence attribution and audit rights\n"
+            "- Optional blockchain anchor for settlement records\n\n"
+            "## Counsel Summary\n"
+            f"{base}\n"
+        )
+
+    async def track_ai_royalty_payments(self, artist_id: str) -> dict[str, Any]:
+        return {
+            "artist_id": artist_id,
+            "period": "monthly",
+            "partner_rows": [
+                {"partner": "ModelHub-A", "gross": 1200.0, "net": 980.0},
+                {"partner": "ModelHub-B", "gross": 860.0, "net": 710.0},
+            ],
+            "status": "reconciled_simulated",
+        }
+
+
+class RoyaltyChatAgent:
+    """Artist-facing chat agent for royalty Q&A with evidence-citation style responses."""
+
+    def __init__(self):
+        self.drafter = claim_drafter
+        self._history: dict[str, list[dict[str, str]]] = {}
+
+    async def handle_query(self, artist_id: str, question: str, context: dict | None = None) -> dict[str, Any]:
+        history = self._history.setdefault(artist_id, [])
+        history.append({"role": "user", "content": question})
+        response = await self.drafter.async_generate_personalized_advice(
+            {
+                "artist_id": artist_id,
+                "question": question,
+                "context": context or {},
+                "instruction": "Always cite source fields and evidence hashes when available.",
+            }
+        )
+        history.append({"role": "assistant", "content": response})
+        self._history[artist_id] = history[-20:]
+        return {
+            "artist_id": artist_id,
+            "response": response,
+            "conversation_history": self._history[artist_id],
+            "citations": [{"source": "dashboard", "evidence_hash": (context or {}).get("evidence_hash")}],
+        }
+
+
+ai_licensing_advisor = AILicensingAdvisor()
+royalty_chat_agent = RoyaltyChatAgent()

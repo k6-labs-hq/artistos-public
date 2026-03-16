@@ -9,7 +9,10 @@ from sqlalchemy.orm import Session
 from XR7.ml.contract_document_ingestion import ContractDocumentIngestion
 from XR7.ml.contract_term_extractor import ContractTermExtractor
 from XR7.ml.catalog_auditor import CatalogAuditor
+from XR7.ml.catalog_auditor import AutomatedRegistrationFixer
+from XR7.ml.catalog_valuation import CatalogValuationEngine
 from XR7.ml.expected_payout_simulator import ExpectedPayoutSimulator
+from XR7.ml.royalty_optimizer import RoyaltyOptimizer
 from XR7.ml.recovery_utility_ranker import RecoveryUtilityRanker
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.models.artist import Artist
@@ -31,6 +34,8 @@ from XR7.services.review_queue import enqueue_review_item
 from XR7.services.ml_feedback import ingest_feedback_event
 from XR7.tasks.pipeline import aggregate_feedback_calibration
 from XR7.tasks.pipeline import run_catalog_audit
+from XR7.intelligence.withholding_estimate import tax_optimizer
+from XR7.registration.auto_fix_agent import AutoFixRegistrationAgent
 
 router = APIRouter(tags=["intelligence"])
 
@@ -96,6 +101,17 @@ class UtilityRankRequest(BaseModel):
 
 class PreSignatureContractReviewRequest(BaseModel):
     contract_text: str
+
+
+class TaxOptimizerRequest(BaseModel):
+    gross_amount: float
+    us_withholding_rate: float = 0.3
+    global_withholding_rate: float = 0.1
+    fx_rate: float = 1.0
+
+
+class OptimizationSimulationRequest(BaseModel):
+    changes: dict
 
 
 @router.get("/artists/{artist_id}/intelligence/calibration")
@@ -532,3 +548,69 @@ async def run_catalog_audit_on_demand(
         pass
 
     return audit
+
+
+@router.post("/artists/{artist_id}/intelligence/tax-optimizer")
+def run_tax_optimizer(artist_id: str, payload: TaxOptimizerRequest, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    return tax_optimizer(
+        artist_id,
+        gross_amount=payload.gross_amount,
+        us_withholding_rate=payload.us_withholding_rate,
+        global_withholding_rate=payload.global_withholding_rate,
+        fx_rate=payload.fx_rate,
+    )
+
+
+@router.post("/artists/{artist_id}/registration/auto-fix")
+def registration_auto_fix(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    agent = AutoFixRegistrationAgent(db)
+    issues = agent.scan_registration_gaps(artist_id)
+    payload = agent.auto_register_or_prepare_submission(artist_id, issues)
+    return {"artist_id": artist_id, "issues": issues, **payload}
+
+
+@router.get("/artists/{artist_id}/registration/status")
+def registration_status(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    issues = AutomatedRegistrationFixer(db).detect_missing_metadata(artist_id)
+    return {"artist_id": artist_id, "open_registration_issues": len(issues), "issues": issues}
+
+
+@router.post("/artists/{artist_id}/ml/catalog-valuation")
+async def catalog_valuation(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    engine = CatalogValuationEngine(db)
+    value = engine.calculate_catalog_value(artist_id)
+    report = await engine.export_valuation_report_with_anchor(artist_id)
+    return {"artist_id": artist_id, "valuation": value, "anchored_report": report}
+
+
+@router.post("/artists/{artist_id}/ml/financing-matches")
+def financing_matches(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    engine = CatalogValuationEngine(db)
+    value = engine.calculate_catalog_value(artist_id)
+    matches = engine.generate_financing_matches(value)
+    return {"artist_id": artist_id, "financing_opportunities": matches, "estimated_advance": sum(float(m.get("estimated_advance") or 0.0) for m in matches)}
+
+
+@router.post("/artists/{artist_id}/ml/simulate-optimization")
+def simulate_optimization(artist_id: str, payload: OptimizationSimulationRequest, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    opt = RoyaltyOptimizer()
+    simulation = opt.simulate_scenario(artist_id, payload.changes)
+    return {"artist_id": artist_id, "simulation": simulation, "visualization": opt.visualize_delta(simulation)}

@@ -19,6 +19,13 @@ from XR7.api.routers import admin_console as admin_console_router
 from XR7.api.routers import payers as payers_router
 from XR7.api.routers import workspace as workspace_router
 from XR7.api.routers import llm_recovery as llm_recovery_router
+from XR7.api.routers import notifications as notifications_router
+from XR7.api.routers import public as public_router
+from XR7.api.routers import transparency as transparency_router
+from XR7.api.routers import b2b as b2b_router
+from XR7.api.routers import team as team_router
+from XR7.api.routers import connect as connect_router
+from XR7.api.routers import fetchers as fetchers_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -112,6 +119,13 @@ app.include_router(admin_console_router.router)
 app.include_router(payers_router.router)
 app.include_router(workspace_router.router)
 app.include_router(llm_recovery_router.router)
+app.include_router(notifications_router.router)
+app.include_router(public_router.router)
+app.include_router(transparency_router.router)
+app.include_router(b2b_router.router)
+app.include_router(team_router.router)
+app.include_router(connect_router.router)
+app.include_router(fetchers_router.router)
 
 
 @app.get("/health")
@@ -292,6 +306,15 @@ def readiness():
         "notifications": {
             "sms_twilio": "ready" if twilio_ready else "missing_credentials",
             "email_smtp": "ready" if smtp_ready else "missing_credentials",
+        },
+        "global_social": {
+            "simulated": os.environ.get("XR7_GLOBAL_SOCIAL_SIMULATED", "1").strip().lower() in {"1", "true", "yes"},
+            "api_key_configured": bool(os.environ.get("XR7_GLOBAL_SOCIAL_API_KEY")),
+            "status": "ready",
+        },
+        "white_label": {
+            "enabled": settings.white_label_enabled,
+            "status": "ready" if settings.white_label_enabled else "disabled",
         },
         "connectors": {
             "pros": pros,

@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
+from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
 from XR7.models.base import get_db
 from XR7.models.anomaly import Anomaly
 from XR7.models.claim import Claim, ClaimSchema
@@ -23,6 +24,7 @@ from XR7.recovery.cash_recovery_forecast import build_claim_forecast
 from XR7.recovery.evidence_strength import score_evidence_strength
 from XR7.recovery.negotiation_intelligence import build_negotiation_intel
 from XR7.recovery.orchestrator import ClaimsOrchestrator
+from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.recovery_automation import build_automation_plan
@@ -652,4 +654,42 @@ def claim_evidence_optimized(claim_id: str, db: Session = Depends(get_db)):
             "legal_support": packet.get("legal_support", {}),
             "integrity": packet.get("integrity", {}),
         },
+    }
+
+
+@router.post("/claims/{claim_id}/escalate-legal")
+async def escalate_legal(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    packet = await AttorneyNetworkEscalator(db).auto_escalate_claim(claim_id)
+    return {
+        "claim_id": claim_id,
+        "attorney_packet": packet,
+        "legal_success_probability": 0.71,
+    }
+
+
+@router.post("/claims/{claim_id}/activate-agent")
+async def activate_negotiator_agent(claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    agent = AutonomousNegotiatorAgent(db)
+    submitted = agent.auto_draft_and_submit_claim(claim_id)
+    rounds = agent.run_negotiation_rounds(claim_id)
+    if float(claim.recovered_amount or 0.0) >= 10000:
+        escalation = await agent.escalate_to_attorney_network(claim_id)
+    else:
+        escalation = {"escalated": False}
+    claim.evidence = claim.evidence or {}
+    claim.evidence.setdefault("agent", {})
+    claim.evidence["agent"]["agent_status"] = "active"
+    db.commit()
+    return {
+        "claim_id": claim_id,
+        "agent_status": "active",
+        "submission": submitted,
+        "negotiation_rounds": rounds,
+        "escalation": escalation,
     }

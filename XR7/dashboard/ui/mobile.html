@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>XR7 Mobile Recovery Console</title>
+  <style>
+    :root {
+      --ink: #111827;
+      --paper: #f8fafc;
+      --teal: #0f766e;
+      --coral: #ea580c;
+      --sky: #0ea5e9;
+      --card: rgba(255, 255, 255, 0.82);
+      --line: rgba(17, 24, 39, 0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 450px at 0% 0%, rgba(14, 165, 233, 0.2), transparent 60%),
+        radial-gradient(900px 380px at 100% 100%, rgba(234, 88, 12, 0.16), transparent 62%),
+        linear-gradient(160deg, #f1f5f9, #fff7ed 55%, #f0fdfa);
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .shell {
+      max-width: 760px;
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .headline {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: var(--card);
+      backdrop-filter: blur(6px);
+      animation: rise 420ms ease-out;
+    }
+
+    .headline h1 {
+      margin: 0;
+      letter-spacing: 0.2px;
+      font-size: 1.15rem;
+    }
+
+    .headline p {
+      margin: 10px 0 0;
+      opacity: 0.85;
+      line-height: 1.4;
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      animation: rise 520ms ease-out;
+    }
+
+    .controls label {
+      font-size: 0.82rem;
+      opacity: 0.8;
+      font-weight: 700;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .controls input {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 10px;
+      font-size: 0.95rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .buttons {
+      display: grid;
+      gap: 8px;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      color: #fff;
+      transition: transform 120ms ease, filter 120ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: saturate(1.1);
+    }
+
+    .btn-dashboard { background: linear-gradient(120deg, var(--teal), #14b8a6); }
+    .btn-global { background: linear-gradient(120deg, var(--coral), #f97316); }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: var(--card);
+      backdrop-filter: blur(6px);
+      padding: 14px;
+      animation: rise 620ms ease-out;
+    }
+
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .metric {
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 8px;
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .metric .k {
+      display: block;
+      opacity: 0.65;
+      font-size: 0.78rem;
+    }
+
+    .metric .v {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .list {
+      margin: 8px 0 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 6px;
+    }
+
+    .list li {
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.55);
+      padding: 8px;
+      font-size: 0.88rem;
+      line-height: 1.35;
+    }
+
+    .status {
+      font-size: 0.86rem;
+      margin-top: 3px;
+      min-height: 1.1rem;
+      color: #0f172a;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 560px) {
+      .buttons { grid-template-columns: 1fr; }
+      .metric-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="headline">
+      <h1>XR7 Mobile Recovery Console</h1>
+      <p>Fast access to dashboard totals and global-social monetization opportunities from one mobile-first view.</p>
+    </section>
+
+    <section class="controls">
+      <label for="artistId">Artist ID</label>
+      <input id="artistId" placeholder="artist_123" />
+      <div class="buttons">
+        <button class="btn-dashboard" id="loadDashboard">Load Dashboard</button>
+        <button class="btn-global" id="scanGlobal">Scan Global Social</button>
+      </div>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="card">
+      <h2>Dashboard Snapshot</h2>
+      <div class="metric-grid" id="dashboardMetrics"></div>
+    </section>
+
+    <section class="card">
+      <h2>Global Social Opportunities</h2>
+      <ul class="list" id="globalList"></ul>
+    </section>
+  </main>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const dashboardMetrics = document.getElementById("dashboardMetrics");
+    const globalList = document.getElementById("globalList");
+
+    function artistId() {
+      return (document.getElementById("artistId").value || "").trim();
+    }
+
+    function setStatus(text) {
+      statusEl.textContent = text;
+    }
+
+    function metricNode(label, value) {
+      const root = document.createElement("div");
+      root.className = "metric";
+      const k = document.createElement("span");
+      k.className = "k";
+      k.textContent = label;
+      const v = document.createElement("span");
+      v.className = "v";
+      v.textContent = value;
+      root.appendChild(k);
+      root.appendChild(v);
+      return root;
+    }
+
+    async function loadDashboard() {
+      const id = artistId();
+      if (!id) {
+        setStatus("Enter an artist ID first.");
+        return;
+      }
+      setStatus("Loading dashboard...");
+      const res = await fetch(`/artists/${encodeURIComponent(id)}/dashboard`);
+      if (!res.ok) {
+        setStatus(`Dashboard load failed (${res.status}).`);
+        return;
+      }
+      const data = await res.json();
+      dashboardMetrics.innerHTML = "";
+
+      const leakage = data?.leakage_discovered?.total_estimated_recoverable ?? 0;
+      const inPursuit = data?.in_pursuit?.total_amount_in_pursuit ?? 0;
+      const deposited = data?.recovered_and_deposited?.total_deposited ?? 0;
+      const balance = data?.balance_still_pursuing?.balance_still_pursuing ?? 0;
+
+      dashboardMetrics.appendChild(metricNode("Leakage Discovered", `$${Number(leakage).toFixed(2)}`));
+      dashboardMetrics.appendChild(metricNode("In Pursuit", `$${Number(inPursuit).toFixed(2)}`));
+      dashboardMetrics.appendChild(metricNode("Deposited", `$${Number(deposited).toFixed(2)}`));
+      dashboardMetrics.appendChild(metricNode("Still Pursuing", `$${Number(balance).toFixed(2)}`));
+      setStatus("Dashboard loaded.");
+    }
+
+    async function scanGlobalSocial() {
+      const id = artistId();
+      if (!id) {
+        setStatus("Enter an artist ID first.");
+        return;
+      }
+      setStatus("Scanning global social opportunities...");
+      const res = await fetch(`/artists/${encodeURIComponent(id)}/fetchers/global-social`, { method: "POST" });
+      if (!res.ok) {
+        setStatus(`Global scan failed (${res.status}).`);
+        return;
+      }
+      const data = await res.json();
+      const rows = Array.isArray(data.detected) ? data.detected : [];
+      globalList.innerHTML = "";
+      if (!rows.length) {
+        const li = document.createElement("li");
+        li.textContent = "No global social opportunities detected.";
+        globalList.appendChild(li);
+      } else {
+        for (const row of rows) {
+          const li = document.createElement("li");
+          const platform = row.platform || "Unknown";
+          const territory = row.territory || "Global";
+          const amount = Number(row.estimated_recoverable || 0).toFixed(2);
+          const confidence = Number(row.confidence || 0).toFixed(2);
+          li.textContent = `${platform} in ${territory}: est $${amount} (confidence ${confidence})`;
+          globalList.appendChild(li);
+        }
+      }
+      setStatus(`Scan complete: ${rows.length} opportunities.`);
+    }
+
+    document.getElementById("loadDashboard").addEventListener("click", loadDashboard);
+    document.getElementById("scanGlobal").addEventListener("click", scanGlobalSocial);
+  </script>
+</body>
+</html>

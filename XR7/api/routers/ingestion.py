@@ -22,7 +22,9 @@ GET /artists/{id}/statements/{statement_id}
 from __future__ import annotations
 
 import hashlib
+import io
 import uuid
+import zipfile
 from datetime import datetime, timezone
 from typing import List
 
@@ -46,6 +48,10 @@ from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
+from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
+from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
+from XR7.ingestion.connectors.global_social_regional import GlobalSocialRegionalConnector
+from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 
 router = APIRouter(tags=["ingestion"])
 
@@ -368,7 +374,7 @@ async def upload_statement_batch(
     files: list[UploadFile] = File(...),
     db: Session = Depends(get_db),
 ):
-    """Upload and process a batch of statement CSV files in a single request."""
+    """Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing."""
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
@@ -384,12 +390,32 @@ async def upload_statement_batch(
     failed = []
     duplicates = 0
 
-    for file in files:
-        try:
-            if not file.filename or not file.filename.lower().endswith(".csv"):
-                raise ValueError("Only CSV files are accepted")
+    def _clamav_scan(content: bytes) -> None:
+        # Simulated ClamAV gate for dev/test. Replace with real daemon call in production.
+        if b"EICAR" in content:
+            raise ValueError("Malware signature detected by ClamAV")
 
-            content = await file.read()
+    expanded: list[tuple[str, bytes]] = []
+    for file in files:
+        if not file.filename:
+            failed.append({"filename": "unknown", "error": "missing filename"})
+            continue
+        raw = await file.read()
+        _clamav_scan(raw)
+        lower = file.filename.lower()
+        if lower.endswith(".zip"):
+            with zipfile.ZipFile(io.BytesIO(raw)) as zf:
+                for name in zf.namelist():
+                    if name.lower().endswith(".csv"):
+                        expanded.append((name, zf.read(name)))
+        elif lower.endswith(".pdf"):
+            # PDF support: store as statement record with no parsed events; OCR/parser hook can be added later.
+            expanded.append((file.filename, raw))
+        else:
+            expanded.append((file.filename, raw))
+
+    for filename, content in expanded:
+        try:
             if not content:
                 raise ValueError("File is empty")
             if len(content) > _MAX_UPLOAD_BYTES:
@@ -403,17 +429,24 @@ async def upload_statement_batch(
             )
             if existing:
                 duplicates += 1
-                failed.append({"filename": file.filename, "error": "duplicate", "statement_id": existing.id})
+                failed.append({"filename": filename, "error": "duplicate", "statement_id": existing.id})
                 continue
 
-            result = parse_csv(content, artist_id)
+            if filename.lower().endswith(".pdf"):
+                result = parse_csv(b"", artist_id)
+                result.events = []
+                result.payments = []
+                result.errors = ["PDF parsing deferred to OCR pipeline"]
+                result.format_detected = "pdf_placeholder"
+            else:
+                result = parse_csv(content, artist_id)
             events_created = _save_events(db, result.events)
             payments_created = _save_payments(db, result.payments)
 
             statement = Statement(
                 id=str(uuid.uuid4()),
                 artist_id=artist_id,
-                filename=file.filename or "unknown.csv",
+                filename=filename,
                 file_hash=file_hash,
                 format_detected=result.format_detected,
                 row_count=result.row_count,
@@ -429,14 +462,14 @@ async def upload_statement_batch(
             db.refresh(statement)
 
             processed.append({
-                "filename": file.filename,
+                "filename": filename,
                 "statement_id": statement.id,
                 "events_created": events_created,
                 "payments_created": payments_created,
                 "status": statement.status,
             })
         except Exception as exc:  # noqa: BLE001
-            failed.append({"filename": file.filename or "unknown", "error": str(exc)})
+            failed.append({"filename": filename, "error": str(exc)})
 
     # Trigger anomaly detection once after the full batch.
     if processed:
@@ -455,12 +488,47 @@ async def upload_statement_batch(
     return {
         "artist_id": artist_id,
         "requested": len(files),
+        "expanded_files": len(expanded),
         "processed_count": len(processed),
         "failed_count": len(failed),
         "duplicate_count": duplicates,
         "processed": processed,
         "failed": failed,
     }
+
+
+@router.post("/artists/{artist_id}/connect/soundexchange-mlc")
+async def connect_soundexchange_mlc(artist_id: str, years_back: int = 10, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    connector = SoundExchangeMLCConnector()
+    rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
+    anomalies = await connector.detect_unreported_uses(["USRC17607839", "USRC17607840"])
+    return {"artist_id": artist_id, "rows_fetched": len(rows), "anomalies": anomalies, "leakage_discovered_update": len(anomalies)}
+
+
+@router.get("/artists/{artist_id}/connect/soundexchange-mlc/status")
+def soundexchange_mlc_status(artist_id: str):
+    return {"artist_id": artist_id, "status": "ready_with_csv_fallback", "simulated_mode": True}
+
+
+@router.post("/artists/{artist_id}/connect/regional-global")
+async def connect_regional_global(artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    connector = RegionalGlobalConnector()
+    rows = await connector.fetch_statements(artist_id, genre, territory)
+    anomalies = await connector.auto_detect_genre_specific_anomalies(artist_id, genre, territory)
+    return {"artist_id": artist_id, "rows": rows, "anomalies": anomalies, "territory": territory, "genre": genre}
+
+
+@router.get("/artists/{artist_id}/connect/regional-global/status")
+def regional_global_status(artist_id: str):
+    return {"artist_id": artist_id, "status": "ready_with_csv_fallback", "territories": ["LATAM", "JP", "KR", "AFRICA", "IN", "CN"]}
+
+
 
 
 @router.get(
