@@ -47,8 +47,9 @@ from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
+from XR7.services.statement_signal_extractor import extract_statement_signals, merge_statement_signals, to_json
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
-from XR7.tasks.hubspot import hubspot_sync_recovery_update
+from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.global_social_regional import GlobalSocialRegionalConnector
@@ -258,6 +259,7 @@ async def upload_statement(
 
     # Parse
     result = parse_statement_file(content, artist_id, filename=file.filename or "statement.csv")
+    statement_signals = extract_statement_signals(content, file.filename or "statement.csv", format_detected=result.format_detected)
     status = "PROCESSED"
     error_summary: str | None = None
 
@@ -340,6 +342,7 @@ async def upload_statement(
         skipped_rows=result.skipped_rows,
         status=status,
         error_summary=error_summary,
+        ingestion_metadata_json=to_json(statement_signals),
         uploaded_at=datetime.now(timezone.utc),
     )
     db.add(statement)
@@ -353,6 +356,17 @@ async def upload_statement(
             hubspot_sync_recovery_update.delay(artist_id, event="first_statement_uploaded")
         except Exception:  # noqa: BLE001
             logger.exception("Failed to enqueue HubSpot first statement sync", extra={"artist_id": artist_id})
+
+    if status != "FAILED":
+        try:
+            hubspot_sync_statement_ingestion.delay(
+                artist_id,
+                statement.id,
+                statement_signals,
+                event="statement_uploaded",
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception("Failed to enqueue HubSpot statement ingestion sync", extra={"artist_id": artist_id, "statement_id": statement.id})
 
     if status != "FAILED" and result.format_detected == "soundcloud":
         try:
@@ -398,6 +412,7 @@ async def upload_statement_batch(
     processed = []
     failed = []
     duplicates = 0
+    extracted_signals: list[dict] = []
 
     def _clamav_scan(content: bytes) -> None:
         # Simulated ClamAV gate for dev/test. Replace with real daemon call in production.
@@ -449,6 +464,7 @@ async def upload_statement_batch(
                 result.format_detected = "pdf_placeholder"
             else:
                 result = parse_statement_file(content, artist_id, filename=filename)
+            statement_signals = extract_statement_signals(content, filename, format_detected=result.format_detected)
             events_created = _save_events(db, result.events)
             payments_created = _save_payments(db, result.payments)
 
@@ -464,6 +480,7 @@ async def upload_statement_batch(
                 skipped_rows=result.skipped_rows,
                 status="PROCESSED" if result.events or result.payments else "FAILED",
                 error_summary="; ".join(result.errors[:5]) if result.errors and not result.events else None,
+                ingestion_metadata_json=to_json(statement_signals),
                 uploaded_at=datetime.now(timezone.utc),
             )
             db.add(statement)
@@ -477,6 +494,8 @@ async def upload_statement_batch(
                 "payments_created": payments_created,
                 "status": statement.status,
             })
+            if statement.status != "FAILED":
+                extracted_signals.append(statement_signals)
         except Exception as exc:  # noqa: BLE001
             failed.append({"filename": filename, "error": str(exc)})
 
@@ -488,6 +507,16 @@ async def upload_statement_batch(
             hubspot_sync_recovery_update.delay(artist_id, event="statement_batch_uploaded")
         except Exception:  # noqa: BLE001
             logger.exception("Failed to enqueue HubSpot statement batch sync", extra={"artist_id": artist_id})
+        try:
+            merged_signals = merge_statement_signals(extracted_signals)
+            hubspot_sync_statement_ingestion.delay(
+                artist_id,
+                None,
+                merged_signals,
+                event="statement_batch_uploaded",
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception("Failed to enqueue HubSpot batch statement signal sync", extra={"artist_id": artist_id})
         try:
             rg = RightsGraph()
             AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)

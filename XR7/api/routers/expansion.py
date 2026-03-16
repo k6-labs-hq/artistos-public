@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import hashlib
 import io
 import uuid
@@ -655,6 +656,7 @@ def exchange_oauth_code(
             tenant_id=payload.tenant_id,
             external_account_id=payload.external_account_id,
             display_name=payload.display_name,
+            profile_metadata_json=json.dumps(payload.profile_metadata or {}),
             granted_scopes=_scopes_to_storage(granted_scopes),
             access_token=access_token,
             refresh_token=refresh_token,
@@ -670,6 +672,8 @@ def exchange_oauth_code(
         db.add(account)
     else:
         account.display_name = payload.display_name or account.display_name
+        if payload.profile_metadata is not None:
+            account.profile_metadata_json = json.dumps(payload.profile_metadata)
         account.granted_scopes = _scopes_to_storage(granted_scopes)
         account.access_token = access_token
         account.refresh_token = refresh_token

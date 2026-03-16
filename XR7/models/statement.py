@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Boolean, DateTime, Integer, String
+from sqlalchemy import Boolean, DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -38,6 +38,7 @@ class Statement(Base):
     skipped_rows: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String, default="PROCESSED")    # PROCESSED / FAILED / DUPLICATE
     error_summary: Mapped[str | None] = mapped_column(String, nullable=True)
+    ingestion_metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     uploaded_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
@@ -57,4 +58,5 @@ class StatementSchema(BaseModel):
     skipped_rows: int
     status: str
     error_summary: str | None
+    ingestion_metadata_json: str
     uploaded_at: datetime

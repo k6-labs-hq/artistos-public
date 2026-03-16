@@ -169,6 +169,50 @@ HUBSPOT_PRIVATE_APP_TOKEN=...
 
 HubSpot sync is triggered asynchronously from artist creation, widget funnel events, first statement ingestion, anomaly detection, claim milestones, and settled recovery disbursements.
 
+### HubSpot Auto-Enrichment From Statement Uploads
+
+When artists upload `CSV/TSV/XLSX` statements, XR7 extracts and syncs available metadata into HubSpot:
+
+- artist identity signals (name/email fallbacks)
+- distributor account metadata
+- PRO writer identifiers (for example IPI/CAE fields)
+- catalog metadata (titles, ISRC/ISWC/UPC samples)
+- earnings and recovery signals
+
+Mapped CRM objects:
+
+| HubSpot Object | XR7 Mapping |
+|---|---|
+| Contact | `xr7_artist_id`, identity fields, distributor/pro identifiers, summary metrics |
+| Company | artist brand, label/publisher entities, distributor entities |
+| Deal | `XR7 Recovery - {artist_name}`, amount=`estimated_recoverable`, stage=`Discovery`, pipeline=`Artist Recovery` |
+
+Custom properties populated:
+
+- `xr7_estimated_recoverable`
+- `xr7_total_recovered`
+- `xr7_catalog_health_score`
+- `xr7_anomaly_count`
+- `xr7_claim_count`
+- `xr7_distributor_list`
+- `xr7_pro_affiliations`
+
+Fallback behavior:
+
+- Missing email -> placeholder contact email (`{artist_id}@placeholder.xr7.local`) is used and later updated when verified email is available.
+- Missing artist name -> inferred from statement metadata/distributor account context.
+
+### Optional OAuth Intake Prefill Sources
+
+Supported optional intake prefill providers:
+
+- Google OAuth (`openid email profile`)
+- Apple Sign-In (`name email`)
+- Spotify for Artists OAuth
+- YouTube OAuth
+
+OAuth prefill stores only non-sensitive profile metadata and helps seed CRM contact/company context. Royalty ingestion still works without OAuth.
+
 ### Recovery Intelligence Feature Matrix
 
 | Capability | Primary Module(s) | API Surface |

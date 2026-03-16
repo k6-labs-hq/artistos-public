@@ -128,9 +128,16 @@ def test_review_decision_emits_ml_feedback_and_metrics(monkeypatch):
 
 def test_statement_upload_and_anomaly_detection_trigger_hubspot_updates(monkeypatch):
     calls = []
+    statement_calls = []
     monkeypatch.setattr(
         "XR7.api.routers.ingestion.hubspot_sync_recovery_update.delay",
         lambda artist_id, event="recovery_update": calls.append((artist_id, event)),
+    )
+    monkeypatch.setattr(
+        "XR7.api.routers.ingestion.hubspot_sync_statement_ingestion.delay",
+        lambda artist_id, statement_id=None, statement_signals=None, event="statement_uploaded": statement_calls.append(
+            (artist_id, statement_id, event)
+        ),
     )
     monkeypatch.setattr(
         "XR7.api.routers.anomalies.hubspot_sync_recovery_update.delay",
@@ -155,3 +162,4 @@ def test_statement_upload_and_anomaly_detection_trigger_hubspot_updates(monkeypa
     assert detect.status_code == 200
 
     assert any(evt in {"first_statement_uploaded", "statement_batch_uploaded", "anomalies_detected"} for _, evt in calls)
+    assert statement_calls

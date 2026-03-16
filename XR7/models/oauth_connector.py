@@ -58,6 +58,7 @@ class ConnectorAccountLink(Base):
     tenant_id: Mapped[str] = mapped_column(String, nullable=False, default="default", index=True)
     external_account_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    profile_metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     granted_scopes: Mapped[str] = mapped_column(Text, nullable=False, default="")
     access_token: Mapped[str] = mapped_column(Text, nullable=False)
     refresh_token: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -97,6 +98,7 @@ class ConnectorAccountLinkSchema(BaseModel):
     tenant_id: str
     external_account_id: str
     display_name: str | None
+    profile_metadata_json: str
     granted_scopes: str
     token_type: str
     token_expires_at: datetime | None
@@ -127,6 +129,7 @@ class OAuthTokenExchangeRequest(BaseModel):
     token_type: str = "Bearer"
     expires_in_seconds: int | None = 3600
     display_name: str | None = None
+    profile_metadata: dict[str, str] | None = None
 
 
 class OAuthTokenRefreshRequest(BaseModel):

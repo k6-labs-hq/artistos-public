@@ -21,6 +21,22 @@ class OAuthProviderConfig:
 
 
 PROVIDER_CONFIGS: dict[str, OAuthProviderConfig] = {
+    "google": OAuthProviderConfig(
+        name="google",
+        authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+        token_url="https://oauth2.googleapis.com/token",
+        client_id_env="GOOGLE_OAUTH_CLIENT_ID",
+        client_secret_env="GOOGLE_OAUTH_CLIENT_SECRET",
+        default_scopes=("openid", "email", "profile"),
+    ),
+    "apple": OAuthProviderConfig(
+        name="apple",
+        authorize_url="https://appleid.apple.com/auth/authorize",
+        token_url="https://appleid.apple.com/auth/token",
+        client_id_env="APPLE_SIGNIN_CLIENT_ID",
+        client_secret_env="APPLE_SIGNIN_CLIENT_SECRET",
+        default_scopes=("name", "email"),
+    ),
     "spotify": OAuthProviderConfig(
         name="spotify",
         authorize_url="https://accounts.spotify.com/authorize",

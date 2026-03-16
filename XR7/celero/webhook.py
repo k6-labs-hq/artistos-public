@@ -261,8 +261,8 @@ class CeleroWebhookHandler:
 
         if event_type == EVENT_DISBURSEMENT_SETTLED and txn.artist_id:
             try:
-                hubspot_sync_recovery_update.delay(txn.artist_id, event="first_recovery_paid")
+                hubspot_sync_recovery_update.delay(txn.artist_id, event="recovery_disbursement_settled")
             except Exception:  # noqa: BLE001
-                logger.exception("Failed to enqueue HubSpot first_recovery_paid sync", extra={"artist_id": txn.artist_id})
+                logger.exception("Failed to enqueue HubSpot disbursement sync", extra={"artist_id": txn.artist_id})
 
         return result
