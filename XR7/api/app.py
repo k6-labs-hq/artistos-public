@@ -80,10 +80,45 @@ app = FastAPI(
 _env = os.environ.get("XR7_ENV", "development").lower()
 _allowed_origins_raw = os.environ.get("WIDGET_ALLOWED_ORIGINS", "*").strip()
 
+
+def _security_gate_status(env: str | None = None) -> dict[str, object]:
+    current_env = (env or _env or "development").lower()
+    signing_mode = os.environ.get("XR7_EVIDENCE_SIGNING_MODE", "hmac").strip().lower()
+    rsa_private_set = bool(os.environ.get("XR7_EVIDENCE_PRIVATE_KEY_PEM"))
+    rsa_public_set = bool(os.environ.get("XR7_EVIDENCE_PUBLIC_KEY_PEM"))
+    celero_webhook_secret_set = bool(os.environ.get("CELERO_WEBHOOK_SECRET"))
+
+    if current_env == "production":
+        evidence_signing_policy_ok = signing_mode == "rsa" and rsa_private_set and rsa_public_set
+        celero_webhook_policy_ok = celero_webhook_secret_set
+    else:
+        evidence_signing_policy_ok = True
+        celero_webhook_policy_ok = True
+
+    return {
+        "environment": current_env,
+        "evidence_signing_mode": signing_mode,
+        "rsa_private_key_configured": rsa_private_set,
+        "rsa_public_key_configured": rsa_public_set,
+        "celero_webhook_secret_configured": celero_webhook_secret_set,
+        "evidence_signing_policy_ok": evidence_signing_policy_ok,
+        "celero_webhook_policy_ok": celero_webhook_policy_ok,
+        "all_required_gates_passed": evidence_signing_policy_ok and celero_webhook_policy_ok,
+    }
+
+
+_security_gates = _security_gate_status()
+
 if _env == "production" and _allowed_origins_raw == "*":
     raise RuntimeError(
         "WIDGET_ALLOWED_ORIGINS must be set to an explicit list of domains "
         "when XR7_ENV=production.  Using '*' in production is not permitted."
+    )
+
+if _env == "production" and not bool(_security_gates["all_required_gates_passed"]):
+    raise RuntimeError(
+        "Production security gates failed. Require XR7_EVIDENCE_SIGNING_MODE=rsa with "
+        "XR7_EVIDENCE_PRIVATE_KEY_PEM + XR7_EVIDENCE_PUBLIC_KEY_PEM, and CELERO_WEBHOOK_SECRET set."
     )
 
 _allowed_origins = (
@@ -245,8 +280,10 @@ def readiness():
         "confidence_calibrator": "ready",
     }
 
-    # Core platform is always ready (DB + API)
-    core_ready = True
+    security_gates = _security_gate_status(_env)
+
+    # Core readiness for production also requires security gates.
+    core_ready = bool(security_gates["all_required_gates_passed"]) if _env == "production" else True
 
     return {
         "ready": core_ready,
@@ -293,6 +330,7 @@ def readiness():
             "celero_webhook_secret_configured": celero_webhook_secret_set,
             "status": "ready" if celero_webhook_secret_set else "missing_credentials",
         },
+        "security_gates": security_gates,
         "crm": {
             "hubspot": {
                 "enabled": hubspot_client.enabled,
