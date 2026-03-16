@@ -198,6 +198,7 @@ class DashboardEngine:
                     "youtube": {"estimated_recoverable": 4200.0, "status": "oauth_ready_fallback_csv"},
                     "tiktok": {"estimated_recoverable": 5100.0, "status": "portal_csv_guided"},
                     "instagram": {"estimated_recoverable": 2300.0, "status": "meta_graph_limited"},
+                    "soundcloud": {"estimated_recoverable": 2800.0, "status": "oauth_or_statement_sync"},
                     "melon": {"estimated_recoverable": 900.0, "status": "csv_only"},
                     "boomplay": {"estimated_recoverable": 780.0, "status": "csv_only"},
                     "tencent": {"estimated_recoverable": 1100.0, "status": "csv_only"},

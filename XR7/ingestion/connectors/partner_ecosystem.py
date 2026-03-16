@@ -17,6 +17,7 @@ SUPPORTED_PARTNER_PROVIDERS: dict[str, PartnerProviderConfig] = {
     "songtrust": PartnerProviderConfig("songtrust", "SONGTRUST", "publishing.v1"),
     "tunecore": PartnerProviderConfig("tunecore", "TUNECORE", "distribution.v1"),
     "distrokid": PartnerProviderConfig("distrokid", "DISTROKID", "distribution.v1"),
+    "soundcloud": PartnerProviderConfig("soundcloud", "SOUNDCLOUD", "social.v1"),
     "ascap": PartnerProviderConfig("ascap", "ASCAP", "pro.v1"),
     "bmi": PartnerProviderConfig("bmi", "BMI", "pro.v1"),
     "sesac": PartnerProviderConfig("sesac", "SESAC", "pro.v1"),

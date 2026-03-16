@@ -38,6 +38,7 @@ class GlobalSocialRegionalConnector(IngestionConnector):
         return [
             {"platform": "youtube", "title": "Viral vlog sync", "estimated_recoverable": 4200.0},
             {"platform": "tiktok", "title": "Dance trend usage", "estimated_recoverable": 5100.0},
+            {"platform": "soundcloud", "title": "Unofficial remix repost cluster", "estimated_recoverable": 2300.0},
         ]
 
     def generate_csv_export_instructions(self, platform: str) -> dict[str, Any]:

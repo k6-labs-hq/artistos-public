@@ -89,6 +89,14 @@ def test_supervisor_routing_prefers_onboarding_then_recovery():
     assert nxt2 == "detection_agent"
 
 
+def test_supervisor_routes_legal_authority_when_evidence_present():
+    state = initial_state("artist-legal", "run-legal")
+    state["onboarding_progress"] = {"completed": True}
+    state["evidence_hashes"] = ["hash-123"]
+    nxt = orchestrator._supervisor_next(state)
+    assert nxt == "legal_authority_agent"
+
+
 def test_artist_intent_interpreter_requests_clarification_for_unclear_message():
     state = initial_state("artist-2")
     state["persona_profile"] = {"last_message": "help", "last_ui_action": ""}

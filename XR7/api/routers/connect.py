@@ -19,5 +19,26 @@ def connect_global_social_status(artist_id: str):
     return {
         "artist_id": artist_id,
         "status": "ready_with_fallbacks",
-        "platforms": ["youtube", "tiktok", "instagram", "melon", "boomplay", "tencent", "jiosaavn"],
+        "platforms": ["youtube", "tiktok", "instagram", "soundcloud", "melon", "boomplay", "tencent", "jiosaavn"],
+    }
+
+
+@router.post("/artists/{artist_id}/connect/soundcloud")
+async def connect_soundcloud(artist_id: str):
+    conn = GlobalSocialRegionalConnector()
+    auth_url = await conn.oauth_flow(artist_id, "soundcloud")
+    return {
+        "artist_id": artist_id,
+        "platform": "soundcloud",
+        "auth_url": auth_url,
+        "status": "authorization_url_generated",
+    }
+
+
+@router.get("/artists/{artist_id}/connect/soundcloud/status")
+def connect_soundcloud_status(artist_id: str):
+    return {
+        "artist_id": artist_id,
+        "provider": "soundcloud",
+        "status": "ready_with_fallbacks",
     }

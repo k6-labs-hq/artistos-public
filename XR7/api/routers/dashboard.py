@@ -136,6 +136,10 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
       dashboard.setdefault("registration_actions", [])
       dashboard.setdefault("follow_up_actions", [])
       dashboard.setdefault("agent_activity", [])
+      dashboard.setdefault("legal_risk_indicators", {})
+      dashboard.setdefault("negotiation_insights", {})
+      dashboard.setdefault("escalation_indicators", {})
+      dashboard.setdefault("attorney_export_status", {})
       return dashboard
 
     run_id = str(state.get("run_id") or "")
@@ -159,6 +163,28 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     dashboard["registration_actions"] = state.get("registration_actions") or []
     dashboard["follow_up_actions"] = state.get("follow_up_actions") or []
     dashboard["agent_activity"] = state.get("agent_activity") or []
+    dashboard["legal_risk_indicators"] = {
+      "legal_risk_score": state.get("legal_risk_score"),
+      "settlement_probability": state.get("settlement_probability"),
+      "escalation_readiness_score": state.get("escalation_readiness_score"),
+      "predicted_escalation_probability": state.get("predicted_escalation_probability"),
+    }
+    dashboard["negotiation_insights"] = {
+      "tone_profile": state.get("negotiation_tone_profile") or {},
+      "adapted_messages": state.get("adapted_messages") or [],
+      "payer_behavior_profile": state.get("payer_behavior_profile") or {},
+      "predicted_responsiveness": state.get("predicted_responsiveness"),
+      "predicted_settlement_speed_days": state.get("predicted_settlement_speed_days"),
+    }
+    dashboard["escalation_indicators"] = {
+      "escalation_prepared_packet": state.get("escalation_prepared_packet") or {},
+      "recommended_packet_emphasis": state.get("recommended_packet_emphasis") or [],
+    }
+    dashboard["attorney_export_status"] = {
+      "attorney_export_summary": state.get("attorney_export_summary") or "",
+      "manifest": state.get("attorney_export_manifest") or {},
+      "narrative_highlights": state.get("narrative_highlights") or [],
+    }
     return dashboard
 
 

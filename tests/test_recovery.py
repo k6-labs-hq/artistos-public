@@ -241,6 +241,10 @@ def test_claim_evidence_export_zip_and_pdf():
     packet = json.loads(zf.read("evidence_packet.json").decode("utf-8"))
     assert packet["integrity"]["packet_hash"]
     assert packet["proof"]["missing_money_amount"] == pytest.approx(100.0)
+    assert "legal_authority_sections" in packet
+    assert "legal_structured_packet" in packet
+    assert "attorney_export_package" in packet
+    assert "narrative_summary" in packet
 
     pdf_resp = client.get(f"/claims/{claim.id}/evidence/export?format=pdf")
     assert pdf_resp.status_code == 200

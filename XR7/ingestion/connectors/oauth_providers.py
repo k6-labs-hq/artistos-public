@@ -45,6 +45,14 @@ PROVIDER_CONFIGS: dict[str, OAuthProviderConfig] = {
         client_secret_env="TIKTOK_CLIENT_SECRET",
         default_scopes=("user.info.basic",),
     ),
+    "soundcloud": OAuthProviderConfig(
+        name="soundcloud",
+        authorize_url="https://secure.soundcloud.com/authorize",
+        token_url="https://secure.soundcloud.com/oauth/token",
+        client_id_env="SOUNDCLOUD_CLIENT_ID",
+        client_secret_env="SOUNDCLOUD_CLIENT_SECRET",
+        default_scopes=("non-expiring",),
+    ),
 }
 
 

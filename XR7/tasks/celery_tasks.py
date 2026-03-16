@@ -92,3 +92,40 @@ def on_statement_upload(self, artist_id: str) -> dict:  # noqa: ANN001
 def on_ugc_fetch(self, artist_id: str) -> dict:  # noqa: ANN001
     run_artist_workflow.delay(artist_id)
     return {"artist_id": artist_id, "trigger": "ugc_fetch"}
+
+
+@celery_app.task(name="xr7.workflow.on_soundcloud_statement_upload", bind=True)
+def on_soundcloud_statement_upload(self, artist_id: str, statement_id: str | None = None) -> dict:  # noqa: ANN001
+    run_artist_workflow.delay(artist_id)
+    return {
+        "artist_id": artist_id,
+        "statement_id": statement_id,
+        "trigger": "soundcloud_statement_upload",
+    }
+
+
+@celery_app.task(name="xr7.workflow.run_soundcloud_sync_daily", bind=True)
+def run_soundcloud_sync_daily(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        rows = db.query(Statement).filter(Statement.format_detected == "soundcloud").all()
+        artist_ids = sorted({r.artist_id for r in rows})
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {"triggered": len(artist_ids), "scope": "soundcloud_daily_sync"}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.workflow.run_soundcloud_healthcheck_hourly", bind=True)
+def run_soundcloud_healthcheck_hourly(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        threshold = datetime.now(timezone.utc) - timedelta(days=30)
+        rows = db.query(Statement).filter(Statement.format_detected == "soundcloud", Statement.uploaded_at >= threshold).all()
+        artist_ids = sorted({r.artist_id for r in rows})
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {"triggered": len(artist_ids), "scope": "soundcloud_hourly_healthcheck"}
+    finally:
+        db.close()

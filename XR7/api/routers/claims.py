@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
+from XR7.agents.orchestrator import run_export_prep_pipeline_sync
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
 from XR7.models.base import get_db
@@ -35,6 +36,27 @@ from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["claims"])
 logger = get_logger(__name__)
+
+
+def _export_agent_fields(state: dict | None) -> dict:
+    s = state or {}
+    return {
+        "legal_authority_sections": s.get("legal_authority_sections") or [],
+        "legal_methodology_summary": s.get("legal_methodology_summary") or "",
+        "legal_compliance_statements": s.get("legal_compliance_statements") or [],
+        "legal_structured_packet": s.get("legal_structured_packet") or {},
+        "legal_appendix": s.get("legal_appendix") or {},
+        "escalation_prepared_packet": s.get("escalation_prepared_packet") or {},
+        "negotiation_tone_profile": s.get("negotiation_tone_profile") or {},
+        "payer_behavior_profile": s.get("payer_behavior_profile") or {},
+        "attorney_case_file": s.get("attorney_case_file") or {},
+        "attorney_export_package": s.get("attorney_export_package") or {},
+        "attorney_export_manifest": s.get("attorney_export_manifest") or {},
+        "attorney_export_summary": s.get("attorney_export_summary") or "",
+        "narrative_summary": s.get("narrative_summary") or "",
+        "narrative_sections": s.get("narrative_sections") or {},
+        "narrative_highlights": s.get("narrative_highlights") or [],
+    }
 
 
 def _safe_pdf_text(text: str) -> str:
@@ -281,10 +303,16 @@ def export_evidence_packet(
         raise HTTPException(status_code=404, detail="Claim not found")
 
     orchestrator = ClaimsOrchestrator(db)
+    try:
+        export_state = run_export_prep_pipeline_sync(claim.artist_id)
+    except Exception:  # noqa: BLE001
+        logger.exception("Export prep pipeline failed; continuing with existing packet", extra={"claim_id": claim_id, "artist_id": claim.artist_id})
+        export_state = {}
     if refresh or not isinstance(claim.evidence, dict) or not claim.evidence:
         packet = orchestrator.generate_evidence_packet(claim_id)
     else:
         packet = claim.evidence
+    packet = {**packet, **_export_agent_fields(export_state)}
 
     lines = _evidence_summary_lines(packet)
     pdf_bytes = _build_simple_pdf(lines)
@@ -393,7 +421,13 @@ def export_evidence_packet_expert_mode(
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
 
+    try:
+        export_state = run_export_prep_pipeline_sync(claim.artist_id)
+    except Exception:  # noqa: BLE001
+        logger.exception("Expert export prep pipeline failed; continuing with existing packet", extra={"claim_id": claim_id, "artist_id": claim.artist_id})
+        export_state = {}
     packet = claim.evidence if isinstance(claim.evidence, dict) else ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
+    packet = {**packet, **_export_agent_fields(export_state)}
     verification = ClaimsOrchestrator(db).verify_packet_integrity(packet)
 
     timeline = [

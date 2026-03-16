@@ -72,4 +72,25 @@ TEMPLATES_BY_PAYER: dict[str, PayerPlaybookTemplate] = {
         escalation_path=["Route through distributor partner manager", "Escalate to Spotify content operations", "Escalate through legal contact"],
         packet_instructions=["Map missing payout to specific URIs and territories.", "Attach evidence of rights ownership."],
     ),
+    "soundcloud": PayerPlaybookTemplate(
+        payer="SoundCloud",
+        required_fields=[
+            "soundcloud_track_id",
+            "isrc",
+            "reporting_period",
+            "plays_or_stream_count",
+            "net_payout_variance",
+            "evidence_packet_hash",
+        ],
+        sla_days=21,
+        escalation_path=[
+            "Submit SoundCloud creator support ticket with reconciliation summary",
+            "Escalate through monetization operations channel",
+            "Escalate to formal counsel handoff with chain-of-custody packet",
+        ],
+        packet_instructions=[
+            "Attach SoundCloud statement rows with track-level payout deltas.",
+            "Include chain-of-custody verification and source-of-truth ledger references.",
+        ],
+    ),
 }

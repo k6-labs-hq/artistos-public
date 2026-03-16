@@ -84,9 +84,12 @@ import csv
 import hashlib
 import io
 import logging
+from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
 from typing import Any
+
+from openpyxl import load_workbook
 
 logger = logging.getLogger(__name__)
 
@@ -167,6 +170,10 @@ _FORMATS = {
     "spotify": {
         "required": {"track name", "streams", "stream revenue"},
         "aliases": {"track name": "title", "stream revenue": "amount", "streams": "quantity"},
+    },
+    "soundcloud": {
+        "required": {"track title", "plays", "revenue"},
+        "aliases": {},
     },
 }
 
@@ -257,6 +264,24 @@ SUPPORTED_FORMATS: dict[str, dict] = {
         "key_columns": ["Date", "Country", "Track Name", "ISRC", "Streams", "Stream Revenue"],
         "description": "Spotify for Artists streaming report CSV.",
     },
+    "soundcloud": {
+        "name": "SoundCloud",
+        "type": "dsp",
+        "key_columns": [
+            "Date",
+            "Track Title",
+            "SoundCloud Track ID",
+            "Plays",
+            "Revenue",
+            "ISRC",
+            "Release Date",
+            "Waveform Duration",
+        ],
+        "description": (
+            "SoundCloud monetization exports (CSV/TSV/XLSX). Also supports fallback header variants "
+            "like stream count/listener count with net payout columns."
+        ),
+    },
     "generic": {
         "name": "Generic / Other",
         "type": "generic",
@@ -312,6 +337,22 @@ def detect_format(headers: list[str]) -> str:
     ``"ascap"``, ``"bmi"``, ``"spotify"``, or ``"generic"``.
     """
     normalised = {_normalise_header(h) for h in headers}
+
+    # SoundCloud exports vary, but usually include explicit provider metadata.
+    if (
+        any("soundcloud" in h for h in normalised)
+        and ("plays" in normalised or "stream count" in normalised or "streams" in normalised)
+        and ("revenue" in normalised or "net payout" in normalised or "earnings" in normalised)
+    ):
+        return "soundcloud"
+
+    # Variant with no explicit provider key but with SoundCloud-specific metadata fields.
+    if (
+        ("waveform duration" in normalised or "soundcloud track id" in normalised)
+        and ("plays" in normalised or "stream count" in normalised or "streams" in normalised)
+    ):
+        return "soundcloud"
+
     for fmt_name, spec in _FORMATS.items():
         required = spec["required"]
         if required.issubset(normalised):
@@ -985,6 +1026,57 @@ def _parse_spotify(row: dict, artist_id: str) -> tuple[dict | None, dict | None]
     return event, payment
 
 
+def _parse_soundcloud(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    raw_date = _col(row, "date", "report date", "period", "month")
+    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
+    quantity = _parse_int(_col(row, "plays", "stream count", "streams", "listener count"))
+    amount_str = _col(row, "revenue", "net payout", "earnings", "amount", "net revenue")
+    amount = _parse_amount(amount_str)
+    if amount is None:
+        return None, None
+
+    country = _col(row, "country", "territory", "region") or "US"
+    title = _col(row, "track title", "title", "track name", "song")
+    isrc = _col(row, "isrc")
+    currency = _col(row, "currency") or "USD"
+    release_date = _col(row, "release date")
+    duration = _col(row, "waveform duration", "duration")
+    sc_track_id = _col(row, "soundcloud track id", "track id")
+    label = _col(row, "label", "label name")
+    artist_name = _col(row, "artist", "artist name")
+
+    unit_value = _calc_unit_value(amount, quantity)
+
+    event = {
+        "event_type": "STREAM",
+        "artist_id": artist_id,
+        "platform": "SoundCloud",
+        "territory": country.upper()[:2] if country else None,
+        "timestamp": dt,
+        "quantity": quantity,
+        "unit_value": round(unit_value, 8),
+        "currency": currency,
+        "work_title": title,
+        "isrc": isrc,
+        "soundcloud_track_id": sc_track_id,
+        "release_date": release_date,
+        "waveform_duration": duration,
+        "artist_metadata": artist_name,
+        "label_metadata": label,
+    }
+    payment = {
+        "payment_type": "ROYALTY",
+        "artist_id": artist_id,
+        "amount": round(amount, 6),
+        "currency": currency,
+        "source": "SoundCloud",
+        "period_start": date(dt.year, dt.month, 1),
+        "period_end": _month_end(dt),
+        "reference_id": _row_hash(row, "soundcloud"),
+    }
+    return event, payment
+
+
 def _parse_generic(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
     lrow = {_normalise_header(k): v.strip() for k, v in row.items()}
 
@@ -1077,6 +1169,7 @@ _FORMAT_PARSERS = {
     "ascap": _parse_ascap,
     "bmi": _parse_bmi,
     "spotify": _parse_spotify,
+    "soundcloud": _parse_soundcloud,
     "generic": _parse_generic,
 }
 
@@ -1161,4 +1254,114 @@ def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> Pa
         payments=payments,
         skipped_rows=skipped,
         errors=errors,
+    )
+
+
+def _parse_table_rows(rows: list[dict[str, str]], headers: list[str], artist_id: str) -> ParseResult:
+    fmt = detect_format(headers)
+    parser = _FORMAT_PARSERS[fmt]
+
+    events: list[dict] = []
+    payments: list[dict] = []
+    skipped = 0
+    errors: list[str] = []
+
+    for i, row in enumerate(rows, start=2):
+        try:
+            event, payment = parser(row, artist_id)
+        except Exception as exc:  # noqa: BLE001
+            skipped += 1
+            errors.append(f"Row {i}: {exc}")
+            continue
+
+        if event is None or payment is None:
+            skipped += 1
+            continue
+
+        if payment["amount"] == 0.0 and event["quantity"] == 0:
+            skipped += 1
+            continue
+
+        events.append(event)
+        payments.append(payment)
+
+    if not events and not errors and rows:
+        errors.append(
+            f"No parseable rows found for format '{fmt}'. Ensure the file has the expected column headers."
+        )
+
+    return ParseResult(
+        format_detected=fmt,
+        row_count=len(rows),
+        events=events,
+        payments=payments,
+        skipped_rows=skipped,
+        errors=errors,
+    )
+
+
+def parse_delimited(content: bytes, artist_id: str, *, delimiter: str = ",", encoding: str = "utf-8-sig") -> ParseResult:
+    try:
+        text = content.decode(encoding)
+    except UnicodeDecodeError:
+        text = content.decode("latin-1")
+
+    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+    if reader.fieldnames is None:
+        return ParseResult(format_detected="unknown", row_count=0, errors=["Delimited file has no header row or is empty."])
+
+    rows = list(reader)
+    return _parse_table_rows(rows, list(reader.fieldnames), artist_id)
+
+
+def parse_xlsx(content: bytes, artist_id: str) -> ParseResult:
+    try:
+        wb = load_workbook(io.BytesIO(content), data_only=True, read_only=True)
+    except Exception as exc:  # noqa: BLE001
+        return ParseResult(format_detected="unknown", row_count=0, errors=[f"Unable to open XLSX file: {exc}"])
+
+    if not wb.worksheets:
+        return ParseResult(format_detected="unknown", row_count=0, errors=["XLSX file has no worksheets."])
+
+    ws = wb.worksheets[0]
+    iterator = ws.iter_rows(values_only=True)
+    try:
+        header_row = next(iterator)
+    except StopIteration:
+        return ParseResult(format_detected="unknown", row_count=0, errors=["XLSX file is empty."])
+
+    headers = [str(cell).strip() if cell is not None else "" for cell in header_row]
+    if not any(headers):
+        return ParseResult(format_detected="unknown", row_count=0, errors=["XLSX header row is empty."])
+
+    rows: list[dict[str, str]] = []
+    for cells in iterator:
+        row: dict[str, str] = {}
+        has_data = False
+        for idx, header in enumerate(headers):
+            if not header:
+                continue
+            raw = cells[idx] if idx < len(cells) else None
+            val = "" if raw is None else str(raw)
+            if val.strip():
+                has_data = True
+            row[header] = val
+        if has_data:
+            rows.append(row)
+
+    return _parse_table_rows(rows, headers, artist_id)
+
+
+def parse_statement_file(content: bytes, artist_id: str, *, filename: str = "statement.csv", encoding: str = "utf-8-sig") -> ParseResult:
+    ext = Path(filename.lower()).suffix
+    if ext == ".csv":
+        return parse_csv(content, artist_id, encoding=encoding)
+    if ext == ".tsv":
+        return parse_delimited(content, artist_id, delimiter="\t", encoding=encoding)
+    if ext == ".xlsx":
+        return parse_xlsx(content, artist_id)
+    return ParseResult(
+        format_detected="unknown",
+        row_count=0,
+        errors=[f"Unsupported statement extension '{ext}'. Supported: .csv, .tsv, .xlsx"],
     )

@@ -50,6 +50,14 @@ celery_app.conf.update(
             "task": "xr7.workflow.run_follow_up_and_readiness",
             "schedule": 86400,
         },
+        "xr7-workflow-soundcloud-sync-daily": {
+            "task": "xr7.workflow.run_soundcloud_sync_daily",
+            "schedule": 86400,
+        },
+        "xr7-workflow-soundcloud-healthcheck-hourly": {
+            "task": "xr7.workflow.run_soundcloud_healthcheck_hourly",
+            "schedule": 3600,
+        },
     },
 )
 

@@ -20,7 +20,13 @@ class UGCClaimGenerator:
         self.db = db
 
     def generate_from_ugc(self, use_data: dict[str, Any], platform: str, artist_id: str) -> dict[str, Any]:
-        subtype = "UGC_SYNC" if platform.lower() in {"tiktok", "instagram"} else "CONTENT_ID"
+        lower_platform = platform.lower()
+        if lower_platform in {"tiktok", "instagram"}:
+            subtype = "UGC_SYNC"
+        elif lower_platform == "soundcloud":
+            subtype = "SOUNDCLOUD_REPOST_RECONCILIATION"
+        else:
+            subtype = "CONTENT_ID"
         views = float(use_data.get("views") or 0.0)
         estimated = round(views * 0.0013, 2)
         return {
@@ -36,6 +42,11 @@ class UGCClaimGenerator:
             "ugc_use": use_data,
             "evidence_links": [use_data.get("url")],
             "captured_at": datetime.now(timezone.utc).isoformat(),
+            "chain_of_custody": {
+                "source": "ugc_capture_pipeline",
+                "integrity_mode": "hash_linked",
+                "captured_at": datetime.now(timezone.utc).isoformat(),
+            },
         }
         packet["evidence_packet_id"] = f"ugc-packet-{abs(hash(str(packet))) % 10_000_000}"
         return packet

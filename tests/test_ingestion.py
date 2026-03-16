@@ -21,8 +21,9 @@ from datetime import datetime, timezone
 import httpx
 import pytest
 from fastapi.testclient import TestClient
+from openpyxl import Workbook
 
-from XR7.ingestion.statement_parser import detect_format, parse_csv, SUPPORTED_FORMATS
+from XR7.ingestion.statement_parser import detect_format, parse_csv, parse_statement_file, SUPPORTED_FORMATS
 from XR7.ingestion.connectors.pro import PROConnector
 from XR7.ingestion.connectors.dsp import DSPConnector
 from XR7.ingestion.connectors.platform import PlatformConnector
@@ -109,6 +110,21 @@ class TestDetectFormat:
 
     def test_detects_spotify(self):
         assert detect_format(["Date", "Country", "Track Name", "ISRC", "Streams", "Stream Revenue"]) == "spotify"
+
+    def test_detects_soundcloud(self):
+        assert (
+            detect_format(
+                [
+                    "Date",
+                    "SoundCloud Track ID",
+                    "Track Title",
+                    "Plays",
+                    "Revenue",
+                    "Waveform Duration",
+                ]
+            )
+            == "soundcloud"
+        )
 
     def test_falls_back_to_generic(self):
         assert detect_format(["date", "source", "amount", "quantity"]) == "generic"
@@ -292,6 +308,61 @@ class TestGenericParser:
         assert result.payments[0]["currency"] == "EUR"
 
 
+class TestSoundCloudParser:
+    def _csv(self) -> bytes:
+        return _csv(
+            [
+                "Date",
+                "SoundCloud Track ID",
+                "Track Title",
+                "Artist Name",
+                "Label Name",
+                "Country",
+                "Plays",
+                "Revenue",
+                "Currency",
+            ],
+            [["2024-05-10", "sc-1", "Cloud Song", "Artist A", "Label A", "US", "1200", "5.40", "USD"]],
+        )
+
+    def test_detects_soundcloud(self):
+        result = parse_csv(self._csv(), "x")
+        assert result.format_detected == "soundcloud"
+
+    def test_parses_soundcloud_fields(self):
+        result = parse_csv(self._csv(), "artist-1")
+        assert len(result.events) == 1
+        assert result.events[0]["platform"] == "SoundCloud"
+        assert result.events[0]["quantity"] == 1200
+        assert len(result.payments) == 1
+        assert result.payments[0]["source"] == "SoundCloud"
+
+
+class TestMultiFormatParsing:
+    def test_parse_tsv_statement(self):
+        tsv = (
+            "Date\tCountry\tTrack Name\tISRC\tStreams\tStream Revenue\n"
+            "2024-06\tUS\tTSV Song\tUSABC0000001\t3000\t12.90\n"
+        ).encode("utf-8")
+        result = parse_statement_file(tsv, "artist-1", filename="spotify.tsv")
+        assert result.format_detected == "spotify"
+        assert len(result.events) == 1
+        assert len(result.payments) == 1
+
+    def test_parse_xlsx_statement(self):
+        wb = Workbook()
+        ws = wb.active
+        ws.append(["Month", "Store", "Country", "Title", "ISRC", "Quantity", "Earnings"])
+        ws.append(["2024-06", "Spotify", "US", "Sheet Song", "USABC0000002", "2500", "10.50"])
+        buf = io.BytesIO()
+        wb.save(buf)
+
+        result = parse_statement_file(buf.getvalue(), "artist-1", filename="sheet.xlsx")
+        assert result.format_detected == "distrokid"
+        assert len(result.events) == 1
+        assert len(result.payments) == 1
+
+
 # ---------------------------------------------------------------------------
 # Edge cases
 # ---------------------------------------------------------------------------
@@ -421,6 +492,17 @@ class TestUploadEndpoint:
         )
         data = self._upload(artist_id, csv_bytes).json()
         assert data["format_detected"] == "distrokid"
+
+    def test_tsv_upload_returns_201(self, artist_id):
+        tsv_bytes = (
+            "Date\tCountry\tTrack Name\tISRC\tStreams\tStream Revenue\n"
+            "2024-06\tUS\tTSV Upload\tUSABC0000003\t3500\t15.75\n"
+        ).encode("utf-8")
+        resp = client.post(
+            f"/artists/{artist_id}/statements/upload",
+            files={"file": ("statement.tsv", io.BytesIO(tsv_bytes), "text/tab-separated-values")},
+        )
+        assert resp.status_code == 201
 
 
 # ---------------------------------------------------------------------------
@@ -899,6 +981,29 @@ class TestDetectFormatNewDistributors:
         assert detect_format(
             ["Month", "Store", "Territory", "Track Name", "ISRC", "Net Quantity", "Net Revenue"]
         ) == "landr"
+
+
+# ---------------------------------------------------------------------------
+# SoundCloud connect endpoints
+# ---------------------------------------------------------------------------
+
+class TestSoundCloudConnectEndpoints:
+    def test_connect_soundcloud_returns_auth_url(self):
+        artist_id = "artist-connect-1"
+        resp = client.post(f"/artists/{artist_id}/connect/soundcloud")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["platform"] == "soundcloud"
+        assert "auth_url" in data
+        assert "soundcloud" in data["auth_url"]
+
+    def test_soundcloud_status_endpoint(self):
+        artist_id = "artist-connect-2"
+        resp = client.get(f"/artists/{artist_id}/connect/soundcloud/status")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["provider"] == "soundcloud"
+        assert data["status"] == "ready_with_fallbacks"
 
 
 # ---------------------------------------------------------------------------

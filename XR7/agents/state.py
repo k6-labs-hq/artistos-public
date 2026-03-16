@@ -50,6 +50,52 @@ class XR7State(TypedDict, total=False):
     next_action: str
     retry_count: int
     pending_agent: str | None
+    export_requested: bool
+
+    legal_authority_sections: Annotated[list[str], add]
+    legal_methodology_summary: str
+    legal_compliance_statements: Annotated[list[str], add]
+    legal_structured_packet: dict[str, Any]
+    legal_appendix: dict[str, Any]
+
+    escalation_prepared_packet: dict[str, Any]
+    negotiation_tone_profile: dict[str, Any]
+    adapted_messages: Annotated[list[str], add]
+
+    legal_risk_score: float
+    settlement_probability: float
+    escalation_readiness_score: float
+
+    payer_behavior_profile: dict[str, Any]
+    predicted_responsiveness: float
+    predicted_settlement_speed_days: int
+    predicted_settlement_probability: float
+    predicted_escalation_resistance: float
+    recommended_negotiation_strategy: str
+    recommended_packet_emphasis: Annotated[list[str], add]
+    attorney_briefing_packet: dict[str, Any]
+
+    attorney_case_file: dict[str, Any]
+    attorney_case_file_summary: str
+    attorney_exhibits_index: Annotated[list[dict[str, Any]], add]
+    attorney_chain_of_custody_summary: str
+    attorney_packet_metadata: dict[str, Any]
+
+    predicted_recovery_amount: float
+    predicted_recovery_low: float
+    predicted_recovery_high: float
+    predicted_expected_value: float
+    predicted_settlement_timeline_days: int
+    predicted_escalation_probability: float
+    predicted_full_payout_probability: float
+
+    narrative_summary: str
+    narrative_sections: dict[str, Any]
+    narrative_highlights: Annotated[list[str], add]
+
+    attorney_export_package: dict[str, Any]
+    attorney_export_manifest: dict[str, Any]
+    attorney_export_summary: str
 
 
 def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
@@ -106,6 +152,44 @@ def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
         "next_action": "proceed",
         "retry_count": 0,
         "pending_agent": None,
+        "export_requested": False,
+        "legal_authority_sections": [],
+        "legal_methodology_summary": "",
+        "legal_compliance_statements": [],
+        "legal_structured_packet": {},
+        "legal_appendix": {},
+        "escalation_prepared_packet": {},
+        "negotiation_tone_profile": {},
+        "adapted_messages": [],
+        "legal_risk_score": 0.0,
+        "settlement_probability": 0.0,
+        "escalation_readiness_score": 0.0,
+        "payer_behavior_profile": {},
+        "predicted_responsiveness": 0.0,
+        "predicted_settlement_speed_days": 0,
+        "predicted_settlement_probability": 0.0,
+        "predicted_escalation_resistance": 0.0,
+        "recommended_negotiation_strategy": "",
+        "recommended_packet_emphasis": [],
+        "attorney_briefing_packet": {},
+        "attorney_case_file": {},
+        "attorney_case_file_summary": "",
+        "attorney_exhibits_index": [],
+        "attorney_chain_of_custody_summary": "",
+        "attorney_packet_metadata": {},
+        "predicted_recovery_amount": 0.0,
+        "predicted_recovery_low": 0.0,
+        "predicted_recovery_high": 0.0,
+        "predicted_expected_value": 0.0,
+        "predicted_settlement_timeline_days": 0,
+        "predicted_escalation_probability": 0.0,
+        "predicted_full_payout_probability": 0.0,
+        "narrative_summary": "",
+        "narrative_sections": {},
+        "narrative_highlights": [],
+        "attorney_export_package": {},
+        "attorney_export_manifest": {},
+        "attorney_export_summary": "",
     }
 
 

@@ -8,6 +8,7 @@ from typing import Any, Awaitable, Callable
 from uuid import uuid4
 
 from XR7.agents.onboarding_agents import (
+    AttorneyExportAgent,
     ArtistComfortAgent,
     ArtistExplainerAgent,
     ArtistIntentInterpreterAgent,
@@ -22,18 +23,26 @@ from XR7.agents.onboarding_agents import (
     CalibrationAgent,
     CatalogAutoBuilderAgent,
     ClaimDrafterAgent,
+    ClaimEscalationAgent,
+    ClaimOutcomeForecasterAgent,
     DetectionAgent,
     DistributorSyncAgent,
     DisbursementAgent,
     EarningsExpectationAgent,
+    EvidenceNarrativeAgent,
     EscalationAgent,
     EvidenceVerifierAgent,
     FileClassifierAgent,
     FirstClaimFastTrackAgent,
     InitialScanOrchestratorAgent,
+    LegalAuthorityAgent,
+    LegalCounselPrepAgent,
+    LegalRiskScoringAgent,
     MissingStatementHunterAgent,
     NegotiationAgent,
+    NegotiationToneAdapterAgent,
     OnboardingWizardAgent,
+    PayerBehaviorPredictionAgent,
     PortalAutoNavigatorAgent,
     PROPortalGuideAgent,
     ReflectionNode,
@@ -106,6 +115,15 @@ AGENTS: dict[str, AgentFn] = {
     "detection_agent": DetectionAgent,
     "evidence_verifier": EvidenceVerifierAgent,
     "claim_drafter": ClaimDrafterAgent,
+    "legal_authority_agent": LegalAuthorityAgent,
+    "legal_risk_scoring_agent": LegalRiskScoringAgent,
+    "payer_behavior_prediction_agent": PayerBehaviorPredictionAgent,
+    "negotiation_tone_adapter_agent": NegotiationToneAdapterAgent,
+    "claim_outcome_forecaster_agent": ClaimOutcomeForecasterAgent,
+    "evidence_narrative_agent": EvidenceNarrativeAgent,
+    "legal_counsel_prep_agent": LegalCounselPrepAgent,
+    "claim_escalation_agent": ClaimEscalationAgent,
+    "attorney_export_agent": AttorneyExportAgent,
     "negotiation_agent": NegotiationAgent,
     "escalation_agent": EscalationAgent,
     "disbursement_agent": DisbursementAgent,
@@ -147,6 +165,15 @@ RECOVERY_ORDER: list[str] = [
     "detection_agent",
     "evidence_verifier",
     "claim_drafter",
+    "legal_authority_agent",
+    "legal_risk_scoring_agent",
+    "payer_behavior_prediction_agent",
+    "negotiation_tone_adapter_agent",
+    "claim_outcome_forecaster_agent",
+    "evidence_narrative_agent",
+    "legal_counsel_prep_agent",
+    "claim_escalation_agent",
+    "attorney_export_agent",
     "negotiation_agent",
     "escalation_agent",
     "disbursement_agent",
@@ -158,6 +185,15 @@ REFLECTION_AFTER = {
     "catalog_auto_builder",
     "first_claim_fast_track",
     "auto_metadata_registrar",
+    "legal_authority_agent",
+    "legal_risk_scoring_agent",
+    "payer_behavior_prediction_agent",
+    "negotiation_tone_adapter_agent",
+    "claim_outcome_forecaster_agent",
+    "evidence_narrative_agent",
+    "legal_counsel_prep_agent",
+    "claim_escalation_agent",
+    "attorney_export_agent",
 }
 
 
@@ -185,13 +221,37 @@ def _merge_state(base: XR7State, patch: XR7State) -> XR7State:
             "agent_activity",
             "trace",
             "reflection_suggestions",
+            "legal_authority_sections",
+            "legal_compliance_statements",
+            "adapted_messages",
+            "recommended_packet_emphasis",
+            "attorney_exhibits_index",
+            "narrative_highlights",
         } and isinstance(value, list):
             merged[key] = list(merged.get(key) or []) + list(value)
         elif key == "confidence_scores" and isinstance(value, dict):
             merged[key] = {**(merged.get(key) or {}), **value}
         elif key == "onboarding_progress" and isinstance(value, dict):
             merged[key] = {**(merged.get(key) or {}), **value}
-        elif key in {"catalog_profile", "expected_earnings", "public_profile", "contract_terms", "distributor_sync_status", "persona_profile"} and isinstance(value, dict):
+        elif key in {
+            "catalog_profile",
+            "expected_earnings",
+            "public_profile",
+            "contract_terms",
+            "distributor_sync_status",
+            "persona_profile",
+            "legal_structured_packet",
+            "legal_appendix",
+            "escalation_prepared_packet",
+            "negotiation_tone_profile",
+            "payer_behavior_profile",
+            "attorney_briefing_packet",
+            "attorney_case_file",
+            "attorney_packet_metadata",
+            "narrative_sections",
+            "attorney_export_package",
+            "attorney_export_manifest",
+        } and isinstance(value, dict):
             merged[key] = {**(merged.get(key) or {}), **value}
         else:
             merged[key] = value
@@ -250,6 +310,15 @@ def _supervisor_next(state: XR7State) -> str:
 
     if not state.get("fast_track_claim") and (state.get("anomalies") or []):
         return "first_claim_fast_track"
+
+    # Legal authority must run when evidence exists, when negotiation is active,
+    # or when an export flow was requested.
+    legal_done = float((state.get("confidence_scores") or {}).get("legal_authority_agent", 0.0) or 0.0) > 0.0
+    has_evidence_packet = bool(state.get("evidence_hashes") or state.get("legal_structured_packet"))
+    entering_negotiation = bool(state.get("negotiation_history") or state.get("negotiation_tone_profile"))
+    export_requested = bool(state.get("export_requested"))
+    if not legal_done and (has_evidence_packet or entering_negotiation or export_requested):
+        return "legal_authority_agent"
 
     if current in RECOVERY_ORDER:
         idx = RECOVERY_ORDER.index(current)
@@ -409,5 +478,42 @@ async def run_xr7_recovery_orchestra(artist_id: str, run_id: str | None = None) 
     return final_state
 
 
+async def run_export_prep_pipeline(artist_id: str, run_id: str | None = None) -> XR7State:
+    rid = run_id or _ARTIST_LATEST_RUN.get(artist_id) or str(uuid4())
+    state = dict(_RUN_STATE.get(rid) or initial_state(artist_id, rid))
+    state["export_requested"] = True
+
+    ordered = [
+        "evidence_verifier",
+        "claim_drafter",
+        "legal_authority_agent",
+        "legal_risk_scoring_agent",
+        "payer_behavior_prediction_agent",
+        "negotiation_tone_adapter_agent",
+        "claim_outcome_forecaster_agent",
+        "evidence_narrative_agent",
+        "legal_counsel_prep_agent",
+        "claim_escalation_agent",
+        "attorney_export_agent",
+    ]
+    for node in ordered:
+        state = await _run_node(state, node)
+        if state.get("next_action") == "reflection":
+            state = await _run_node(state, "reflection")
+            action = str(state.get("next_action") or "proceed")
+            pending = str(state.get("pending_agent") or "")
+            if action == "retry_previous_node" and pending in AGENTS:
+                state = await _run_node(state, pending)
+
+    _RUN_STATE[rid] = state
+    _ARTIST_LATEST_RUN[artist_id] = rid
+    _RUN_TRACE.setdefault(rid, [])
+    return state
+
+
 def run_xr7_recovery_orchestra_sync(artist_id: str, run_id: str | None = None) -> XR7State:
     return asyncio.run(run_xr7_recovery_orchestra(artist_id, run_id))
+
+
+def run_export_prep_pipeline_sync(artist_id: str, run_id: str | None = None) -> XR7State:
+    return asyncio.run(run_export_prep_pipeline(artist_id, run_id))

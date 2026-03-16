@@ -36,7 +36,7 @@ from XR7.anomaly.engine import AnomalyEngine
 from XR7.auth.event_notifications import send_event_notification
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
-from XR7.ingestion.statement_parser import parse_csv, SUPPORTED_FORMATS
+from XR7.ingestion.statement_parser import parse_csv, parse_statement_file, SUPPORTED_FORMATS
 from XR7.models.artist import Artist
 from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
@@ -47,6 +47,7 @@ from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
+from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
@@ -69,7 +70,7 @@ _MAX_BATCH_FILES = 100
 @router.get("/ingestion/supported-formats")
 def supported_formats() -> dict:
     """
-    Return the complete list of explicitly supported royalty statement CSV
+    Return the complete list of explicitly supported royalty statement
     formats, grouped by type (distributor, PRO, DSP, generic).
 
     For each format the response includes:
@@ -78,7 +79,7 @@ def supported_formats() -> dict:
     - ``key_columns`` — representative column headers from that format's CSV
     - ``description`` — how to obtain the file and what it covers
 
-    Any CSV that does not match an explicit format is handled by the
+    Any file that does not match an explicit format is handled by the
     ``"generic"`` fallback, which recognises any file with recognisable date,
     source, quantity, and amount columns.  This covers distributors such as
     Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
@@ -99,9 +100,9 @@ def supported_formats() -> dict:
         },
         "upload_endpoint": "POST /artists/{artist_id}/statements/upload",
         "note": (
-            "Upload any CSV file — the format is detected automatically from "
+            "Upload CSV/TSV/XLSX statements — format is detected automatically from "
             "the column headers.  If your distributor is not in the explicit "
-            "list, the generic fallback handles any CSV with date, source, "
+            "list, the generic fallback handles any statement with date, source, "
             "quantity, and amount columns."
         ),
     }
@@ -188,11 +189,11 @@ async def upload_statement(
     db: Session = Depends(get_db),
 ):
     """
-    Upload a royalty statement CSV and ingest it into the database.
+    Upload a royalty statement file and ingest it into the database.
 
     Supported formats are automatically detected from the column headers:
-    **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,
-    **Spotify for Artists**, and a **generic** fallback for any CSV with
+        **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,
+        **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with
     recognisable date / amount / quantity columns.
 
     After ingestion, anomaly detection is run automatically so that any
@@ -213,11 +214,11 @@ async def upload_statement(
     # Gate: artist must have accepted the current T&C before submitting data.
     require_terms_accepted(artist_id, db)
 
-    if not file.filename or not file.filename.lower().endswith(".csv"):
+    if not file.filename or not file.filename.lower().endswith((".csv", ".tsv", ".xlsx")):
         raise HTTPException(
             status_code=400,
-            detail="Only CSV files are accepted.  "
-            "Export your statement as CSV from your distributor or PRO portal.",
+            detail="Only CSV/TSV/XLSX files are accepted.  "
+            "Export your statement from your distributor or PRO portal.",
         )
 
     content = await file.read()
@@ -256,7 +257,7 @@ async def upload_statement(
     )
 
     # Parse
-    result = parse_csv(content, artist_id)
+    result = parse_statement_file(content, artist_id, filename=file.filename or "statement.csv")
     status = "PROCESSED"
     error_summary: str | None = None
 
@@ -353,6 +354,12 @@ async def upload_statement(
         except Exception:  # noqa: BLE001
             logger.exception("Failed to enqueue HubSpot first statement sync", extra={"artist_id": artist_id})
 
+    if status != "FAILED" and result.format_detected == "soundcloud":
+        try:
+            on_soundcloud_statement_upload.delay(artist_id, statement.id)
+        except Exception:  # noqa: BLE001
+            logger.exception("Failed to enqueue SoundCloud statement follow-up workflow", extra={"artist_id": artist_id})
+
     if status == "FAILED":
         raise HTTPException(
             status_code=422,
@@ -360,9 +367,9 @@ async def upload_statement(
                 "message": "Statement could not be parsed.",
                 "errors": result.errors[:10],
                 "hint": (
-                    "Ensure the CSV has column headers in the first row.  "
+                    "Ensure the file has column headers in the first row.  "
                     "Supported formats: DistroKid, TuneCore, CD Baby, ASCAP, BMI, "
-                    "Spotify for Artists, or any generic CSV with date/amount columns."
+                    "Spotify for Artists, SoundCloud, or any generic statement with date/amount columns."
                 ),
             },
         )
@@ -408,7 +415,7 @@ async def upload_statement_batch(
         if lower.endswith(".zip"):
             with zipfile.ZipFile(io.BytesIO(raw)) as zf:
                 for name in zf.namelist():
-                    if name.lower().endswith(".csv"):
+                    if name.lower().endswith((".csv", ".tsv", ".xlsx")):
                         expanded.append((name, zf.read(name)))
         elif lower.endswith(".pdf"):
             # PDF support: store as statement record with no parsed events; OCR/parser hook can be added later.
@@ -441,7 +448,7 @@ async def upload_statement_batch(
                 result.errors = ["PDF parsing deferred to OCR pipeline"]
                 result.format_detected = "pdf_placeholder"
             else:
-                result = parse_csv(content, artist_id)
+                result = parse_statement_file(content, artist_id, filename=filename)
             events_created = _save_events(db, result.events)
             payments_created = _save_payments(db, result.payments)
 
