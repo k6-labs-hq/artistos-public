@@ -17,6 +17,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
+          # Keep this pinned: OpenAPI schema output differs across Python minor versions,
+          # and 3.12 matches the checked-in generated artifacts.
           python-version: '3.12'
 
       - name: Install dependencies
