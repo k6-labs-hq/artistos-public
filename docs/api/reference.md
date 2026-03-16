@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 223
+Total endpoints: 229
 
 ## Endpoint Table
 
@@ -58,6 +58,8 @@ Total endpoints: 223
 | onboarding | GET | /artists/{artist_id}/connect/permissions-dashboard | Permissions Dashboard | permissions_dashboard_artists__artist_id__connect_permissions_dashboard_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/permissions-dashboard |
 | ingestion | POST | /artists/{artist_id}/connect/regional-global | Connect Regional Global | connect_regional_global_artists__artist_id__connect_regional_global_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect/regional-global |
 | ingestion | GET | /artists/{artist_id}/connect/regional-global/status | Regional Global Status | regional_global_status_artists__artist_id__connect_regional_global_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/regional-global/status |
+| connect | POST | /artists/{artist_id}/connect/soundcloud | Connect Soundcloud | connect_soundcloud_artists__artist_id__connect_soundcloud_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect/soundcloud |
+| connect | GET | /artists/{artist_id}/connect/soundcloud/status | Connect Soundcloud Status | connect_soundcloud_status_artists__artist_id__connect_soundcloud_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/soundcloud/status |
 | ingestion | POST | /artists/{artist_id}/connect/soundexchange-mlc | Connect Soundexchange Mlc | connect_soundexchange_mlc_artists__artist_id__connect_soundexchange_mlc_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect/soundexchange-mlc |
 | ingestion | GET | /artists/{artist_id}/connect/soundexchange-mlc/status | Soundexchange Mlc Status | soundexchange_mlc_status_artists__artist_id__connect_soundexchange_mlc_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/soundexchange-mlc/status |
 | artists | POST | /artists/{artist_id}/connect/{provider} | Connect Provider | connect_provider_artists__artist_id__connect__provider__post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect/<provider> |
@@ -147,6 +149,10 @@ Total endpoints: 223
 | ingestion | POST | /artists/{artist_id}/statements/upload-batch | Upload Statement Batch | upload_statement_batch_artists__artist_id__statements_upload_batch_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/statements/upload-batch |
 | ingestion | GET | /artists/{artist_id}/statements/{statement_id} | Get Statement | get_statement_artists__artist_id__statements__statement_id__get | - | StatementSchema | curl -X GET http://localhost:8000/artists/<artist_id>/statements/<statement_id> |
 | artists | GET | /artists/{artist_id}/summary | Artist Summary | artist_summary_artists__artist_id__summary_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/summary |
+| support | POST | /artists/{artist_id}/support/action | Support Action | support_action_artists__artist_id__support_action_post | SupportActionRequest | SupportActionResponse | curl -X POST http://localhost:8000/artists/<artist_id>/support/action -H 'Content-Type: application/json' -d '{}' |
+| support | POST | /artists/{artist_id}/support/chat | Support Chat | support_chat_artists__artist_id__support_chat_post | SupportChatRequest | SupportChatResponse | curl -X POST http://localhost:8000/artists/<artist_id>/support/chat -H 'Content-Type: application/json' -d '{}' |
+| support | GET | /artists/{artist_id}/support/history | Support History | support_history_artists__artist_id__support_history_get | - | SupportHistoryResponse | curl -X GET http://localhost:8000/artists/<artist_id>/support/history |
+| support | GET | /artists/{artist_id}/support/suggestions | Support Suggestions | support_suggestions_artists__artist_id__support_suggestions_get | - | SupportSuggestionResponse | curl -X GET http://localhost:8000/artists/<artist_id>/support/suggestions |
 | onboarding | GET | /artists/{artist_id}/sync/jobs | List Sync Jobs | list_sync_jobs_artists__artist_id__sync_jobs_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/sync/jobs |
 | onboarding | POST | /artists/{artist_id}/sync/jobs | Create Sync Job | create_sync_job_artists__artist_id__sync_jobs_post | SyncJobCreateRequest | SyncJobSchema | curl -X POST http://localhost:8000/artists/<artist_id>/sync/jobs -H 'Content-Type: application/json' -d '{}' |
 | onboarding | POST | /artists/{artist_id}/sync/jobs/requeue-due | Requeue Due Sync Jobs | requeue_due_sync_jobs_artists__artist_id__sync_jobs_requeue_due_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/sync/jobs/requeue-due |

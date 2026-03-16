@@ -2866,7 +2866,7 @@
           "ingestion"
         ],
         "summary": "Supported Formats",
-        "description": "Return the complete list of explicitly supported royalty statement CSV\nformats, grouped by type (distributor, PRO, DSP, generic).\n\nFor each format the response includes:\n- ``name`` \u2014 human-readable distributor/PRO name\n- ``type`` \u2014 ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"``\n- ``key_columns`` \u2014 representative column headers from that format's CSV\n- ``description`` \u2014 how to obtain the file and what it covers\n\nAny CSV that does not match an explicit format is handled by the\n``\"generic\"`` fallback, which recognises any file with recognisable date,\nsource, quantity, and amount columns.  This covers distributors such as\nSongtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.",
+        "description": "Return the complete list of explicitly supported royalty statement\nformats, grouped by type (distributor, PRO, DSP, generic).\n\nFor each format the response includes:\n- ``name`` \u2014 human-readable distributor/PRO name\n- ``type`` \u2014 ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"``\n- ``key_columns`` \u2014 representative column headers from that format's CSV\n- ``description`` \u2014 how to obtain the file and what it covers\n\nAny file that does not match an explicit format is handled by the\n``\"generic\"`` fallback, which recognises any file with recognisable date,\nsource, quantity, and amount columns.  This covers distributors such as\nSongtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.",
         "operationId": "supported_formats_ingestion_supported_formats_get",
         "responses": {
           "200": {
@@ -2890,7 +2890,7 @@
           "ingestion"
         ],
         "summary": "Upload Statement",
-        "description": "Upload a royalty statement CSV and ingest it into the database.\n\nSupported formats are automatically detected from the column headers:\n**DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,\n**Spotify for Artists**, and a **generic** fallback for any CSV with\nrecognisable date / amount / quantity columns.\n\nAfter ingestion, anomaly detection is run automatically so that any\nunder-payment issues are immediately flagged.\n\nReturns a :class:`~XR7.models.statement.Statement` record summarising\nwhat was parsed and saved.\n\n**Requires prior acceptance of the Artist Recovery Services Agreement.**\nCall ``GET /terms`` to read the agreement and\n``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint\nreturns HTTP 403 until the artist has agreed to the terms.",
+        "description": "Upload a royalty statement file and ingest it into the database.\n\nSupported formats are automatically detected from the column headers:\n    **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,\n    **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with\nrecognisable date / amount / quantity columns.\n\nAfter ingestion, anomaly detection is run automatically so that any\nunder-payment issues are immediately flagged.\n\nReturns a :class:`~XR7.models.statement.Statement` record summarising\nwhat was parsed and saved.\n\n**Requires prior acceptance of the Artist Recovery Services Agreement.**\nCall ``GET /terms`` to read the agreement and\n``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint\nreturns HTTP 403 until the artist has agreed to the terms.",
         "operationId": "upload_statement_artists__artist_id__statements_upload_post",
         "parameters": [
           {
@@ -10844,8 +10844,29 @@
             "in": "header",
             "required": false,
             "schema": {
-              "type": "null",
+              "type": "string",
+              "default": "",
               "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
             }
           }
         ],
@@ -10893,8 +10914,29 @@
             "in": "header",
             "required": false,
             "schema": {
-              "type": "null",
+              "type": "string",
+              "default": "",
               "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
             }
           }
         ],
@@ -10942,8 +10984,29 @@
             "in": "header",
             "required": false,
             "schema": {
-              "type": "null",
+              "type": "string",
+              "default": "",
               "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
             }
           }
         ],
@@ -11118,6 +11181,86 @@
         }
       }
     },
+    "/artists/{artist_id}/connect/soundcloud": {
+      "post": {
+        "tags": [
+          "connect"
+        ],
+        "summary": "Connect Soundcloud",
+        "operationId": "connect_soundcloud_artists__artist_id__connect_soundcloud_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/connect/soundcloud/status": {
+      "get": {
+        "tags": [
+          "connect"
+        ],
+        "summary": "Connect Soundcloud Status",
+        "operationId": "connect_soundcloud_status_artists__artist_id__connect_soundcloud_status_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/fetchers/global-social": {
       "post": {
         "tags": [
@@ -11233,6 +11376,377 @@
             "content": {
               "application/json": {
                 "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/support/chat": {
+      "post": {
+        "tags": [
+          "support"
+        ],
+        "summary": "Support Chat",
+        "operationId": "support_chat_artists__artist_id__support_chat_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/support/history": {
+      "get": {
+        "tags": [
+          "support"
+        ],
+        "summary": "Support History",
+        "operationId": "support_history_artists__artist_id__support_history_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Thread Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportHistoryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/support/action": {
+      "post": {
+        "tags": [
+          "support"
+        ],
+        "summary": "Support Action",
+        "operationId": "support_action_artists__artist_id__support_action_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SupportActionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportActionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/support/suggestions": {
+      "get": {
+        "tags": [
+          "support"
+        ],
+        "summary": "Support Suggestions",
+        "operationId": "support_suggestions_artists__artist_id__support_suggestions_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupportSuggestionResponse"
+                }
               }
             }
           },
@@ -13936,6 +14450,20 @@
               }
             ],
             "title": "Display Name"
+          },
+          "profile_metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Metadata"
           }
         },
         "type": "object",
@@ -14817,6 +15345,10 @@
             ],
             "title": "Error Summary"
           },
+          "ingestion_metadata_json": {
+            "type": "string",
+            "title": "Ingestion Metadata Json"
+          },
           "uploaded_at": {
             "type": "string",
             "format": "date-time",
@@ -14836,6 +15368,7 @@
           "skipped_rows",
           "status",
           "error_summary",
+          "ingestion_metadata_json",
           "uploaded_at"
         ],
         "title": "StatementSchema"
@@ -15037,6 +15570,233 @@
         },
         "type": "object",
         "title": "StructuredFeedbackRequest"
+      },
+      "SupportActionRequest": {
+        "properties": {
+          "action": {
+            "type": "string",
+            "title": "Action",
+            "description": "one_of_safe_actions"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "action"
+        ],
+        "title": "SupportActionRequest"
+      },
+      "SupportActionResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "result": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Result"
+          },
+          "formatted_message": {
+            "type": "string",
+            "title": "Formatted Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "action",
+          "result",
+          "formatted_message"
+        ],
+        "title": "SupportActionResponse"
+      },
+      "SupportChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "maxLength": 4000,
+            "minLength": 1,
+            "title": "Message"
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "SupportChatRequest"
+      },
+      "SupportChatResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "response": {
+            "type": "string",
+            "title": "Response"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "suggested_quick_replies": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggested Quick Replies"
+          },
+          "escalate_recommended": {
+            "type": "boolean",
+            "title": "Escalate Recommended"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "thread_id",
+          "response",
+          "confidence",
+          "suggested_quick_replies",
+          "escalate_recommended"
+        ],
+        "title": "SupportChatResponse"
+      },
+      "SupportHistoryResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Cursor"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SupportMessageView"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "page",
+          "page_size",
+          "items"
+        ],
+        "title": "SupportHistoryResponse"
+      },
+      "SupportMessageView": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "thread_id": {
+            "type": "string",
+            "title": "Thread Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Metadata"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "thread_id",
+          "role",
+          "message",
+          "created_at"
+        ],
+        "title": "SupportMessageView"
+      },
+      "SupportSuggestionResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "suggestions"
+        ],
+        "title": "SupportSuggestionResponse"
       },
       "SyncJobCreateRequest": {
         "properties": {
