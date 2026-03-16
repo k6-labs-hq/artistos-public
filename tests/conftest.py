@@ -24,6 +24,7 @@ import XR7.models.admin_audit_log  # noqa: F401
 import XR7.models.ml_feedback  # noqa: F401
 import XR7.models.model_registry  # noqa: F401
 import XR7.models.catalog_segment  # noqa: F401
+import XR7.models.metadata_issue  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"

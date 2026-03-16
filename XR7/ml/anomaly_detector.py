@@ -83,6 +83,7 @@ def detect_payment_outliers(
     payments: list[dict],
     contamination: float = _IF_CONTAMINATION,
     peer_mean_amount: float | None = None,
+    metadata_quality_score: float | None = None,
 ) -> list[dict]:
     """
     Use an IsolationForest to find payments whose amount is anomalously high or
@@ -118,6 +119,8 @@ def detect_payment_outliers(
     for idx, (label, norm_score) in enumerate(zip(labels, normalized)):
         if label == -1:
             p = payments[idx]
+            quality = float(metadata_quality_score if metadata_quality_score is not None else 1.0)
+            quality_multiplier = 1.0 + max(0.0, min(1.0, (1.0 - quality))) * 0.15
             anomalies.append(
                 {
                     "artist_id": artist_id,
@@ -134,7 +137,16 @@ def detect_payment_outliers(
                     "model_version": _MODEL_VERSION,
                     "payment_index": idx,
                     "peer_baseline_amount": peer_mean_amount,
-                    "anomaly_score": round(float(0.8 * norm_score + 0.2 * min(abs((float(p.get('amount') or 0.0) - float(peer_mean_amount or p.get('amount') or 0.0)) / max(float(peer_mean_amount or 1.0), 1e-6)), 1.0)), 4),
+                    "anomaly_score": round(
+                        float(
+                            min(
+                                1.0,
+                                (0.8 * norm_score + 0.2 * min(abs((float(p.get('amount') or 0.0) - float(peer_mean_amount or p.get('amount') or 0.0)) / max(float(peer_mean_amount or 1.0), 1e-6)), 1.0))
+                                * quality_multiplier,
+                            )
+                        ),
+                        4,
+                    ),
                 }
             )
     return anomalies
@@ -149,6 +161,7 @@ def detect_rate_drift(
     events: list[dict],
     zscore_threshold: float = _ZSCORE_THRESHOLD,
     peer_unit_value_baseline: float | None = None,
+    metadata_quality_score: float | None = None,
 ) -> list[dict]:
     """
     Detect drift in per-unit rates (e.g. per-stream royalty rate) using a
@@ -188,6 +201,8 @@ def detect_rate_drift(
             if abs(z) > zscore_threshold:
                 direction = "HIGH" if z > 0 else "LOW"
                 severity = "HIGH" if abs(z) > zscore_threshold * 1.5 else "MEDIUM"
+                quality = float(metadata_quality_score if metadata_quality_score is not None else 1.0)
+                quality_multiplier = 1.0 + max(0.0, min(1.0, (1.0 - quality))) * 0.15
                 anomalies.append(
                     {
                         "artist_id": artist_id,
@@ -211,15 +226,18 @@ def detect_rate_drift(
                             float(
                                 min(
                                     1.0,
-                                    0.7
-                                    * np.clip((abs(z) - zscore_threshold) / max(zscore_threshold, 1e-6), 0.0, 1.0)
-                                    + 0.3
-                                    * np.clip(
-                                        abs(values[idx] - float(peer_unit_value_baseline or values[idx]))
-                                        / max(abs(float(peer_unit_value_baseline or 1.0)), 1e-6),
-                                        0.0,
-                                        1.0,
-                                    ),
+                                    (
+                                        0.7
+                                        * np.clip((abs(z) - zscore_threshold) / max(zscore_threshold, 1e-6), 0.0, 1.0)
+                                        + 0.3
+                                        * np.clip(
+                                            abs(values[idx] - float(peer_unit_value_baseline or values[idx]))
+                                            / max(abs(float(peer_unit_value_baseline or 1.0)), 1e-6),
+                                            0.0,
+                                            1.0,
+                                        )
+                                    )
+                                    * quality_multiplier,
                                 )
                             ),
                             4,
@@ -372,6 +390,7 @@ class MLAnomalyDetector:
                 payments,
                 contamination,
                 peer_mean_amount=peer_context.get("peer_mean_amount"),
+                metadata_quality_score=peer_context.get("metadata_quality_score"),
             )
         )
         results.extend(
@@ -380,6 +399,7 @@ class MLAnomalyDetector:
                 events,
                 zscore_threshold,
                 peer_unit_value_baseline=peer_context.get("peer_unit_value_baseline"),
+                metadata_quality_score=peer_context.get("metadata_quality_score"),
             )
         )
         results.extend(detect_missing_periodic_payments(artist_id, payments, expected_period_days))

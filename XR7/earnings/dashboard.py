@@ -48,6 +48,7 @@ from sqlalchemy.orm import Session
 from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.celero_transaction import CeleroTransaction, CeleroTxnStatus, CeleroTxnType
 from XR7.models.claim import Claim, ClaimStatus
+from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.payment import Payment
 from XR7.models.work import Work
 from XR7.earnings.engine import EarningsEngine
@@ -69,6 +70,7 @@ from XR7.ugc.global_scanner import GlobalUGCScanner
 from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.prevention.agent import PreventiveAgent
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 
 
 # Claim statuses that are still "in pursuit" (open / active)
@@ -147,6 +149,7 @@ class DashboardEngine:
         deadlines = self._deadlines_section(anomalies, claims, contracts, payments)
         priority_actions = self._priority_actions_section(anomalies, claims)
         calibration_health = self._calibration_health_section(artist_id)
+        metadata_health_prevention = self._metadata_health_prevention_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
         expected_value = self._expected_value_section(anomalies, claims, contracts, catalog_health)
         segment_insight = self._catalog_segment_section(works, payments, anomalies)
@@ -172,6 +175,7 @@ class DashboardEngine:
             "priority_actions": priority_actions,
             "expected_recovery_value": expected_value,
             "calibration_health": calibration_health,
+            "metadata_health_future_leakage_prevention": metadata_health_prevention,
             "catalog_health": catalog_health,
             "catalog_segments": segment_insight,
             "recovery_potential": recovery_potential,
@@ -715,6 +719,7 @@ class DashboardEngine:
         earnings_summary = engine.get_earnings_summary(artist_id, self.db)
 
         scorer = CatalogScorer()
+        metadata_health = MetadataRepairEngine(self.db).get_metadata_health(artist_id)
         report = scorer.score(
             artist_id=artist_id,
             works=works_dicts,
@@ -722,6 +727,7 @@ class DashboardEngine:
             anomalies=anomaly_dicts,
             claims=claim_dicts,
             earnings_summary=earnings_summary,
+            metadata_health=metadata_health,
         )
 
         result = report.to_dict()
@@ -731,6 +737,28 @@ class DashboardEngine:
             "grade": result.get("grade"),
             "signals": result.get("signals", {}),
             "recommendations": result.get("recommendations", []),
+        }
+
+    def _metadata_health_prevention_section(self, artist_id: str) -> dict[str, Any]:
+        issues = (
+            self.db.query(MetadataIssue)
+            .filter(MetadataIssue.artist_id == artist_id)
+            .order_by(MetadataIssue.created_at.desc())
+            .all()
+        )
+        health = MetadataRepairEngine(self.db).get_metadata_health(artist_id)
+        auto_repaired = [i for i in issues if str(i.repair_status) == "AUTO_REPAIRED"]
+        requiring_review = [i for i in issues if str(i.repair_status) == "REQUIRES_REVIEW"]
+
+        return {
+            "issues_found": len(issues),
+            "issues_auto_repaired": len(auto_repaired),
+            "issues_requiring_review": len(requiring_review),
+            "projected_leakage_avoided": round(sum(float(i.projected_leakage_avoided or 0.0) for i in auto_repaired), 2),
+            "completeness_score": health.get("completeness_score"),
+            "consistency_score": health.get("consistency_score"),
+            "identifier_coverage": health.get("identifier_coverage"),
+            "recommended_fixes": health.get("recommended_fixes"),
         }
 
     def _calibration_health_section(self, artist_id: str) -> dict:

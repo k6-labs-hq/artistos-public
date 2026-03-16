@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 233
+Total endpoints: 234
 
 ## Endpoint Table
 
@@ -35,6 +35,7 @@ Total endpoints: 233
 | onboarding | POST | /artists/{artist_id}/catalog/graph/build | Build Catalog Work Graph | build_catalog_work_graph_artists__artist_id__catalog_graph_build_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/catalog/graph/build |
 | onboarding | POST | /artists/{artist_id}/catalog/infer | Infer Catalog | infer_catalog_artists__artist_id__catalog_infer_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/catalog/infer |
 | recovery | GET | /artists/{artist_id}/catalog/integrity | Catalog Integrity | catalog_integrity_artists__artist_id__catalog_integrity_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/integrity |
+| onboarding | GET | /artists/{artist_id}/catalog/metadata-health | Catalog Metadata Health | catalog_metadata_health_artists__artist_id__catalog_metadata_health_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/metadata-health |
 | celero | POST | /artists/{artist_id}/celero/charge | Charge Contingency Fee | charge_contingency_fee_artists__artist_id__celero_charge_post | CeleroChargeRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/charge -H 'Content-Type: application/json' -d '{}' |
 | celero | PUT | /artists/{artist_id}/celero/customer | Update Celero Customer | update_celero_customer_artists__artist_id__celero_customer_put | CeleroRegisterRequest | ArtistSchema | curl -X PUT http://localhost:8000/artists/<artist_id>/celero/customer -H 'Content-Type: application/json' -d '{}' |
 | celero | POST | /artists/{artist_id}/celero/disburse | Disburse To Artist | disburse_to_artist_artists__artist_id__celero_disburse_post | CeleroDisburseRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/disburse -H 'Content-Type: application/json' -d '{}' |
@@ -189,7 +190,7 @@ Total endpoints: 233
 | claims | GET | /claims/{claim_id}/automation-plan | Claim Automation Plan | claim_automation_plan_claims__claim_id__automation_plan_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/automation-plan |
 | claims | POST | /claims/{claim_id}/escalate-legal | Escalate Legal | escalate_legal_claims__claim_id__escalate_legal_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/escalate-legal |
 | claims | POST | /claims/{claim_id}/evidence | Generate Evidence | generate_evidence_claims__claim_id__evidence_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/evidence |
-| expansion | POST | /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet | anchor_evidence_packet_claims__claim_id__evidence_anchor_post | - | EvidenceAnchorSchema | curl -X POST http://localhost:8000/claims/<claim_id>/evidence/anchor |
+| expansion | POST | /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet | anchor_evidence_packet_internal_immutable_log | - | EvidenceAnchorSchema | curl -X POST http://localhost:8000/claims/<claim_id>/evidence/anchor |
 | claims | GET | /claims/{claim_id}/evidence/export | Export Evidence Packet | export_evidence_packet_claims__claim_id__evidence_export_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/evidence/export |
 | claims | POST | /claims/{claim_id}/evidence/export | Export Evidence Packet Expert Mode | export_evidence_packet_expert_mode_claims__claim_id__evidence_export_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/evidence/export |
 | onboarding | POST | /claims/{claim_id}/evidence/generate-audit | Generate Audit Evidence Packet | generate_audit_evidence_packet_claims__claim_id__evidence_generate_audit_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/evidence/generate-audit |

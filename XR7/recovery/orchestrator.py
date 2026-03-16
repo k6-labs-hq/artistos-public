@@ -17,6 +17,7 @@ from XR7.models.event import Event
 from XR7.billing.engine import BillingEngine
 from XR7.models.payment import Payment
 from XR7.models.recovery_intelligence import RoyaltyLedgerEntry
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 
 
 class ClaimsOrchestrator:
@@ -287,6 +288,7 @@ class ClaimsOrchestrator:
 
         ledger_rows = self._ledger_rows_for_anomaly(anomaly, artist_id)
         proof_lines, proof_totals = self._build_ledger_proof(ledger_rows)
+        metadata_logs = MetadataRepairEngine(self.db_session).recent_repair_logs(artist_id, limit=150)
 
         anomaly_expected = self._money(anomaly.expected_amount if anomaly else 0.0)
         anomaly_actual = self._money(anomaly.actual_amount if anomaly else 0.0)
@@ -372,6 +374,9 @@ class ClaimsOrchestrator:
                 ],
             },
             "existing_claim_evidence": claim.evidence or {},
+            "metadata_repairs": {
+                "logs": metadata_logs,
+            },
             "events": [{"id": e.id, "event_type": self._enum_value(e.event_type), "timestamp": str(e.timestamp)} for e in events],
             "contracts": [{"id": c.id, "contract_type": self._enum_value(c.contract_type)} for c in contracts],
             "payments": [{"id": p.id, "amount": p.amount, "currency": p.currency} for p in payments],
@@ -380,6 +385,7 @@ class ClaimsOrchestrator:
                 "contract_count": len(contracts),
                 "payment_count": len(payments),
                 "proof_row_count": proof_totals["ledger_row_count"],
+                "metadata_repair_log_count": len(metadata_logs),
                 "discrepancy_flag": discrepancy_amount > 0.01,
             },
         }

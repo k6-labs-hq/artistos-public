@@ -17,6 +17,7 @@ import XR7.models.claim  # noqa: F401
 import XR7.models.contract  # noqa: F401
 import XR7.models.evidence_anchor  # noqa: F401
 import XR7.models.event  # noqa: F401
+import XR7.models.metadata_issue  # noqa: F401
 import XR7.models.immutable_ledger_entry  # noqa: F401
 import XR7.models.notification_preference  # noqa: F401
 import XR7.models.oauth_connector  # noqa: F401

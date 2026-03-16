@@ -23,6 +23,7 @@ from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.split_verification import verify_splits
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.hubspot_client import HubSpotClient
 from XR7.ugc.global_scanner import GlobalUGCScanner
 from XR7.ugc.usage_monitor import UGCUsageMonitor
@@ -268,6 +269,7 @@ async def CatalogAutoBuilderAgent(state: XR7State) -> XR7State:
     artist_id = str(state.get("artist_id") or "")
     db = SessionLocal()
     try:
+        metadata_health = MetadataRepairEngine(db).get_metadata_health(artist_id)
         works = db.query(Work).filter(Work.artist_id == artist_id).all()
         statements = db.query(Statement).filter(Statement.artist_id == artist_id).all()
         profile = {
@@ -278,6 +280,7 @@ async def CatalogAutoBuilderAgent(state: XR7State) -> XR7State:
             "pro_registrations": ["ASCAP", "BMI"],
             "distributors": sorted({s.format_detected for s in statements if s.format_detected}),
             "metadata_completeness": _safe_score((sum(1 for w in works if w.isrc) / len(works)) if works else 0.7),
+            "metadata_health": metadata_health,
         }
     finally:
         db.close()
@@ -356,6 +359,7 @@ async def AutoSplitResolverAgent(state: XR7State) -> XR7State:
     artist_id = str(state.get("artist_id") or "")
     db = SessionLocal()
     try:
+        repairs = MetadataRepairEngine(db).recent_repair_logs(artist_id, limit=200)
         works = db.query(Work).filter(Work.artist_id == artist_id).all()
         rights_rows = [
             {
@@ -376,7 +380,13 @@ async def AutoSplitResolverAgent(state: XR7State) -> XR7State:
             }
             for w in works
         ]
-        verification = verify_splits(artist_id, rights_rows, payout_rows, mismatch_threshold=0.03)
+        verification = verify_splits(
+            artist_id,
+            rights_rows,
+            payout_rows,
+            metadata_repairs=repairs,
+            mismatch_threshold=0.03,
+        )
     finally:
         db.close()
 
@@ -502,14 +512,35 @@ async def WelcomeSummaryAgent(state: XR7State) -> XR7State:
 
 
 async def AutoMetadataRegistrarAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
     profile = dict(state.get("catalog_profile") or {})
     isrcs = list(profile.get("isrcs") or [])
+    db = SessionLocal()
+    try:
+        health = MetadataRepairEngine(db).get_metadata_health(artist_id)
+    finally:
+        db.close()
+
     actions = []
     if not isrcs:
         actions.append({"type": "request_isrcs", "action": "Collect ISRC data from distributor exports"})
+    if int(health.get("issues_requiring_review") or 0) > 0:
+        actions.append(
+            {
+                "type": "metadata_review_required",
+                "action": "Review low-confidence metadata repairs before final registration sync",
+                "count": int(health.get("issues_requiring_review") or 0),
+            }
+        )
     actions.append({"type": "pro_registration_packet", "action": "Generate ASCAP/BMI registration payload for unregistered works"})
     score = 0.9 if isrcs else 0.8
-    return _finalize(state, agent_name="auto_metadata_registrar", score=score, updates={"registration_actions": actions}, decision="metadata registration plan prepared")
+    return _finalize(
+        state,
+        agent_name="auto_metadata_registrar",
+        score=score,
+        updates={"registration_actions": actions, "metadata_health": health},
+        decision="metadata registration plan prepared",
+    )
 
 
 async def RightsConflictDetectorAgent(state: XR7State) -> XR7State:

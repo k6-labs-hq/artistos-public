@@ -23,6 +23,8 @@ class XR7State(TypedDict, total=False):
     fixed_files: Annotated[list[dict[str, Any]], add]
     upload_errors: Annotated[list[str], add]
     catalog_profile: dict[str, Any]
+    metadata_health: dict[str, Any]
+    metadata_repairs: Annotated[list[dict[str, Any]], add]
     distributor_sync_status: dict[str, Any]
     explanations: Annotated[list[str], add]
     expected_earnings: dict[str, Any]
@@ -126,6 +128,8 @@ def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
         "fixed_files": [],
         "upload_errors": [],
         "catalog_profile": {},
+        "metadata_health": {},
+        "metadata_repairs": [],
         "distributor_sync_status": {},
         "explanations": [],
         "expected_earnings": {},

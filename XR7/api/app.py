@@ -55,6 +55,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.model_registry  # noqa: F401
     import XR7.models.catalog_segment  # noqa: F401
     import XR7.models.support_message  # noqa: F401
+    import XR7.models.metadata_issue  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 

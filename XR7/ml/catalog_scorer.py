@@ -29,8 +29,9 @@ import numpy as np
 
 _WEIGHTS: dict[str, float] = {
     "metadata_completeness": 0.20,
-    "payment_regularity": 0.25,
-    "anomaly_density": 0.25,
+    "metadata_consistency": 0.10,
+    "payment_regularity": 0.20,
+    "anomaly_density": 0.20,
     "recovery_rate": 0.15,
     "earnings_accuracy": 0.15,
 }
@@ -108,6 +109,12 @@ def _score_earnings_accuracy(earnings_summary: dict) -> float:
     return float(np.clip(ratio / 1.5, 0.0, 1.0))
 
 
+def _score_metadata_consistency(metadata_health: dict | None) -> float:
+    if not metadata_health:
+        return 0.5
+    return float(np.clip(float(metadata_health.get("consistency_score") or 0.5), 0.0, 1.0))
+
+
 # ---------------------------------------------------------------------------
 # Public data structures
 # ---------------------------------------------------------------------------
@@ -176,6 +183,7 @@ class CatalogScorer:
         anomalies: list[dict] | None = None,
         claims: list[dict] | None = None,
         earnings_summary: dict | None = None,
+        metadata_health: dict | None = None,
     ) -> CatalogHealthReport:
         """
         Compute the catalog health score and return a full report.
@@ -207,6 +215,7 @@ class CatalogScorer:
 
         signals = {
             "metadata_completeness": _score_metadata_completeness(works),
+            "metadata_consistency": _score_metadata_consistency(metadata_health),
             "payment_regularity": _score_payment_regularity(payments),
             "anomaly_density": _score_anomaly_density(anomalies, works),
             "recovery_rate": _score_recovery_rate(claims),
@@ -224,6 +233,11 @@ class CatalogScorer:
             risk_flags.append("LOW_METADATA_COMPLETENESS")
             recommendations.append(
                 "Register missing ISRC/ISWC identifiers to improve rights tracking."
+            )
+        if signals["metadata_consistency"] < 0.6:
+            risk_flags.append("METADATA_CONSISTENCY_DRIFT")
+            recommendations.append(
+                "Metadata repairs are pending review; finalize identifier reconciliation to prevent future leakage."
             )
         if signals["payment_regularity"] < 0.4:
             risk_flags.append("IRREGULAR_PAYMENTS")

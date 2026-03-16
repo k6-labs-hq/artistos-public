@@ -11,6 +11,8 @@ Provides artist-centric money-recovery tools:
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -55,6 +57,7 @@ from XR7.blockchain.split_verifier import SplitVerifier
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.recovery.underpayment_heatmap import build_underpayment_heatmap
 from XR7.recovery.underpayment_reconstruction import reconstruct_historical_underpayment
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.models.ml_feedback import CalibrationSnapshot
@@ -705,9 +708,22 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
         {"amount": p.amount}
         for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
     ]
+    end = datetime.now(timezone.utc)
+    start = datetime(2000, 1, 1, tzinfo=timezone.utc)
+    metadata_result = MetadataRepairEngine(db).run_historical_audit_and_repair(artist_id, start, end)
+    metadata_health = MetadataRepairEngine(db).get_metadata_health(artist_id)
+
     return {
         "artist_id": artist_id,
         **reconstruct_historical_underpayment(events, payments),
+        "metadata_audit": {
+            "issues_found": metadata_result.issues_found,
+            "issues_auto_repaired": metadata_result.auto_repaired,
+            "issues_requiring_review": metadata_result.requires_review,
+            "projected_leakage_avoided": metadata_result.projected_leakage_avoided,
+            "catalog_graph_version": metadata_result.graph_version,
+            "metadata_health": metadata_health,
+        },
     }
 
 

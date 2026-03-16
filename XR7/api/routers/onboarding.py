@@ -33,6 +33,7 @@ from XR7.models.terms_acceptance import TermsAcceptance
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.recovery_automation_engine import automate_recovery
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
 from XR7.services.workflow_orchestrator import XR7WorkflowService
 
@@ -531,6 +532,12 @@ def infer_catalog(artist_id: str, db: Session = Depends(get_db)):
     works = db.query(Work).filter(Work.artist_id == artist_id).all()
     rows = [{"id": w.id, "work_id": w.id, "streams": 0, "contributors": [], "owner": None} for w in works]
     return infer_catalog_relationships(rows)
+
+
+@router.get("/artists/{artist_id}/catalog/metadata-health")
+def catalog_metadata_health(artist_id: str, db: Session = Depends(get_db)):
+    _artist_or_404(artist_id, db)
+    return MetadataRepairEngine(db).get_metadata_health(artist_id)
 
 
 @router.post("/artists/{artist_id}/variance/scan")

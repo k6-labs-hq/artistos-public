@@ -7,8 +7,11 @@ from sqlalchemy.orm import Session
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.forecaster import EarningsForecaster
+from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.models.event import Event
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 
 router = APIRouter(tags=["earnings"])
 
@@ -53,7 +56,55 @@ def reconstruct_earnings(artist_id: str, body: ReconstructRequest, db: Session =
         raise HTTPException(status_code=404, detail="Artist not found")
     engine = get_engine()
     results = engine.reconstruct_historical(artist_id, body.start_date, body.end_date, db)
-    return {"artist_id": artist_id, "records": results}
+
+    metadata_engine = MetadataRepairEngine(db)
+    metadata_audit = metadata_engine.run_historical_audit_and_repair(
+        artist_id,
+        body.start_date,
+        body.end_date,
+    )
+    metadata_health = metadata_engine.get_metadata_health(artist_id)
+
+    events = (
+        db.query(Event)
+        .filter(
+            Event.artist_id == artist_id,
+            Event.timestamp >= body.start_date,
+            Event.timestamp <= body.end_date,
+        )
+        .all()
+    )
+    rate_report = RateBenchmarker().benchmark(
+        artist_id,
+        [
+            {
+                "event_type": str(e.event_type),
+                "unit_value": float(e.unit_value or 0.0),
+                "quantity": float(e.quantity or 0.0),
+                "territory": e.territory,
+                "metadata_quality_score": metadata_health.get("consistency_score"),
+            }
+            for e in events
+        ],
+    ).to_dict()
+    rate_report["metadata_health_context"] = {
+        "consistency_score": metadata_health.get("consistency_score"),
+        "identifier_coverage": metadata_health.get("identifier_coverage"),
+    }
+
+    return {
+        "artist_id": artist_id,
+        "records": results,
+        "metadata_audit": {
+            "issues_found": metadata_audit.issues_found,
+            "issues_auto_repaired": metadata_audit.auto_repaired,
+            "issues_requiring_review": metadata_audit.requires_review,
+            "projected_leakage_avoided": metadata_audit.projected_leakage_avoided,
+            "catalog_graph_version": metadata_audit.graph_version,
+            "metadata_health": metadata_health,
+        },
+        "rate_benchmark": rate_report,
+    }
 
 
 class ForecastRequest(BaseModel):

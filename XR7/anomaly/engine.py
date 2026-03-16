@@ -5,6 +5,7 @@ from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.anomaly_detector import MLAnomalyDetector
 from XR7.models.model_registry import ModelRegistryEntry
+from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.contract import Contract
 from XR7.models.event import Event
 from XR7.models.payment import Payment
@@ -103,6 +104,13 @@ class AnomalyEngine:
         peer_unit_values = [float(e.get("unit_value") or 0.0) for e in peer_events if float(e.get("unit_value") or 0.0) > 0.0]
         peer_unit_value_baseline = (sum(peer_unit_values) / max(len(peer_unit_values), 1)) if peer_unit_values else None
 
+        metadata_issues = db_session.query(MetadataIssue).filter(MetadataIssue.artist_id == artist_id).all()
+        repaired = sum(1 for m in metadata_issues if str(m.repair_status) == "AUTO_REPAIRED")
+        unresolved = sum(1 for m in metadata_issues if str(m.repair_status) in {"DETECTED", "REQUIRES_REVIEW"})
+        metadata_quality_score = 1.0
+        if metadata_issues:
+            metadata_quality_score = max(0.0, min(1.0, repaired / max(repaired + unresolved, 1)))
+
         anomalies = self._ml_detector.detect(
             artist_id,
             events=events,
@@ -110,6 +118,7 @@ class AnomalyEngine:
             peer_context={
                 "peer_mean_amount": peer_mean_amount,
                 "peer_unit_value_baseline": peer_unit_value_baseline,
+                "metadata_quality_score": metadata_quality_score,
             },
         )
 

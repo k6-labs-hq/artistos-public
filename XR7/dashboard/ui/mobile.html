@@ -466,6 +466,12 @@
     </section>
 
     <section class="card">
+      <h2>Metadata Health &amp; Future Leakage Prevention</h2>
+      <div class="metric-grid" id="metadataHealthMetrics"></div>
+      <ul class="list" id="metadataHealthList"></ul>
+    </section>
+
+    <section class="card">
       <h2>Claims Needing Payer Response</h2>
       <ul class="claim-list" id="claimList"></ul>
     </section>
@@ -525,6 +531,8 @@
     const statusEl = document.getElementById("status");
     const dashboardMetrics = document.getElementById("dashboardMetrics");
     const globalList = document.getElementById("globalList");
+    const metadataHealthMetrics = document.getElementById("metadataHealthMetrics");
+    const metadataHealthList = document.getElementById("metadataHealthList");
     const claimList = document.getElementById("claimList");
     const settingsStatus = document.getElementById("settingsStatus");
     const defaultGraceDaysInput = document.getElementById("defaultGraceDays");
@@ -636,6 +644,31 @@
       dashboardMetrics.appendChild(metricNode("In Pursuit", `$${Number(inPursuit).toFixed(2)}`));
       dashboardMetrics.appendChild(metricNode("Deposited", `$${Number(deposited).toFixed(2)}`));
       dashboardMetrics.appendChild(metricNode("Still Pursuing", `$${Number(balance).toFixed(2)}`));
+
+      const meta = data?.metadata_health_future_leakage_prevention || {};
+      metadataHealthMetrics.innerHTML = "";
+      metadataHealthMetrics.appendChild(metricNode("Issues Found", String(Number(meta.issues_found || 0))));
+      metadataHealthMetrics.appendChild(metricNode("Auto-Repaired", String(Number(meta.issues_auto_repaired || 0))));
+      metadataHealthMetrics.appendChild(metricNode("Needs Review", String(Number(meta.issues_requiring_review || 0))));
+      metadataHealthMetrics.appendChild(metricNode("Leakage Avoided", `$${Number(meta.projected_leakage_avoided || 0).toFixed(2)}`));
+
+      metadataHealthList.innerHTML = "";
+      const coverage = meta.identifier_coverage || {};
+      const coverageLine = document.createElement("li");
+      coverageLine.textContent = `Identifier coverage: ISRC ${Math.round(Number(coverage.isrc_coverage || 0) * 100)}% | ISWC ${Math.round(Number(coverage.iswc_coverage || 0) * 100)}% | Both ${Math.round(Number(coverage.both_coverage || 0) * 100)}%`;
+      metadataHealthList.appendChild(coverageLine);
+      const recs = Array.isArray(meta.recommended_fixes) ? meta.recommended_fixes : [];
+      if (!recs.length) {
+        const li = document.createElement("li");
+        li.textContent = "No pending metadata fixes. Catalog identifiers look healthy.";
+        metadataHealthList.appendChild(li);
+      } else {
+        for (const rec of recs.slice(0, 5)) {
+          const li = document.createElement("li");
+          li.textContent = `${rec.issue_type || "Issue"}: ${rec.reason || "Review recommended"} (confidence ${Number(rec.confidence || 0).toFixed(2)})`;
+          metadataHealthList.appendChild(li);
+        }
+      }
       await loadClaims();
       await loadPreferences();
       setStatus("Dashboard loaded.");

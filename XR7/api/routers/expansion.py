@@ -1084,7 +1084,11 @@ def estimate_withholding(
     }
 
 
-@router.post("/claims/{claim_id}/evidence/anchor", response_model=EvidenceAnchorSchema)
+@router.post(
+    "/claims/{claim_id}/evidence/anchor",
+    response_model=EvidenceAnchorSchema,
+    operation_id="anchor_evidence_packet_internal_immutable_log",
+)
 def anchor_evidence_packet(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:

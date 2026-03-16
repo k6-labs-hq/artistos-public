@@ -113,6 +113,7 @@ def compare_event_rates(
     artist_id: str,
     events: list[dict],
     benchmarks: dict | None = None,
+    metadata_quality_score: float | None = None,
 ) -> list[dict]:
     """
     Compare each event's ``unit_value`` against the applicable benchmark.
@@ -167,7 +168,9 @@ def compare_event_rates(
         p25, p50, p75 = bm["p25"], bm["p50"], bm["p75"]
         tier = _classify_rate_tier(uv, p50)
         shortfall = max(0.0, p50 - uv)
-        underpayment = round(shortfall * qty, 4)
+        quality = float(metadata_quality_score if metadata_quality_score is not None else 1.0)
+        quality_multiplier = 1.0 + max(0.0, min(1.0, (1.0 - quality))) * 0.10
+        underpayment = round(shortfall * qty * quality_multiplier, 4)
 
         results.append(
             {
@@ -182,6 +185,7 @@ def compare_event_rates(
                 "rate_tier": tier,
                 "shortfall_per_unit": round(shortfall, 6),
                 "estimated_underpayment": underpayment,
+                "metadata_quality_score": metadata_quality_score,
             }
         )
 
@@ -238,7 +242,15 @@ class RateBenchmarker:
         Run a full rate comparison for all events and return a
         :class:`BenchmarkReport`.
         """
-        comparisons = compare_event_rates(artist_id, events, self._benchmarks)
+        metadata_quality_score = None
+        if events and isinstance(events[0], dict):
+            metadata_quality_score = events[0].get("metadata_quality_score")
+        comparisons = compare_event_rates(
+            artist_id,
+            events,
+            self._benchmarks,
+            metadata_quality_score=metadata_quality_score,
+        )
 
         total_underpayment = 0.0
         by_type: dict[str, dict] = {}

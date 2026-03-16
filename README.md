@@ -340,6 +340,75 @@ curl -X GET "http://localhost:8000/artists/{artist_id}/dashboard"
 - **No direct portal integrations to get started**
 - **No manual anomaly triage for first draft**
 
+## Metadata Repair During Historical Analysis
+
+Metadata drift is one of the most common causes of future royalty leakage. If a catalog has identifier gaps or inconsistent naming, future royalties can be misrouted, delayed, or omitted.
+
+XR7 now runs a dedicated metadata repair phase during historical reconstruction:
+
+```
+POST /artists/{id}/earnings/reconstruct
+```
+
+### Why metadata drift causes leakage
+
+- ISRC/ISWC mismatches break cross-system matching between distributor, PRO, and payout records.
+- Title and artist-name variants create duplicate work identities.
+- Missing identifiers reduce match confidence and increase unresolved royalty rows.
+- Distributor naming drift weakens statement reconciliation over time.
+
+### What XR7 audits automatically
+
+- ISRC mismatches and malformed ISRC values
+- ISWC mismatches and malformed ISWC values
+- UPC inconsistencies in statement metadata
+- Title/artist naming variants
+- Distributor-specific naming drift
+- Missing identifiers
+- Duplicate work registrations
+- PRO/distributor crosswalk gaps
+
+Audit findings are written to `metadata_issues` with confidence, rationale, and chain-of-custody hashes.
+
+### What XR7 repairs automatically
+
+- Normalizes titles and naming variants
+- Resolves high-confidence identifier conflicts
+- Merges duplicate work registrations
+- Re-links royalty events to canonical work IDs
+- Flags low-confidence repairs for analyst review
+
+### How this reduces future discrepancies
+
+- Updates catalog graph nodes/edges to canonical metadata
+- Creates a versioned catalog graph snapshot for downstream ML reproducibility
+- Emits `METADATA_DRIFT_FUTURE_RISK` anomalies when unresolved metadata is likely to cause future leakage
+- Feeds metadata quality into Isolation Forest scoring, catalog health scoring, and rate benchmarking context
+
+### Artist-facing outcomes
+
+- Cleaner catalog identifiers with fewer payout mismatches
+- Early warnings before drift becomes missed money
+- Clear dashboard visibility via **Metadata Health & Future Leakage Prevention**
+- Evidence packets now include metadata repair logs:
+  - before/after values
+  - confidence scores
+  - repair rationale
+  - chain-of-custody hash
+
+### Metadata health endpoint
+
+```
+GET /artists/{id}/catalog/metadata-health
+```
+
+Returns:
+- completeness score
+- consistency score
+- identifier coverage
+- recommended fixes
+- projected leakage avoided through auto-repairs
+
 ## Pre-Populated Intake Form Integrations
 
 XR7 supports optional OAuth-assisted intake prefill. This speeds onboarding while keeping credential use scoped and transparent.

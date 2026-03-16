@@ -892,7 +892,7 @@
           "expansion"
         ],
         "summary": "Anchor Evidence Packet",
-        "operationId": "anchor_evidence_packet_claims__claim_id__evidence_anchor_post",
+        "operationId": "anchor_evidence_packet_internal_immutable_log",
         "parameters": [
           {
             "name": "claim_id",
@@ -8083,6 +8083,46 @@
         ],
         "summary": "Infer Catalog",
         "operationId": "infer_catalog_artists__artist_id__catalog_infer_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/catalog/metadata-health": {
+      "get": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Catalog Metadata Health",
+        "operationId": "catalog_metadata_health_artists__artist_id__catalog_metadata_health_get",
         "parameters": [
           {
             "name": "artist_id",

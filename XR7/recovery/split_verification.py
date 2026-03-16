@@ -9,17 +9,33 @@ def verify_splits(
     artist_id: str,
     rights_rows: list[dict[str, Any]],
     payout_rows: list[dict[str, Any]],
+    metadata_repairs: list[dict[str, Any]] | None = None,
     mismatch_threshold: float = 0.1,
 ) -> dict[str, Any]:
     """Compare expected rights splits against observed payout distribution."""
+    repair_map: dict[str, str] = {}
+    for row in metadata_repairs or []:
+        if str(row.get("issue_type") or "") != "DUPLICATE_WORK_REGISTRATION":
+            continue
+        before = row.get("before") or {}
+        after = row.get("after") or {}
+        canonical = str(after.get("canonical") or "")
+        for dup in before.get("duplicates") or []:
+            if canonical and dup:
+                repair_map[str(dup)] = canonical
+
+    def _canonical_work_id(raw: Any) -> str:
+        key = str(raw or "")
+        return repair_map.get(key, key)
+
     payout_index = {
-        (str(r.get("work_id")), str(r.get("territory") or "GLOBAL"), str(r.get("platform") or "ALL")): float(r.get("actual_split") or 0.0)
+        (_canonical_work_id(r.get("work_id")), str(r.get("territory") or "GLOBAL"), str(r.get("platform") or "ALL")): float(r.get("actual_split") or 0.0)
         for r in payout_rows
     }
 
     mismatches: list[dict[str, Any]] = []
     for row in rights_rows:
-        key = (str(row.get("work_id")), str(row.get("territory") or "GLOBAL"), str(row.get("platform") or "ALL"))
+        key = (_canonical_work_id(row.get("work_id")), str(row.get("territory") or "GLOBAL"), str(row.get("platform") or "ALL"))
         expected = float(row.get("expected_split") or 0.0)
         actual = float(payout_index.get(key, expected))
         delta = abs(expected - actual)
@@ -42,6 +58,7 @@ def verify_splits(
         "artist_id": artist_id,
         "mismatch_count": len(mismatches),
         "estimated_total_recoverable": round(total_recoverable, 2),
+        "metadata_repair_links_applied": len(repair_map),
         "mismatches": mismatches,
     }
 
