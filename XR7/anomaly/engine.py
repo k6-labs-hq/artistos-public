@@ -14,11 +14,15 @@ class AnomalyEngine:
         self.earnings_engine = earnings_engine
         self.rights_graph = rights_graph
 
+    @staticmethod
+    def _enum_value(value):
+        return getattr(value, "value", value)
+
     def _events_to_dicts(self, events) -> list[dict]:
         return [
             {
                 "id": e.id,
-                "event_type": str(e.event_type),
+                "event_type": self._enum_value(e.event_type),
                 "work_id": e.work_id,
                 "quantity": e.quantity,
                 "unit_value": e.unit_value,
@@ -33,10 +37,11 @@ class AnomalyEngine:
         return [
             {
                 "id": p.id,
-                "payment_type": str(p.payment_type),
+                "payment_type": self._enum_value(p.payment_type),
                 "amount": p.amount,
                 "currency": p.currency,
                 "source": p.source,
+                "received_at": p.received_at,
             }
             for p in payments
         ]
@@ -45,7 +50,7 @@ class AnomalyEngine:
         return [
             {
                 "id": c.id,
-                "contract_type": str(c.contract_type),
+                "contract_type": self._enum_value(c.contract_type),
                 "terms": c.terms,
                 "territory": c.territory,
             }

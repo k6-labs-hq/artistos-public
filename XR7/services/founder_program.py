@@ -10,6 +10,10 @@ from XR7.auth.event_notifications import send_event_notification
 from XR7.models.artist import Artist, ArtistLifecycleStatus
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.platform_config import PlatformConfig
+from xr7_common.logging import get_logger
+
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -242,4 +246,4 @@ def handle_founder_notifications(db: Session, artist: Artist, result: FounderAss
 
             hubspot_sync_recovery_update.delay(artist.id, event="founder_cohort_closed")
         except Exception:  # noqa: BLE001
-            pass
+            logger.exception("Failed to enqueue founder cohort closed HubSpot sync", extra={"artist_id": artist.id})

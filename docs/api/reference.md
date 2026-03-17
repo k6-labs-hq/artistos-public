@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 248
+Total endpoints: 253
 
 ## Endpoint Table
 
@@ -10,9 +10,13 @@ Total endpoints: 248
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | admin | GET | /admin/anomalies | List Anomalies | list_anomalies_admin_anomalies_get | - | - | curl -X GET http://localhost:8000/admin/anomalies |
 | admin | GET | /admin/artists | List Artists | list_artists_admin_artists_get | - | - | curl -X GET http://localhost:8000/admin/artists |
+| admin | POST | /admin/artists/{artist_id}/founder/assign | Assign Founder Manually | assign_founder_manually_admin_artists__artist_id__founder_assign_post | FounderAssignRequest | - | curl -X POST http://localhost:8000/admin/artists/<artist_id>/founder/assign -H 'Content-Type: application/json' -d '{}' |
 | admin | GET | /admin/audit-logs | List Audit Logs | list_audit_logs_admin_audit_logs_get | - | array | curl -X GET http://localhost:8000/admin/audit-logs |
 | admin | GET | /admin/claims | List Claims | list_claims_admin_claims_get | - | - | curl -X GET http://localhost:8000/admin/claims |
+| admin | PUT | /admin/founder/cohort-limit | Update Founder Cohort Limit | update_founder_cohort_limit_admin_founder_cohort_limit_put | FounderCohortLimitUpdateRequest | - | curl -X PUT http://localhost:8000/admin/founder/cohort-limit -H 'Content-Type: application/json' -d '{}' |
+| admin | GET | /admin/founders | Founder Roster | founder_roster_admin_founders_get | - | - | curl -X GET http://localhost:8000/admin/founders |
 | admin | GET | /admin/overview | Admin Overview | admin_overview_admin_overview_get | - | - | curl -X GET http://localhost:8000/admin/overview |
+| admin | GET | /admin/reports/founder-cohort | Founder Cohort Report | founder_cohort_report_admin_reports_founder_cohort_get | - | - | curl -X GET http://localhost:8000/admin/reports/founder-cohort |
 | admin | GET | /admin/reports/sol-risk | Sol Risk Report | sol_risk_report_admin_reports_sol_risk_get | - | - | curl -X GET http://localhost:8000/admin/reports/sol-risk |
 | admin | GET | /admin/review-queue | List Review Queue | list_review_queue_admin_review_queue_get | - | - | curl -X GET http://localhost:8000/admin/review-queue |
 | admin | GET | /admin/transactions | List Transactions | list_transactions_admin_transactions_get | - | - | curl -X GET http://localhost:8000/admin/transactions |
@@ -208,6 +212,7 @@ Total endpoints: 248
 | claims | POST | /claims/{claim_id}/reconcile | Reconcile Claim | reconcile_claim_claims__claim_id__reconcile_post | ReconcileRequest | ClaimSchema | curl -X POST http://localhost:8000/claims/<claim_id>/reconcile -H 'Content-Type: application/json' -d '{}' |
 | claims | GET | /claims/{claim_id}/sla-prediction | Claim Sla Prediction | claim_sla_prediction_claims__claim_id__sla_prediction_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/sla-prediction |
 | claims | GET | /claims/{claim_id}/strength-explainer | Claim Strength Explainer | claim_strength_explainer_claims__claim_id__strength_explainer_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/strength-explainer |
+| config | GET | /config/founder-status | Get Founder Status | get_founder_status_config_founder_status_get | - | - | curl -X GET http://localhost:8000/config/founder-status |
 | dashboard | GET | /dashboard/ui | Get Dashboard Ui | get_dashboard_ui_dashboard_ui_get | - | - | curl -X GET http://localhost:8000/dashboard/ui |
 | expansion | GET | /education/guides | Education Guides Index | education_guides_index_education_guides_get | - | - | curl -X GET http://localhost:8000/education/guides |
 | expansion | GET | /education/guides/{guide_id} | Education Guide Detail | education_guide_detail_education_guides__guide_id__get | - | - | curl -X GET http://localhost:8000/education/guides/{guide_id} |

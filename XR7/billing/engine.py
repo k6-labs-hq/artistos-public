@@ -13,6 +13,8 @@ from XR7.trolley.client import TrolleyClient, TrolleyException
 
 
 class BillingEngine:
+    CONTINGENCY_RATE = 0.10
+
     def __init__(self, db_session: Session):
         self.db_session = db_session
         self._invoices: dict[str, dict] = {}
@@ -29,11 +31,15 @@ class BillingEngine:
             self.db_session.flush()
         return fallback
 
-    def calculate_contingency_fee(self, recovered_amount: float, artist_id: str) -> float:
-        fee_pct = self._artist_fee_percent(artist_id)
+    def calculate_contingency_fee(self, recovered_amount: float, artist_id: str | None = None) -> float:
+        if artist_id:
+            fee_pct = self._artist_fee_percent(artist_id)
+        else:
+            # Compatibility path used by legacy tests and callers without artist context.
+            fee_pct = self.CONTINGENCY_RATE * 100.0
         return recovered_amount * (fee_pct / 100.0)
 
-    def create_invoice(self, claim_id: str, recovered_amount: float, currency: str, artist_id: str) -> dict:
+    def create_invoice(self, claim_id: str, recovered_amount: float, currency: str, artist_id: str | None = None) -> dict:
         invoice_id = str(uuid.uuid4())
         contingency_fee = self.calculate_contingency_fee(recovered_amount, artist_id)
         invoice = {
