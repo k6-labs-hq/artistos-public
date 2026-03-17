@@ -1,0 +1,61 @@
+name: API Contract Guard
+
+on:
+  pull_request:
+    paths:
+      - XR7/**
+      - xr7_common/**
+      - openapi/openapi.json
+      - scripts/export_openapi.py
+      - scripts/ci/check_openapi_breaking.py
+      - .github/workflows/api-contract-guard.yml
+
+jobs:
+  breaking-openapi-check:
+    runs-on: ubuntu-latest
+    env:
+      REQUIRED_APPROVAL_LABEL: api-breaking-approved
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Fetch base branch
+        run: git fetch origin "${{ github.base_ref }}" --depth=1
+
+      - name: Extract base OpenAPI schema
+        run: git show "origin/${{ github.base_ref }}:openapi/openapi.json" > /tmp/base_openapi.json
+
+      - name: Detect breaking OpenAPI changes
+        id: openapi_breaking
+        continue-on-error: true
+        run: python scripts/ci/check_openapi_breaking.py /tmp/base_openapi.json openapi/openapi.json
+
+      - name: Check approval label presence
+        id: label_check
+        run: |
+          LABELS='${{ toJson(github.event.pull_request.labels.*.name) }}'
+          echo "labels=$LABELS" >> "$GITHUB_OUTPUT"
+          if echo "$LABELS" | grep -q '"'"$REQUIRED_APPROVAL_LABEL"'"'; then
+            echo "approved=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "approved=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Fail on unapproved breaking API change
+        if: steps.openapi_breaking.outcome == 'failure' && steps.label_check.outputs.approved != 'true'
+        run: |
+          echo "Breaking OpenAPI changes detected without required PR label: $REQUIRED_APPROVAL_LABEL"
+          echo "Add the label only after explicit API contract review and approval."
+          exit 1
+
+      - name: Report approved breaking API change
+        if: steps.openapi_breaking.outcome == 'failure' && steps.label_check.outputs.approved == 'true'
+        run: |
+          echo "Breaking OpenAPI change detected, but approval label is present: $REQUIRED_APPROVAL_LABEL"

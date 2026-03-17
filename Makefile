@@ -1,7 +1,9 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat
+.PHONY: install run test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking
+
+BASE_REF ?= origin/main
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
@@ -11,6 +13,13 @@ run:
 
 test:
 	$(PYTHON) -m pytest tests -v
+
+check-runtime-stubs:
+	$(PYTHON) scripts/ci/check_runtime_stubs.py
+
+check-openapi-breaking:
+	git show $(BASE_REF):openapi/openapi.json > /tmp/base_openapi.json
+	$(PYTHON) scripts/ci/check_openapi_breaking.py /tmp/base_openapi.json openapi/openapi.json
 
 lint:
 	$(PYTHON) -m py_compile XR7/api/app.py
