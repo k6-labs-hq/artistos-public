@@ -108,7 +108,8 @@ class DistributorConnector(BaseConnector):
             f"{self.distributor_name} API integration is not yet configured and no statement backfill files "
             f"were provided. Required env vars for API mode: {', '.join(self._required_env_vars())}. "
             f"For file mode, provide config['statement_files'] or "
-            f"{self.distributor_name.upper().replace(' ', '_')}_STATEMENT_FILES."
+            f"{self.distributor_name.upper().replace(' ', '_')}_STATEMENT_FILES. "
+            f"You can always upload files through POST /artists/{{artist_id}}/statements/upload."
         )
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
