@@ -12,7 +12,7 @@ complete picture of their recovery status:
 - **in_pursuit** — currently active claims (IDENTIFIED → ACCEPTED),
   the total dollar amount being chased, and closed-claim totals.
 
-- **recovered_and_deposited** — Celero DISBURSEMENT transactions that
+- **recovered_and_deposited** — Trolley disbursement transactions that
   have already landed in the artist's bank account, with a per-deposit
   log so they can reconcile against their bank statement.
 
@@ -117,8 +117,8 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     - ``total_net_recovered`` — gross minus XR7 contingency fees
 
     **recovered_and_deposited**
-    - ``total_deposited`` — sum of all Celero disbursements received
-    - ``deposits`` — per-deposit log with Celero transaction IDs
+    - ``total_deposited`` — sum of all Trolley disbursements received
+    - ``deposits`` — per-deposit log with Trolley payment IDs
 
     **balance_still_pursuing**
     - ``balance_still_pursuing`` — the key number: money we are still chasing

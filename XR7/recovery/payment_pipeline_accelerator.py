@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 def billing_acceleration_status(claim_count: int, failed_disbursements: int = 0) -> dict:
-    """Return Celero acceleration signals for pre-auth, batching, prediction and retry posture."""
+    """Return payout acceleration signals for pre-auth, batching, prediction and retry posture."""
     batching_efficiency = max(0.1, min(1.0, 1.0 - (failed_disbursements / max(claim_count, 1))))
     return {
         "pre_authorization_checks": "enabled",

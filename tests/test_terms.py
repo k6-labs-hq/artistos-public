@@ -102,9 +102,9 @@ class TestGetTerms:
         data = client.get("/terms").json()
         assert "10%" in data["text"] or "ten percent" in data["text"].lower()
 
-    def test_text_contains_celero_reference(self):
+    def test_text_contains_trolley_reference(self):
         data = client.get("/terms").json()
-        assert "Celero" in data["text"]
+        assert "Trolley" in data["text"]
 
     def test_text_contains_disbursement_language(self):
         data = client.get("/terms").json()

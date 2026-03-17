@@ -114,7 +114,7 @@ def _seed_recovery_portfolio(artist_id: str = "artist-portfolio-1") -> dict[str,
             artist_id=artist_id,
             amount=210.0,
             currency="USD",
-            source="Celero",
+            source="Trolley",
             received_at=datetime.now(timezone.utc),
         )
     )

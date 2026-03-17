@@ -29,9 +29,14 @@ class Artist(Base):
     status: Mapped[str] = mapped_column(String, default=ArtistLifecycleStatus.NEW.value, index=True)
     onboarded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     activated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    # Celero Commerce — Merchant of Record
-    # Populated when the artist is registered via POST /artists/{id}/celero/register
-    celero_customer_vault_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    first_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    country_code: Mapped[str] = mapped_column(String, nullable=False, default="US")
+    trolley_recipient_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    payout_account_status: Mapped[str] = mapped_column(String, nullable=False, default="not_started")
+    payout_method_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    payout_last4: Mapped[str | None] = mapped_column(String, nullable=True)
+    tax_form_status: Mapped[str] = mapped_column(String, nullable=False, default="pending")
     default_attorney_grace_period_days: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
     primary_jurisdiction: Mapped[str] = mapped_column(String, nullable=False, default="USA")
     preferred_contract_type: Mapped[str] = mapped_column(String, nullable=False, default="recording")
@@ -51,7 +56,14 @@ class ArtistSchema(BaseModel):
     status: ArtistLifecycleStatus
     onboarded_at: datetime | None = None
     activated_at: datetime | None = None
-    celero_customer_vault_id: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    country_code: str = "US"
+    trolley_recipient_id: str | None = None
+    payout_account_status: str = "not_started"
+    payout_method_type: str | None = None
+    payout_last4: str | None = None
+    tax_form_status: str = "pending"
     default_attorney_grace_period_days: int = 60
     primary_jurisdiction: str = "USA"
     preferred_contract_type: str = "recording"
@@ -61,6 +73,9 @@ class ArtistSchema(BaseModel):
 class ArtistCreate(BaseModel):
     name: str
     email: str | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+    country_code: str = "US"
     role: str | None = None
     ipi_number: str | None = None
     stage_names: list[str] | None = None

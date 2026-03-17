@@ -5,7 +5,7 @@ Validates:
 - DashboardEngine.compute() returns all expected sections
 - leakage_discovered correctly totals estimated_recoverable
 - in_pursuit correctly counts and sums active claims
-- recovered_and_deposited only counts APPROVED/SETTLED disbursements
+- recovered_and_deposited only counts PAID disbursements
 - balance_still_pursuing math
 - activity_feed includes all three event types, newest first
 - API endpoint returns 200 with the right structure
@@ -24,10 +24,10 @@ from XR7.api.app import app
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
-from XR7.models.celero_transaction import (
-    CeleroTransaction,
-    CeleroTxnStatus,
-    CeleroTxnType,
+from XR7.models.trolley_transaction import (
+    TrolleyTransaction,
+    TrolleyTxnStatus,
+    TrolleyTxnType,
 )
 from XR7.models.claim import Claim, ClaimStatus
 
@@ -121,18 +121,18 @@ def _add_claim(db, artist_id, anomaly_id, *, status=ClaimStatus.IDENTIFIED,
     return c
 
 
-def _add_disbursement(db, artist_id, *, amount=450.0, status=CeleroTxnStatus.SETTLED,
-                      claim_id=None, celero_transaction_id=None, currency="USD"):
+def _add_disbursement(db, artist_id, *, amount=450.0, status=TrolleyTxnStatus.PAID,
+                      claim_id=None, trolley_payment_id=None, currency="USD"):
     ts = _next_ts()
-    t = CeleroTransaction(
+    t = TrolleyTransaction(
         id=str(uuid.uuid4()),
         artist_id=artist_id,
         claim_id=claim_id,
-        type=CeleroTxnType.DISBURSEMENT,
-        amount=amount,
-        currency=currency,
+        type=TrolleyTxnType.DISBURSEMENT,
+        net_amount=amount,
+        source_currency=currency,
         status=status,
-        celero_transaction_id=celero_transaction_id or f"TXN-{uuid.uuid4().hex[:8]}",
+        trolley_payment_id=trolley_payment_id or f"PAY-{uuid.uuid4().hex[:8]}",
         created_at=ts,
         updated_at=ts,
     )
@@ -252,46 +252,46 @@ class TestDashboardEngineDeposited:
         assert dep["deposit_count"] == 0
 
     def test_settled_disbursements_counted(self, db, artist):
-        _add_disbursement(db, artist.id, amount=900.0, status=CeleroTxnStatus.SETTLED)
+        _add_disbursement(db, artist.id, amount=900.0, status=TrolleyTxnStatus.PAID)
         dep = DashboardEngine(db).compute(artist.id)["recovered_and_deposited"]
         assert dep["total_deposited"] == pytest.approx(900.0)
         assert dep["deposit_count"] == 1
 
     def test_approved_disbursements_counted(self, db, artist):
-        _add_disbursement(db, artist.id, amount=300.0, status=CeleroTxnStatus.APPROVED)
+        _add_disbursement(db, artist.id, amount=300.0, status=TrolleyTxnStatus.PAID)
         dep = DashboardEngine(db).compute(artist.id)["recovered_and_deposited"]
         assert dep["total_deposited"] == pytest.approx(300.0)
 
     def test_pending_disbursements_not_counted_as_deposited(self, db, artist):
-        _add_disbursement(db, artist.id, amount=500.0, status=CeleroTxnStatus.PENDING)
+        _add_disbursement(db, artist.id, amount=500.0, status=TrolleyTxnStatus.PENDING)
         dep = DashboardEngine(db).compute(artist.id)["recovered_and_deposited"]
         assert dep["total_deposited"] == pytest.approx(0.0)
         assert dep["deposit_count"] == 0
 
     def test_failed_disbursements_not_counted(self, db, artist):
-        _add_disbursement(db, artist.id, amount=200.0, status=CeleroTxnStatus.FAILED)
+        _add_disbursement(db, artist.id, amount=200.0, status=TrolleyTxnStatus.FAILED)
         dep = DashboardEngine(db).compute(artist.id)["recovered_and_deposited"]
         assert dep["total_deposited"] == pytest.approx(0.0)
 
     def test_deposits_list_has_expected_fields(self, db, artist):
-        _add_disbursement(db, artist.id, amount=750.0, status=CeleroTxnStatus.SETTLED,
-                          celero_transaction_id="TXN-DEPOSIT-1")
+        _add_disbursement(db, artist.id, amount=750.0, status=TrolleyTxnStatus.PAID,
+                          trolley_payment_id="PAY-DEPOSIT-1")
         dep = DashboardEngine(db).compute(artist.id)["recovered_and_deposited"]
         assert len(dep["deposits"]) == 1
         d = dep["deposits"][0]
         assert d["amount"] == pytest.approx(750.0)
-        assert d["celero_transaction_id"] == "TXN-DEPOSIT-1"
+        assert d["trolley_payment_id"] == "PAY-DEPOSIT-1"
         assert "deposited_at" in d
 
     def test_charge_transactions_not_included_in_deposited(self, db, artist):
-        """CHARGE (fee collection) should never appear in the deposited section."""
-        t = CeleroTransaction(
+        """REMITTANCE records should never appear in the deposited section."""
+        t = TrolleyTransaction(
             id=str(uuid.uuid4()),
             artist_id=artist.id,
-            type=CeleroTxnType.CHARGE,
-            amount=100.0,
-            currency="USD",
-            status=CeleroTxnStatus.APPROVED,
+            type=TrolleyTxnType.REMITTANCE,
+            gross_amount=100.0,
+            source_currency="USD",
+            status=TrolleyTxnStatus.PAID,
             created_at=_next_ts(),
             updated_at=_next_ts(),
         )
@@ -315,21 +315,21 @@ class TestDashboardEngineBalance:
         assert bal["balance_still_pursuing"] == pytest.approx(1000.0)
 
     def test_settled_deposits_appear_in_total_deposited_to_date(self, db, artist):
-        _add_disbursement(db, artist.id, amount=600.0, status=CeleroTxnStatus.SETTLED)
+        _add_disbursement(db, artist.id, amount=600.0, status=TrolleyTxnStatus.PAID)
         bal = DashboardEngine(db).compute(artist.id)["balance_still_pursuing"]
         assert bal["total_deposited_to_date"] == pytest.approx(600.0)
 
     def test_pending_deposit_reduces_balance_still_pursuing(self, db, artist):
         anom = _add_anomaly(db, artist.id)
         _add_claim(db, artist.id, anom.id, status=ClaimStatus.ACCEPTED, recovered_amount=1000.0)
-        _add_disbursement(db, artist.id, amount=900.0, status=CeleroTxnStatus.APPROVED)
+        _add_disbursement(db, artist.id, amount=900.0, status=TrolleyTxnStatus.PROCESSING)
         bal = DashboardEngine(db).compute(artist.id)["balance_still_pursuing"]
         assert bal["total_pending_deposit"] == pytest.approx(900.0)
         assert bal["balance_still_pursuing"] == pytest.approx(100.0)
 
     def test_balance_never_negative(self, db, artist):
         """Even if deposits exceed active claims, balance floors at 0."""
-        _add_disbursement(db, artist.id, amount=5000.0, status=CeleroTxnStatus.APPROVED)
+        _add_disbursement(db, artist.id, amount=5000.0, status=TrolleyTxnStatus.PROCESSING)
         bal = DashboardEngine(db).compute(artist.id)["balance_still_pursuing"]
         assert bal["balance_still_pursuing"] >= 0.0
 
@@ -356,18 +356,18 @@ class TestDashboardActivityFeed:
         assert claim_events[0]["amount"] == pytest.approx(800.0)
 
     def test_payment_deposited_event_in_feed(self, db, artist):
-        _add_disbursement(db, artist.id, amount=720.0, status=CeleroTxnStatus.SETTLED,
-                          celero_transaction_id="TXN-FEED-1")
+        _add_disbursement(db, artist.id, amount=720.0, status=TrolleyTxnStatus.PAID,
+                          trolley_payment_id="PAY-FEED-1")
         feed = DashboardEngine(db).compute(artist.id)["activity_feed"]
         deposit_events = [e for e in feed if e["type"] == "PAYMENT_DEPOSITED"]
         assert len(deposit_events) == 1
         assert deposit_events[0]["amount"] == pytest.approx(720.0)
-        assert "TXN-FEED-1" in deposit_events[0]["detail"]
+        assert "PAY-FEED-1" in deposit_events[0]["detail"]
 
     def test_feed_sorted_newest_first(self, db, artist):
         anom = _add_anomaly(db, artist.id)
         _add_claim(db, artist.id, anom.id, status=ClaimStatus.IDENTIFIED)
-        _add_disbursement(db, artist.id, amount=100.0, status=CeleroTxnStatus.SETTLED)
+        _add_disbursement(db, artist.id, amount=100.0, status=TrolleyTxnStatus.PAID)
         feed = DashboardEngine(db).compute(artist.id)["activity_feed"]
         timestamps = [e["timestamp"] for e in feed]
         assert timestamps == sorted(timestamps, reverse=True)

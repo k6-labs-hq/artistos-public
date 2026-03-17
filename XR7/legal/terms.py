@@ -19,14 +19,14 @@ import hashlib
 # Version identifier — bump this whenever the text below changes.
 # ---------------------------------------------------------------------------
 
-TERMS_VERSION: str = "2026-03-05.1"
+TERMS_VERSION: str = "2026-03-17.1"
 
 # ---------------------------------------------------------------------------
 # Full legal text of the Artist Recovery Services Agreement.
 #
 # Drafting notes:
 #  - Contingency fee: 10% of gross recovery (no upfront cost to artist).
-#  - Fund routing: all recoveries received by XR7 / Celero Commerce
+#  - Fund routing: all recoveries received by XR7 / Trolley
 #    (Merchant of Record) are held in a segregated client account, net 10%
 #    fee, and disbursed to the artist's registered bank account as cleared.
 #  - Autonomous real-time monitoring: artist grants XR7 a limited, revocable
@@ -84,16 +84,17 @@ to provide the Recovery Services described herein on a contingency basis.
     recordings.
 
 1.5 "Gross Recovery" means the total amount of Recovered Funds received by
-    XR7 or its designated payment processor (Celero Commerce) from a
+    XR7 or its designated payment processor (Trolley) from a
     Responsible Party before deduction of the Contingency Fee.
 
 1.6 "Net Recovery" means Gross Recovery minus the Contingency Fee.
 
 1.7 "Contingency Fee" has the meaning set forth in Section 4.1.
 
-1.8 "Celero Commerce" means XR7's designated Merchant of Record and payment
-    processor responsible for receiving, holding, and disbursing Recovered
-    Funds pursuant to this Agreement.
+1.8 "Trolley" means XR7's designated payout processor responsible for
+    disbursing artist funds, recipient onboarding, and payout compliance.
+    Inbound remittances may be received by XR7 directly or via a designated
+    processor and are tracked on the Platform before payout.
 
 ───────────────────────────────────────────────────────────────────────────────
 
@@ -136,7 +137,7 @@ to provide the Recovery Services described herein on a contingency basis.
     revocable power of attorney, solely to the extent necessary to: (a) submit
     inquiries, disputes, and formal claims to Responsible Parties on Artist's
     behalf; (b) negotiate payment of Recovered Funds directly to XR7 or
-    Celero Commerce for the benefit of Artist; and (c) execute settlement
+    its designated processor for the benefit of Artist; and (c) execute settlement
     agreements valued at or below ten thousand United States dollars
     (USD $10,000.00) per individual claim without further written consent from
     Artist.  For any settlement exceeding USD $10,000.00, XR7 shall obtain
@@ -181,13 +182,12 @@ to provide the Recovery Services described herein on a contingency basis.
 
 5.  FUND COLLECTION, HOLDING, AND DISBURSEMENT
 
-5.1 Designated Merchant of Record.  All Recovered Funds shall be remitted by
-    Responsible Parties directly to Celero Commerce, XR7's designated
-    Merchant of Record and payment processor.  Celero Commerce holds all
-    inbound funds in a segregated client account maintained solely for Artist
-    disbursements.
+5.1 Designated Payment Flows.  Recovered Funds may be remitted directly to
+    XR7 (manual remittance) or through a designated payment processor.
+    XR7 records each remittance event in an immutable ledger and prepares
+    artist disbursements through Trolley.
 
-5.2 Disbursement Timeline.  XR7 shall cause Celero Commerce to disburse Net
+5.2 Disbursement Timeline.  XR7 shall cause Trolley to disburse Net
     Recovery amounts to Artist's registered bank account within five (5)
     business days of clearance of the received funds into the segregated
     client account.  "Clearance" means the earlier of: (a) confirmation that
@@ -213,9 +213,9 @@ to provide the Recovery Services described herein on a contingency basis.
     disbursement instructions within such period, the funds shall be subject to
     applicable state unclaimed property laws.
 
-5.6 Payment Credentials.  Artist's bank account and payment credentials are
-    stored exclusively within the Celero Commerce Customer Vault.  XR7
-    never stores or transmits raw payment card or ACH routing data.
+5.6 Payment Credentials.  Artist payout credentials and tax/compliance
+    onboarding data are handled through Trolley-hosted recipient flows.
+    XR7 never stores raw card or ACH account numbers.
 
 ───────────────────────────────────────────────────────────────────────────────
 
@@ -335,8 +335,8 @@ BY CLICKING "I AGREE AND SUBMIT" YOU CONFIRM THAT:
   ✓ You have read and understood this entire Agreement.
   ✓ You agree that XR7 will retain 10% of every recovery as a Contingency
     Fee, with the remaining 90% (Net Recovery) disbursed to you.
-  ✓ You authorise Celero Commerce to receive Recovered Funds on your behalf
-    and to disburse Net Recovery to your registered bank account.
+    ✓ You authorise XR7 and Trolley to process remittances and disburse
+        Net Recovery to your registered payout account.
   ✓ You grant XR7 the limited power of attorney described in Section 3.
   ✓ You confirm you have the legal authority to enter into this Agreement.
 

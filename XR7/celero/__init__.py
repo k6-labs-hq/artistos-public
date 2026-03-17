@@ -1,1 +1,0 @@
-# Celero Commerce integration package

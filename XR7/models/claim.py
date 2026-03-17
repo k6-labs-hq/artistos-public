@@ -17,6 +17,8 @@ class ClaimStatus(str, enum.Enum):
     PROOF_SUBMITTED = "PROOF_SUBMITTED"
     IN_REVIEW = "IN_REVIEW"
     ACCEPTED = "ACCEPTED"
+    FUNDS_RECEIVED = "FUNDS_RECEIVED"
+    DISBURSEMENT_FAILED = "DISBURSEMENT_FAILED"
     PAID = "PAID"
     CLOSED = "CLOSED"
 
@@ -32,6 +34,19 @@ class Claim(Base):
     recovered_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     currency: Mapped[str] = mapped_column(String, default="USD")
     contingency_fee: Mapped[float | None] = mapped_column(Float, nullable=True)
+    platform_fee_percent: Mapped[float] = mapped_column(Float, nullable=False, default=10.0)
+    platform_fee_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    artist_net_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    remittance_method: Mapped[str | None] = mapped_column(String, nullable=True)
+    remittance_reference_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    remittance_received_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    trolley_payment_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    trolley_payment_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    trolley_fx_rate: Mapped[float | None] = mapped_column(Float, nullable=True)
+    trolley_local_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
+    trolley_local_currency: Mapped[str | None] = mapped_column(String, nullable=True)
+    payout_retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    payout_failure_reason: Mapped[str | None] = mapped_column(String, nullable=True)
     evidence: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     payer_name: Mapped[str | None] = mapped_column(String, nullable=True)
     payer_contact: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -65,6 +80,19 @@ class ClaimSchema(BaseModel):
     recovered_amount: float | None = None
     currency: str
     contingency_fee: float | None = None
+    platform_fee_percent: float = 10.0
+    platform_fee_amount: float | None = None
+    artist_net_amount: float | None = None
+    remittance_method: str | None = None
+    remittance_reference_number: str | None = None
+    remittance_received_at: datetime | None = None
+    trolley_payment_id: str | None = None
+    trolley_payment_status: str | None = None
+    trolley_fx_rate: float | None = None
+    trolley_local_amount: float | None = None
+    trolley_local_currency: str | None = None
+    payout_retry_count: int = 0
+    payout_failure_reason: str | None = None
     evidence: dict | None = None
     payer_name: str | None = None
     payer_contact: str | None = None

@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from XR7.models.base import Base, engine
 from XR7.api.routers import artists, earnings, anomalies, claims, billing, recovery, widget
 from XR7.api.routers import ingestion
-from XR7.api.routers import celero as celero_router
+from XR7.api.routers import trolley as trolley_router
 from XR7.api.routers import dashboard as dashboard_router
 from XR7.api.routers import terms as terms_router
 from XR7.api.routers import intelligence as intelligence_router
@@ -58,6 +58,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.support_message  # noqa: F401
     import XR7.models.metadata_issue  # noqa: F401
     import XR7.models.branding_profile  # noqa: F401
+    import XR7.models.trolley_transaction  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -91,24 +92,24 @@ def _security_gate_status(env: str | None = None) -> dict[str, object]:
     signing_mode = os.environ.get("XR7_EVIDENCE_SIGNING_MODE", "hmac").strip().lower()
     rsa_private_set = bool(os.environ.get("XR7_EVIDENCE_PRIVATE_KEY_PEM"))
     rsa_public_set = bool(os.environ.get("XR7_EVIDENCE_PUBLIC_KEY_PEM"))
-    celero_webhook_secret_set = bool(os.environ.get("CELERO_WEBHOOK_SECRET"))
+    trolley_webhook_secret_set = bool(os.environ.get("TROLLEY_SECRET_KEY"))
 
     if current_env == "production":
         evidence_signing_policy_ok = signing_mode == "rsa" and rsa_private_set and rsa_public_set
-        celero_webhook_policy_ok = celero_webhook_secret_set
+        trolley_webhook_policy_ok = trolley_webhook_secret_set
     else:
         evidence_signing_policy_ok = True
-        celero_webhook_policy_ok = True
+        trolley_webhook_policy_ok = True
 
     return {
         "environment": current_env,
         "evidence_signing_mode": signing_mode,
         "rsa_private_key_configured": rsa_private_set,
         "rsa_public_key_configured": rsa_public_set,
-        "celero_webhook_secret_configured": celero_webhook_secret_set,
+        "trolley_webhook_secret_configured": trolley_webhook_secret_set,
         "evidence_signing_policy_ok": evidence_signing_policy_ok,
-        "celero_webhook_policy_ok": celero_webhook_policy_ok,
-        "all_required_gates_passed": evidence_signing_policy_ok and celero_webhook_policy_ok,
+        "trolley_webhook_policy_ok": trolley_webhook_policy_ok,
+        "all_required_gates_passed": evidence_signing_policy_ok and trolley_webhook_policy_ok,
     }
 
 
@@ -123,7 +124,7 @@ if _env == "production" and _allowed_origins_raw == "*":
 if _env == "production" and not bool(_security_gates["all_required_gates_passed"]):
     raise RuntimeError(
         "Production security gates failed. Require XR7_EVIDENCE_SIGNING_MODE=rsa with "
-        "XR7_EVIDENCE_PRIVATE_KEY_PEM + XR7_EVIDENCE_PUBLIC_KEY_PEM, and CELERO_WEBHOOK_SECRET set."
+        "XR7_EVIDENCE_PRIVATE_KEY_PEM + XR7_EVIDENCE_PUBLIC_KEY_PEM, and TROLLEY_SECRET_KEY set."
     )
 
 _allowed_origins = (
@@ -146,7 +147,7 @@ app.add_middleware(
         "X-Analyst-Email",
         "X-Actor-Email",
         "X-Actor-Role",
-        "X-Celero-Signature",
+        "X-Trolley-Signature",
     ],
 )
 
@@ -157,7 +158,7 @@ app.include_router(billing.router)
 app.include_router(recovery.router)
 app.include_router(widget.router)
 app.include_router(ingestion.router)
-app.include_router(celero_router.router)
+app.include_router(trolley_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(terms_router.router)
 app.include_router(intelligence_router.router)
@@ -269,10 +270,11 @@ def readiness():
         and os.environ.get("SMTP_PASSWORD")
     )
 
-    # Celero Commerce — Merchant of Record
-    from XR7.celero.client import CeleroClient
-    celero_client = CeleroClient()
-    celero_webhook_secret_set = bool(os.environ.get("CELERO_WEBHOOK_SECRET"))
+    # Trolley payouts
+    trolley_api_configured = bool(
+        os.environ.get("TROLLEY_ACCESS_KEY") and os.environ.get("TROLLEY_SECRET_KEY")
+    )
+    trolley_webhook_secret_set = bool(os.environ.get("TROLLEY_SECRET_KEY"))
 
     redis_ready = bool(settings.redis_url)
     celery_ready = bool(settings.celery_broker_url and settings.celery_result_backend)
@@ -336,8 +338,8 @@ def readiness():
             "status": "ready" if plugin_signature_ready else "signature_optional",
         },
         "webhooks": {
-            "celero_webhook_secret_configured": celero_webhook_secret_set,
-            "status": "ready" if celero_webhook_secret_set else "missing_credentials",
+            "trolley_webhook_secret_configured": trolley_webhook_secret_set,
+            "status": "ready" if trolley_webhook_secret_set else "missing_credentials",
         },
         "security_gates": security_gates,
         "crm": {
@@ -348,17 +350,15 @@ def readiness():
                 "status": "ready" if hubspot_client.enabled else "disabled_or_missing_credentials",
             }
         },
-        "merchant_of_record": {
-            "provider": "Celero Commerce",
-            "gateway": "Celero Connect®",
-            "api_configured": celero_client.configured,
-            "webhook_secret_configured": celero_webhook_secret_set,
+        "trolley_payouts": {
+            "provider": "Trolley",
+            "api_configured": trolley_api_configured,
+            "webhook_secret_configured": trolley_webhook_secret_set,
             "status": (
                 "ready"
-                if celero_client.configured and celero_webhook_secret_set
+                if trolley_api_configured and trolley_webhook_secret_set
                 else "missing_credentials"
             ),
-            **celero_client.status(),
         },
         "notifications": {
             "sms_twilio": "ready" if twilio_ready else "missing_credentials",

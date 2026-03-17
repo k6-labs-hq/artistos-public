@@ -10,8 +10,8 @@ summary so they can see at a glance:
 2. **In pursuit** — active claims (IDENTIFIED → ACCEPTED) that are currently
    being worked.  Total amount being chased on the artist's behalf.
 
-3. **Recovered & deposited** — Celero DISBURSEMENT transactions that have
-   been APPROVED or SETTLED to the artist's bank account.  Running total and
+3. **Recovered & deposited** — Trolley disbursement transactions that have
+    been PAID to the artist's bank account.  Running total and
    per-deposit history.
 
 4. **Balance still pursuing** — the difference between the gross recoverable
@@ -46,10 +46,10 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from XR7.models.anomaly import Anomaly, AnomalyStatus
-from XR7.models.celero_transaction import CeleroTransaction, CeleroTxnStatus, CeleroTxnType
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.payment import Payment
+from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.models.work import Work
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
@@ -89,8 +89,8 @@ _ACTIVE_CLAIM_STATUSES = {
     ClaimStatus.ACCEPTED,
 }
 
-# Celero disbursement statuses that represent money deposited to the artist
-_DEPOSITED_STATUSES = {CeleroTxnStatus.APPROVED, CeleroTxnStatus.SETTLED}
+# Trolley disbursement statuses that represent money deposited to the artist
+_DEPOSITED_STATUSES = {TrolleyTxnStatus.PAID}
 
 
 class DashboardEngine:
@@ -134,13 +134,13 @@ class DashboardEngine:
             .all()
         )
         disbursements = (
-            self.db.query(CeleroTransaction)
+            self.db.query(TrolleyTransaction)
             .filter(
-                CeleroTransaction.artist_id == artist_id,
-                CeleroTransaction.type == CeleroTxnType.DISBURSEMENT,
-                CeleroTransaction.status.in_(list(_DEPOSITED_STATUSES)),
+                TrolleyTransaction.artist_id == artist_id,
+                TrolleyTransaction.type == TrolleyTxnType.DISBURSEMENT,
+                TrolleyTransaction.status.in_(list(_DEPOSITED_STATUSES)),
             )
-            .order_by(CeleroTransaction.updated_at.desc())
+            .order_by(TrolleyTransaction.updated_at.desc())
             .all()
         )
         works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
@@ -417,22 +417,21 @@ class DashboardEngine:
             "active_claims": active_items,
         }
 
-    def _deposited_section(self, disbursements: list[CeleroTransaction]) -> dict:
+    def _deposited_section(self, disbursements: list[TrolleyTransaction]) -> dict:
         """
-        Celero DISBURSEMENT transactions that have landed in the artist's account.
+        Trolley disbursement transactions that have landed in the artist's account.
 
-        Only APPROVED and SETTLED disbursements are counted — PENDING and
-        FAILED do not represent money the artist has actually received.
+        Only PAID disbursements are counted.
         """
-        total_deposited = sum(d.amount for d in disbursements)
+        total_deposited = sum((d.net_amount or 0.0) for d in disbursements)
 
         deposits = [
             {
                 "id": d.id,
-                "amount": d.amount,
-                "currency": d.currency,
+                "amount": d.net_amount,
+                "currency": d.source_currency,
                 "status": d.status,
-                "celero_transaction_id": d.celero_transaction_id,
+                "trolley_payment_id": d.trolley_payment_id,
                 "description": d.description,
                 "claim_id": d.claim_id,
                 "deposited_at": d.updated_at.isoformat(),
@@ -459,7 +458,7 @@ class DashboardEngine:
         Balance = gross recoverable pipeline (active claims) + any pending
         disbursements that have not yet settled.
 
-        Pending disbursements (APPROVED but not SETTLED) are shown separately
+        Pending disbursements (PENDING/PROCESSING) are shown separately
         so the artist knows money is on its way.
         """
         # Gross pipeline value: sum of recovered_amount on ALL non-closed claims
@@ -467,17 +466,17 @@ class DashboardEngine:
         active_gross = in_pursuit["total_amount_in_pursuit"]
         total_deposited = deposited["total_deposited"]
 
-        # Pending disbursements: APPROVED but not SETTLED yet
+        # Pending disbursements: submitted, but not yet paid out
         pending_disburse = (
-            self.db.query(CeleroTransaction)
+            self.db.query(TrolleyTransaction)
             .filter(
-                CeleroTransaction.artist_id == artist_id,
-                CeleroTransaction.type == CeleroTxnType.DISBURSEMENT,
-                CeleroTransaction.status == CeleroTxnStatus.APPROVED,
+                TrolleyTransaction.artist_id == artist_id,
+                TrolleyTransaction.type == TrolleyTxnType.DISBURSEMENT,
+                TrolleyTransaction.status.in_([TrolleyTxnStatus.PENDING, TrolleyTxnStatus.PROCESSING]),
             )
             .all()
         )
-        total_pending_disburse = sum(d.amount for d in pending_disburse)
+        total_pending_disburse = sum((d.net_amount or 0.0) for d in pending_disburse)
 
         still_pursuing = max(0.0, active_gross - total_pending_disburse)
 
@@ -488,7 +487,7 @@ class DashboardEngine:
             "balance_still_pursuing": round(still_pursuing, 2),
             "note": (
                 "balance_still_pursuing = amount in active (not-yet-disbursed) claims.  "
-                "total_pending_deposit = disbursements approved but ACH not yet settled."
+                "total_pending_deposit = disbursements created but not yet paid out."
             ),
         }
 
@@ -952,7 +951,7 @@ class DashboardEngine:
         self,
         anomalies: list[Anomaly],
         claims: list[Claim],
-        disbursements: list[CeleroTransaction],
+        disbursements: list[TrolleyTransaction],
     ) -> list[dict]:
         """
         Reverse-chronological activity log combining all three event types.
@@ -1001,12 +1000,12 @@ class DashboardEngine:
                 "timestamp": d.updated_at.isoformat(),
                 "title": "Payment deposited to your account",
                 "detail": (
-                    f"${d.amount:,.2f} {d.currency} deposited via Celero Commerce — "
+                    f"${(d.net_amount or 0.0):,.2f} {d.source_currency} deposited via Trolley — "
                     f"status: {d.status}"
-                    + (f" (ref: {d.celero_transaction_id})" if d.celero_transaction_id else "")
+                    + (f" (payment: {d.trolley_payment_id})" if d.trolley_payment_id else "")
                 ),
                 "reference_id": d.id,
-                "amount": d.amount,
+                "amount": d.net_amount,
             })
 
         events.sort(key=lambda e: e["timestamp"], reverse=True)

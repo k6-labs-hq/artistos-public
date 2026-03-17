@@ -1,11 +1,14 @@
 import uuid
+import os
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
 from XR7.models.claim import Claim, ClaimStatus
-from XR7.models.celero_transaction import CeleroTransaction, CeleroTxnType, CeleroTxnStatus
+from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.models.metadata_issue import MetadataIssue
+from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from XR7.trolley.client import TrolleyClient, TrolleyException
 
 
 class BillingEngine:
@@ -75,172 +78,160 @@ class BillingEngine:
         invoice["status"] = "PAID"
         return invoice
 
-    # ------------------------------------------------------------------
-    # Celero Commerce integration
-    # ------------------------------------------------------------------
+    def _platform_fee_percent(self) -> float:
+        try:
+            return float(os.environ.get("TROLLEY_PLATFORM_FEE_PERCENT", "10"))
+        except Exception:  # noqa: BLE001
+            return 10.0
 
-    def charge_via_celero(
+    def record_manual_remittance(
         self,
+        *,
         claim_id: str,
-        customer_vault_id: str,
-        ip_address: str = "",
-    ) -> CeleroTransaction:
-        """
-        Charge the artist's Celero-vaulted payment method for the
-        contingency fee associated with a reconciled claim.
-
-        Creates a :class:`~XR7.models.celero_transaction.CeleroTransaction`
-        record (initially PENDING) then calls the Celero gateway.  The record
-        is updated to APPROVED / DECLINED / ERROR based on the response.
-
-        The actual gateway call is only made when ``CELERO_SECURITY_KEY`` is
-        set.  If it is not set, ``NotImplementedError`` is raised with setup
-        instructions — the same behaviour as all other credential-gated
-        connectors in this codebase.
-
-        Parameters
-        ----------
-        claim_id:
-            XR7 claim UUID.  Must be in PAID status with a
-            ``recovered_amount`` set.
-        customer_vault_id:
-            Celero Customer Vault ID stored on the artist record.
-        ip_address:
-            Optional IP address of the request for fraud screening.
-        """
-        from XR7.celero.client import CeleroClient
-
+        gross_amount: float,
+        remittance_method: str,
+        received_date: datetime,
+        reference_number: str,
+    ) -> Claim:
         claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
         if not claim:
             raise ValueError(f"Claim {claim_id} not found")
-        if not claim.recovered_amount:
-            raise ValueError(f"Claim {claim_id} has no recovered_amount set")
+        if gross_amount <= 0:
+            raise ValueError("gross_amount must be greater than 0")
 
-        fee = self.calculate_contingency_fee(claim.recovered_amount)
-        currency = (claim.currency or "USD").lower()
+        fee_pct = self._platform_fee_percent()
+        platform_fee = round(gross_amount * fee_pct / 100.0, 2)
+        artist_net = round(gross_amount - platform_fee, 2)
 
-        # Create a PENDING transaction record before calling the gateway
-        txn = CeleroTransaction(
+        claim.status = ClaimStatus.FUNDS_RECEIVED
+        claim.recovered_amount = gross_amount
+        claim.platform_fee_percent = fee_pct
+        claim.platform_fee_amount = platform_fee
+        claim.contingency_fee = platform_fee
+        claim.artist_net_amount = artist_net
+        claim.remittance_method = remittance_method
+        claim.remittance_reference_number = reference_number
+        claim.remittance_received_at = received_date
+        claim.updated_at = datetime.now(timezone.utc)
+
+        self.db_session.add(
+            TrolleyTransaction(
+                id=str(uuid.uuid4()),
+                artist_id=claim.artist_id,
+                claim_id=claim.id,
+                type=TrolleyTxnType.REMITTANCE,
+                status=TrolleyTxnStatus.PAID,
+                gross_amount=gross_amount,
+                platform_fee_amount=platform_fee,
+                net_amount=artist_net,
+                source_currency=claim.currency or "USD",
+                external_id=claim.id,
+                description=f"Manual remittance recorded ({remittance_method})",
+            )
+        )
+
+        ledger = ImmutableLedgerService(self.db_session)
+        ledger.append(
+            claim.artist_id,
+            "manual_remittance_received",
+            {
+                "claim_id": claim.id,
+                "gross_amount": gross_amount,
+                "platform_fee_amount": platform_fee,
+                "artist_net_amount": artist_net,
+                "remittance_method": remittance_method,
+                "received_date": received_date.isoformat(),
+                "reference_number": reference_number,
+            },
+        )
+        self.db_session.commit()
+        self.db_session.refresh(claim)
+        return claim
+
+    def disburse_via_trolley(self, *, claim_id: str) -> TrolleyTransaction:
+        claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
+        if not claim:
+            raise ValueError(f"Claim {claim_id} not found")
+        if claim.status != ClaimStatus.FUNDS_RECEIVED:
+            raise ValueError("Claim must be in FUNDS_RECEIVED status before disbursement")
+
+        from XR7.models.artist import Artist
+
+        artist = self.db_session.query(Artist).filter(Artist.id == claim.artist_id).first()
+        if not artist:
+            raise ValueError("Artist not found")
+        if not artist.trolley_recipient_id:
+            raise ValueError("Artist is not connected to Trolley payouts")
+        if artist.payout_account_status != "verified":
+            raise ValueError("Artist payout account is not verified")
+        if str(artist.tax_form_status or "pending") != "verified":
+            raise ValueError("Tax forms required before disbursement")
+
+        client = TrolleyClient.from_env()
+        existing = client.get_payments_by_external_id(claim.id)
+        existing_rows = existing.get("payments") if isinstance(existing, dict) else None
+        if isinstance(existing_rows, list) and existing_rows:
+            raise ValueError(f"A payout already exists for claim {claim.id}")
+
+        amount = float(claim.artist_net_amount or 0.0)
+        if amount <= 0:
+            raise ValueError("Claim has no artist net amount available for payout")
+
+        payload = {
+            "recipient": {"id": artist.trolley_recipient_id},
+            "sourceAmount": f"{amount:.2f}",
+            "sourceCurrency": "USD",
+            "memo": f"XR7 Recovery - Claim {claim.id}",
+            "externalId": claim.id,
+            "taxReportable": True,
+            "forceUsTaxActivity": str(artist.country_code or "US").upper() == "US",
+        }
+
+        try:
+            response = client.create_payment(payload)
+        except TrolleyException as exc:
+            claim.status = ClaimStatus.DISBURSEMENT_FAILED
+            claim.payout_failure_reason = str(exc)
+            claim.payout_retry_count = int(claim.payout_retry_count or 0) + 1
+            self.db_session.commit()
+            raise
+
+        payment = response.get("payment") if isinstance(response, dict) else {}
+        payment_id = payment.get("id") if isinstance(payment, dict) else None
+        status = str(payment.get("status") or "processing").upper()
+
+        tx = TrolleyTransaction(
             id=str(uuid.uuid4()),
             artist_id=claim.artist_id,
-            claim_id=claim_id,
-            type=CeleroTxnType.CHARGE,
-            amount=fee,
-            currency=currency.upper(),
-            status=CeleroTxnStatus.PENDING,
-            celero_customer_vault_id=customer_vault_id,
-            order_id=claim_id,
-            description=f"XR7 recovery fee — claim {claim_id}",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
+            claim_id=claim.id,
+            type=TrolleyTxnType.DISBURSEMENT,
+            status=TrolleyTxnStatus.PROCESSING,
+            gross_amount=claim.recovered_amount,
+            platform_fee_amount=claim.platform_fee_amount,
+            net_amount=amount,
+            source_currency="USD",
+            trolley_payment_id=payment_id,
+            external_id=claim.id,
+            description=f"Trolley disbursement for claim {claim.id}",
         )
-        self.db_session.add(txn)
-        self.db_session.commit()
+        self.db_session.add(tx)
 
-        # Call Celero
-        client = CeleroClient()
-        response = client.charge(
-            amount=fee,
-            customer_vault_id=customer_vault_id,
-            currency=currency,
-            order_id=claim_id,
-            order_description=f"XR7 recovery fee — claim {claim_id}",
-            ip_address=ip_address,
-        )
+        claim.trolley_payment_id = payment_id
+        claim.trolley_payment_status = status
+        claim.updated_at = datetime.now(timezone.utc)
 
-        # Update transaction record with gateway response
-        if response.approved:
-            txn.status = CeleroTxnStatus.APPROVED
-        elif response.declined:
-            txn.status = CeleroTxnStatus.DECLINED
-        else:
-            txn.status = CeleroTxnStatus.ERROR
-
-        txn.celero_transaction_id = response.transaction_id or None
-        txn.celero_auth_code = response.auth_code or None
-        txn.celero_response_code = response.response_code or None
-        txn.celero_response_text = response.response_text or None
-        txn.updated_at = datetime.now(timezone.utc)
-        self.db_session.commit()
-        self.db_session.refresh(txn)
-
-        # Also update the claim's contingency_fee field
-        claim.contingency_fee = fee
-        self.db_session.commit()
-
-        return txn
-
-    def disburse_via_celero(
-        self,
-        artist_id: str,
-        claim_id: str | None,
-        amount: float,
-        currency: str,
-        customer_vault_id: str,
-        description: str = "",
-    ) -> CeleroTransaction:
-        """
-        Disburse the net recovery amount to the artist via ACH credit
-        through Celero Commerce.
-
-        Creates a :class:`~XR7.models.celero_transaction.CeleroTransaction`
-        (type=DISBURSEMENT) and calls ``CeleroClient.disburse()``.
-
-        Parameters
-        ----------
-        artist_id:
-            XR7 artist UUID.
-        claim_id:
-            Associated claim UUID, or ``None`` for ad-hoc disbursements.
-        amount:
-            Net amount to disburse to the artist in USD.
-        currency:
-            ISO 4217 currency code.
-        customer_vault_id:
-            Artist's Celero vault ID (must have a bank account on file).
-        description:
-            Optional description shown on the artist's bank statement.
-        """
-        from XR7.celero.client import CeleroClient
-
-        txn = CeleroTransaction(
-            id=str(uuid.uuid4()),
-            artist_id=artist_id,
-            claim_id=claim_id,
-            type=CeleroTxnType.DISBURSEMENT,
-            amount=amount,
-            currency=currency.upper(),
-            status=CeleroTxnStatus.PENDING,
-            celero_customer_vault_id=customer_vault_id,
-            order_id=claim_id or artist_id,
-            description=description or f"XR7 royalty disbursement to {artist_id}",
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
-        )
-        self.db_session.add(txn)
-        self.db_session.commit()
-
-        client = CeleroClient()
-        response = client.disburse(
-            amount=amount,
-            customer_vault_id=customer_vault_id,
-            currency=currency.lower(),
-            order_id=claim_id or artist_id,
-            order_description=description or "XR7 royalty disbursement",
+        ledger = ImmutableLedgerService(self.db_session)
+        ledger.append(
+            claim.artist_id,
+            "trolley_disbursement_queued",
+            {
+                "claim_id": claim.id,
+                "trolley_payment_id": payment_id,
+                "net_amount": amount,
+                "currency": "USD",
+            },
         )
 
-        if response.approved:
-            txn.status = CeleroTxnStatus.APPROVED
-        elif response.declined:
-            txn.status = CeleroTxnStatus.DECLINED
-        else:
-            txn.status = CeleroTxnStatus.ERROR
-
-        txn.celero_transaction_id = response.transaction_id or None
-        txn.celero_auth_code = response.auth_code or None
-        txn.celero_response_code = response.response_code or None
-        txn.celero_response_text = response.response_text or None
-        txn.updated_at = datetime.now(timezone.utc)
         self.db_session.commit()
-        self.db_session.refresh(txn)
-        return txn
+        self.db_session.refresh(tx)
+        return tx

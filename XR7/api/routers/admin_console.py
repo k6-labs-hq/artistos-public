@@ -11,9 +11,9 @@ from XR7.models.admin_audit_log import AdminAuditLog, AdminAuditLogSchema
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistSchema
 from XR7.models.base import get_db
-from XR7.models.celero_transaction import CeleroTransaction, CeleroTransactionSchema
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.review_queue import ReviewItem, ReviewItemSchema
+from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -220,18 +220,18 @@ def list_transactions(
     actor: str = Depends(_require_admin),
     db: Session = Depends(get_db),
 ):
-    query = db.query(CeleroTransaction)
+    query = db.query(TrolleyTransaction)
     if status:
-        query = query.filter(CeleroTransaction.status == status)
+        query = query.filter(TrolleyTransaction.status == status)
     if tx_type:
-        query = query.filter(CeleroTransaction.type == tx_type)
+        query = query.filter(TrolleyTransaction.type == tx_type)
     if artist_id:
-        query = query.filter(CeleroTransaction.artist_id == artist_id)
+        query = query.filter(TrolleyTransaction.artist_id == artist_id)
 
     total = query.count()
-    rows = query.order_by(CeleroTransaction.updated_at.desc()).offset(offset).limit(limit).all()
+    rows = query.order_by(TrolleyTransaction.updated_at.desc()).offset(offset).limit(limit).all()
     _log(db, actor, "list", "transactions", {"total": total, "status": status, "tx_type": tx_type, "artist_id": artist_id})
-    return _paginated_response([CeleroTransactionSchema.model_validate(r).model_dump() for r in rows], total, limit, offset)
+    return _paginated_response([TrolleyTransactionSchema.model_validate(r).model_dump() for r in rows], total, limit, offset)
 
 
 @router.get("/review-queue")
@@ -289,7 +289,7 @@ def admin_overview(actor: str = Depends(_require_admin), db: Session = Depends(g
         "artists": db.query(func.count(Artist.id)).scalar() or 0,
         "claims": db.query(func.count(Claim.id)).scalar() or 0,
         "anomalies": db.query(func.count(Anomaly.id)).scalar() or 0,
-        "transactions": db.query(func.count(CeleroTransaction.id)).scalar() or 0,
+        "transactions": db.query(func.count(TrolleyTransaction.id)).scalar() or 0,
         "review_queue_open": db.query(func.count(ReviewItem.id)).filter(ReviewItem.status == "OPEN").scalar() or 0,
     }
     _log(db, actor, "overview", "admin", snapshot)

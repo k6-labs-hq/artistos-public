@@ -55,6 +55,7 @@ from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.global_social_regional import GlobalSocialRegionalConnector
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 from XR7.services.branding import inject_branding_metadata
+from XR7.trolley.client import TrolleyClient, TrolleyException
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["ingestion"])
@@ -347,10 +348,34 @@ async def upload_statement(
         uploaded_at=datetime.now(timezone.utc),
     )
     db.add(statement)
+    became_active = False
     if status != "FAILED":
-        promote_to_active(artist)
+        became_active = promote_to_active(artist)
     db.commit()
     db.refresh(statement)
+
+    if status != "FAILED" and became_active and not artist.trolley_recipient_id:
+        first_name = artist.first_name or (artist.name.split(" ")[0] if artist.name else "")
+        last_name = artist.last_name or (" ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else "")
+        try:
+            payload = {
+                "type": "individual",
+                "email": artist.email,
+                "name": artist.name,
+                "firstName": first_name,
+                "lastName": last_name,
+                "country": (artist.country_code or "US").upper(),
+                "referenceId": artist.id,
+            }
+            response = TrolleyClient.from_env().create_recipient(payload)
+            recipient = response.get("recipient") if isinstance(response, dict) else {}
+            recipient_id = recipient.get("id") or response.get("id")
+            if recipient_id:
+                artist.trolley_recipient_id = recipient_id
+                artist.payout_account_status = "pending"
+                db.commit()
+        except TrolleyException:
+            logger.exception("Failed to auto-create Trolley recipient", extra={"artist_id": artist.id})
 
     if status != "FAILED" and int(processed_before) == 0:
         try:
@@ -502,8 +527,30 @@ async def upload_statement_batch(
 
     # Trigger anomaly detection once after the full batch.
     if processed:
-        promote_to_active(artist)
+        became_active = promote_to_active(artist)
         db.commit()
+        if became_active and not artist.trolley_recipient_id:
+            first_name = artist.first_name or (artist.name.split(" ")[0] if artist.name else "")
+            last_name = artist.last_name or (" ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else "")
+            try:
+                payload = {
+                    "type": "individual",
+                    "email": artist.email,
+                    "name": artist.name,
+                    "firstName": first_name,
+                    "lastName": last_name,
+                    "country": (artist.country_code or "US").upper(),
+                    "referenceId": artist.id,
+                }
+                response = TrolleyClient.from_env().create_recipient(payload)
+                recipient = response.get("recipient") if isinstance(response, dict) else {}
+                recipient_id = recipient.get("id") or response.get("id")
+                if recipient_id:
+                    artist.trolley_recipient_id = recipient_id
+                    artist.payout_account_status = "pending"
+                    db.commit()
+            except TrolleyException:
+                logger.exception("Failed to auto-create Trolley recipient", extra={"artist_id": artist.id})
         try:
             hubspot_sync_recovery_update.delay(artist_id, event="statement_batch_uploaded")
         except Exception:  # noqa: BLE001
