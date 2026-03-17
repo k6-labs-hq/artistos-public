@@ -47,22 +47,22 @@ def evaluate_architecture_readiness(*, environment: str) -> dict[str, Any]:
     prod_only: list[GateResult] = [
         GateResult(
             name="jwt_secret_strength",
-            passed=bool(len(settings.jwt_secret or "") >= 32),
+            passed=bool(len(getattr(settings, "jwt_secret", "") or "") >= 32),
             detail="JWT secret length >= 32 characters",
         ),
         GateResult(
             name="analyst_api_key_configured",
-            passed=bool(settings.analyst_api_key),
+            passed=bool(getattr(settings, "analyst_api_key", "")),
             detail="Analyst review queue gate is configured",
         ),
         GateResult(
             name="admin_api_key_configured",
-            passed=bool(settings.admin_api_key),
+            passed=bool(getattr(settings, "admin_api_key", "")),
             detail="Admin console gate is configured",
         ),
         GateResult(
             name="cors_hardened",
-            passed="*" not in (settings.allowed_origins or []),
+            passed="*" not in (getattr(settings, "allowed_origins", []) or []),
             detail="CORS allow-list does not include wildcard origins",
         ),
     ]
