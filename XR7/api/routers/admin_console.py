@@ -14,6 +14,7 @@ from XR7.models.base import get_db
 from XR7.models.celero_transaction import CeleroTransaction, CeleroTransactionSchema
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.review_queue import ReviewItem, ReviewItemSchema
+from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -75,6 +76,7 @@ def list_artists(
 def list_claims(
     status: str | None = Query(default=None),
     artist_id: str | None = Query(default=None),
+    jurisdiction: str | None = Query(default=None),
     sort: str = Query(default="updated_at_desc", pattern="^(updated_at_desc|updated_at_asc|amount_desc|amount_asc)$"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
@@ -86,6 +88,8 @@ def list_claims(
         query = query.filter(Claim.status == status)
     if artist_id:
         query = query.filter(Claim.artist_id == artist_id)
+    if jurisdiction:
+        query = query.filter(func.lower(Claim.governing_law_state) == jurisdiction.strip().lower())
 
     total = query.count()
     if sort == "updated_at_asc":
@@ -98,8 +102,65 @@ def list_claims(
         query = query.order_by(Claim.updated_at.desc())
 
     rows = query.offset(offset).limit(limit).all()
-    _log(db, actor, "list", "claims", {"total": total, "status": status, "artist_id": artist_id, "sort": sort})
+    _log(
+        db,
+        actor,
+        "list",
+        "claims",
+        {"total": total, "status": status, "artist_id": artist_id, "jurisdiction": jurisdiction, "sort": sort},
+    )
     return _paginated_response([ClaimSchema.model_validate(r).model_dump() for r in rows], total, limit, offset)
+
+
+@router.get("/reports/sol-risk")
+def sol_risk_report(
+    jurisdiction: str | None = Query(default=None),
+    actor: str = Depends(_require_admin),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Claim)
+    if jurisdiction:
+        query = query.filter(func.lower(Claim.governing_law_state) == jurisdiction.strip().lower())
+    rows = query.all()
+
+    risk_rows = []
+    counts = {"EXPIRED": 0, "URGENT": 0, "AT_RISK": 0, "OK": 0, "UNKNOWN": 0}
+    for claim in rows:
+        sol = calculate_sol(
+            governing_law_state=claim.governing_law_state,
+            contract_type=claim.contract_type,
+            infringement_date=claim.infringement_date,
+            discovery_date=claim.discovery_date,
+        )
+        status = str(sol.get("sol_status") or "UNKNOWN")
+        counts[status] = counts.get(status, 0) + 1
+        risk_rows.append(
+            {
+                "claim_id": claim.id,
+                "artist_id": claim.artist_id,
+                "status": status,
+                "days_remaining": sol.get("sol_days_remaining"),
+                "deadline": sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None,
+                "governing_law_state": sol.get("governing_law_state"),
+                "contract_type": sol.get("contract_type"),
+                "citation": sol.get("sol_citation_source"),
+            }
+        )
+
+    risk_rows.sort(key=lambda x: (x["days_remaining"] is None, x["days_remaining"] or 999999))
+    _log(
+        db,
+        actor,
+        "report",
+        "sol_risk",
+        {"jurisdiction": jurisdiction, "rows": len(risk_rows), "counts": counts},
+    )
+    return {
+        "total_claims": len(risk_rows),
+        "counts_by_status": counts,
+        "claims": risk_rows,
+        "legal_disclaimer": SOL_DISCLAIMER,
+    }
 
 
 @router.get("/anomalies")

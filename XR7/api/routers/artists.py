@@ -30,12 +30,16 @@ logger = get_logger(__name__)
 
 class ArtistPreferenceUpdateRequest(BaseModel):
     default_attorney_grace_period_days: int = Field(default=60, ge=1, le=365)
+    primary_jurisdiction: str = Field(default="USA", min_length=2, max_length=8)
+    preferred_contract_type: str = Field(default="recording")
 
 
 def _attorney_grace_period_settings_payload(artist: Artist) -> dict:
     return {
         "artist_id": artist.id,
         "default_attorney_grace_period_days": int(artist.default_attorney_grace_period_days or 60),
+        "primary_jurisdiction": str(artist.primary_jurisdiction or "USA"),
+        "preferred_contract_type": str(artist.preferred_contract_type or "recording"),
         "helper_text": (
             "We recommend a minimum of 60 days to give payers reasonable time "
             "to resolve payment before legal escalation."
@@ -61,6 +65,8 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
         ipi_number=artist_in.ipi_number,
         stage_names=artist_in.stage_names,
         default_attorney_grace_period_days=max(1, int(artist_in.default_attorney_grace_period_days or 60)),
+        primary_jurisdiction=(artist_in.primary_jurisdiction or "USA").strip().upper(),
+        preferred_contract_type=(artist_in.preferred_contract_type or "recording").strip().lower(),
         created_at=datetime.now(timezone.utc),
     )
     db.add(artist)
@@ -92,6 +98,8 @@ def update_artist_preferences(
         raise HTTPException(status_code=404, detail="Artist not found")
 
     artist.default_attorney_grace_period_days = max(1, int(payload.default_attorney_grace_period_days))
+    artist.primary_jurisdiction = (payload.primary_jurisdiction or "USA").strip().upper()
+    artist.preferred_contract_type = (payload.preferred_contract_type or "recording").strip().lower()
     db.commit()
     db.refresh(artist)
     return inject_branding_metadata(db, _attorney_grace_period_settings_payload(artist))

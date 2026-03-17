@@ -25,6 +25,8 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
+
 
 # ---------------------------------------------------------------------------
 # Default SOL windows (in days) per category × territory
@@ -167,6 +169,26 @@ def classify_anomalies(
 
     results: list[dict] = []
     for a in anomalies:
+        if a.get("governing_law_state") or a.get("contract_type"):
+            sol = calculate_sol(
+                governing_law_state=a.get("governing_law_state"),
+                contract_type=a.get("contract_type"),
+                infringement_date=a.get("infringement_date") or a.get("time_window_end"),
+                discovery_date=a.get("discovery_date") or a.get("created_at"),
+                as_of=ref,
+            )
+            enriched = {
+                **a,
+                "sol_status": sol.get("sol_status") or SOLStatus.UNKNOWN,
+                "sol_days_remaining": sol.get("sol_days_remaining"),
+                "sol_deadline": sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None,
+                "sol_window_days": int((sol.get("sol_window_years") or 0) * 365),
+                "sol_citation_source": sol.get("sol_citation_source"),
+                "legal_disclaimer": SOL_DISCLAIMER,
+            }
+            results.append(enriched)
+            continue
+
         category = str(a.get("category", "ROYALTY"))
         territory = a.get("territory")
 

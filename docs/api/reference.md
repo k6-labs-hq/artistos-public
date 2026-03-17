@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 251
+Total endpoints: 252
 
 ## Endpoint Table
 
@@ -13,6 +13,7 @@ Total endpoints: 251
 | admin | GET | /admin/audit-logs | List Audit Logs | list_audit_logs_admin_audit_logs_get | - | array | curl -X GET http://localhost:8000/admin/audit-logs |
 | admin | GET | /admin/claims | List Claims | list_claims_admin_claims_get | - | - | curl -X GET http://localhost:8000/admin/claims |
 | admin | GET | /admin/overview | Admin Overview | admin_overview_admin_overview_get | - | - | curl -X GET http://localhost:8000/admin/overview |
+| admin | GET | /admin/reports/sol-risk | Sol Risk Report | sol_risk_report_admin_reports_sol_risk_get | - | - | curl -X GET http://localhost:8000/admin/reports/sol-risk |
 | admin | GET | /admin/review-queue | List Review Queue | list_review_queue_admin_review_queue_get | - | - | curl -X GET http://localhost:8000/admin/review-queue |
 | admin | GET | /admin/transactions | List Transactions | list_transactions_admin_transactions_get | - | - | curl -X GET http://localhost:8000/admin/transactions |
 | anomalies | GET | /anomalies/{anomaly_id} | Get Anomaly | get_anomaly_anomalies__anomaly_id__get | - | AnomalySchema | curl -X GET http://localhost:8000/anomalies/<anomaly_id> |

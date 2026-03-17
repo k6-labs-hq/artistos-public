@@ -39,6 +39,12 @@ class Claim(Base):
     proof_submitted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     grace_period_days: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
     sol_deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    governing_law_state: Mapped[str] = mapped_column(String, nullable=False, default="USA")
+    contract_type: Mapped[str] = mapped_column(String, nullable=False, default="recording")
+    infringement_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    discovery_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    sol_window_years: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    sol_citation_source: Mapped[str | None] = mapped_column(String, nullable=True)
     communications: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON, nullable=True)
     anomaly_report: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     supporting_documents: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON, nullable=True)
@@ -66,6 +72,12 @@ class ClaimSchema(BaseModel):
     proof_submitted_at: datetime | None = None
     grace_period_days: int = 60
     sol_deadline: datetime | None = None
+    governing_law_state: str = "USA"
+    contract_type: str = "recording"
+    infringement_date: datetime | None = None
+    discovery_date: datetime | None = None
+    sol_window_years: int | None = None
+    sol_citation_source: str | None = None
     communications: list[dict[str, Any]] | None = None
     anomaly_report: dict[str, Any] | None = None
     supporting_documents: list[dict[str, Any]] | None = None

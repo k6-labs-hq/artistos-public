@@ -46,13 +46,13 @@ def _seed_artist_with_events_payments() -> str:
     return artist_id
 
 
-def test_detect_anomalies_returns_ml_debug_signals():
+def test_detect_anomalies_returns_transparent_rule_signals():
     artist_id = _seed_artist_with_events_payments()
 
     detect = client.post(f"/artists/{artist_id}/anomalies/detect")
     assert detect.status_code == 200
 
-    ml_rows = [r for r in detect.json().get("detected", []) if r.get("ml_model")]
-    assert ml_rows
-    assert any("model_version" in r for r in ml_rows)
-    assert any("anomaly_score" in r for r in ml_rows)
+    rows = detect.json().get("detected", [])
+    assert rows
+    assert any("rule_id" in r for r in rows)
+    assert any(isinstance(r.get("evidence"), dict) for r in rows)

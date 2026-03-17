@@ -33,6 +33,8 @@ class Artist(Base):
     # Populated when the artist is registered via POST /artists/{id}/celero/register
     celero_customer_vault_id: Mapped[str | None] = mapped_column(String, nullable=True)
     default_attorney_grace_period_days: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    primary_jurisdiction: Mapped[str] = mapped_column(String, nullable=False, default="USA")
+    preferred_contract_type: Mapped[str] = mapped_column(String, nullable=False, default="recording")
     xr7_future_leakage_prevented: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
 
 
@@ -51,6 +53,8 @@ class ArtistSchema(BaseModel):
     activated_at: datetime | None = None
     celero_customer_vault_id: str | None = None
     default_attorney_grace_period_days: int = 60
+    primary_jurisdiction: str = "USA"
+    preferred_contract_type: str = "recording"
     xr7_future_leakage_prevented: float = 0.0
 
 
@@ -61,3 +65,5 @@ class ArtistCreate(BaseModel):
     ipi_number: str | None = None
     stage_names: list[str] | None = None
     default_attorney_grace_period_days: int = 60
+    primary_jurisdiction: str = "USA"
+    preferred_contract_type: str = "recording"

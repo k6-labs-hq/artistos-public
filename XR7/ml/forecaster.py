@@ -1,11 +1,9 @@
 """
-Earnings forecaster for XR7 Engine 2.
+Deterministic earnings forecaster for XR7.
 
-Provides:
-- Linear-regression trend forecasting over historical earnings data.
-- Confidence intervals (based on residual standard deviation).
-- A per-category breakdown so managers can see which revenue streams are
-  growing, flat, or declining.
+This module intentionally avoids black-box prediction models. It uses recent
+month-over-month net earnings growth and projects that forward with explicit,
+auditable assumptions.
 """
 
 from __future__ import annotations
@@ -13,172 +11,159 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
-import numpy as np
-from sklearn.linear_model import LinearRegression
+
+def _parse_ts(raw: Any) -> datetime:
+    if isinstance(raw, datetime):
+        ts = raw
+    elif isinstance(raw, str):
+        ts = datetime.fromisoformat(raw)
+    else:
+        ts = datetime.now(timezone.utc)
+    if ts.tzinfo is None:
+        return ts.replace(tzinfo=timezone.utc)
+    return ts.astimezone(timezone.utc)
 
 
-# ---------------------------------------------------------------------------
-# Constants
-# ---------------------------------------------------------------------------
+def _earnings_monthly_totals(earnings_records: list[dict]) -> list[tuple[datetime, float]]:
+    by_month: dict[tuple[int, int], float] = {}
+    for row in earnings_records:
+        ts = _parse_ts(row.get("timestamp") or row.get("event_timestamp"))
+        key = (ts.year, ts.month)
+        by_month[key] = by_month.get(key, 0.0) + float(row.get("net", 0.0) or 0.0)
 
-# Multiplier applied to the residual standard deviation to determine whether
-# a slope is significant enough to classify as GROWING or DECLINING.
-# A slope whose magnitude is less than _TREND_THRESHOLD_MULTIPLIER × σ_residual
-# is treated as statistically indistinguishable from zero (FLAT).
-# 0.01 is deliberately conservative — it classifies a trend as non-flat only
-# when the per-day slope is at least 1 % of the typical earnings scatter.
-_TREND_THRESHOLD_MULTIPLIER = 0.01
-
-# Z-values for common confidence levels (normal approximation).
-# Using a lookup table avoids adding a scipy dependency.
-_Z_FOR_CONFIDENCE: dict[float, float] = {
-    0.80: 1.282,
-    0.85: 1.440,
-    0.90: 1.645,
-    0.95: 1.960,
-    0.99: 2.576,
-}
-_DEFAULT_Z = 1.960  # fallback for confidence levels not in the table
+    ordered = sorted(by_month.items(), key=lambda kv: kv[0])
+    return [
+        (datetime(year=k[0], month=k[1], day=1, tzinfo=timezone.utc), float(v))
+        for k, v in ordered
+    ]
 
 
-def _z_for_confidence(confidence: float) -> float:
-    """Return the two-tailed z-value for *confidence* (e.g. 0.95 → 1.96)."""
-    # Round to 2 decimal places to allow slight floating-point imprecision.
-    key = round(confidence, 2)
-    if key in _Z_FOR_CONFIDENCE:
-        return _Z_FOR_CONFIDENCE[key]
-    # Linear interpolation between the two nearest table entries.
-    keys = sorted(_Z_FOR_CONFIDENCE)
-    for lo, hi in zip(keys, keys[1:]):
-        if lo <= key <= hi:
-            t = (key - lo) / (hi - lo)
-            return _Z_FOR_CONFIDENCE[lo] + t * (_Z_FOR_CONFIDENCE[hi] - _Z_FOR_CONFIDENCE[lo])
-    return _DEFAULT_Z
+def _trend_from_growth(rate: float) -> str:
+    if rate > 0.01:
+        return "GROWING"
+    if rate < -0.01:
+        return "DECLINING"
+    return "FLAT"
 
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-def _earnings_to_series(earnings_records: list[dict]) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Convert a list of earnings records into a (timestamps_ordinal, net_values)
-    pair of 1-D arrays sorted by time.
-
-    Each record must contain ``timestamp`` (datetime or ISO string) and ``net``
-    (float).
-    """
-
-    def _parse(r: dict) -> tuple[datetime, float]:
-        ts = r.get("timestamp") or r.get("event_timestamp")
-        if isinstance(ts, str):
-            ts = datetime.fromisoformat(ts)
-        elif ts is None:
-            ts = datetime.now(timezone.utc)
-        return ts, float(r.get("net", 0.0))
-
-    parsed = sorted([_parse(r) for r in earnings_records], key=lambda x: x[0])
-    if not parsed:
-        return np.array([]), np.array([])
-
-    timestamps = np.array([t.toordinal() for t, _ in parsed], dtype=float)
-    values = np.array([v for _, v in parsed], dtype=float)
-    return timestamps, values
-
-
-# ---------------------------------------------------------------------------
-# Core forecasting logic
-# ---------------------------------------------------------------------------
 
 def forecast_earnings(
     earnings_records: list[dict],
     horizon_days: int = 90,
     confidence: float = 0.95,
 ) -> dict:
-    """
-    Fit a linear trend model on historical earnings and project forward.
-
-    Parameters
-    ----------
-    earnings_records:
-        List of dicts produced by ``EarningsEngine.reconstruct_historical()``.
-        Each record must have ``timestamp`` and ``net``.
-    horizon_days:
-        Number of days ahead to forecast.
-    confidence:
-        Confidence level for the prediction interval (0–1).  ``0.95`` returns
-        a ~95 % interval using ±1.96 residual standard deviations.
-
-    Returns
-    -------
-    A dict with keys:
-    - ``model``: ``"LinearTrend"``
-    - ``data_points``: number of training records
-    - ``slope_per_day``: trend slope (earnings per ordinal day)
-    - ``r_squared``: goodness of fit
-    - ``forecast``: list of ``{date, predicted, lower, upper}`` dicts
-    - ``trend``: ``"GROWING"`` | ``"FLAT"`` | ``"DECLINING"``
-    """
-    timestamps, values = _earnings_to_series(earnings_records)
-    n = len(timestamps)
-
+    monthly = _earnings_monthly_totals(earnings_records)
+    n = len(monthly)
     if n == 0:
         return {
-            "model": "LinearTrend",
+            "model": "DeterministicGrowthV1",
             "data_points": 0,
             "slope_per_day": 0.0,
-            "r_squared": None,
+            "r_squared": 0.0,
             "forecast": [],
             "trend": "INSUFFICIENT_DATA",
+            "explanation": {
+                "method": "6-month moving average growth",
+                "monthly_growth_rate": 0.0,
+                "projected_total": 0.0,
+                "confidence_band": [0.0, 0.0],
+                "inputs": {
+                    "months_analyzed": 0,
+                    "recent_monthly_nets": [],
+                },
+            },
         }
 
-    X = timestamps.reshape(-1, 1)
-    reg = LinearRegression()
-    reg.fit(X, values)
+    monthly_values = [v for _, v in monthly]
+    lookback = monthly_values[-6:]
 
-    slope = float(reg.coef_[0])
-    y_pred = reg.predict(X)
-    ss_res = float(np.sum((values - y_pred) ** 2))
-    ss_tot = float(np.sum((values - values.mean()) ** 2))
-    r2 = 1.0 - ss_res / ss_tot if ss_tot > 0 else 0.0
-    residual_std = float(np.sqrt(ss_res / max(n - 2, 1)))
+    growth_rates: list[float] = []
+    for prev, cur in zip(lookback[:-1], lookback[1:]):
+        base = abs(prev) if abs(prev) > 1e-9 else 1.0
+        growth_rates.append((cur - prev) / base)
 
-    # Look up the two-tailed z-value for the requested confidence level.
-    z = _z_for_confidence(confidence)
+    mean_growth = sum(growth_rates) / len(growth_rates) if growth_rates else 0.0
+    # Keep deterministic projection stable by clipping extreme single-period swings.
+    mean_growth = max(-0.8, min(1.5, mean_growth))
 
-    # Generate future timestamps
-    last_ts = datetime.fromordinal(int(timestamps[-1]))
-    forecast_points = []
+    last_month_net = lookback[-1]
+    projected_monthly: list[float] = []
+    cur_val = last_month_net
+    for _ in range(6):
+        cur_val = max(cur_val * (1.0 + mean_growth), 0.0)
+        projected_monthly.append(cur_val)
+
+    last_dt = monthly[-1][0]
+    if len(monthly) >= 2:
+        prior_dt = monthly[-2][0]
+        slope_per_day = (monthly[-1][1] - monthly[-2][1]) / max((last_dt - prior_dt).days, 1)
+    else:
+        slope_per_day = 0.0
+
+    volatility = 0.0
+    if len(growth_rates) >= 2:
+        mu = sum(growth_rates) / len(growth_rates)
+        variance = sum((g - mu) ** 2 for g in growth_rates) / (len(growth_rates) - 1)
+        volatility = variance ** 0.5
+
+    # Approximate fit metric for deterministic method compatibility.
+    if len(lookback) >= 2:
+        baseline = sum(lookback) / len(lookback)
+        sst = sum((x - baseline) ** 2 for x in lookback)
+        if sst > 0:
+            fitted = []
+            fv = lookback[0]
+            fitted.append(fv)
+            for _ in lookback[1:]:
+                fv = fv * (1.0 + mean_growth)
+                fitted.append(fv)
+            sse = sum((a - b) ** 2 for a, b in zip(lookback, fitted))
+            r2 = max(0.0, min(1.0, 1.0 - (sse / sst)))
+        else:
+            r2 = 1.0
+    else:
+        r2 = 0.0
+
+    horizon_months = max(1, (horizon_days + 29) // 30)
+    projection_pool = projected_monthly[:horizon_months]
+    projected_total = float(sum(projection_pool))
+    margin = projected_total * (0.15 + min(volatility, 0.35))
+    low_total = max(projected_total - margin, 0.0)
+    high_total = max(projected_total + margin, 0.0)
+
+    forecast_points: list[dict] = []
+    running_date = last_dt
     for day in range(1, horizon_days + 1):
-        future_dt = last_ts + timedelta(days=day)
-        future_ord = float(future_dt.toordinal())
-        predicted = float(reg.predict([[future_ord]])[0])
-        margin = z * residual_std
+        running_date = last_dt + timedelta(days=day)
+        month_idx = min((day - 1) // 30, max(len(projected_monthly) - 1, 0))
+        monthly_amount = projected_monthly[month_idx] if projected_monthly else 0.0
+        daily_amount = monthly_amount / 30.0
+        day_margin = daily_amount * (0.15 + min(volatility, 0.35))
         forecast_points.append(
             {
-                "date": future_dt.date().isoformat(),
-                "predicted": round(max(predicted, 0.0), 4),
-                "lower": round(max(predicted - margin, 0.0), 4),
-                "upper": round(max(predicted + margin, 0.0), 4),
+                "date": running_date.date().isoformat(),
+                "predicted": round(max(daily_amount, 0.0), 4),
+                "lower": round(max(daily_amount - day_margin, 0.0), 4),
+                "upper": round(max(daily_amount + day_margin, 0.0), 4),
             }
         )
 
-    # Classify trend using _TREND_THRESHOLD_MULTIPLIER × residual_std as the
-    # significance threshold for the slope.
-    if slope > residual_std * _TREND_THRESHOLD_MULTIPLIER:
-        trend = "GROWING"
-    elif slope < -residual_std * _TREND_THRESHOLD_MULTIPLIER:
-        trend = "DECLINING"
-    else:
-        trend = "FLAT"
-
     return {
-        "model": "LinearTrend",
-        "data_points": n,
-        "slope_per_day": round(slope, 6),
-        "r_squared": round(r2, 4),
+        "model": "DeterministicGrowthV1",
+        "data_points": len(earnings_records),
+        "slope_per_day": round(float(slope_per_day), 6),
+        "r_squared": round(float(r2), 4),
         "forecast": forecast_points,
-        "trend": trend,
+        "trend": _trend_from_growth(mean_growth),
+        "explanation": {
+            "method": "6-month moving average growth",
+            "monthly_growth_rate": round(float(mean_growth), 6),
+            "projected_total": round(projected_total, 2),
+            "confidence_band": [round(low_total, 2), round(high_total, 2)],
+            "inputs": {
+                "months_analyzed": len(lookback),
+                "recent_monthly_nets": [round(v, 2) for v in lookback],
+            },
+        },
     }
 
 
@@ -187,20 +172,6 @@ def forecast_by_category(
     horizon_days: int = 90,
     confidence: float = 0.95,
 ) -> dict[str, dict]:
-    """
-    Run ``forecast_earnings`` independently for each ``event_type`` found in
-    *earnings_records* and return a dict keyed by event type.
-
-    Parameters
-    ----------
-    earnings_records:
-        List of dicts.  Each record must have ``event_type`` in addition to the
-        fields required by ``forecast_earnings``.
-
-    Returns
-    -------
-    ``{event_type: forecast_result, ...}``
-    """
     by_type: dict[str, list[dict]] = {}
     for r in earnings_records:
         et = str(r.get("event_type", "UNKNOWN"))
@@ -212,28 +183,13 @@ def forecast_by_category(
     }
 
 
-# ---------------------------------------------------------------------------
-# Public class wrapper
-# ---------------------------------------------------------------------------
-
 class EarningsForecaster:
-    """
-    High-level interface for earnings trend forecasting.
-
-    Usage::
-
-        forecaster = EarningsForecaster()
-        result = forecaster.forecast(earnings_records, horizon_days=90)
-        by_category = forecaster.forecast_by_category(earnings_records)
-    """
-
     def forecast(
         self,
         earnings_records: list[dict],
         horizon_days: int = 90,
         confidence: float = 0.95,
     ) -> dict:
-        """Aggregate forecast across all earnings records."""
         return forecast_earnings(earnings_records, horizon_days=horizon_days, confidence=confidence)
 
     def forecast_by_category(
@@ -242,5 +198,4 @@ class EarningsForecaster:
         horizon_days: int = 90,
         confidence: float = 0.95,
     ) -> dict[str, dict]:
-        """Per-category (event_type) forecasts."""
         return forecast_by_category(earnings_records, horizon_days=horizon_days, confidence=confidence)

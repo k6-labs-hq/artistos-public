@@ -31,6 +31,7 @@ from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.recovery_automation import build_automation_plan
 from XR7.recovery.sla_predictor import predict_claim_sla_dates
+from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 from XR7.services.review_queue import enqueue_review_item
 from XR7.services.branding import (
     apply_brand_placeholders,
@@ -329,12 +330,25 @@ def list_claims(artist_id: str, db: Session = Depends(get_db)):
     payload = []
     for claim in claims:
         anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+        sol = calculate_sol(
+            governing_law_state=claim.governing_law_state,
+            contract_type=claim.contract_type,
+            infringement_date=claim.infringement_date,
+            discovery_date=claim.discovery_date,
+        )
         forecast = build_claim_forecast(claim, anomaly, snapshots, historical_claims).to_dict()
         payload.append(
             {
                 "claim": ClaimSchema.model_validate(claim).model_dump(mode="json"),
                 "forecast": forecast,
                 "attorney_escalation": _attorney_escalation_state(claim, default_grace_days),
+                "sol": {
+                    "status": sol.get("sol_status"),
+                    "days_remaining": sol.get("sol_days_remaining"),
+                    "deadline": sol.get("sol_deadline").isoformat() if sol.get("sol_deadline") else None,
+                    "citation": sol.get("sol_citation_source"),
+                    "disclaimer": SOL_DISCLAIMER,
+                },
             }
         )
     return payload
@@ -544,10 +558,18 @@ def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict, brand: di
     page6 = [
         "Page 6 - SOL Deadline Notice",
         "",
+        f"Governing Law: {payload.get('governingLawState') or 'Not set'}",
+        f"Contract Type: {payload.get('contractType') or 'Not set'}",
+        f"Infringement Date: {payload.get('infringementDate') or 'Not set'}",
+        f"Discovery Date: {payload.get('discoveryDate') or 'Not set'}",
+        f"SOL Citation: {payload.get('solCitationSource') or 'Not set'}",
         f"SOL Deadline: {payload.get('solDeadline') or 'Not set'}",
+        f"SOL Status: {payload.get('solStatus') or 'UNKNOWN'}",
+        f"SOL Days Remaining: {payload.get('solDaysRemaining') if payload.get('solDaysRemaining') is not None else 'Unknown'}",
         f"Recommended Attorney Engagement Date: {payload.get('attorneyEngagementDeadline') or 'Not set'}",
         "Jurisdiction Note: Verify governing contract and forum clauses",
         "with licensed counsel before filing.",
+        SOL_DISCLAIMER,
     ]
 
     return apply_brand_placeholders([page1, page2, page3, page4, page5, page6], brand_payload)
@@ -573,7 +595,13 @@ def generate_attorney_evidence_file(
     if not state.get("eligible_to_prepare"):
         raise HTTPException(status_code=400, detail="Grace period has not elapsed or claim is not in proof_submitted state")
 
-    sol_deadline = _utc(claim.sol_deadline)
+    sol = calculate_sol(
+        governing_law_state=claim.governing_law_state,
+        contract_type=claim.contract_type,
+        infringement_date=claim.infringement_date,
+        discovery_date=claim.discovery_date,
+    )
+    sol_deadline = _utc(sol.get("sol_deadline") or claim.sol_deadline)
     recommended_deadline = (sol_deadline - timedelta(days=14)) if sol_deadline else None
     engagement_deadline = _utc(body.attorney_engagement_deadline) or recommended_deadline
 
@@ -588,7 +616,14 @@ def generate_attorney_evidence_file(
         "proofSubmittedAt": _utc(claim.proof_submitted_at).isoformat() if claim.proof_submitted_at else None,
         "gracePeriodDays": int(state.get("grace_period_days") or default_grace_days),
         "daysElapsedSinceProofSubmission": int(state.get("days_elapsed") or 0),
+        "governingLawState": claim.governing_law_state,
+        "contractType": claim.contract_type,
+        "infringementDate": _utc(claim.infringement_date).date().isoformat() if claim.infringement_date else None,
+        "discoveryDate": _utc(claim.discovery_date).date().isoformat() if claim.discovery_date else None,
+        "solCitationSource": sol.get("sol_citation_source") or claim.sol_citation_source,
         "solDeadline": sol_deadline.isoformat() if sol_deadline else None,
+        "solStatus": sol.get("sol_status"),
+        "solDaysRemaining": sol.get("sol_days_remaining"),
         "communications": _coalesce_communications(claim),
         "anomalyReport": claim.anomaly_report if isinstance(claim.anomaly_report, dict) else {},
         "supportingDocuments": _coalesce_supporting_documents(claim),
@@ -606,6 +641,7 @@ def generate_attorney_evidence_file(
             "The payer was given 60 days to respond after receiving proof of non-payment. "
             "That window has now closed."
         ),
+        "disclaimer": SOL_DISCLAIMER,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
     }
 

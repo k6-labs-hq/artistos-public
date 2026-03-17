@@ -244,6 +244,18 @@ class TestEarningsForecaster:
             assert pt["predicted"] >= 0.0
             assert pt["lower"] >= 0.0
 
+    def test_forecast_contains_explainability_payload(self):
+        records = _make_earnings_records([100.0, 110.0, 120.0, 132.0, 145.0, 160.0])
+        result = forecast_earnings(records, horizon_days=30)
+        assert result["model"] == "DeterministicGrowthV1"
+        assert "explanation" in result
+        explanation = result["explanation"]
+        assert explanation["method"] == "6-month moving average growth"
+        assert "monthly_growth_rate" in explanation
+        assert "projected_total" in explanation
+        assert isinstance(explanation["confidence_band"], list)
+        assert "inputs" in explanation
+
 
 # ===========================================================================
 # CatalogScorer

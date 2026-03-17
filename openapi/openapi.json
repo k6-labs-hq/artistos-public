@@ -9896,6 +9896,22 @@
             }
           },
           {
+            "name": "jurisdiction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
+            }
+          },
+          {
             "name": "sort",
             "in": "query",
             "required": false,
@@ -9927,6 +9943,79 @@
               "minimum": 0,
               "default": 0,
               "title": "Offset"
+            }
+          },
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Admin-Key"
+            }
+          },
+          {
+            "name": "X-Admin-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/reports/sol-risk": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Sol Risk Report",
+        "operationId": "sol_risk_report_admin_reports_sol_risk_get",
+        "parameters": [
+          {
+            "name": "jurisdiction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
             }
           },
           {
@@ -13453,6 +13542,16 @@
             "type": "integer",
             "title": "Default Attorney Grace Period Days",
             "default": 60
+          },
+          "primary_jurisdiction": {
+            "type": "string",
+            "title": "Primary Jurisdiction",
+            "default": "USA"
+          },
+          "preferred_contract_type": {
+            "type": "string",
+            "title": "Preferred Contract Type",
+            "default": "recording"
           }
         },
         "type": "object",
@@ -13478,6 +13577,18 @@
             "minimum": 1.0,
             "title": "Default Attorney Grace Period Days",
             "default": 60
+          },
+          "primary_jurisdiction": {
+            "type": "string",
+            "maxLength": 8,
+            "minLength": 2,
+            "title": "Primary Jurisdiction",
+            "default": "USA"
+          },
+          "preferred_contract_type": {
+            "type": "string",
+            "title": "Preferred Contract Type",
+            "default": "recording"
           }
         },
         "type": "object",
@@ -13587,6 +13698,16 @@
             "type": "integer",
             "title": "Default Attorney Grace Period Days",
             "default": 60
+          },
+          "primary_jurisdiction": {
+            "type": "string",
+            "title": "Primary Jurisdiction",
+            "default": "USA"
+          },
+          "preferred_contract_type": {
+            "type": "string",
+            "title": "Preferred Contract Type",
+            "default": "recording"
           },
           "xr7_future_leakage_prevented": {
             "type": "number",
@@ -14565,6 +14686,62 @@
               }
             ],
             "title": "Sol Deadline"
+          },
+          "governing_law_state": {
+            "type": "string",
+            "title": "Governing Law State",
+            "default": "USA"
+          },
+          "contract_type": {
+            "type": "string",
+            "title": "Contract Type",
+            "default": "recording"
+          },
+          "infringement_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Infringement Date"
+          },
+          "discovery_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discovery Date"
+          },
+          "sol_window_years": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sol Window Years"
+          },
+          "sol_citation_source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sol Citation Source"
           },
           "communications": {
             "anyOf": [

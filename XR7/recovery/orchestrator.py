@@ -11,7 +11,9 @@ import tempfile
 from sqlalchemy.orm import Session
 
 from XR7.models.anomaly import Anomaly
+from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
+from XR7.recovery.sol_calculator import calculate_sol
 from XR7.models.contract import Contract
 from XR7.models.event import Event
 from XR7.billing.engine import BillingEngine
@@ -247,6 +249,14 @@ class ClaimsOrchestrator:
         anomaly = self.db_session.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
         if not anomaly:
             raise ValueError(f"Anomaly {anomaly_id} not found")
+        artist = self.db_session.query(Artist).filter(Artist.id == anomaly.artist_id).first()
+        infringement_date = anomaly.time_window_end or anomaly.created_at
+        sol = calculate_sol(
+            governing_law_state=(artist.primary_jurisdiction if artist else "USA"),
+            contract_type=(artist.preferred_contract_type if artist else "recording"),
+            infringement_date=infringement_date,
+            discovery_date=anomaly.created_at,
+        )
         claim = Claim(
             id=str(uuid.uuid4()),
             artist_id=anomaly.artist_id,
@@ -254,6 +264,13 @@ class ClaimsOrchestrator:
             claim_type=claim_type,
             status=ClaimStatus.IDENTIFIED,
             evidence=evidence or {},
+            governing_law_state=sol.get("governing_law_state") or "USA",
+            contract_type=sol.get("contract_type") or "recording",
+            infringement_date=infringement_date,
+            discovery_date=anomaly.created_at,
+            sol_window_years=sol.get("sol_window_years"),
+            sol_citation_source=sol.get("sol_citation_source"),
+            sol_deadline=sol.get("sol_deadline"),
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )

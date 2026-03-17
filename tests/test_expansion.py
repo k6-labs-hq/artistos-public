@@ -132,6 +132,9 @@ def test_summary_report_csv_and_pdf_exports():
     assert csv_resp.status_code == 200
     assert csv_resp.headers["content-type"].startswith("text/csv")
     assert "metric,value" in csv_resp.text
+    assert "sol_expired_count" in csv_resp.text
+    assert "sol_urgent_count" in csv_resp.text
+    assert "sol_at_risk_count" in csv_resp.text
 
     pdf_resp = client.get(f"/artists/{artist_id}/reports/summary", params={"format": "pdf"})
     assert pdf_resp.status_code == 200

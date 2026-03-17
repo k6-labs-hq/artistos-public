@@ -119,7 +119,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
                 artist_id=artist_id,
                 source_type=ReviewSourceType.ML_CONFIDENCE,
                 source_id=str(anomaly_id) if anomaly_id else None,
-                reason="Low model confidence anomaly requires analyst review",
+                reason="Low rule confidence anomaly requires analyst review",
                 priority_score=priority,
                 payload=row,
             )

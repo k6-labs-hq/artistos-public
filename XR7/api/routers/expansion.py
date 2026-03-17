@@ -42,7 +42,7 @@ from XR7.models.oauth_connector import (
 from XR7.models.payment import Payment
 from XR7.models.team_access import TeamMember, TeamMemberCreate, TeamMemberSchema, TeamRole
 from XR7.recovery.audit_tracker import analyze_audit_eligibility
-from XR7.recovery.statute_tracker import classify_anomalies
+from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 from XR7.services.branding import branding_metadata, get_branding_for_artist, get_branding_profile, inject_branding_metadata
 
 router = APIRouter(tags=["expansion"])
@@ -340,20 +340,27 @@ def urgent_sol_notification_check(
     )
     pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
 
-    anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
-    rows = [
-        {
-            "id": a.id,
-            "category": str(a.category),
-            "subtype": a.subtype,
-            "territory": a.territory,
-            "created_at": a.created_at,
-            "estimated_recoverable": a.estimated_recoverable,
-        }
-        for a in anomalies
-    ]
-    classified = classify_anomalies(rows)
-    urgent = [x for x in classified if x.get("sol_status") in {"EXPIRED", "URGENT"}]
+    claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    urgent = []
+    for claim in claims:
+        sol = calculate_sol(
+            governing_law_state=claim.governing_law_state,
+            contract_type=claim.contract_type,
+            infringement_date=claim.infringement_date,
+            discovery_date=claim.discovery_date,
+        )
+        if sol.get("sol_status") in {"EXPIRED", "URGENT"}:
+            urgent.append(
+                {
+                    "id": claim.id,
+                    "claim_type": claim.claim_type,
+                    "sol_status": sol.get("sol_status"),
+                    "sol_deadline": sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None,
+                    "sol_days_remaining": sol.get("sol_days_remaining"),
+                    "citation": sol.get("sol_citation_source"),
+                    "estimated_recoverable": float(claim.recovered_amount or 0.0),
+                }
+            )
 
     if not urgent:
         return inject_branding_metadata(db, {"artist_id": artist_id, "sent": False, "reason": "no_urgent_items"})
@@ -361,8 +368,9 @@ def urgent_sol_notification_check(
     top = urgent[0]
     amount = float(top.get("estimated_recoverable") or 0.0)
     body = (
-        f"{len(urgent)} item(s) are urgent/expired. Top: {top.get('subtype')} "
-        f"({top.get('sol_status')}), est. recoverable ${amount:,.2f}."
+        f"{len(urgent)} claim(s) are urgent/expired. Top: {top.get('claim_type')} "
+        f"({top.get('sol_status')}), est. recoverable ${amount:,.2f}, "
+        f"deadline {top.get('sol_deadline') or 'unknown'}."
     )
     result = send_event_notification(
         pref,
@@ -371,7 +379,16 @@ def urgent_sol_notification_check(
         body,
         current_hour_utc=datetime.now(timezone.utc).hour,
     )
-    return inject_branding_metadata(db, {"artist_id": artist_id, "urgent_count": len(urgent), **result})
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "urgent_count": len(urgent),
+            "urgent_items": urgent,
+            "legal_disclaimer": SOL_DISCLAIMER,
+            **result,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/dashboard/charts")
@@ -439,6 +456,19 @@ def _summary_report_payload(artist_id: str, db: Session) -> dict:
     recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(Payment.artist_id == artist_id).scalar() or 0.0
     open_claims = db.query(Claim).filter(Claim.artist_id == artist_id, Claim.status.notin_(["PAID", "CLOSED"])).count()
     anomaly_count = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()
+    claim_rows = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    sol_rows = [
+        calculate_sol(
+            governing_law_state=c.governing_law_state,
+            contract_type=c.contract_type,
+            infringement_date=c.infringement_date,
+            discovery_date=c.discovery_date,
+        )
+        for c in claim_rows
+    ]
+    sol_expired_count = sum(1 for r in sol_rows if r.get("sol_status") == "EXPIRED")
+    sol_urgent_count = sum(1 for r in sol_rows if r.get("sol_status") == "URGENT")
+    sol_at_risk_count = sum(1 for r in sol_rows if r.get("sol_status") == "AT_RISK")
 
     return {
         "artist_id": artist_id,
@@ -448,6 +478,10 @@ def _summary_report_payload(artist_id: str, db: Session) -> dict:
         "recovered_vs_potential_pct": round((float(recovered) / float(leakage) * 100.0), 2) if leakage else 0.0,
         "open_claim_count": open_claims,
         "anomaly_count": anomaly_count,
+        "sol_expired_count": sol_expired_count,
+        "sol_urgent_count": sol_urgent_count,
+        "sol_at_risk_count": sol_at_risk_count,
+        "sol_disclaimer": SOL_DISCLAIMER,
     }
 
 

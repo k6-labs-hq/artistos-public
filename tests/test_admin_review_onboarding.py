@@ -138,6 +138,77 @@ def test_admin_console_pagination_and_audit_logs(monkeypatch):
     assert len(logs.json()) >= 2
 
 
+def test_admin_claims_jurisdiction_filter_and_sol_risk_report(monkeypatch):
+    monkeypatch.setenv("ADMIN_API_KEY", "admin-secret")
+    artist_id = _create_artist()
+
+    db = _TestSession()
+    anomaly = Anomaly(
+        id=str(uuid.uuid4()),
+        artist_id=artist_id,
+        category=AnomalyCategory.ROYALTY,
+        subtype="MISSING_PAYMENT",
+        severity=AnomalySeverity.HIGH,
+        status=AnomalyStatus.OPEN,
+        confidence_score=0.8,
+        estimated_recoverable=1200.0,
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(anomaly)
+    claim_uk = Claim(
+        id=str(uuid.uuid4()),
+        artist_id=artist_id,
+        anomaly_id=anomaly.id,
+        claim_type="ROYALTY",
+        status=ClaimStatus.IDENTIFIED,
+        recovered_amount=1200.0,
+        governing_law_state="UK",
+        contract_type="recording",
+        infringement_date=datetime(2022, 1, 1, tzinfo=timezone.utc),
+        discovery_date=datetime(2022, 2, 1, tzinfo=timezone.utc),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    claim_us = Claim(
+        id=str(uuid.uuid4()),
+        artist_id=artist_id,
+        anomaly_id=anomaly.id,
+        claim_type="ROYALTY",
+        status=ClaimStatus.IDENTIFIED,
+        recovered_amount=300.0,
+        governing_law_state="USA",
+        contract_type="recording",
+        infringement_date=datetime(2022, 1, 1, tzinfo=timezone.utc),
+        discovery_date=datetime(2022, 2, 1, tzinfo=timezone.utc),
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
+    db.add(claim_uk)
+    db.add(claim_us)
+    db.commit()
+    db.close()
+
+    filtered = client.get(
+        "/admin/claims?jurisdiction=UK",
+        headers={"X-Admin-Key": "admin-secret", "X-Admin-Actor": "ops-user@xr7.test"},
+    )
+    assert filtered.status_code == 200
+    items = filtered.json()["items"]
+    assert items
+    assert all(i["governing_law_state"] == "UK" for i in items)
+
+    risk = client.get(
+        "/admin/reports/sol-risk?jurisdiction=UK",
+        headers={"X-Admin-Key": "admin-secret", "X-Admin-Actor": "ops-user@xr7.test"},
+    )
+    assert risk.status_code == 200
+    body = risk.json()
+    assert "counts_by_status" in body
+    assert "claims" in body
+    assert "legal_disclaimer" in body
+    assert all(row["governing_law_state"] == "UK" for row in body["claims"])
+
+
 def test_readiness_expanded_sections_present():
     resp = client.get("/health/readiness")
     assert resp.status_code == 200

@@ -1,0 +1,108 @@
+{
+  "default_jurisdiction": "USA",
+  "default_contract_type": "recording",
+  "jurisdictions": {
+    "USA": {
+      "recording": {
+        "years": 3,
+        "citation": "17 U.S.C. § 507(b)",
+        "label": "Federal copyright claim window"
+      },
+      "publishing": {
+        "years": 3,
+        "citation": "17 U.S.C. § 507(b)",
+        "label": "Federal copyright claim window"
+      },
+      "distribution": {
+        "years": 4,
+        "citation": "UCC contract claim default",
+        "label": "Contract-based royalty dispute"
+      }
+    },
+    "UK": {
+      "recording": {
+        "years": 6,
+        "citation": "Limitation Act 1980",
+        "label": "Contract limitation period"
+      },
+      "publishing": {
+        "years": 6,
+        "citation": "Limitation Act 1980",
+        "label": "Contract limitation period"
+      },
+      "distribution": {
+        "years": 6,
+        "citation": "Limitation Act 1980",
+        "label": "Contract limitation period"
+      }
+    },
+    "CA": {
+      "recording": {
+        "years": 2,
+        "citation": "Provincial limitation statutes (typical)",
+        "label": "General civil limitation period"
+      },
+      "publishing": {
+        "years": 2,
+        "citation": "Provincial limitation statutes (typical)",
+        "label": "General civil limitation period"
+      },
+      "distribution": {
+        "years": 2,
+        "citation": "Provincial limitation statutes (typical)",
+        "label": "General civil limitation period"
+      }
+    },
+    "DE": {
+      "recording": {
+        "years": 3,
+        "citation": "BGB regular limitation period",
+        "label": "Regular civil claim limitation"
+      },
+      "publishing": {
+        "years": 3,
+        "citation": "BGB regular limitation period",
+        "label": "Regular civil claim limitation"
+      },
+      "distribution": {
+        "years": 3,
+        "citation": "BGB regular limitation period",
+        "label": "Regular civil claim limitation"
+      }
+    },
+    "FR": {
+      "recording": {
+        "years": 5,
+        "citation": "French Civil Code prescription period",
+        "label": "General contractual limitation period"
+      },
+      "publishing": {
+        "years": 5,
+        "citation": "French Civil Code prescription period",
+        "label": "General contractual limitation period"
+      },
+      "distribution": {
+        "years": 5,
+        "citation": "French Civil Code prescription period",
+        "label": "General contractual limitation period"
+      }
+    },
+    "AU": {
+      "recording": {
+        "years": 6,
+        "citation": "State limitation legislation (typical)",
+        "label": "Contractual limitation period"
+      },
+      "publishing": {
+        "years": 6,
+        "citation": "State limitation legislation (typical)",
+        "label": "Contractual limitation period"
+      },
+      "distribution": {
+        "years": 6,
+        "citation": "State limitation legislation (typical)",
+        "label": "Contractual limitation period"
+      }
+    }
+  }
+}
