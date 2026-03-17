@@ -15,7 +15,7 @@ Apply strict auth checks for:
 - admin-wide listings and audit logs
 
 ## Webhook Security
-Celero webhook endpoint should be protected with configured webhook secret validation and signature checks.
+Trolley webhook endpoint should be protected with configured webhook secret validation and signature checks.
 
 ## Operational Recommendation
 - Rotate API keys regularly.

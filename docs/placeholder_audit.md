@@ -38,7 +38,7 @@ Replaced silent pass in non-blocking exception paths with structured logging:
 - XR7/api/routers/artists.py
 - XR7/api/routers/ingestion.py
 - XR7/api/routers/anomalies.py
-- XR7/celero/webhook.py
+- XR7/api/routers/trolley.py
 
 ## Remaining Matches and Classification
 
@@ -50,7 +50,7 @@ The following modules intentionally raise NotImplementedError when external part
 - XR7/ingestion/connectors/ticketing.py
 - XR7/ingestion/connectors/distributor.py
 - XR7/auth/notification_service.py
-- XR7/celero/client.py
+- XR7/billing/engine.py
 
 These are validated by tests and serve as explicit guardrails, not stubs.
 

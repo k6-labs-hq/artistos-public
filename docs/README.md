@@ -14,7 +14,7 @@ This directory contains production-facing technical documentation for XR7 Engine
 - api/domains/artists_ingestion.md
 - api/domains/anomalies_claims_recovery.md
 - api/domains/intelligence_dashboard_workflow.md
-- api/domains/billing_celero_widget_admin.md
+- api/domains/billing_trolley_widget_admin.md
 
 ## Data + ML
 - ingestion_format_catalog.md

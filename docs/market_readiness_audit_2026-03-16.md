@@ -10,7 +10,7 @@
 - Anomaly detection reliability: Good. Rule engine + ML detector are present, but production model monitoring and drift alerting are still lightweight.
 - Claims orchestration completeness: Good. IDENTIFIED to CLOSED lifecycle exists with evidence generation and reconciliation hooks.
 - Evidence packet integrity: Strong. Hash chaining, HMAC/RSA signing, packet verification, and blockchain anchor surfaces are present.
-- Billing + Celero MoR readiness: Good. Full API surface exists, but live merchant credential hardening and webhook operational controls remain rollout gates.
+- Billing + Trolley payout readiness: Good. Full API surface exists, but live payout credential hardening and webhook operational controls remain rollout gates.
 - Dashboard completeness: Good. Broad data coverage, including legal/escalation indicators, but some values still rely on simulated connector paths.
 - ML calibration health: Good. Posterior blending and scope-level snapshots exist; operational quality gates need tighter production SLOs.
 - UGC scanning readiness: Moderate-good. Global/social scanners and workflow hooks are present; provider API variability and simulation fallback remain a gap.
@@ -22,7 +22,7 @@
 - Documentation completeness: Moderate-good. Rich README and API refs exist; operational RC checklists and launch governance needed consolidation.
 
 ### blocking_gaps
-- Production credential hardening and key rotation runbook enforcement for Celero/webhook/evidence-signing in live ops.
+- Production credential hardening and key rotation runbook enforcement for Trolley/webhook/evidence-signing in live ops.
 - End-to-end production-like load testing evidence for ingestion + anomaly + claim workflow throughput/SLOs.
 - Partner-grade tenant/organization controls for publisher/manager organizations (RBAC depth, scoped audit exports, portfolio controls).
 - Formal incident recovery/backup retention validation drills with restore-time evidence.
@@ -102,9 +102,9 @@
   - difficulty: 2
   - impact: 5
 
-- SEC-102: Require Celero webhook secret in production readiness gate.
+- SEC-102: Require Trolley webhook secret in production readiness gate.
   - required code changes: readiness gate + startup assertions.
-  - affected modules: XR7/api/app.py, XR7/celero/webhook.py.
+  - affected modules: XR7/api/app.py, XR7/api/routers/trolley.py.
   - new endpoints/schema: none.
   - tests: readiness + webhook validation tests.
   - migration: none.
@@ -143,7 +143,7 @@
 - ingestion stability: verify 15 explicit formats + generic fallback and CSV/TSV/XLSX ingestion paths.
 - anomaly detection reliability: validate rule + ML output parity and replay consistency.
 - evidence packet verification: run packet export and verify integrity/signature checks.
-- Celero MoR readiness: validate register/charge/disburse/webhook flows in staging.
+- Trolley payout readiness: validate recipient/disburse/webhook flows in staging.
 - dashboard correctness: verify leakage/in-pursuit/deposit/deadline/calibration sections.
 - ML calibration thresholds: ensure posterior scope sufficiency thresholds and drift checks.
 - UGC scanning reliability: validate non-simulated provider flows where available.
