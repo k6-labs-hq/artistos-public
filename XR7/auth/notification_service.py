@@ -207,7 +207,7 @@ class TwilioSMSService(NotificationService):
     Install dependency: ``pip install twilio``
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, enable_fallback: bool = True) -> None:
         self._account_sid = os.environ["TWILIO_ACCOUNT_SID"]
         self._auth_token = os.environ["TWILIO_AUTH_TOKEN"]
         self._from_number = os.environ["TWILIO_FROM_NUMBER"]
@@ -219,6 +219,12 @@ class TwilioSMSService(NotificationService):
             raise ImportError(
                 "Twilio is not installed.  Run: pip install twilio"
             ) from exc
+        self._smtp_fallback: SMTPEmailService | None = None
+        if enable_fallback and os.environ.get("SMTP_HOST"):
+            try:
+                self._smtp_fallback = SMTPEmailService(enable_fallback=False)
+            except Exception:
+                logger.exception("SMTP fallback init failed for TwilioSMSService")
 
     def send_sms(self, phone: str, message: str) -> bool:
         try:
@@ -233,10 +239,10 @@ class TwilioSMSService(NotificationService):
             return False
 
     def send_email(self, email: str, subject: str, body: str) -> bool:
-        # Twilio does not send email — use SMTPEmailService alongside this.
-        raise NotImplementedError(
-            "TwilioSMSService does not support email. Use SMTPEmailService."
-        )
+        if self._smtp_fallback is None:
+            logger.error("TwilioSMSService email requested without SMTP fallback configured")
+            return False
+        return self._smtp_fallback.send_email(email, subject, body)
 
 
 # ---------------------------------------------------------------------------
@@ -256,18 +262,32 @@ class SMTPEmailService(NotificationService):
     ``SMTP_PORT=465`` and set ``SMTP_USE_SSL=true``.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, enable_fallback: bool = True) -> None:
         self._host = os.environ.get("SMTP_HOST", "localhost")
         self._port = int(os.environ.get("SMTP_PORT", "587"))
         self._user = os.environ.get("SMTP_USER", "")
         self._password = os.environ.get("SMTP_PASSWORD", "")
         self._from_addr = os.environ.get("SMTP_FROM", "noreply@XR7.com")
         self._use_ssl = os.environ.get("SMTP_USE_SSL", "false").lower() == "true"
+        self._twilio_fallback: TwilioSMSService | None = None
+        can_init_twilio = all(
+            [
+                os.environ.get("TWILIO_ACCOUNT_SID"),
+                os.environ.get("TWILIO_AUTH_TOKEN"),
+                os.environ.get("TWILIO_FROM_NUMBER"),
+            ]
+        )
+        if enable_fallback and can_init_twilio:
+            try:
+                self._twilio_fallback = TwilioSMSService(enable_fallback=False)
+            except Exception:
+                logger.exception("Twilio fallback init failed for SMTPEmailService")
 
     def send_sms(self, phone: str, message: str) -> bool:
-        raise NotImplementedError(
-            "SMTPEmailService does not support SMS. Use TwilioSMSService."
-        )
+        if self._twilio_fallback is None:
+            logger.error("SMTPEmailService SMS requested without Twilio fallback configured")
+            return False
+        return self._twilio_fallback.send_sms(phone, message)
 
     def send_email(self, email: str, subject: str, body: str) -> bool:
         try:

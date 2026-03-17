@@ -26,6 +26,7 @@ import os
 from datetime import datetime
 
 from XR7.ingestion.connectors.base import BaseConnector
+from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 # Maps distributor name → required credential environment variables
 _DISTRIBUTOR_ENV_VARS: dict[str, tuple[str, ...]] = {
@@ -93,20 +94,25 @@ class DistributorConnector(BaseConnector):
         start_date: datetime,
         end_date: datetime,
     ) -> list[dict]:
+        rows = load_statement_rows(
+            config=self.config,
+            source_name=self.distributor_name,
+            env_name=f"{self.distributor_name.upper().replace(' ', '_')}_STATEMENT_FILES",
+            artist_id=artist_id,
+            start=start_date,
+            end=end_date,
+        )
+        if rows:
+            return rows
         raise NotImplementedError(
-            f"{self.distributor_name} API integration is not yet configured.  "
-            f"Required env vars: {', '.join(self._required_env_vars())}.  "
-            f"Alternatively, download your royalty statement CSV from the "
-            f"{self.distributor_name} dashboard and upload it via "
-            f"POST /artists/{{artist_id}}/statements/upload — the parser "
-            f"auto-detects the format."
+            f"{self.distributor_name} API integration is not yet configured and no statement backfill files "
+            f"were provided. Required env vars for API mode: {', '.join(self._required_env_vars())}. "
+            f"For file mode, provide config['statement_files'] or "
+            f"{self.distributor_name.upper().replace(' ', '_')}_STATEMENT_FILES."
         )
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
-        raise NotImplementedError(
-            f"{self.distributor_name} API integration is not yet configured.  "
-            f"See fetch_historical() for setup instructions."
-        )
+        return self.fetch_historical(artist_id, since, datetime.now(tz=since.tzinfo))
 
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []

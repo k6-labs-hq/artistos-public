@@ -74,8 +74,22 @@ GET /health/readiness
 Returns the status of every connector and notification service.  Use this endpoint to see exactly which credentials are missing.
 
 The readiness payload now also includes:
+- `architecture` (market-readiness gate score for production hardening)
 - `global_social` (simulation toggle + API key presence)
 - `white_label` (enabled/disabled + deployment status)
+
+### Connector Backfill Mode (No API Partnership Required)
+
+Pending connector partnerships can still run real historical/recent fetches using local statement files.
+
+Provide connector statement files via config (`statement_files`) or connector-specific env vars (comma-separated):
+
+- `ASCAP_STATEMENT_FILES`, `BMI_STATEMENT_FILES`, `SESAC_STATEMENT_FILES`
+- `SPOTIFY_STATEMENT_FILES`, `YOUTUBE_STATEMENT_FILES`, `TIKTOK_STATEMENT_FILES`
+- `TICKETMASTER_STATEMENT_FILES`, `AXS_STATEMENT_FILES`
+- `AMUSE_STATEMENT_FILES`, `ONERPM_STATEMENT_FILES`, `STEM_STATEMENT_FILES`
+
+Supported file types: `.csv`, `.tsv`, `.xlsx`. Files are parsed through the same ingestion parser and date-filtered by connector fetch windows.
 
 ### Global Social + Mobile UI
 

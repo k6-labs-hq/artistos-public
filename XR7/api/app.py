@@ -217,6 +217,7 @@ def readiness():
         KOMCAConnector,
         SACEMConnector,
     )
+    from XR7.services.market_readiness_architecture import evaluate_architecture_readiness
 
     def _connector_status(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -295,6 +296,7 @@ def readiness():
     }
 
     security_gates = _security_gate_status(_env)
+    architecture = evaluate_architecture_readiness(environment=_env)
 
     # Core readiness for production also requires security gates.
     core_ready = bool(security_gates["all_required_gates_passed"]) if _env == "production" else True
@@ -345,6 +347,7 @@ def readiness():
             "status": "ready" if trolley_webhook_secret_set else "missing_credentials",
         },
         "security_gates": security_gates,
+        "architecture": architecture,
         "crm": {
             "hubspot": {
                 "enabled": hubspot_client.enabled,

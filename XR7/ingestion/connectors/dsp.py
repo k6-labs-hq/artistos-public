@@ -14,6 +14,7 @@ import os
 from datetime import datetime
 
 from XR7.ingestion.connectors.base import BaseConnector
+from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 _DSP_ENV_VARS = {
     "Spotify":      ("SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET"),
@@ -52,18 +53,25 @@ class DSPConnector(BaseConnector):
         )
 
     def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+        rows = load_statement_rows(
+            config=self.config,
+            source_name=self.dsp_name,
+            env_name=f"{self.dsp_name.upper().replace(' ', '_')}_STATEMENT_FILES",
+            artist_id=artist_id,
+            start=start_date,
+            end=end_date,
+        )
+        if rows:
+            return rows
         raise NotImplementedError(
-            f"{self.dsp_name} API integration is not yet configured.  "
-            f"Required env vars: {', '.join(self._required_env_vars())}.  "
-            f"Alternatively, upload distributor statement CSV files via "
-            f"POST /artists/{{artist_id}}/statements/upload."
+            f"{self.dsp_name} API integration is not yet configured and no statement backfill files "
+            f"were provided. Required env vars for API mode: {', '.join(self._required_env_vars())}. "
+            f"For file mode, provide config['statement_files'] or "
+            f"{self.dsp_name.upper().replace(' ', '_')}_STATEMENT_FILES."
         )
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
-        raise NotImplementedError(
-            f"{self.dsp_name} API integration is not yet configured.  "
-            f"See fetch_historical() for setup instructions."
-        )
+        return self.fetch_historical(artist_id, since, datetime.now(tz=since.tzinfo))
 
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []

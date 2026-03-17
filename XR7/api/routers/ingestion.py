@@ -491,8 +491,8 @@ async def upload_statement_batch(
                 result = parse_csv(b"", artist_id)
                 result.events = []
                 result.payments = []
-                result.errors = ["PDF parsing deferred to OCR pipeline"]
-                result.format_detected = "pdf_placeholder"
+                result.errors = ["PDF parsing deferred to OCR pipeline; metadata-only statement record created"]
+                result.format_detected = "pdf"
             else:
                 result = parse_statement_file(content, artist_id, filename=filename)
             statement_signals = extract_statement_signals(content, filename, format_detected=result.format_detected)

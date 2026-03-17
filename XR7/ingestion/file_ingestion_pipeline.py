@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from openpyxl import load_workbook
+
 
 @dataclass
 class IngestedDocument:
@@ -156,7 +158,26 @@ class FileIngestionPipeline:
         elif detected == "csv":
             doc.extracted_rows = [{"raw_preview": content.decode("utf-8", errors="ignore")[:2000]}]
         elif detected == "xlsx":
-            doc.warnings.append("XLSX normalization requires openpyxl integration")
+            try:
+                wb = load_workbook(io.BytesIO(content), data_only=True, read_only=True)
+                ws = wb.active
+                rows = list(ws.iter_rows(values_only=True))
+                if not rows:
+                    doc.warnings.append("XLSX file is empty")
+                else:
+                    headers = [str(h or "").strip() for h in rows[0]]
+                    extracted: list[dict[str, Any]] = []
+                    for row in rows[1:101]:
+                        item: dict[str, Any] = {}
+                        for i, h in enumerate(headers):
+                            if not h:
+                                continue
+                            item[h] = row[i] if i < len(row) else None
+                        if any(v not in (None, "") for v in item.values()):
+                            extracted.append(item)
+                    doc.extracted_rows = extracted
+            except Exception as exc:  # noqa: BLE001
+                doc.warnings.append(f"XLSX extraction failed: {exc}")
         elif detected == "zip":
             try:
                 with zipfile.ZipFile(io.BytesIO(content), "r") as zf:
