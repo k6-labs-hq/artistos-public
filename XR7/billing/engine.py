@@ -111,7 +111,11 @@ class BillingEngine:
         if gross_amount <= 0:
             raise ValueError("gross_amount must be greater than 0")
 
-        fee_pct = self._artist_fee_percent(claim.artist_id)
+        fee_pct = (
+            float(claim.platform_fee_percent)
+            if claim.platform_fee_percent is not None
+            else self._artist_fee_percent(claim.artist_id)
+        )
         platform_fee = round(gross_amount * fee_pct / 100.0, 2)
         artist_net = round(gross_amount - platform_fee, 2)
 
