@@ -16,6 +16,7 @@ Name | Type | Description | Notes
 **skipped_rows** | **int** |  | 
 **status** | **str** |  | 
 **error_summary** | **str** |  | 
+**ingestion_metadata_json** | **str** |  | 
 **uploaded_at** | **datetime** |  | 
 
 ## Example
@@ -23,7 +24,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.statement_schema import StatementSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of StatementSchema from a JSON string
 statement_schema_instance = StatementSchema.from_json(json)

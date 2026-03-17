@@ -20,6 +20,7 @@ import type {
   ImmutableLedgerEntrySchema,
   ParserPluginSchema,
   ParserPluginUpsertRequest,
+  SplitRepairRequest,
   SyncJobCreateRequest,
   SyncJobSchema,
   VarianceScanRequest,
@@ -37,6 +38,8 @@ import {
     ParserPluginSchemaToJSON,
     ParserPluginUpsertRequestFromJSON,
     ParserPluginUpsertRequestToJSON,
+    SplitRepairRequestFromJSON,
+    SplitRepairRequestToJSON,
     SyncJobCreateRequestFromJSON,
     SyncJobCreateRequestToJSON,
     SyncJobSchemaFromJSON,
@@ -49,7 +52,20 @@ import {
     XR7ApiRoutersOnboardingCatalogConfirmRequestToJSON,
 } from '../models/index';
 
+export interface ApplySplitRepairsArtistsArtistIdSplitsRepairPostRequest {
+    artistId: string;
+    splitRepairRequest: SplitRepairRequest;
+}
+
 export interface BuildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPostRequest {
+    artistId: string;
+}
+
+export interface CatalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequest {
+    artistId: string;
+}
+
+export interface CatalogRepairsArtistsArtistIdCatalogRepairsGetRequest {
     artistId: string;
 }
 
@@ -160,6 +176,65 @@ export interface VarianceScanArtistsArtistIdVarianceScanPostRequest {
 export class OnboardingApi extends runtime.BaseAPI {
 
     /**
+     * Creates request options for applySplitRepairsArtistsArtistIdSplitsRepairPost without sending the request
+     */
+    async applySplitRepairsArtistsArtistIdSplitsRepairPostRequestOpts(requestParameters: ApplySplitRepairsArtistsArtistIdSplitsRepairPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling applySplitRepairsArtistsArtistIdSplitsRepairPost().'
+            );
+        }
+
+        if (requestParameters['splitRepairRequest'] == null) {
+            throw new runtime.RequiredError(
+                'splitRepairRequest',
+                'Required parameter "splitRepairRequest" was null or undefined when calling applySplitRepairsArtistsArtistIdSplitsRepairPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/splits/repair`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: SplitRepairRequestToJSON(requestParameters['splitRepairRequest']),
+        };
+    }
+
+    /**
+     * Apply Split Repairs
+     */
+    async applySplitRepairsArtistsArtistIdSplitsRepairPostRaw(requestParameters: ApplySplitRepairsArtistsArtistIdSplitsRepairPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.applySplitRepairsArtistsArtistIdSplitsRepairPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Apply Split Repairs
+     */
+    async applySplitRepairsArtistsArtistIdSplitsRepairPost(requestParameters: ApplySplitRepairsArtistsArtistIdSplitsRepairPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.applySplitRepairsArtistsArtistIdSplitsRepairPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost without sending the request
      */
     async buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPostRequestOpts(requestParameters: BuildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPostRequest): Promise<runtime.RequestOpts> {
@@ -205,6 +280,104 @@ export class OnboardingApi extends runtime.BaseAPI {
      */
     async buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost(requestParameters: BuildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet without sending the request
+     */
+    async catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequestOpts(requestParameters: CatalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/catalog/metadata-health`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Catalog Metadata Health
+     */
+    async catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRaw(requestParameters: CatalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Catalog Metadata Health
+     */
+    async catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet(requestParameters: CatalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for catalogRepairsArtistsArtistIdCatalogRepairsGet without sending the request
+     */
+    async catalogRepairsArtistsArtistIdCatalogRepairsGetRequestOpts(requestParameters: CatalogRepairsArtistsArtistIdCatalogRepairsGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling catalogRepairsArtistsArtistIdCatalogRepairsGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/catalog/repairs`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Catalog Repairs
+     */
+    async catalogRepairsArtistsArtistIdCatalogRepairsGetRaw(requestParameters: CatalogRepairsArtistsArtistIdCatalogRepairsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.catalogRepairsArtistsArtistIdCatalogRepairsGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Catalog Repairs
+     */
+    async catalogRepairsArtistsArtistIdCatalogRepairsGet(requestParameters: CatalogRepairsArtistsArtistIdCatalogRepairsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.catalogRepairsArtistsArtistIdCatalogRepairsGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

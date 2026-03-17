@@ -17,6 +17,7 @@ Name | Type
 `skippedRows` | number
 `status` | string
 `errorSummary` | string
+`ingestionMetadataJson` | string
 `uploadedAt` | Date
 
 ## Example
@@ -24,7 +25,7 @@ Name | Type
 ```typescript
 import type { StatementSchema } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "id": null,
   "artistId": null,
@@ -37,6 +38,7 @@ const example = {
   "skippedRows": null,
   "status": null,
   "errorSummary": null,
+  "ingestionMetadataJson": null,
   "uploadedAt": null,
 } satisfies StatementSchema
 

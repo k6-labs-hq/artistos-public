@@ -24,42 +24,42 @@ class TestWidgetApi(unittest.TestCase):
         self.api = WidgetApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_claim_widget_claim_post(self) -> None:
         """Test case for claim_widget_claim_post
 
         Claim
         """
-        assert True
+        pass
 
     def test_estimate_widget_estimate_post(self) -> None:
         """Test case for estimate_widget_estimate_post
 
         Estimate
         """
-        assert True
+        pass
 
     def test_list_leads_widget_leads_get(self) -> None:
         """Test case for list_leads_widget_leads_get
 
         List Leads
         """
-        assert True
+        pass
 
     def test_register_widget_register_post(self) -> None:
         """Test case for register_widget_register_post
 
         Register
         """
-        assert True
+        pass
 
     def test_verify_widget_verify_post(self) -> None:
         """Test case for verify_widget_verify_post
 
         Verify
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

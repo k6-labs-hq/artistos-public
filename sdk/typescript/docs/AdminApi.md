@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**listClaimsAdminClaimsGet**](AdminApi.md#listclaimsadminclaimsget) | **GET** /admin/claims | List Claims |
 | [**listReviewQueueAdminReviewQueueGet**](AdminApi.md#listreviewqueueadminreviewqueueget) | **GET** /admin/review-queue | List Review Queue |
 | [**listTransactionsAdminTransactionsGet**](AdminApi.md#listtransactionsadmintransactionsget) | **GET** /admin/transactions | List Transactions |
+| [**solRiskReportAdminReportsSolRiskGet**](AdminApi.md#solriskreportadminreportssolriskget) | **GET** /admin/reports/sol-risk | Sol Risk Report |
 
 
 
@@ -334,7 +335,7 @@ No authorization required
 
 ## listClaimsAdminClaimsGet
 
-> any listClaimsAdminClaimsGet(status, artistId, sort, limit, offset, xAdminKey, xAdminActor)
+> any listClaimsAdminClaimsGet(status, artistId, jurisdiction, sort, limit, offset, xAdminKey, xAdminActor)
 
 List Claims
 
@@ -356,6 +357,8 @@ async function example() {
     status: status_example,
     // string (optional)
     artistId: artistId_example,
+    // string (optional)
+    jurisdiction: jurisdiction_example,
     // string (optional)
     sort: sort_example,
     // number (optional)
@@ -387,6 +390,7 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **status** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **artistId** | `string` |  | [Optional] [Defaults to `undefined`] |
+| **jurisdiction** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **sort** | `string` |  | [Optional] [Defaults to `&#39;updated_at_desc&#39;`] |
 | **limit** | `number` |  | [Optional] [Defaults to `50`] |
 | **offset** | `number` |  | [Optional] [Defaults to `0`] |
@@ -558,6 +562,78 @@ example().catch(console.error);
 | **artistId** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **limit** | `number` |  | [Optional] [Defaults to `50`] |
 | **offset** | `number` |  | [Optional] [Defaults to `0`] |
+| **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## solRiskReportAdminReportsSolRiskGet
+
+> any solRiskReportAdminReportsSolRiskGet(jurisdiction, xAdminKey, xAdminActor)
+
+Sol Risk Report
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdminApi,
+} from '@xr7/sdk';
+import type { SolRiskReportAdminReportsSolRiskGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AdminApi();
+
+  const body = {
+    // string (optional)
+    jurisdiction: jurisdiction_example,
+    // string (optional)
+    xAdminKey: xAdminKey_example,
+    // string (optional)
+    xAdminActor: xAdminActor_example,
+  } satisfies SolRiskReportAdminReportsSolRiskGetRequest;
+
+  try {
+    const data = await api.solRiskReportAdminReportsSolRiskGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **jurisdiction** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
 | **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
 

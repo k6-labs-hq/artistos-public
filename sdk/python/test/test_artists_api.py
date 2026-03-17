@@ -24,42 +24,77 @@ class TestArtistsApi(unittest.TestCase):
         self.api = ArtistsApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_artist_summary_artists_artist_id_summary_get(self) -> None:
         """Test case for artist_summary_artists_artist_id_summary_get
 
         Artist Summary
         """
-        assert True
+        pass
 
     def test_catalog_health_artists_artist_id_ml_catalog_health_get(self) -> None:
         """Test case for catalog_health_artists_artist_id_ml_catalog_health_get
 
         Catalog Health
         """
-        assert True
+        pass
 
     def test_connect_artist_artists_artist_id_connect_post(self) -> None:
         """Test case for connect_artist_artists_artist_id_connect_post
 
         Connect Artist
         """
-        assert True
+        pass
+
+    def test_connect_provider_artists_artist_id_connect_provider_post(self) -> None:
+        """Test case for connect_provider_artists_artist_id_connect_provider_post
+
+        Connect Provider
+        """
+        pass
 
     def test_create_artist_artists_post(self) -> None:
         """Test case for create_artist_artists_post
 
         Create Artist
         """
-        assert True
+        pass
 
     def test_get_artist_artists_artist_id_get(self) -> None:
         """Test case for get_artist_artists_artist_id_get
 
         Get Artist
         """
-        assert True
+        pass
+
+    def test_get_artist_preferences_artists_artist_id_preferences_get(self) -> None:
+        """Test case for get_artist_preferences_artists_artist_id_preferences_get
+
+        Get Artist Preferences
+        """
+        pass
+
+    def test_provider_connection_status_artists_artist_id_connect_provider_status_get(self) -> None:
+        """Test case for provider_connection_status_artists_artist_id_connect_provider_status_get
+
+        Provider Connection Status
+        """
+        pass
+
+    def test_update_artist_preferences_artists_artist_id_preferences_put(self) -> None:
+        """Test case for update_artist_preferences_artists_artist_id_preferences_put
+
+        Update Artist Preferences
+        """
+        pass
+
+    def test_weekly_digest_artists_artist_id_digest_weekly_get(self) -> None:
+        """Test case for weekly_digest_artists_artist_id_digest_weekly_get
+
+        Weekly Digest
+        """
+        pass
 
 
 if __name__ == '__main__':

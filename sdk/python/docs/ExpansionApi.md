@@ -5,12 +5,11 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**add_team_member_artists_artist_id_team_members_post**](ExpansionApi.md#add_team_member_artists_artist_id_team_members_post) | **POST** /artists/{artist_id}/team/members | Add Team Member
-[**anchor_evidence_packet_claims_claim_id_evidence_anchor_post**](ExpansionApi.md#anchor_evidence_packet_claims_claim_id_evidence_anchor_post) | **POST** /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet
+[**anchor_evidence_packet_internal_immutable_log**](ExpansionApi.md#anchor_evidence_packet_internal_immutable_log) | **POST** /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet
 [**benchmark_percentiles_artists_artist_id_recovery_benchmark_percentiles_get**](ExpansionApi.md#benchmark_percentiles_artists_artist_id_recovery_benchmark_percentiles_get) | **GET** /artists/{artist_id}/recovery/benchmark-percentiles | Benchmark Percentiles
 [**create_oauth_session_artists_artist_id_connect_oauth_session_post**](ExpansionApi.md#create_oauth_session_artists_artist_id_connect_oauth_session_post) | **POST** /artists/{artist_id}/connect/oauth-session | Create Oauth Session
 [**dashboard_charts_data_artists_artist_id_dashboard_charts_get**](ExpansionApi.md#dashboard_charts_data_artists_artist_id_dashboard_charts_get) | **GET** /artists/{artist_id}/dashboard/charts | Dashboard Charts Data
 [**disconnect_connected_account_artists_artist_id_connect_accounts_account_id_delete**](ExpansionApi.md#disconnect_connected_account_artists_artist_id_connect_accounts_account_id_delete) | **DELETE** /artists/{artist_id}/connect/accounts/{account_id} | Disconnect Connected Account
-[**dispatch_notification_artists_artist_id_notifications_dispatch_post**](ExpansionApi.md#dispatch_notification_artists_artist_id_notifications_dispatch_post) | **POST** /artists/{artist_id}/notifications/dispatch | Dispatch Notification
 [**education_guide_detail_education_guides_guide_id_get**](ExpansionApi.md#education_guide_detail_education_guides_guide_id_get) | **GET** /education/guides/{guide_id} | Education Guide Detail
 [**education_guides_index_education_guides_get**](ExpansionApi.md#education_guides_index_education_guides_get) | **GET** /education/guides | Education Guides Index
 [**estimate_withholding_artists_artist_id_intelligence_withholding_estimate_post**](ExpansionApi.md#estimate_withholding_artists_artist_id_intelligence_withholding_estimate_post) | **POST** /artists/{artist_id}/intelligence/withholding-estimate | Estimate Withholding
@@ -106,8 +105,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **anchor_evidence_packet_claims_claim_id_evidence_anchor_post**
-> EvidenceAnchorSchema anchor_evidence_packet_claims_claim_id_evidence_anchor_post(claim_id)
+# **anchor_evidence_packet_internal_immutable_log**
+> EvidenceAnchorSchema anchor_evidence_packet_internal_immutable_log(claim_id)
 
 Anchor Evidence Packet
 
@@ -135,11 +134,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
     try:
         # Anchor Evidence Packet
-        api_response = api_instance.anchor_evidence_packet_claims_claim_id_evidence_anchor_post(claim_id)
-        print("The response of ExpansionApi->anchor_evidence_packet_claims_claim_id_evidence_anchor_post:\n")
+        api_response = api_instance.anchor_evidence_packet_internal_immutable_log(claim_id)
+        print("The response of ExpansionApi->anchor_evidence_packet_internal_immutable_log:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling ExpansionApi->anchor_evidence_packet_claims_claim_id_evidence_anchor_post: %s\n" % e)
+        print("Exception when calling ExpansionApi->anchor_evidence_packet_internal_immutable_log: %s\n" % e)
 ```
 
 
@@ -449,79 +448,6 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
-
-### HTTP response details
-
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-**200** | Successful Response |  -  |
-**422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **dispatch_notification_artists_artist_id_notifications_dispatch_post**
-> object dispatch_notification_artists_artist_id_notifications_dispatch_post(artist_id, notification_dispatch_request, x_actor_email=x_actor_email, x_actor_role=x_actor_role)
-
-Dispatch Notification
-
-### Example
-
-
-```python
-import xr7_sdk
-from xr7_sdk.models.notification_dispatch_request import NotificationDispatchRequest
-from xr7_sdk.rest import ApiException
-from pprint import pprint
-
-# Defining the host is optional and defaults to http://localhost
-# See configuration.py for a list of all supported configuration parameters.
-configuration = xr7_sdk.Configuration(
-    host = "http://localhost"
-)
-
-
-# Enter a context with an instance of the API client
-with xr7_sdk.ApiClient(configuration) as api_client:
-    # Create an instance of the API class
-    api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    notification_dispatch_request = xr7_sdk.NotificationDispatchRequest() # NotificationDispatchRequest | 
-    x_actor_email = 'x_actor_email_example' # str |  (optional)
-    x_actor_role = 'x_actor_role_example' # str |  (optional)
-
-    try:
-        # Dispatch Notification
-        api_response = api_instance.dispatch_notification_artists_artist_id_notifications_dispatch_post(artist_id, notification_dispatch_request, x_actor_email=x_actor_email, x_actor_role=x_actor_role)
-        print("The response of ExpansionApi->dispatch_notification_artists_artist_id_notifications_dispatch_post:\n")
-        pprint(api_response)
-    except Exception as e:
-        print("Exception when calling ExpansionApi->dispatch_notification_artists_artist_id_notifications_dispatch_post: %s\n" % e)
-```
-
-
-
-### Parameters
-
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **notification_dispatch_request** | [**NotificationDispatchRequest**](NotificationDispatchRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
-
-### Return type
-
-**object**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: application/json
  - **Accept**: application/json
 
 ### HTTP response details

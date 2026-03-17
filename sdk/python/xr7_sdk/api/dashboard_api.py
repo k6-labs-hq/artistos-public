@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from pydantic import StrictStr
-from typing import Any
+from typing import Any, Optional
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
@@ -34,6 +34,1615 @@ class DashboardApi:
         if api_client is None:
             api_client = ApiClient.get_default()
         self.api_client = api_client
+
+
+    @validate_call
+    def agent_trace_artists_artist_id_agent_trace_run_id_get(
+        self,
+        artist_id: StrictStr,
+        run_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Agent Trace
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param run_id: (required)
+        :type run_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._agent_trace_artists_artist_id_agent_trace_run_id_get_serialize(
+            artist_id=artist_id,
+            run_id=run_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def agent_trace_artists_artist_id_agent_trace_run_id_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        run_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Agent Trace
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param run_id: (required)
+        :type run_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._agent_trace_artists_artist_id_agent_trace_run_id_get_serialize(
+            artist_id=artist_id,
+            run_id=run_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def agent_trace_artists_artist_id_agent_trace_run_id_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        run_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Agent Trace
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param run_id: (required)
+        :type run_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._agent_trace_artists_artist_id_agent_trace_run_id_get_serialize(
+            artist_id=artist_id,
+            run_id=run_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _agent_trace_artists_artist_id_agent_trace_run_id_get_serialize(
+        self,
+        artist_id,
+        run_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        if run_id is not None:
+            _path_params['run_id'] = run_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/agent-trace/{run_id}',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def chat_royalties_artists_artist_id_chat_royalties_post(
+        self,
+        artist_id: StrictStr,
+        question: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Chat Royalties
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param question: (required)
+        :type question: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._chat_royalties_artists_artist_id_chat_royalties_post_serialize(
+            artist_id=artist_id,
+            question=question,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def chat_royalties_artists_artist_id_chat_royalties_post_with_http_info(
+        self,
+        artist_id: StrictStr,
+        question: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Chat Royalties
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param question: (required)
+        :type question: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._chat_royalties_artists_artist_id_chat_royalties_post_serialize(
+            artist_id=artist_id,
+            question=question,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def chat_royalties_artists_artist_id_chat_royalties_post_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        question: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Chat Royalties
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param question: (required)
+        :type question: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._chat_royalties_artists_artist_id_chat_royalties_post_serialize(
+            artist_id=artist_id,
+            question=question,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _chat_royalties_artists_artist_id_chat_royalties_post_serialize(
+        self,
+        artist_id,
+        question,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        if question is not None:
+            
+            _query_params.append(('question', question))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='POST',
+            resource_path='/artists/{artist_id}/chat/royalties',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def dashboard_benchmarks_artists_artist_id_benchmarks_get(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Dashboard Benchmarks
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._dashboard_benchmarks_artists_artist_id_benchmarks_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def dashboard_benchmarks_artists_artist_id_benchmarks_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Dashboard Benchmarks
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._dashboard_benchmarks_artists_artist_id_benchmarks_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def dashboard_benchmarks_artists_artist_id_benchmarks_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Dashboard Benchmarks
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._dashboard_benchmarks_artists_artist_id_benchmarks_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _dashboard_benchmarks_artists_artist_id_benchmarks_get_serialize(
+        self,
+        artist_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/benchmarks',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def dashboard_flow_artists_artist_id_dashboard_flow_get(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Dashboard Flow
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._dashboard_flow_artists_artist_id_dashboard_flow_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def dashboard_flow_artists_artist_id_dashboard_flow_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Dashboard Flow
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._dashboard_flow_artists_artist_id_dashboard_flow_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def dashboard_flow_artists_artist_id_dashboard_flow_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Dashboard Flow
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._dashboard_flow_artists_artist_id_dashboard_flow_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _dashboard_flow_artists_artist_id_dashboard_flow_get_serialize(
+        self,
+        artist_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/dashboard/flow',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def export_full_transparency_artists_artist_id_export_full_transparency_get(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Export Full Transparency
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._export_full_transparency_artists_artist_id_export_full_transparency_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def export_full_transparency_artists_artist_id_export_full_transparency_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Export Full Transparency
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._export_full_transparency_artists_artist_id_export_full_transparency_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def export_full_transparency_artists_artist_id_export_full_transparency_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Export Full Transparency
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._export_full_transparency_artists_artist_id_export_full_transparency_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _export_full_transparency_artists_artist_id_export_full_transparency_get_serialize(
+        self,
+        artist_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/export/full-transparency',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def export_guidance_artists_artist_id_dashboard_export_guidance_get(
+        self,
+        artist_id: StrictStr,
+        platform: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Export Guidance
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param platform:
+        :type platform: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._export_guidance_artists_artist_id_dashboard_export_guidance_get_serialize(
+            artist_id=artist_id,
+            platform=platform,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def export_guidance_artists_artist_id_dashboard_export_guidance_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        platform: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Export Guidance
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param platform:
+        :type platform: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._export_guidance_artists_artist_id_dashboard_export_guidance_get_serialize(
+            artist_id=artist_id,
+            platform=platform,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def export_guidance_artists_artist_id_dashboard_export_guidance_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        platform: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Export Guidance
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param platform:
+        :type platform: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._export_guidance_artists_artist_id_dashboard_export_guidance_get_serialize(
+            artist_id=artist_id,
+            platform=platform,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _export_guidance_artists_artist_id_dashboard_export_guidance_get_serialize(
+        self,
+        artist_id,
+        platform,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        if platform is not None:
+            
+            _query_params.append(('platform', platform))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/dashboard/export-guidance',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
 
 
     @validate_call
@@ -55,7 +1664,7 @@ class DashboardApi:
     ) -> object:
         """Get Artist Dashboard
 
-        Return the artist's full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Celero disbursements received - ``deposits`` — per-deposit log with Celero transaction IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
+        Return the artist's full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Trolley disbursements received - ``deposits`` — per-deposit log with Trolley payment IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -123,7 +1732,7 @@ class DashboardApi:
     ) -> ApiResponse[object]:
         """Get Artist Dashboard
 
-        Return the artist's full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Celero disbursements received - ``deposits`` — per-deposit log with Celero transaction IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
+        Return the artist's full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Trolley disbursements received - ``deposits`` — per-deposit log with Trolley payment IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -191,7 +1800,7 @@ class DashboardApi:
     ) -> RESTResponseType:
         """Get Artist Dashboard
 
-        Return the artist's full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Celero disbursements received - ``deposits`` — per-deposit log with Celero transaction IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
+        Return the artist's full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Trolley disbursements received - ``deposits`` — per-deposit log with Trolley payment IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -302,6 +1911,7 @@ class DashboardApi:
     @validate_call
     def get_dashboard_ui_dashboard_ui_get(
         self,
+        org_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -319,6 +1929,8 @@ class DashboardApi:
 
         Serve the standalone artist recovery dashboard UI page.
 
+        :param org_id:
+        :type org_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -342,6 +1954,7 @@ class DashboardApi:
         """ # noqa: E501
 
         _param = self._get_dashboard_ui_dashboard_ui_get_serialize(
+            org_id=org_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -350,6 +1963,7 @@ class DashboardApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "object",
+            '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -365,6 +1979,7 @@ class DashboardApi:
     @validate_call
     def get_dashboard_ui_dashboard_ui_get_with_http_info(
         self,
+        org_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -382,6 +1997,8 @@ class DashboardApi:
 
         Serve the standalone artist recovery dashboard UI page.
 
+        :param org_id:
+        :type org_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -405,6 +2022,7 @@ class DashboardApi:
         """ # noqa: E501
 
         _param = self._get_dashboard_ui_dashboard_ui_get_serialize(
+            org_id=org_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -413,6 +2031,7 @@ class DashboardApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "object",
+            '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -428,6 +2047,7 @@ class DashboardApi:
     @validate_call
     def get_dashboard_ui_dashboard_ui_get_without_preload_content(
         self,
+        org_id: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -445,6 +2065,8 @@ class DashboardApi:
 
         Serve the standalone artist recovery dashboard UI page.
 
+        :param org_id:
+        :type org_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -468,6 +2090,7 @@ class DashboardApi:
         """ # noqa: E501
 
         _param = self._get_dashboard_ui_dashboard_ui_get_serialize(
+            org_id=org_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -476,6 +2099,7 @@ class DashboardApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "object",
+            '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -486,6 +2110,7 @@ class DashboardApi:
 
     def _get_dashboard_ui_dashboard_ui_get_serialize(
         self,
+        org_id,
         _request_auth,
         _content_type,
         _headers,
@@ -508,6 +2133,10 @@ class DashboardApi:
 
         # process the path parameters
         # process the query parameters
+        if org_id is not None:
+            
+            _query_params.append(('org_id', org_id))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter

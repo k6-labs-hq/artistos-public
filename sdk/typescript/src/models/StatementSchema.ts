@@ -87,6 +87,12 @@ export interface StatementSchema {
     errorSummary: string | null;
     /**
      * 
+     * @type {string}
+     * @memberof StatementSchema
+     */
+    ingestionMetadataJson: string;
+    /**
+     * 
      * @type {Date}
      * @memberof StatementSchema
      */
@@ -108,6 +114,7 @@ export function instanceOfStatementSchema(value: object): value is StatementSche
     if (!('skippedRows' in value) || value['skippedRows'] === undefined) return false;
     if (!('status' in value) || value['status'] === undefined) return false;
     if (!('errorSummary' in value) || value['errorSummary'] === undefined) return false;
+    if (!('ingestionMetadataJson' in value) || value['ingestionMetadataJson'] === undefined) return false;
     if (!('uploadedAt' in value) || value['uploadedAt'] === undefined) return false;
     return true;
 }
@@ -133,6 +140,7 @@ export function StatementSchemaFromJSONTyped(json: any, ignoreDiscriminator: boo
         'skippedRows': json['skipped_rows'],
         'status': json['status'],
         'errorSummary': json['error_summary'],
+        'ingestionMetadataJson': json['ingestion_metadata_json'],
         'uploadedAt': (new Date(json['uploaded_at'])),
     };
 }
@@ -159,6 +167,7 @@ export function StatementSchemaToJSONTyped(value?: StatementSchema | null, ignor
         'skipped_rows': value['skippedRows'],
         'status': value['status'],
         'error_summary': value['errorSummary'],
+        'ingestion_metadata_json': value['ingestionMetadataJson'],
         'uploaded_at': value['uploadedAt'].toISOString(),
     };
 }

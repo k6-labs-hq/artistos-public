@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.reconstruct_request import ReconstructRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of ReconstructRequest from a JSON string
 reconstruct_request_instance = ReconstructRequest.from_json(json)

@@ -12,6 +12,9 @@ Name | Type
 `chainHash` | string
 `anchorProvider` | string
 `anchorReference` | string
+`cid` | string
+`txHash` | string
+`blockchainStatus` | string
 `createdAt` | Date
 
 ## Example
@@ -19,7 +22,7 @@ Name | Type
 ```typescript
 import type { EvidenceAnchorSchema } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "id": null,
   "claimId": null,
@@ -27,6 +30,9 @@ const example = {
   "chainHash": null,
   "anchorProvider": null,
   "anchorReference": null,
+  "cid": null,
+  "txHash": null,
+  "blockchainStatus": null,
   "createdAt": null,
 } satisfies EvidenceAnchorSchema
 

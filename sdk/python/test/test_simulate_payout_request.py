@@ -20,10 +20,10 @@ class TestSimulatePayoutRequest(unittest.TestCase):
     """SimulatePayoutRequest unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> SimulatePayoutRequest:
         """Test SimulatePayoutRequest
@@ -42,7 +42,8 @@ class TestSimulatePayoutRequest(unittest.TestCase):
                 default_withholding_rate = 1.337,
                 default_fx_rate = 1.337,
                 payout_currency = 'USD',
-                received_amount = 1.337
+                received_amount = 1.337,
+                contract_terms = { }
             )
         else:
             return SimulatePayoutRequest(

@@ -20,10 +20,10 @@ class TestXR7ApiRoutersForensicCatalogConfirmRequest(unittest.TestCase):
     """XR7ApiRoutersForensicCatalogConfirmRequest unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> XR7ApiRoutersForensicCatalogConfirmRequest:
         """Test XR7ApiRoutersForensicCatalogConfirmRequest

@@ -19,9 +19,12 @@ import type {
   HTTPValidationError,
   LedgerIngestRequest,
   MLFeedbackEventSchema,
+  OptimizationSimulationRequest,
+  PreSignatureContractReviewRequest,
   RecoveryOutcomeFeedbackSchema,
   SimulatePayoutRequest,
   StructuredFeedbackRequest,
+  TaxOptimizerRequest,
   UtilityRankRequest,
 } from '../models/index';
 import {
@@ -33,15 +36,25 @@ import {
     LedgerIngestRequestToJSON,
     MLFeedbackEventSchemaFromJSON,
     MLFeedbackEventSchemaToJSON,
+    OptimizationSimulationRequestFromJSON,
+    OptimizationSimulationRequestToJSON,
+    PreSignatureContractReviewRequestFromJSON,
+    PreSignatureContractReviewRequestToJSON,
     RecoveryOutcomeFeedbackSchemaFromJSON,
     RecoveryOutcomeFeedbackSchemaToJSON,
     SimulatePayoutRequestFromJSON,
     SimulatePayoutRequestToJSON,
     StructuredFeedbackRequestFromJSON,
     StructuredFeedbackRequestToJSON,
+    TaxOptimizerRequestFromJSON,
+    TaxOptimizerRequestToJSON,
     UtilityRankRequestFromJSON,
     UtilityRankRequestToJSON,
 } from '../models/index';
+
+export interface CatalogValuationArtistsArtistIdMlCatalogValuationPostRequest {
+    artistId: string;
+}
 
 export interface CreateOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPostRequest {
     artistId: string;
@@ -62,6 +75,10 @@ export interface ExtractContractTermsUploadArtistsArtistIdIntelligenceContractsE
     extractedFrom?: string | null;
 }
 
+export interface FinancingMatchesArtistsArtistIdMlFinancingMatchesPostRequest {
+    artistId: string;
+}
+
 export interface GetCalibrationHealthArtistsArtistIdIntelligenceCalibrationGetRequest {
     artistId: string;
 }
@@ -75,9 +92,31 @@ export interface ListFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGetR
     artistId: string;
 }
 
+export interface PreSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRequest {
+    artistId: string;
+    preSignatureContractReviewRequest: PreSignatureContractReviewRequest;
+}
+
 export interface RankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPostRequest {
     artistId: string;
     utilityRankRequest: UtilityRankRequest;
+}
+
+export interface RegistrationAutoFixArtistsArtistIdRegistrationAutoFixPostRequest {
+    artistId: string;
+}
+
+export interface RegistrationStatusArtistsArtistIdRegistrationStatusGetRequest {
+    artistId: string;
+}
+
+export interface RunCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRequest {
+    artistId: string;
+}
+
+export interface RunTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRequest {
+    artistId: string;
+    taxOptimizerRequest: TaxOptimizerRequest;
 }
 
 export interface SimulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPostRequest {
@@ -85,10 +124,64 @@ export interface SimulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpect
     simulatePayoutRequest: SimulatePayoutRequest;
 }
 
+export interface SimulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRequest {
+    artistId: string;
+    optimizationSimulationRequest: OptimizationSimulationRequest;
+}
+
 /**
  * 
  */
 export class IntelligenceApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for catalogValuationArtistsArtistIdMlCatalogValuationPost without sending the request
+     */
+    async catalogValuationArtistsArtistIdMlCatalogValuationPostRequestOpts(requestParameters: CatalogValuationArtistsArtistIdMlCatalogValuationPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling catalogValuationArtistsArtistIdMlCatalogValuationPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/ml/catalog-valuation`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Catalog Valuation
+     */
+    async catalogValuationArtistsArtistIdMlCatalogValuationPostRaw(requestParameters: CatalogValuationArtistsArtistIdMlCatalogValuationPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.catalogValuationArtistsArtistIdMlCatalogValuationPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Catalog Valuation
+     */
+    async catalogValuationArtistsArtistIdMlCatalogValuationPost(requestParameters: CatalogValuationArtistsArtistIdMlCatalogValuationPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.catalogValuationArtistsArtistIdMlCatalogValuationPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost without sending the request
@@ -296,6 +389,55 @@ export class IntelligenceApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for financingMatchesArtistsArtistIdMlFinancingMatchesPost without sending the request
+     */
+    async financingMatchesArtistsArtistIdMlFinancingMatchesPostRequestOpts(requestParameters: FinancingMatchesArtistsArtistIdMlFinancingMatchesPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling financingMatchesArtistsArtistIdMlFinancingMatchesPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/ml/financing-matches`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Financing Matches
+     */
+    async financingMatchesArtistsArtistIdMlFinancingMatchesPostRaw(requestParameters: FinancingMatchesArtistsArtistIdMlFinancingMatchesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.financingMatchesArtistsArtistIdMlFinancingMatchesPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Financing Matches
+     */
+    async financingMatchesArtistsArtistIdMlFinancingMatchesPost(requestParameters: FinancingMatchesArtistsArtistIdMlFinancingMatchesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.financingMatchesArtistsArtistIdMlFinancingMatchesPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for getCalibrationHealthArtistsArtistIdIntelligenceCalibrationGet without sending the request
      */
     async getCalibrationHealthArtistsArtistIdIntelligenceCalibrationGetRequestOpts(requestParameters: GetCalibrationHealthArtistsArtistIdIntelligenceCalibrationGetRequest): Promise<runtime.RequestOpts> {
@@ -449,6 +591,65 @@ export class IntelligenceApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPost without sending the request
+     */
+    async preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRequestOpts(requestParameters: PreSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPost().'
+            );
+        }
+
+        if (requestParameters['preSignatureContractReviewRequest'] == null) {
+            throw new runtime.RequiredError(
+                'preSignatureContractReviewRequest',
+                'Required parameter "preSignatureContractReviewRequest" was null or undefined when calling preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/intelligence/contracts/pre-signature-review`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PreSignatureContractReviewRequestToJSON(requestParameters['preSignatureContractReviewRequest']),
+        };
+    }
+
+    /**
+     * Pre Signature Contract Review
+     */
+    async preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRaw(requestParameters: PreSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Pre Signature Contract Review
+     */
+    async preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPost(requestParameters: PreSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for rankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPost without sending the request
      */
     async rankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPostRequestOpts(requestParameters: RankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPostRequest): Promise<runtime.RequestOpts> {
@@ -508,6 +709,212 @@ export class IntelligenceApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for registrationAutoFixArtistsArtistIdRegistrationAutoFixPost without sending the request
+     */
+    async registrationAutoFixArtistsArtistIdRegistrationAutoFixPostRequestOpts(requestParameters: RegistrationAutoFixArtistsArtistIdRegistrationAutoFixPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling registrationAutoFixArtistsArtistIdRegistrationAutoFixPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/registration/auto-fix`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Registration Auto Fix
+     */
+    async registrationAutoFixArtistsArtistIdRegistrationAutoFixPostRaw(requestParameters: RegistrationAutoFixArtistsArtistIdRegistrationAutoFixPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.registrationAutoFixArtistsArtistIdRegistrationAutoFixPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Registration Auto Fix
+     */
+    async registrationAutoFixArtistsArtistIdRegistrationAutoFixPost(requestParameters: RegistrationAutoFixArtistsArtistIdRegistrationAutoFixPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.registrationAutoFixArtistsArtistIdRegistrationAutoFixPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for registrationStatusArtistsArtistIdRegistrationStatusGet without sending the request
+     */
+    async registrationStatusArtistsArtistIdRegistrationStatusGetRequestOpts(requestParameters: RegistrationStatusArtistsArtistIdRegistrationStatusGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling registrationStatusArtistsArtistIdRegistrationStatusGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/registration/status`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Registration Status
+     */
+    async registrationStatusArtistsArtistIdRegistrationStatusGetRaw(requestParameters: RegistrationStatusArtistsArtistIdRegistrationStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.registrationStatusArtistsArtistIdRegistrationStatusGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Registration Status
+     */
+    async registrationStatusArtistsArtistIdRegistrationStatusGet(requestParameters: RegistrationStatusArtistsArtistIdRegistrationStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.registrationStatusArtistsArtistIdRegistrationStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPost without sending the request
+     */
+    async runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRequestOpts(requestParameters: RunCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/ml/catalog-audit`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Run Catalog Audit On Demand
+     */
+    async runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRaw(requestParameters: RunCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Run Catalog Audit On Demand
+     */
+    async runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPost(requestParameters: RunCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPost without sending the request
+     */
+    async runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRequestOpts(requestParameters: RunTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPost().'
+            );
+        }
+
+        if (requestParameters['taxOptimizerRequest'] == null) {
+            throw new runtime.RequiredError(
+                'taxOptimizerRequest',
+                'Required parameter "taxOptimizerRequest" was null or undefined when calling runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/intelligence/tax-optimizer`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TaxOptimizerRequestToJSON(requestParameters['taxOptimizerRequest']),
+        };
+    }
+
+    /**
+     * Run Tax Optimizer
+     */
+    async runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRaw(requestParameters: RunTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Run Tax Optimizer
+     */
+    async runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPost(requestParameters: RunTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPost without sending the request
      */
     async simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPostRequestOpts(requestParameters: SimulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPostRequest): Promise<runtime.RequestOpts> {
@@ -563,6 +970,65 @@ export class IntelligenceApi extends runtime.BaseAPI {
      */
     async simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPost(requestParameters: SimulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for simulateOptimizationArtistsArtistIdMlSimulateOptimizationPost without sending the request
+     */
+    async simulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRequestOpts(requestParameters: SimulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling simulateOptimizationArtistsArtistIdMlSimulateOptimizationPost().'
+            );
+        }
+
+        if (requestParameters['optimizationSimulationRequest'] == null) {
+            throw new runtime.RequiredError(
+                'optimizationSimulationRequest',
+                'Required parameter "optimizationSimulationRequest" was null or undefined when calling simulateOptimizationArtistsArtistIdMlSimulateOptimizationPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/ml/simulate-optimization`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: OptimizationSimulationRequestToJSON(requestParameters['optimizationSimulationRequest']),
+        };
+    }
+
+    /**
+     * Simulate Optimization
+     */
+    async simulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRaw(requestParameters: SimulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.simulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Simulate Optimization
+     */
+    async simulateOptimizationArtistsArtistIdMlSimulateOptimizationPost(requestParameters: SimulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.simulateOptimizationArtistsArtistIdMlSimulateOptimizationPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

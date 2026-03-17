@@ -17,13 +17,14 @@ Name | Type
 `tokenType` | string
 `expiresInSeconds` | number
 `displayName` | string
+`profileMetadata` | { [key: string]: string; }
 
 ## Example
 
 ```typescript
 import type { OAuthTokenExchangeRequest } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "state": null,
   "code": null,
@@ -36,6 +37,7 @@ const example = {
   "tokenType": null,
   "expiresInSeconds": null,
   "displayName": null,
+  "profileMetadata": null,
 } satisfies OAuthTokenExchangeRequest
 
 console.log(example)

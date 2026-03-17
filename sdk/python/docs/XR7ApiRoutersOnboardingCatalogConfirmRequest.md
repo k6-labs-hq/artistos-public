@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import XR7ApiRoutersOnboardingCatalogConfirmRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of XR7ApiRoutersOnboardingCatalogConfirmRequest from a JSON string
 xr7_api_routers_onboarding_catalog_confirm_request_instance = XR7ApiRoutersOnboardingCatalogConfirmRequest.from_json(json)

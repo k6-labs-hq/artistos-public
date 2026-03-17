@@ -17,7 +17,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -29,10 +29,16 @@ class ArtistCreate(BaseModel):
     """ # noqa: E501
     name: StrictStr
     email: Optional[StrictStr] = None
+    first_name: Optional[StrictStr] = None
+    last_name: Optional[StrictStr] = None
+    country_code: Optional[StrictStr] = 'US'
     role: Optional[StrictStr] = None
     ipi_number: Optional[StrictStr] = None
     stage_names: Optional[List[StrictStr]] = None
-    __properties: ClassVar[List[str]] = ["name", "email", "role", "ipi_number", "stage_names"]
+    default_attorney_grace_period_days: Optional[StrictInt] = 60
+    primary_jurisdiction: Optional[StrictStr] = 'USA'
+    preferred_contract_type: Optional[StrictStr] = 'recording'
+    __properties: ClassVar[List[str]] = ["name", "email", "first_name", "last_name", "country_code", "role", "ipi_number", "stage_names", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -78,6 +84,16 @@ class ArtistCreate(BaseModel):
         if self.email is None and "email" in self.model_fields_set:
             _dict['email'] = None
 
+        # set to None if first_name (nullable) is None
+        # and model_fields_set contains the field
+        if self.first_name is None and "first_name" in self.model_fields_set:
+            _dict['first_name'] = None
+
+        # set to None if last_name (nullable) is None
+        # and model_fields_set contains the field
+        if self.last_name is None and "last_name" in self.model_fields_set:
+            _dict['last_name'] = None
+
         # set to None if role (nullable) is None
         # and model_fields_set contains the field
         if self.role is None and "role" in self.model_fields_set:
@@ -107,9 +123,15 @@ class ArtistCreate(BaseModel):
         _obj = cls.model_validate({
             "name": obj.get("name"),
             "email": obj.get("email"),
+            "first_name": obj.get("first_name"),
+            "last_name": obj.get("last_name"),
+            "country_code": obj.get("country_code") if obj.get("country_code") is not None else 'US',
             "role": obj.get("role"),
             "ipi_number": obj.get("ipi_number"),
-            "stage_names": obj.get("stage_names")
+            "stage_names": obj.get("stage_names"),
+            "default_attorney_grace_period_days": obj.get("default_attorney_grace_period_days") if obj.get("default_attorney_grace_period_days") is not None else 60,
+            "primary_jurisdiction": obj.get("primary_jurisdiction") if obj.get("primary_jurisdiction") is not None else 'USA',
+            "preferred_contract_type": obj.get("preferred_contract_type") if obj.get("preferred_contract_type") is not None else 'recording'
         })
         return _obj
 

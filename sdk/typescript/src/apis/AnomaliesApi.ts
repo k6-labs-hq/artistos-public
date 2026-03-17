@@ -25,7 +25,15 @@ import {
     HTTPValidationErrorToJSON,
 } from '../models/index';
 
+export interface AnomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequest {
+    anomalyId: string;
+}
+
 export interface DetectAnomaliesArtistsArtistIdAnomaliesDetectPostRequest {
+    artistId: string;
+}
+
+export interface FraudScanArtistsArtistIdAnomaliesFraudScanPostRequest {
     artistId: string;
 }
 
@@ -39,10 +47,63 @@ export interface ListAnomaliesArtistsArtistIdAnomaliesGetRequest {
     debug?: boolean;
 }
 
+export interface ScanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequest {
+    artistId: string;
+}
+
 /**
  * 
  */
 export class AnomaliesApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet without sending the request
+     */
+    async anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequestOpts(requestParameters: AnomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['anomalyId'] == null) {
+            throw new runtime.RequiredError(
+                'anomalyId',
+                'Required parameter "anomalyId" was null or undefined when calling anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/anomalies/{anomaly_id}/recovery-probability`;
+        urlPath = urlPath.replace(`{${"anomaly_id"}}`, encodeURIComponent(String(requestParameters['anomalyId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Anomaly Recovery Probability Endpoint
+     */
+    async anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRaw(requestParameters: AnomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Anomaly Recovery Probability Endpoint
+     */
+    async anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet(requestParameters: AnomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for detectAnomaliesArtistsArtistIdAnomaliesDetectPost without sending the request
@@ -90,6 +151,55 @@ export class AnomaliesApi extends runtime.BaseAPI {
      */
     async detectAnomaliesArtistsArtistIdAnomaliesDetectPost(requestParameters: DetectAnomaliesArtistsArtistIdAnomaliesDetectPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.detectAnomaliesArtistsArtistIdAnomaliesDetectPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for fraudScanArtistsArtistIdAnomaliesFraudScanPost without sending the request
+     */
+    async fraudScanArtistsArtistIdAnomaliesFraudScanPostRequestOpts(requestParameters: FraudScanArtistsArtistIdAnomaliesFraudScanPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling fraudScanArtistsArtistIdAnomaliesFraudScanPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/anomalies/fraud-scan`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Fraud Scan
+     */
+    async fraudScanArtistsArtistIdAnomaliesFraudScanPostRaw(requestParameters: FraudScanArtistsArtistIdAnomaliesFraudScanPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.fraudScanArtistsArtistIdAnomaliesFraudScanPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Fraud Scan
+     */
+    async fraudScanArtistsArtistIdAnomaliesFraudScanPost(requestParameters: FraudScanArtistsArtistIdAnomaliesFraudScanPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.fraudScanArtistsArtistIdAnomaliesFraudScanPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -192,6 +302,55 @@ export class AnomaliesApi extends runtime.BaseAPI {
      */
     async listAnomaliesArtistsArtistIdAnomaliesGet(requestParameters: ListAnomaliesArtistsArtistIdAnomaliesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.listAnomaliesArtistsArtistIdAnomaliesGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost without sending the request
+     */
+    async scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequestOpts(requestParameters: ScanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/ai-music/scan-influence`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Scan Ai Influence
+     */
+    async scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRaw(requestParameters: ScanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Scan Ai Influence
+     */
+    async scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost(requestParameters: ScanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

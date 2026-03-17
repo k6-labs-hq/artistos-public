@@ -11,7 +11,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.location_inner import LocationInner
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of LocationInner from a JSON string
 location_inner_instance = LocationInner.from_json(json)

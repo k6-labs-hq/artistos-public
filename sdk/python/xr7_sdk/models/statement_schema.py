@@ -39,8 +39,9 @@ class StatementSchema(BaseModel):
     skipped_rows: StrictInt
     status: StrictStr
     error_summary: Optional[StrictStr]
+    ingestion_metadata_json: StrictStr
     uploaded_at: datetime
-    __properties: ClassVar[List[str]] = ["id", "artist_id", "filename", "file_hash", "format_detected", "row_count", "events_created", "payments_created", "skipped_rows", "status", "error_summary", "uploaded_at"]
+    __properties: ClassVar[List[str]] = ["id", "artist_id", "filename", "file_hash", "format_detected", "row_count", "events_created", "payments_created", "skipped_rows", "status", "error_summary", "ingestion_metadata_json", "uploaded_at"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -109,6 +110,7 @@ class StatementSchema(BaseModel):
             "skipped_rows": obj.get("skipped_rows"),
             "status": obj.get("status"),
             "error_summary": obj.get("error_summary"),
+            "ingestion_metadata_json": obj.get("ingestion_metadata_json"),
             "uploaded_at": obj.get("uploaded_at")
         })
         return _obj

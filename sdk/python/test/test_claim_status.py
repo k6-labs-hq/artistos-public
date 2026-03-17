@@ -20,10 +20,10 @@ class TestClaimStatus(unittest.TestCase):
     """ClaimStatus unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def testClaimStatus(self):
         """Test ClaimStatus"""

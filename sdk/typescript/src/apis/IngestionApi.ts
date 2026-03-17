@@ -25,12 +25,31 @@ import {
     StatementSchemaToJSON,
 } from '../models/index';
 
+export interface ConnectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRequest {
+    artistId: string;
+    genre?: string;
+    territory?: string;
+}
+
+export interface ConnectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRequest {
+    artistId: string;
+    yearsBack?: number;
+}
+
 export interface GetStatementArtistsArtistIdStatementsStatementIdGetRequest {
     artistId: string;
     statementId: string;
 }
 
 export interface ListStatementsArtistsArtistIdStatementsGetRequest {
+    artistId: string;
+}
+
+export interface RegionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRequest {
+    artistId: string;
+}
+
+export interface SoundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRequest {
     artistId: string;
 }
 
@@ -48,6 +67,116 @@ export interface UploadStatementBatchArtistsArtistIdStatementsUploadBatchPostReq
  * 
  */
 export class IngestionApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPost without sending the request
+     */
+    async connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRequestOpts(requestParameters: ConnectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['genre'] != null) {
+            queryParameters['genre'] = requestParameters['genre'];
+        }
+
+        if (requestParameters['territory'] != null) {
+            queryParameters['territory'] = requestParameters['territory'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/connect/regional-global`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Connect Regional Global
+     */
+    async connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRaw(requestParameters: ConnectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Connect Regional Global
+     */
+    async connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPost(requestParameters: ConnectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPost without sending the request
+     */
+    async connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRequestOpts(requestParameters: ConnectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['yearsBack'] != null) {
+            queryParameters['years_back'] = requestParameters['yearsBack'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/connect/soundexchange-mlc`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Connect Soundexchange Mlc
+     */
+    async connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRaw(requestParameters: ConnectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Connect Soundexchange Mlc
+     */
+    async connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPost(requestParameters: ConnectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for getStatementArtistsArtistIdStatementsStatementIdGet without sending the request
@@ -152,6 +281,104 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGet without sending the request
+     */
+    async regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRequestOpts(requestParameters: RegionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/connect/regional-global/status`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Regional Global Status
+     */
+    async regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRaw(requestParameters: RegionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Regional Global Status
+     */
+    async regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGet(requestParameters: RegionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGet without sending the request
+     */
+    async soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRequestOpts(requestParameters: SoundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/connect/soundexchange-mlc/status`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Soundexchange Mlc Status
+     */
+    async soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRaw(requestParameters: SoundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Soundexchange Mlc Status
+     */
+    async soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGet(requestParameters: SoundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for supportedFormatsIngestionSupportedFormatsGet without sending the request
      */
     async supportedFormatsIngestionSupportedFormatsGetRequestOpts(): Promise<runtime.RequestOpts> {
@@ -171,7 +398,7 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Return the complete list of explicitly supported royalty statement CSV formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format\'s CSV - ``description`` — how to obtain the file and what it covers  Any CSV that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
+     * Return the complete list of explicitly supported royalty statement formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format\'s CSV - ``description`` — how to obtain the file and what it covers  Any file that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
      * Supported Formats
      */
     async supportedFormatsIngestionSupportedFormatsGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
@@ -182,7 +409,7 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Return the complete list of explicitly supported royalty statement CSV formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format\'s CSV - ``description`` — how to obtain the file and what it covers  Any CSV that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
+     * Return the complete list of explicitly supported royalty statement formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format\'s CSV - ``description`` — how to obtain the file and what it covers  Any file that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
      * Supported Formats
      */
     async supportedFormatsIngestionSupportedFormatsGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
@@ -244,7 +471,7 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Upload a royalty statement CSV and ingest it into the database.  Supported formats are automatically detected from the column headers: **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**, **Spotify for Artists**, and a **generic** fallback for any CSV with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
+     * Upload a royalty statement file and ingest it into the database.  Supported formats are automatically detected from the column headers:     **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,     **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
      * Upload Statement
      */
     async uploadStatementArtistsArtistIdStatementsUploadPostRaw(requestParameters: UploadStatementArtistsArtistIdStatementsUploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<StatementSchema>> {
@@ -255,7 +482,7 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Upload a royalty statement CSV and ingest it into the database.  Supported formats are automatically detected from the column headers: **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**, **Spotify for Artists**, and a **generic** fallback for any CSV with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
+     * Upload a royalty statement file and ingest it into the database.  Supported formats are automatically detected from the column headers:     **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,     **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
      * Upload Statement
      */
     async uploadStatementArtistsArtistIdStatementsUploadPost(requestParameters: UploadStatementArtistsArtistIdStatementsUploadPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<StatementSchema> {
@@ -317,7 +544,7 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Upload and process a batch of statement CSV files in a single request.
+     * Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing.
      * Upload Statement Batch
      */
     async uploadStatementBatchArtistsArtistIdStatementsUploadBatchPostRaw(requestParameters: UploadStatementBatchArtistsArtistIdStatementsUploadBatchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
@@ -332,7 +559,7 @@ export class IngestionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Upload and process a batch of statement CSV files in a single request.
+     * Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing.
      * Upload Statement Batch
      */
     async uploadStatementBatchArtistsArtistIdStatementsUploadBatchPost(requestParameters: UploadStatementBatchArtistsArtistIdStatementsUploadBatchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {

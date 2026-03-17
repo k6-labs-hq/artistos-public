@@ -15,11 +15,14 @@
 
 import * as runtime from '../runtime';
 import type {
+  AttorneyEvidenceRequest,
   ClaimSchema,
   HTTPValidationError,
   ReconcileRequest,
 } from '../models/index';
 import {
+    AttorneyEvidenceRequestFromJSON,
+    AttorneyEvidenceRequestToJSON,
     ClaimSchemaFromJSON,
     ClaimSchemaToJSON,
     HTTPValidationErrorFromJSON,
@@ -28,7 +31,47 @@ import {
     ReconcileRequestToJSON,
 } from '../models/index';
 
+export interface ActivateNegotiatorAgentClaimsClaimIdActivateAgentPostRequest {
+    claimId: string;
+}
+
 export interface AdvanceClaimClaimsClaimIdAdvancePostRequest {
+    claimId: string;
+}
+
+export interface ClaimAutomationPlanClaimsClaimIdAutomationPlanGetRequest {
+    claimId: string;
+}
+
+export interface ClaimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRequest {
+    claimId: string;
+}
+
+export interface ClaimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRequest {
+    claimId: string;
+}
+
+export interface ClaimForecastClaimsClaimIdForecastGetRequest {
+    claimId: string;
+}
+
+export interface ClaimNegotiationIntelClaimsClaimIdNegotiationIntelGetRequest {
+    claimId: string;
+}
+
+export interface ClaimPlaybookClaimsClaimIdPlaybookGetRequest {
+    claimId: string;
+}
+
+export interface ClaimSlaPredictionClaimsClaimIdSlaPredictionGetRequest {
+    claimId: string;
+}
+
+export interface ClaimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequest {
+    claimId: string;
+}
+
+export interface EscalateLegalClaimsClaimIdEscalateLegalPostRequest {
     claimId: string;
 }
 
@@ -36,6 +79,21 @@ export interface ExportEvidencePacketClaimsClaimIdEvidenceExportGetRequest {
     claimId: string;
     format?: string;
     refresh?: boolean;
+}
+
+export interface ExportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRequest {
+    claimId: string;
+    mode?: string;
+}
+
+export interface GenerateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRequest {
+    claimId: string;
+    attorneyEvidenceRequest: AttorneyEvidenceRequest;
+}
+
+export interface GenerateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRequest {
+    claimId: string;
+    attorneyEvidenceRequest: AttorneyEvidenceRequest;
 }
 
 export interface GenerateEvidenceClaimsClaimIdEvidencePostRequest {
@@ -64,6 +122,55 @@ export interface VerifyEvidencePacketClaimsClaimIdEvidenceVerifyGetRequest {
  * 
  */
 export class ClaimsApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for activateNegotiatorAgentClaimsClaimIdActivateAgentPost without sending the request
+     */
+    async activateNegotiatorAgentClaimsClaimIdActivateAgentPostRequestOpts(requestParameters: ActivateNegotiatorAgentClaimsClaimIdActivateAgentPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling activateNegotiatorAgentClaimsClaimIdActivateAgentPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/activate-agent`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Activate Negotiator Agent
+     */
+    async activateNegotiatorAgentClaimsClaimIdActivateAgentPostRaw(requestParameters: ActivateNegotiatorAgentClaimsClaimIdActivateAgentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.activateNegotiatorAgentClaimsClaimIdActivateAgentPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Activate Negotiator Agent
+     */
+    async activateNegotiatorAgentClaimsClaimIdActivateAgentPost(requestParameters: ActivateNegotiatorAgentClaimsClaimIdActivateAgentPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.activateNegotiatorAgentClaimsClaimIdActivateAgentPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for advanceClaimClaimsClaimIdAdvancePost without sending the request
@@ -107,6 +214,447 @@ export class ClaimsApi extends runtime.BaseAPI {
      */
     async advanceClaimClaimsClaimIdAdvancePost(requestParameters: AdvanceClaimClaimsClaimIdAdvancePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ClaimSchema> {
         const response = await this.advanceClaimClaimsClaimIdAdvancePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimAutomationPlanClaimsClaimIdAutomationPlanGet without sending the request
+     */
+    async claimAutomationPlanClaimsClaimIdAutomationPlanGetRequestOpts(requestParameters: ClaimAutomationPlanClaimsClaimIdAutomationPlanGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimAutomationPlanClaimsClaimIdAutomationPlanGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/automation-plan`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Automation Plan
+     */
+    async claimAutomationPlanClaimsClaimIdAutomationPlanGetRaw(requestParameters: ClaimAutomationPlanClaimsClaimIdAutomationPlanGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimAutomationPlanClaimsClaimIdAutomationPlanGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Automation Plan
+     */
+    async claimAutomationPlanClaimsClaimIdAutomationPlanGet(requestParameters: ClaimAutomationPlanClaimsClaimIdAutomationPlanGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimAutomationPlanClaimsClaimIdAutomationPlanGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGet without sending the request
+     */
+    async claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRequestOpts(requestParameters: ClaimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/evidence/optimized`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Evidence Optimized
+     */
+    async claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRaw(requestParameters: ClaimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Evidence Optimized
+     */
+    async claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGet(requestParameters: ClaimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGet without sending the request
+     */
+    async claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRequestOpts(requestParameters: ClaimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/evidence/strength`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Evidence Strength
+     */
+    async claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRaw(requestParameters: ClaimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Evidence Strength
+     */
+    async claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGet(requestParameters: ClaimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimForecastClaimsClaimIdForecastGet without sending the request
+     */
+    async claimForecastClaimsClaimIdForecastGetRequestOpts(requestParameters: ClaimForecastClaimsClaimIdForecastGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimForecastClaimsClaimIdForecastGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/forecast`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Forecast
+     */
+    async claimForecastClaimsClaimIdForecastGetRaw(requestParameters: ClaimForecastClaimsClaimIdForecastGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimForecastClaimsClaimIdForecastGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Forecast
+     */
+    async claimForecastClaimsClaimIdForecastGet(requestParameters: ClaimForecastClaimsClaimIdForecastGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimForecastClaimsClaimIdForecastGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimNegotiationIntelClaimsClaimIdNegotiationIntelGet without sending the request
+     */
+    async claimNegotiationIntelClaimsClaimIdNegotiationIntelGetRequestOpts(requestParameters: ClaimNegotiationIntelClaimsClaimIdNegotiationIntelGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimNegotiationIntelClaimsClaimIdNegotiationIntelGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/negotiation-intel`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Negotiation Intel
+     */
+    async claimNegotiationIntelClaimsClaimIdNegotiationIntelGetRaw(requestParameters: ClaimNegotiationIntelClaimsClaimIdNegotiationIntelGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimNegotiationIntelClaimsClaimIdNegotiationIntelGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Negotiation Intel
+     */
+    async claimNegotiationIntelClaimsClaimIdNegotiationIntelGet(requestParameters: ClaimNegotiationIntelClaimsClaimIdNegotiationIntelGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimNegotiationIntelClaimsClaimIdNegotiationIntelGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimPlaybookClaimsClaimIdPlaybookGet without sending the request
+     */
+    async claimPlaybookClaimsClaimIdPlaybookGetRequestOpts(requestParameters: ClaimPlaybookClaimsClaimIdPlaybookGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimPlaybookClaimsClaimIdPlaybookGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/playbook`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Playbook
+     */
+    async claimPlaybookClaimsClaimIdPlaybookGetRaw(requestParameters: ClaimPlaybookClaimsClaimIdPlaybookGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimPlaybookClaimsClaimIdPlaybookGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Playbook
+     */
+    async claimPlaybookClaimsClaimIdPlaybookGet(requestParameters: ClaimPlaybookClaimsClaimIdPlaybookGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimPlaybookClaimsClaimIdPlaybookGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimSlaPredictionClaimsClaimIdSlaPredictionGet without sending the request
+     */
+    async claimSlaPredictionClaimsClaimIdSlaPredictionGetRequestOpts(requestParameters: ClaimSlaPredictionClaimsClaimIdSlaPredictionGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimSlaPredictionClaimsClaimIdSlaPredictionGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/sla-prediction`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Sla Prediction
+     */
+    async claimSlaPredictionClaimsClaimIdSlaPredictionGetRaw(requestParameters: ClaimSlaPredictionClaimsClaimIdSlaPredictionGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimSlaPredictionClaimsClaimIdSlaPredictionGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Sla Prediction
+     */
+    async claimSlaPredictionClaimsClaimIdSlaPredictionGet(requestParameters: ClaimSlaPredictionClaimsClaimIdSlaPredictionGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimSlaPredictionClaimsClaimIdSlaPredictionGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for claimStrengthExplainerClaimsClaimIdStrengthExplainerGet without sending the request
+     */
+    async claimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequestOpts(requestParameters: ClaimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling claimStrengthExplainerClaimsClaimIdStrengthExplainerGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/strength-explainer`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Claim Strength Explainer
+     */
+    async claimStrengthExplainerClaimsClaimIdStrengthExplainerGetRaw(requestParameters: ClaimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.claimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Claim Strength Explainer
+     */
+    async claimStrengthExplainerClaimsClaimIdStrengthExplainerGet(requestParameters: ClaimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.claimStrengthExplainerClaimsClaimIdStrengthExplainerGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for escalateLegalClaimsClaimIdEscalateLegalPost without sending the request
+     */
+    async escalateLegalClaimsClaimIdEscalateLegalPostRequestOpts(requestParameters: EscalateLegalClaimsClaimIdEscalateLegalPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling escalateLegalClaimsClaimIdEscalateLegalPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/escalate-legal`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Escalate Legal
+     */
+    async escalateLegalClaimsClaimIdEscalateLegalPostRaw(requestParameters: EscalateLegalClaimsClaimIdEscalateLegalPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.escalateLegalClaimsClaimIdEscalateLegalPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Escalate Legal
+     */
+    async escalateLegalClaimsClaimIdEscalateLegalPost(requestParameters: EscalateLegalClaimsClaimIdEscalateLegalPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.escalateLegalClaimsClaimIdEscalateLegalPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -164,6 +712,179 @@ export class ClaimsApi extends runtime.BaseAPI {
      */
     async exportEvidencePacketClaimsClaimIdEvidenceExportGet(requestParameters: ExportEvidencePacketClaimsClaimIdEvidenceExportGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.exportEvidencePacketClaimsClaimIdEvidenceExportGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPost without sending the request
+     */
+    async exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRequestOpts(requestParameters: ExportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['mode'] != null) {
+            queryParameters['mode'] = requestParameters['mode'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/claims/{claim_id}/evidence/export`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Export evidence with optional expert witness mode for arbitration/litigation workflows.
+     * Export Evidence Packet Expert Mode
+     */
+    async exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRaw(requestParameters: ExportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Export evidence with optional expert witness mode for arbitration/litigation workflows.
+     * Export Evidence Packet Expert Mode
+     */
+    async exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPost(requestParameters: ExportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePost without sending the request
+     */
+    async generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRequestOpts(requestParameters: GenerateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePost().'
+            );
+        }
+
+        if (requestParameters['attorneyEvidenceRequest'] == null) {
+            throw new runtime.RequiredError(
+                'attorneyEvidenceRequest',
+                'Required parameter "attorneyEvidenceRequest" was null or undefined when calling generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/api/claims/{claim_id}/attorney-evidence`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AttorneyEvidenceRequestToJSON(requestParameters['attorneyEvidenceRequest']),
+        };
+    }
+
+    /**
+     * Generate Attorney Evidence File
+     */
+    async generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRaw(requestParameters: GenerateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Generate Attorney Evidence File
+     */
+    async generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePost(requestParameters: GenerateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost without sending the request
+     */
+    async generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRequestOpts(requestParameters: GenerateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError(
+                'claimId',
+                'Required parameter "claimId" was null or undefined when calling generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost().'
+            );
+        }
+
+        if (requestParameters['attorneyEvidenceRequest'] == null) {
+            throw new runtime.RequiredError(
+                'attorneyEvidenceRequest',
+                'Required parameter "attorneyEvidenceRequest" was null or undefined when calling generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/claims/{claim_id}/attorney-evidence`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AttorneyEvidenceRequestToJSON(requestParameters['attorneyEvidenceRequest']),
+        };
+    }
+
+    /**
+     * Generate Attorney Evidence File
+     */
+    async generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRaw(requestParameters: GenerateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Generate Attorney Evidence File
+     */
+    async generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost(requestParameters: GenerateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -15,18 +15,59 @@
 
 import * as runtime from '../runtime';
 import type {
+  BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost,
   HTTPValidationError,
 } from '../models/index';
 import {
+    BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostFromJSON,
+    BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
 } from '../models/index';
+
+export interface ArtistBenchmarkingArtistsArtistIdBenchmarkingGetRequest {
+    artistId: string;
+}
 
 export interface AuditEligibilityArtistsArtistIdRecoveryAuditEligibilityGetRequest {
     artistId: string;
 }
 
+export interface CatalogIntegrityArtistsArtistIdCatalogIntegrityGetRequest {
+    artistId: string;
+}
+
+export interface DeadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRequest {
+    artistId: string;
+}
+
+export interface EdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRequest {
+    artistId: string;
+    bodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost?: BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost;
+}
+
+export interface FraudScanArtistsArtistIdFraudScanPostRequest {
+    artistId: string;
+}
+
+export interface HiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRequest {
+    artistId: string;
+}
+
+export interface PlaybookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRequest {
+    artistId: string;
+}
+
+export interface PooledClaimArtistsArtistIdNetworkPooledClaimPostRequest {
+    artistId: string;
+    requestBody: Array<string | null>;
+}
+
 export interface PriorityQueueArtistsArtistIdRecoveryPriorityQueueGetRequest {
+    artistId: string;
+}
+
+export interface RateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRequest {
     artistId: string;
 }
 
@@ -34,7 +75,39 @@ export interface RateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGetRequest {
     artistId: string;
 }
 
+export interface ReconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRequest {
+    artistId: string;
+}
+
 export interface RecoupmentArtistsArtistIdRecoveryRecoupmentGetRequest {
+    artistId: string;
+}
+
+export interface RecoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRequest {
+    artistId: string;
+}
+
+export interface RecoveryAttributionArtistsArtistIdRecoveryAttributionGetRequest {
+    artistId: string;
+}
+
+export interface RecoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRequest {
+    artistId: string;
+}
+
+export interface RecoveryFunnelArtistsArtistIdRecoveryFunnelGetRequest {
+    artistId: string;
+}
+
+export interface RecoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequest {
+    artistId: string;
+}
+
+export interface RecoveryRoiArtistsArtistIdRecoveryRoiGetRequest {
+    artistId: string;
+}
+
+export interface SlaStatusArtistsArtistIdSlaStatusGetRequest {
     artistId: string;
 }
 
@@ -42,10 +115,97 @@ export interface SolStatusArtistsArtistIdRecoverySolStatusGetRequest {
     artistId: string;
 }
 
+export interface SplitConflictsArtistsArtistIdSplitsConflictsGetRequest {
+    artistId: string;
+}
+
+export interface SplitVerificationArtistsArtistIdSplitsVerificationGetRequest {
+    artistId: string;
+}
+
+export interface TouringAuditArtistsArtistIdRecoveryTouringAuditPostRequest {
+    artistId: string;
+    settlementCsv?: string;
+    merchCsv?: string;
+}
+
+export interface UgcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRequest {
+    artistId: string;
+    platform: string;
+    useId: string;
+}
+
+export interface UgcClaimArtistsArtistIdUgcClaimPostRequest {
+    artistId: string;
+    requestBody: { [key: string]: any; };
+    platform?: string;
+}
+
+export interface UgcGlobalScanArtistsArtistIdUgcGlobalScanPostRequest {
+    artistId: string;
+}
+
+export interface UgcMonitorArtistsArtistIdUgcMonitorGetRequest {
+    artistId: string;
+}
+
+export interface UnderpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRequest {
+    artistId: string;
+}
+
 /**
  * 
  */
 export class RecoveryApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for artistBenchmarkingArtistsArtistIdBenchmarkingGet without sending the request
+     */
+    async artistBenchmarkingArtistsArtistIdBenchmarkingGetRequestOpts(requestParameters: ArtistBenchmarkingArtistsArtistIdBenchmarkingGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling artistBenchmarkingArtistsArtistIdBenchmarkingGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/benchmarking`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Artist Benchmarking
+     */
+    async artistBenchmarkingArtistsArtistIdBenchmarkingGetRaw(requestParameters: ArtistBenchmarkingArtistsArtistIdBenchmarkingGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.artistBenchmarkingArtistsArtistIdBenchmarkingGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Artist Benchmarking
+     */
+    async artistBenchmarkingArtistsArtistIdBenchmarkingGet(requestParameters: ArtistBenchmarkingArtistsArtistIdBenchmarkingGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.artistBenchmarkingArtistsArtistIdBenchmarkingGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for auditEligibilityArtistsArtistIdRecoveryAuditEligibilityGet without sending the request
@@ -95,6 +255,362 @@ export class RecoveryApi extends runtime.BaseAPI {
      */
     async auditEligibilityArtistsArtistIdRecoveryAuditEligibilityGet(requestParameters: AuditEligibilityArtistsArtistIdRecoveryAuditEligibilityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.auditEligibilityArtistsArtistIdRecoveryAuditEligibilityGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for catalogIntegrityArtistsArtistIdCatalogIntegrityGet without sending the request
+     */
+    async catalogIntegrityArtistsArtistIdCatalogIntegrityGetRequestOpts(requestParameters: CatalogIntegrityArtistsArtistIdCatalogIntegrityGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling catalogIntegrityArtistsArtistIdCatalogIntegrityGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/catalog/integrity`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Catalog Integrity
+     */
+    async catalogIntegrityArtistsArtistIdCatalogIntegrityGetRaw(requestParameters: CatalogIntegrityArtistsArtistIdCatalogIntegrityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.catalogIntegrityArtistsArtistIdCatalogIntegrityGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Catalog Integrity
+     */
+    async catalogIntegrityArtistsArtistIdCatalogIntegrityGet(requestParameters: CatalogIntegrityArtistsArtistIdCatalogIntegrityGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.catalogIntegrityArtistsArtistIdCatalogIntegrityGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGet without sending the request
+     */
+    async deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRequestOpts(requestParameters: DeadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/deadline-risk`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Deadline Risk
+     */
+    async deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRaw(requestParameters: DeadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Deadline Risk
+     */
+    async deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGet(requestParameters: DeadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost without sending the request
+     */
+    async edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRequestOpts(requestParameters: EdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/recovery/edm-festival-audit`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostToJSON(requestParameters['bodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost']),
+        };
+    }
+
+    /**
+     * Edm Festival Audit
+     */
+    async edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRaw(requestParameters: EdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Edm Festival Audit
+     */
+    async edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost(requestParameters: EdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for fraudScanArtistsArtistIdFraudScanPost without sending the request
+     */
+    async fraudScanArtistsArtistIdFraudScanPostRequestOpts(requestParameters: FraudScanArtistsArtistIdFraudScanPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling fraudScanArtistsArtistIdFraudScanPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/fraud-scan`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Fraud Scan
+     */
+    async fraudScanArtistsArtistIdFraudScanPostRaw(requestParameters: FraudScanArtistsArtistIdFraudScanPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.fraudScanArtistsArtistIdFraudScanPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Fraud Scan
+     */
+    async fraudScanArtistsArtistIdFraudScanPost(requestParameters: FraudScanArtistsArtistIdFraudScanPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.fraudScanArtistsArtistIdFraudScanPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPost without sending the request
+     */
+    async hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRequestOpts(requestParameters: HiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/hiphop-brand-audit`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Hiphop Brand Audit
+     */
+    async hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRaw(requestParameters: HiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Hiphop Brand Audit
+     */
+    async hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPost(requestParameters: HiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGet without sending the request
+     */
+    async playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRequestOpts(requestParameters: PlaybookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/playbook-summary`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Playbook Summary
+     */
+    async playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRaw(requestParameters: PlaybookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Playbook Summary
+     */
+    async playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGet(requestParameters: PlaybookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for pooledClaimArtistsArtistIdNetworkPooledClaimPost without sending the request
+     */
+    async pooledClaimArtistsArtistIdNetworkPooledClaimPostRequestOpts(requestParameters: PooledClaimArtistsArtistIdNetworkPooledClaimPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling pooledClaimArtistsArtistIdNetworkPooledClaimPost().'
+            );
+        }
+
+        if (requestParameters['requestBody'] == null) {
+            throw new runtime.RequiredError(
+                'requestBody',
+                'Required parameter "requestBody" was null or undefined when calling pooledClaimArtistsArtistIdNetworkPooledClaimPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/network/pooled-claim`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['requestBody'],
+        };
+    }
+
+    /**
+     * Pooled Claim
+     */
+    async pooledClaimArtistsArtistIdNetworkPooledClaimPostRaw(requestParameters: PooledClaimArtistsArtistIdNetworkPooledClaimPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.pooledClaimArtistsArtistIdNetworkPooledClaimPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Pooled Claim
+     */
+    async pooledClaimArtistsArtistIdNetworkPooledClaimPost(requestParameters: PooledClaimArtistsArtistIdNetworkPooledClaimPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.pooledClaimArtistsArtistIdNetworkPooledClaimPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -150,6 +666,55 @@ export class RecoveryApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGet without sending the request
+     */
+    async rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRequestOpts(requestParameters: RateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/rate-benchmark-advanced`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Rate Benchmark Advanced
+     */
+    async rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRaw(requestParameters: RateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Rate Benchmark Advanced
+     */
+    async rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGet(requestParameters: RateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for rateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGet without sending the request
      */
     async rateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGetRequestOpts(requestParameters: RateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGetRequest): Promise<runtime.RequestOpts> {
@@ -197,6 +762,55 @@ export class RecoveryApi extends runtime.BaseAPI {
      */
     async rateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGet(requestParameters: RateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.rateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPost without sending the request
+     */
+    async reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRequestOpts(requestParameters: ReconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/reconstruct-historical`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Reconstruct Historical
+     */
+    async reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRaw(requestParameters: ReconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Reconstruct Historical
+     */
+    async reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPost(requestParameters: ReconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -252,6 +866,349 @@ export class RecoveryApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGet without sending the request
+     */
+    async recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRequestOpts(requestParameters: RecoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/recoupment-deep-audit`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Recoupment Deep Audit
+     */
+    async recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRaw(requestParameters: RecoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Recoupment Deep Audit
+     */
+    async recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGet(requestParameters: RecoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for recoveryAttributionArtistsArtistIdRecoveryAttributionGet without sending the request
+     */
+    async recoveryAttributionArtistsArtistIdRecoveryAttributionGetRequestOpts(requestParameters: RecoveryAttributionArtistsArtistIdRecoveryAttributionGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling recoveryAttributionArtistsArtistIdRecoveryAttributionGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/attribution`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Recovery Attribution
+     */
+    async recoveryAttributionArtistsArtistIdRecoveryAttributionGetRaw(requestParameters: RecoveryAttributionArtistsArtistIdRecoveryAttributionGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.recoveryAttributionArtistsArtistIdRecoveryAttributionGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Recovery Attribution
+     */
+    async recoveryAttributionArtistsArtistIdRecoveryAttributionGet(requestParameters: RecoveryAttributionArtistsArtistIdRecoveryAttributionGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.recoveryAttributionArtistsArtistIdRecoveryAttributionGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGet without sending the request
+     */
+    async recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRequestOpts(requestParameters: RecoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/expected-value`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Recovery Expected Value
+     */
+    async recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRaw(requestParameters: RecoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Recovery Expected Value
+     */
+    async recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGet(requestParameters: RecoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for recoveryFunnelArtistsArtistIdRecoveryFunnelGet without sending the request
+     */
+    async recoveryFunnelArtistsArtistIdRecoveryFunnelGetRequestOpts(requestParameters: RecoveryFunnelArtistsArtistIdRecoveryFunnelGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling recoveryFunnelArtistsArtistIdRecoveryFunnelGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/funnel`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Recovery Funnel
+     */
+    async recoveryFunnelArtistsArtistIdRecoveryFunnelGetRaw(requestParameters: RecoveryFunnelArtistsArtistIdRecoveryFunnelGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.recoveryFunnelArtistsArtistIdRecoveryFunnelGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Recovery Funnel
+     */
+    async recoveryFunnelArtistsArtistIdRecoveryFunnelGet(requestParameters: RecoveryFunnelArtistsArtistIdRecoveryFunnelGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.recoveryFunnelArtistsArtistIdRecoveryFunnelGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for recoveryPlaybookArtistsArtistIdRecoveryPlaybookGet without sending the request
+     */
+    async recoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequestOpts(requestParameters: RecoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling recoveryPlaybookArtistsArtistIdRecoveryPlaybookGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/playbook`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Recovery Playbook
+     */
+    async recoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRaw(requestParameters: RecoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.recoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Recovery Playbook
+     */
+    async recoveryPlaybookArtistsArtistIdRecoveryPlaybookGet(requestParameters: RecoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.recoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for recoveryRoiArtistsArtistIdRecoveryRoiGet without sending the request
+     */
+    async recoveryRoiArtistsArtistIdRecoveryRoiGetRequestOpts(requestParameters: RecoveryRoiArtistsArtistIdRecoveryRoiGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling recoveryRoiArtistsArtistIdRecoveryRoiGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/roi`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Recovery Roi
+     */
+    async recoveryRoiArtistsArtistIdRecoveryRoiGetRaw(requestParameters: RecoveryRoiArtistsArtistIdRecoveryRoiGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.recoveryRoiArtistsArtistIdRecoveryRoiGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Recovery Roi
+     */
+    async recoveryRoiArtistsArtistIdRecoveryRoiGet(requestParameters: RecoveryRoiArtistsArtistIdRecoveryRoiGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.recoveryRoiArtistsArtistIdRecoveryRoiGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for slaStatusArtistsArtistIdSlaStatusGet without sending the request
+     */
+    async slaStatusArtistsArtistIdSlaStatusGetRequestOpts(requestParameters: SlaStatusArtistsArtistIdSlaStatusGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling slaStatusArtistsArtistIdSlaStatusGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/sla/status`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Sla Status
+     */
+    async slaStatusArtistsArtistIdSlaStatusGetRaw(requestParameters: SlaStatusArtistsArtistIdSlaStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.slaStatusArtistsArtistIdSlaStatusGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Sla Status
+     */
+    async slaStatusArtistsArtistIdSlaStatusGet(requestParameters: SlaStatusArtistsArtistIdSlaStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.slaStatusArtistsArtistIdSlaStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for solStatusArtistsArtistIdRecoverySolStatusGet without sending the request
      */
     async solStatusArtistsArtistIdRecoverySolStatusGetRequestOpts(requestParameters: SolStatusArtistsArtistIdRecoverySolStatusGetRequest): Promise<runtime.RequestOpts> {
@@ -299,6 +1256,442 @@ export class RecoveryApi extends runtime.BaseAPI {
      */
     async solStatusArtistsArtistIdRecoverySolStatusGet(requestParameters: SolStatusArtistsArtistIdRecoverySolStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.solStatusArtistsArtistIdRecoverySolStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for splitConflictsArtistsArtistIdSplitsConflictsGet without sending the request
+     */
+    async splitConflictsArtistsArtistIdSplitsConflictsGetRequestOpts(requestParameters: SplitConflictsArtistsArtistIdSplitsConflictsGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling splitConflictsArtistsArtistIdSplitsConflictsGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/splits/conflicts`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Split Conflicts
+     */
+    async splitConflictsArtistsArtistIdSplitsConflictsGetRaw(requestParameters: SplitConflictsArtistsArtistIdSplitsConflictsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.splitConflictsArtistsArtistIdSplitsConflictsGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Split Conflicts
+     */
+    async splitConflictsArtistsArtistIdSplitsConflictsGet(requestParameters: SplitConflictsArtistsArtistIdSplitsConflictsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.splitConflictsArtistsArtistIdSplitsConflictsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for splitVerificationArtistsArtistIdSplitsVerificationGet without sending the request
+     */
+    async splitVerificationArtistsArtistIdSplitsVerificationGetRequestOpts(requestParameters: SplitVerificationArtistsArtistIdSplitsVerificationGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling splitVerificationArtistsArtistIdSplitsVerificationGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/splits/verification`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Split Verification
+     */
+    async splitVerificationArtistsArtistIdSplitsVerificationGetRaw(requestParameters: SplitVerificationArtistsArtistIdSplitsVerificationGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.splitVerificationArtistsArtistIdSplitsVerificationGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Split Verification
+     */
+    async splitVerificationArtistsArtistIdSplitsVerificationGet(requestParameters: SplitVerificationArtistsArtistIdSplitsVerificationGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.splitVerificationArtistsArtistIdSplitsVerificationGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for touringAuditArtistsArtistIdRecoveryTouringAuditPost without sending the request
+     */
+    async touringAuditArtistsArtistIdRecoveryTouringAuditPostRequestOpts(requestParameters: TouringAuditArtistsArtistIdRecoveryTouringAuditPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling touringAuditArtistsArtistIdRecoveryTouringAuditPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['settlementCsv'] != null) {
+            queryParameters['settlement_csv'] = requestParameters['settlementCsv'];
+        }
+
+        if (requestParameters['merchCsv'] != null) {
+            queryParameters['merch_csv'] = requestParameters['merchCsv'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/touring-audit`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Touring Audit
+     */
+    async touringAuditArtistsArtistIdRecoveryTouringAuditPostRaw(requestParameters: TouringAuditArtistsArtistIdRecoveryTouringAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.touringAuditArtistsArtistIdRecoveryTouringAuditPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Touring Audit
+     */
+    async touringAuditArtistsArtistIdRecoveryTouringAuditPost(requestParameters: TouringAuditArtistsArtistIdRecoveryTouringAuditPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.touringAuditArtistsArtistIdRecoveryTouringAuditPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPost without sending the request
+     */
+    async ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRequestOpts(requestParameters: UgcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPost().'
+            );
+        }
+
+        if (requestParameters['platform'] == null) {
+            throw new runtime.RequiredError(
+                'platform',
+                'Required parameter "platform" was null or undefined when calling ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPost().'
+            );
+        }
+
+        if (requestParameters['useId'] == null) {
+            throw new runtime.RequiredError(
+                'useId',
+                'Required parameter "useId" was null or undefined when calling ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['platform'] != null) {
+            queryParameters['platform'] = requestParameters['platform'];
+        }
+
+        if (requestParameters['useId'] != null) {
+            queryParameters['use_id'] = requestParameters['useId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/ugc-auto-claim`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Ugc Auto Claim
+     */
+    async ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRaw(requestParameters: UgcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ugc Auto Claim
+     */
+    async ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPost(requestParameters: UgcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for ugcClaimArtistsArtistIdUgcClaimPost without sending the request
+     */
+    async ugcClaimArtistsArtistIdUgcClaimPostRequestOpts(requestParameters: UgcClaimArtistsArtistIdUgcClaimPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling ugcClaimArtistsArtistIdUgcClaimPost().'
+            );
+        }
+
+        if (requestParameters['requestBody'] == null) {
+            throw new runtime.RequiredError(
+                'requestBody',
+                'Required parameter "requestBody" was null or undefined when calling ugcClaimArtistsArtistIdUgcClaimPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['platform'] != null) {
+            queryParameters['platform'] = requestParameters['platform'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/ugc/claim`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: requestParameters['requestBody'],
+        };
+    }
+
+    /**
+     * Ugc Claim
+     */
+    async ugcClaimArtistsArtistIdUgcClaimPostRaw(requestParameters: UgcClaimArtistsArtistIdUgcClaimPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.ugcClaimArtistsArtistIdUgcClaimPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ugc Claim
+     */
+    async ugcClaimArtistsArtistIdUgcClaimPost(requestParameters: UgcClaimArtistsArtistIdUgcClaimPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.ugcClaimArtistsArtistIdUgcClaimPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for ugcGlobalScanArtistsArtistIdUgcGlobalScanPost without sending the request
+     */
+    async ugcGlobalScanArtistsArtistIdUgcGlobalScanPostRequestOpts(requestParameters: UgcGlobalScanArtistsArtistIdUgcGlobalScanPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling ugcGlobalScanArtistsArtistIdUgcGlobalScanPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/ugc/global-scan`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Ugc Global Scan
+     */
+    async ugcGlobalScanArtistsArtistIdUgcGlobalScanPostRaw(requestParameters: UgcGlobalScanArtistsArtistIdUgcGlobalScanPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.ugcGlobalScanArtistsArtistIdUgcGlobalScanPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ugc Global Scan
+     */
+    async ugcGlobalScanArtistsArtistIdUgcGlobalScanPost(requestParameters: UgcGlobalScanArtistsArtistIdUgcGlobalScanPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.ugcGlobalScanArtistsArtistIdUgcGlobalScanPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for ugcMonitorArtistsArtistIdUgcMonitorGet without sending the request
+     */
+    async ugcMonitorArtistsArtistIdUgcMonitorGetRequestOpts(requestParameters: UgcMonitorArtistsArtistIdUgcMonitorGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling ugcMonitorArtistsArtistIdUgcMonitorGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/ugc/monitor`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Ugc Monitor
+     */
+    async ugcMonitorArtistsArtistIdUgcMonitorGetRaw(requestParameters: UgcMonitorArtistsArtistIdUgcMonitorGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.ugcMonitorArtistsArtistIdUgcMonitorGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Ugc Monitor
+     */
+    async ugcMonitorArtistsArtistIdUgcMonitorGet(requestParameters: UgcMonitorArtistsArtistIdUgcMonitorGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.ugcMonitorArtistsArtistIdUgcMonitorGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGet without sending the request
+     */
+    async underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRequestOpts(requestParameters: UnderpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/recovery/heatmap`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Underpayment Heatmap
+     */
+    async underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRaw(requestParameters: UnderpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Underpayment Heatmap
+     */
+    async underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGet(requestParameters: UnderpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

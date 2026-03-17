@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.currency_tax_estimate_request import CurrencyTaxEstimateRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of CurrencyTaxEstimateRequest from a JSON string
 currency_tax_estimate_request_instance = CurrencyTaxEstimateRequest.from_json(json)

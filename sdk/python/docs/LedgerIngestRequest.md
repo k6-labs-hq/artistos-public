@@ -12,7 +12,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.ledger_ingest_request import LedgerIngestRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of LedgerIngestRequest from a JSON string
 ledger_ingest_request_instance = LedgerIngestRequest.from_json(json)

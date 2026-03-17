@@ -22,8 +22,11 @@ export const ClaimStatus = {
     Prepared: 'PREPARED',
     Filed: 'FILED',
     Submitted: 'SUBMITTED',
+    ProofSubmitted: 'PROOF_SUBMITTED',
     InReview: 'IN_REVIEW',
     Accepted: 'ACCEPTED',
+    FundsReceived: 'FUNDS_RECEIVED',
+    DisbursementFailed: 'DISBURSEMENT_FAILED',
     Paid: 'PAID',
     Closed: 'CLOSED'
 } as const;

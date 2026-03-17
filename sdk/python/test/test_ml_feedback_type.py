@@ -20,10 +20,10 @@ class TestMLFeedbackType(unittest.TestCase):
     """MLFeedbackType unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def testMLFeedbackType(self):
         """Test MLFeedbackType"""

@@ -20,10 +20,10 @@ class TestClaimSchema(unittest.TestCase):
     """ClaimSchema unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> ClaimSchema:
         """Test ClaimSchema
@@ -43,7 +43,41 @@ class TestClaimSchema(unittest.TestCase):
                 recovered_amount = 1.337,
                 currency = '',
                 contingency_fee = 1.337,
+                platform_fee_percent = 1.337,
+                platform_fee_amount = 1.337,
+                artist_net_amount = 1.337,
+                remittance_method = '',
+                remittance_reference_number = '',
+                remittance_received_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                trolley_payment_id = '',
+                trolley_payment_status = '',
+                trolley_fx_rate = 1.337,
+                trolley_local_amount = 1.337,
+                trolley_local_currency = '',
+                payout_retry_count = 56,
+                payout_failure_reason = '',
                 evidence = { },
+                payer_name = '',
+                payer_contact = '',
+                original_due_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                proof_submitted_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                grace_period_days = 56,
+                sol_deadline = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                governing_law_state = 'USA',
+                contract_type = 'recording',
+                infringement_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                discovery_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                sol_window_years = 56,
+                sol_citation_source = '',
+                communications = [
+                    { }
+                    ],
+                anomaly_report = { },
+                supporting_documents = [
+                    { }
+                    ],
+                attorney_file_generated = True,
+                attorney_file_generated_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 updated_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')
             )

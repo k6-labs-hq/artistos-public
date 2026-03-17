@@ -24,21 +24,21 @@ class TestBillingApi(unittest.TestCase):
         self.api = BillingApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_get_billing_summary_artists_artist_id_billing_get(self) -> None:
         """Test case for get_billing_summary_artists_artist_id_billing_get
 
         Get Billing Summary
         """
-        assert True
+        pass
 
     def test_list_invoices_artists_artist_id_invoices_get(self) -> None:
         """Test case for list_invoices_artists_artist_id_invoices_get
 
         List Invoices
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

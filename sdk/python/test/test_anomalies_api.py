@@ -24,28 +24,49 @@ class TestAnomaliesApi(unittest.TestCase):
         self.api = AnomaliesApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get(self) -> None:
+        """Test case for anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get
+
+        Anomaly Recovery Probability Endpoint
+        """
+        pass
 
     def test_detect_anomalies_artists_artist_id_anomalies_detect_post(self) -> None:
         """Test case for detect_anomalies_artists_artist_id_anomalies_detect_post
 
         Detect Anomalies
         """
-        assert True
+        pass
+
+    def test_fraud_scan_artists_artist_id_anomalies_fraud_scan_post(self) -> None:
+        """Test case for fraud_scan_artists_artist_id_anomalies_fraud_scan_post
+
+        Fraud Scan
+        """
+        pass
 
     def test_get_anomaly_anomalies_anomaly_id_get(self) -> None:
         """Test case for get_anomaly_anomalies_anomaly_id_get
 
         Get Anomaly
         """
-        assert True
+        pass
 
     def test_list_anomalies_artists_artist_id_anomalies_get(self) -> None:
         """Test case for list_anomalies_artists_artist_id_anomalies_get
 
         List Anomalies
         """
-        assert True
+        pass
+
+    def test_scan_ai_influence_artists_artist_id_ai_music_scan_influence_post(self) -> None:
+        """Test case for scan_ai_influence_artists_artist_id_ai_music_scan_influence_post
+
+        Scan Ai Influence
+        """
+        pass
 
 
 if __name__ == '__main__':

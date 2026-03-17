@@ -24,56 +24,147 @@ class TestClaimsApi(unittest.TestCase):
         self.api = ClaimsApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_activate_negotiator_agent_claims_claim_id_activate_agent_post(self) -> None:
+        """Test case for activate_negotiator_agent_claims_claim_id_activate_agent_post
+
+        Activate Negotiator Agent
+        """
+        pass
 
     def test_advance_claim_claims_claim_id_advance_post(self) -> None:
         """Test case for advance_claim_claims_claim_id_advance_post
 
         Advance Claim
         """
-        assert True
+        pass
+
+    def test_claim_automation_plan_claims_claim_id_automation_plan_get(self) -> None:
+        """Test case for claim_automation_plan_claims_claim_id_automation_plan_get
+
+        Claim Automation Plan
+        """
+        pass
+
+    def test_claim_evidence_optimized_claims_claim_id_evidence_optimized_get(self) -> None:
+        """Test case for claim_evidence_optimized_claims_claim_id_evidence_optimized_get
+
+        Claim Evidence Optimized
+        """
+        pass
+
+    def test_claim_evidence_strength_claims_claim_id_evidence_strength_get(self) -> None:
+        """Test case for claim_evidence_strength_claims_claim_id_evidence_strength_get
+
+        Claim Evidence Strength
+        """
+        pass
+
+    def test_claim_forecast_claims_claim_id_forecast_get(self) -> None:
+        """Test case for claim_forecast_claims_claim_id_forecast_get
+
+        Claim Forecast
+        """
+        pass
+
+    def test_claim_negotiation_intel_claims_claim_id_negotiation_intel_get(self) -> None:
+        """Test case for claim_negotiation_intel_claims_claim_id_negotiation_intel_get
+
+        Claim Negotiation Intel
+        """
+        pass
+
+    def test_claim_playbook_claims_claim_id_playbook_get(self) -> None:
+        """Test case for claim_playbook_claims_claim_id_playbook_get
+
+        Claim Playbook
+        """
+        pass
+
+    def test_claim_sla_prediction_claims_claim_id_sla_prediction_get(self) -> None:
+        """Test case for claim_sla_prediction_claims_claim_id_sla_prediction_get
+
+        Claim Sla Prediction
+        """
+        pass
+
+    def test_claim_strength_explainer_claims_claim_id_strength_explainer_get(self) -> None:
+        """Test case for claim_strength_explainer_claims_claim_id_strength_explainer_get
+
+        Claim Strength Explainer
+        """
+        pass
+
+    def test_escalate_legal_claims_claim_id_escalate_legal_post(self) -> None:
+        """Test case for escalate_legal_claims_claim_id_escalate_legal_post
+
+        Escalate Legal
+        """
+        pass
 
     def test_export_evidence_packet_claims_claim_id_evidence_export_get(self) -> None:
         """Test case for export_evidence_packet_claims_claim_id_evidence_export_get
 
         Export Evidence Packet
         """
-        assert True
+        pass
+
+    def test_export_evidence_packet_expert_mode_claims_claim_id_evidence_export_post(self) -> None:
+        """Test case for export_evidence_packet_expert_mode_claims_claim_id_evidence_export_post
+
+        Export Evidence Packet Expert Mode
+        """
+        pass
+
+    def test_generate_attorney_evidence_file_api_claims_claim_id_attorney_evidence_post(self) -> None:
+        """Test case for generate_attorney_evidence_file_api_claims_claim_id_attorney_evidence_post
+
+        Generate Attorney Evidence File
+        """
+        pass
+
+    def test_generate_attorney_evidence_file_claims_claim_id_attorney_evidence_post(self) -> None:
+        """Test case for generate_attorney_evidence_file_claims_claim_id_attorney_evidence_post
+
+        Generate Attorney Evidence File
+        """
+        pass
 
     def test_generate_evidence_claims_claim_id_evidence_post(self) -> None:
         """Test case for generate_evidence_claims_claim_id_evidence_post
 
         Generate Evidence
         """
-        assert True
+        pass
 
     def test_get_claim_claims_claim_id_get(self) -> None:
         """Test case for get_claim_claims_claim_id_get
 
         Get Claim
         """
-        assert True
+        pass
 
     def test_list_claims_artists_artist_id_claims_get(self) -> None:
         """Test case for list_claims_artists_artist_id_claims_get
 
         List Claims
         """
-        assert True
+        pass
 
     def test_reconcile_claim_claims_claim_id_reconcile_post(self) -> None:
         """Test case for reconcile_claim_claims_claim_id_reconcile_post
 
         Reconcile Claim
         """
-        assert True
+        pass
 
     def test_verify_evidence_packet_claims_claim_id_evidence_verify_get(self) -> None:
         """Test case for verify_evidence_packet_claims_claim_id_evidence_verify_get
 
         Verify Evidence Packet
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

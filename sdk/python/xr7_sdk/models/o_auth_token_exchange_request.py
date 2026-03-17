@@ -38,7 +38,8 @@ class OAuthTokenExchangeRequest(BaseModel):
     token_type: Optional[StrictStr] = 'Bearer'
     expires_in_seconds: Optional[StrictInt] = None
     display_name: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["state", "code", "external_account_id", "tenant_id", "granted_scopes", "allow_partial_scope_grant", "access_token", "refresh_token", "token_type", "expires_in_seconds", "display_name"]
+    profile_metadata: Optional[Dict[str, StrictStr]] = None
+    __properties: ClassVar[List[str]] = ["state", "code", "external_account_id", "tenant_id", "granted_scopes", "allow_partial_scope_grant", "access_token", "refresh_token", "token_type", "expires_in_seconds", "display_name", "profile_metadata"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -104,6 +105,11 @@ class OAuthTokenExchangeRequest(BaseModel):
         if self.display_name is None and "display_name" in self.model_fields_set:
             _dict['display_name'] = None
 
+        # set to None if profile_metadata (nullable) is None
+        # and model_fields_set contains the field
+        if self.profile_metadata is None and "profile_metadata" in self.model_fields_set:
+            _dict['profile_metadata'] = None
+
         return _dict
 
     @classmethod
@@ -126,7 +132,8 @@ class OAuthTokenExchangeRequest(BaseModel):
             "refresh_token": obj.get("refresh_token"),
             "token_type": obj.get("token_type") if obj.get("token_type") is not None else 'Bearer',
             "expires_in_seconds": obj.get("expires_in_seconds"),
-            "display_name": obj.get("display_name")
+            "display_name": obj.get("display_name"),
+            "profile_metadata": obj.get("profile_metadata")
         })
         return _obj
 

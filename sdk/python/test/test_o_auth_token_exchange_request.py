@@ -20,10 +20,10 @@ class TestOAuthTokenExchangeRequest(unittest.TestCase):
     """OAuthTokenExchangeRequest unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> OAuthTokenExchangeRequest:
         """Test OAuthTokenExchangeRequest
@@ -47,7 +47,10 @@ class TestOAuthTokenExchangeRequest(unittest.TestCase):
                 refresh_token = '',
                 token_type = 'Bearer',
                 expires_in_seconds = 56,
-                display_name = ''
+                display_name = '',
+                profile_metadata = {
+                    'key' : ''
+                    }
             )
         else:
             return OAuthTokenExchangeRequest(

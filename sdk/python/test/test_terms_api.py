@@ -24,28 +24,28 @@ class TestTermsApi(unittest.TestCase):
         self.api = TermsApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_accept_terms_artists_artist_id_terms_accept_post(self) -> None:
         """Test case for accept_terms_artists_artist_id_terms_accept_post
 
         Accept Terms
         """
-        assert True
+        pass
 
     def test_get_terms_terms_get(self) -> None:
         """Test case for get_terms_terms_get
 
         Get Terms
         """
-        assert True
+        pass
 
     def test_terms_status_artists_artist_id_terms_status_get(self) -> None:
         """Test case for terms_status_artists_artist_id_terms_status_get
 
         Terms Status
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

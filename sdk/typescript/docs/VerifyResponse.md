@@ -16,7 +16,7 @@ Name | Type
 ```typescript
 import type { VerifyResponse } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "estimateToken": null,
   "artistName": null,

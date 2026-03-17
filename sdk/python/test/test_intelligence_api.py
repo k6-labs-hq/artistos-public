@@ -24,56 +24,119 @@ class TestIntelligenceApi(unittest.TestCase):
         self.api = IntelligenceApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_catalog_valuation_artists_artist_id_ml_catalog_valuation_post(self) -> None:
+        """Test case for catalog_valuation_artists_artist_id_ml_catalog_valuation_post
+
+        Catalog Valuation
+        """
+        pass
 
     def test_create_outcome_feedback_artists_artist_id_intelligence_feedback_post(self) -> None:
         """Test case for create_outcome_feedback_artists_artist_id_intelligence_feedback_post
 
         Create Outcome Feedback
         """
-        assert True
+        pass
 
     def test_extract_contract_terms_artists_artist_id_intelligence_contracts_extract_post(self) -> None:
         """Test case for extract_contract_terms_artists_artist_id_intelligence_contracts_extract_post
 
         Extract Contract Terms
         """
-        assert True
+        pass
 
     def test_extract_contract_terms_upload_artists_artist_id_intelligence_contracts_extract_upload_post(self) -> None:
         """Test case for extract_contract_terms_upload_artists_artist_id_intelligence_contracts_extract_upload_post
 
         Extract Contract Terms Upload
         """
-        assert True
+        pass
+
+    def test_financing_matches_artists_artist_id_ml_financing_matches_post(self) -> None:
+        """Test case for financing_matches_artists_artist_id_ml_financing_matches_post
+
+        Financing Matches
+        """
+        pass
 
     def test_get_calibration_health_artists_artist_id_intelligence_calibration_get(self) -> None:
         """Test case for get_calibration_health_artists_artist_id_intelligence_calibration_get
 
         Get Calibration Health
         """
-        assert True
+        pass
 
     def test_ingest_royalty_ledger_artists_artist_id_intelligence_ledger_ingest_post(self) -> None:
         """Test case for ingest_royalty_ledger_artists_artist_id_intelligence_ledger_ingest_post
 
         Ingest Royalty Ledger
         """
-        assert True
+        pass
+
+    def test_list_feedback_events_artists_artist_id_intelligence_feedback_events_get(self) -> None:
+        """Test case for list_feedback_events_artists_artist_id_intelligence_feedback_events_get
+
+        List Feedback Events
+        """
+        pass
+
+    def test_pre_signature_contract_review_artists_artist_id_intelligence_contracts_pre_signature_review_post(self) -> None:
+        """Test case for pre_signature_contract_review_artists_artist_id_intelligence_contracts_pre_signature_review_post
+
+        Pre Signature Contract Review
+        """
+        pass
 
     def test_rank_by_expected_utility_artists_artist_id_intelligence_rank_utility_post(self) -> None:
         """Test case for rank_by_expected_utility_artists_artist_id_intelligence_rank_utility_post
 
         Rank By Expected Utility
         """
-        assert True
+        pass
+
+    def test_registration_auto_fix_artists_artist_id_registration_auto_fix_post(self) -> None:
+        """Test case for registration_auto_fix_artists_artist_id_registration_auto_fix_post
+
+        Registration Auto Fix
+        """
+        pass
+
+    def test_registration_status_artists_artist_id_registration_status_get(self) -> None:
+        """Test case for registration_status_artists_artist_id_registration_status_get
+
+        Registration Status
+        """
+        pass
+
+    def test_run_catalog_audit_on_demand_artists_artist_id_ml_catalog_audit_post(self) -> None:
+        """Test case for run_catalog_audit_on_demand_artists_artist_id_ml_catalog_audit_post
+
+        Run Catalog Audit On Demand
+        """
+        pass
+
+    def test_run_tax_optimizer_artists_artist_id_intelligence_tax_optimizer_post(self) -> None:
+        """Test case for run_tax_optimizer_artists_artist_id_intelligence_tax_optimizer_post
+
+        Run Tax Optimizer
+        """
+        pass
 
     def test_simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post(self) -> None:
         """Test case for simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post
 
         Simulate Expected Payout
         """
-        assert True
+        pass
+
+    def test_simulate_optimization_artists_artist_id_ml_simulate_optimization_post(self) -> None:
+        """Test case for simulate_optimization_artists_artist_id_ml_simulate_optimization_post
+
+        Simulate Optimization
+        """
+        pass
 
 
 if __name__ == '__main__':

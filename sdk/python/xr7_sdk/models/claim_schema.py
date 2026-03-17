@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from xr7_sdk.models.claim_status import ClaimStatus
 from typing import Optional, Set
@@ -37,10 +37,40 @@ class ClaimSchema(BaseModel):
     recovered_amount: Optional[Union[StrictFloat, StrictInt]] = None
     currency: StrictStr
     contingency_fee: Optional[Union[StrictFloat, StrictInt]] = None
+    platform_fee_percent: Optional[Union[StrictFloat, StrictInt]] = 10.0
+    platform_fee_amount: Optional[Union[StrictFloat, StrictInt]] = None
+    artist_net_amount: Optional[Union[StrictFloat, StrictInt]] = None
+    remittance_method: Optional[StrictStr] = None
+    remittance_reference_number: Optional[StrictStr] = None
+    remittance_received_at: Optional[datetime] = None
+    trolley_payment_id: Optional[StrictStr] = None
+    trolley_payment_status: Optional[StrictStr] = None
+    trolley_fx_rate: Optional[Union[StrictFloat, StrictInt]] = None
+    trolley_local_amount: Optional[Union[StrictFloat, StrictInt]] = None
+    trolley_local_currency: Optional[StrictStr] = None
+    payout_retry_count: Optional[StrictInt] = 0
+    payout_failure_reason: Optional[StrictStr] = None
     evidence: Optional[Dict[str, Any]] = None
+    payer_name: Optional[StrictStr] = None
+    payer_contact: Optional[StrictStr] = None
+    original_due_date: Optional[datetime] = None
+    proof_submitted_at: Optional[datetime] = None
+    grace_period_days: Optional[StrictInt] = 60
+    sol_deadline: Optional[datetime] = None
+    governing_law_state: Optional[StrictStr] = 'USA'
+    contract_type: Optional[StrictStr] = 'recording'
+    infringement_date: Optional[datetime] = None
+    discovery_date: Optional[datetime] = None
+    sol_window_years: Optional[StrictInt] = None
+    sol_citation_source: Optional[StrictStr] = None
+    communications: Optional[List[Dict[str, Any]]] = None
+    anomaly_report: Optional[Dict[str, Any]] = None
+    supporting_documents: Optional[List[Dict[str, Any]]] = None
+    attorney_file_generated: Optional[StrictBool] = False
+    attorney_file_generated_at: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime
-    __properties: ClassVar[List[str]] = ["id", "artist_id", "anomaly_id", "claim_type", "status", "recovered_amount", "currency", "contingency_fee", "evidence", "created_at", "updated_at"]
+    __properties: ClassVar[List[str]] = ["id", "artist_id", "anomaly_id", "claim_type", "status", "recovered_amount", "currency", "contingency_fee", "platform_fee_percent", "platform_fee_amount", "artist_net_amount", "remittance_method", "remittance_reference_number", "remittance_received_at", "trolley_payment_id", "trolley_payment_status", "trolley_fx_rate", "trolley_local_amount", "trolley_local_currency", "payout_retry_count", "payout_failure_reason", "evidence", "payer_name", "payer_contact", "original_due_date", "proof_submitted_at", "grace_period_days", "sol_deadline", "governing_law_state", "contract_type", "infringement_date", "discovery_date", "sol_window_years", "sol_citation_source", "communications", "anomaly_report", "supporting_documents", "attorney_file_generated", "attorney_file_generated_at", "created_at", "updated_at"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -91,10 +121,130 @@ class ClaimSchema(BaseModel):
         if self.contingency_fee is None and "contingency_fee" in self.model_fields_set:
             _dict['contingency_fee'] = None
 
+        # set to None if platform_fee_amount (nullable) is None
+        # and model_fields_set contains the field
+        if self.platform_fee_amount is None and "platform_fee_amount" in self.model_fields_set:
+            _dict['platform_fee_amount'] = None
+
+        # set to None if artist_net_amount (nullable) is None
+        # and model_fields_set contains the field
+        if self.artist_net_amount is None and "artist_net_amount" in self.model_fields_set:
+            _dict['artist_net_amount'] = None
+
+        # set to None if remittance_method (nullable) is None
+        # and model_fields_set contains the field
+        if self.remittance_method is None and "remittance_method" in self.model_fields_set:
+            _dict['remittance_method'] = None
+
+        # set to None if remittance_reference_number (nullable) is None
+        # and model_fields_set contains the field
+        if self.remittance_reference_number is None and "remittance_reference_number" in self.model_fields_set:
+            _dict['remittance_reference_number'] = None
+
+        # set to None if remittance_received_at (nullable) is None
+        # and model_fields_set contains the field
+        if self.remittance_received_at is None and "remittance_received_at" in self.model_fields_set:
+            _dict['remittance_received_at'] = None
+
+        # set to None if trolley_payment_id (nullable) is None
+        # and model_fields_set contains the field
+        if self.trolley_payment_id is None and "trolley_payment_id" in self.model_fields_set:
+            _dict['trolley_payment_id'] = None
+
+        # set to None if trolley_payment_status (nullable) is None
+        # and model_fields_set contains the field
+        if self.trolley_payment_status is None and "trolley_payment_status" in self.model_fields_set:
+            _dict['trolley_payment_status'] = None
+
+        # set to None if trolley_fx_rate (nullable) is None
+        # and model_fields_set contains the field
+        if self.trolley_fx_rate is None and "trolley_fx_rate" in self.model_fields_set:
+            _dict['trolley_fx_rate'] = None
+
+        # set to None if trolley_local_amount (nullable) is None
+        # and model_fields_set contains the field
+        if self.trolley_local_amount is None and "trolley_local_amount" in self.model_fields_set:
+            _dict['trolley_local_amount'] = None
+
+        # set to None if trolley_local_currency (nullable) is None
+        # and model_fields_set contains the field
+        if self.trolley_local_currency is None and "trolley_local_currency" in self.model_fields_set:
+            _dict['trolley_local_currency'] = None
+
+        # set to None if payout_failure_reason (nullable) is None
+        # and model_fields_set contains the field
+        if self.payout_failure_reason is None and "payout_failure_reason" in self.model_fields_set:
+            _dict['payout_failure_reason'] = None
+
         # set to None if evidence (nullable) is None
         # and model_fields_set contains the field
         if self.evidence is None and "evidence" in self.model_fields_set:
             _dict['evidence'] = None
+
+        # set to None if payer_name (nullable) is None
+        # and model_fields_set contains the field
+        if self.payer_name is None and "payer_name" in self.model_fields_set:
+            _dict['payer_name'] = None
+
+        # set to None if payer_contact (nullable) is None
+        # and model_fields_set contains the field
+        if self.payer_contact is None and "payer_contact" in self.model_fields_set:
+            _dict['payer_contact'] = None
+
+        # set to None if original_due_date (nullable) is None
+        # and model_fields_set contains the field
+        if self.original_due_date is None and "original_due_date" in self.model_fields_set:
+            _dict['original_due_date'] = None
+
+        # set to None if proof_submitted_at (nullable) is None
+        # and model_fields_set contains the field
+        if self.proof_submitted_at is None and "proof_submitted_at" in self.model_fields_set:
+            _dict['proof_submitted_at'] = None
+
+        # set to None if sol_deadline (nullable) is None
+        # and model_fields_set contains the field
+        if self.sol_deadline is None and "sol_deadline" in self.model_fields_set:
+            _dict['sol_deadline'] = None
+
+        # set to None if infringement_date (nullable) is None
+        # and model_fields_set contains the field
+        if self.infringement_date is None and "infringement_date" in self.model_fields_set:
+            _dict['infringement_date'] = None
+
+        # set to None if discovery_date (nullable) is None
+        # and model_fields_set contains the field
+        if self.discovery_date is None and "discovery_date" in self.model_fields_set:
+            _dict['discovery_date'] = None
+
+        # set to None if sol_window_years (nullable) is None
+        # and model_fields_set contains the field
+        if self.sol_window_years is None and "sol_window_years" in self.model_fields_set:
+            _dict['sol_window_years'] = None
+
+        # set to None if sol_citation_source (nullable) is None
+        # and model_fields_set contains the field
+        if self.sol_citation_source is None and "sol_citation_source" in self.model_fields_set:
+            _dict['sol_citation_source'] = None
+
+        # set to None if communications (nullable) is None
+        # and model_fields_set contains the field
+        if self.communications is None and "communications" in self.model_fields_set:
+            _dict['communications'] = None
+
+        # set to None if anomaly_report (nullable) is None
+        # and model_fields_set contains the field
+        if self.anomaly_report is None and "anomaly_report" in self.model_fields_set:
+            _dict['anomaly_report'] = None
+
+        # set to None if supporting_documents (nullable) is None
+        # and model_fields_set contains the field
+        if self.supporting_documents is None and "supporting_documents" in self.model_fields_set:
+            _dict['supporting_documents'] = None
+
+        # set to None if attorney_file_generated_at (nullable) is None
+        # and model_fields_set contains the field
+        if self.attorney_file_generated_at is None and "attorney_file_generated_at" in self.model_fields_set:
+            _dict['attorney_file_generated_at'] = None
 
         return _dict
 
@@ -116,7 +266,37 @@ class ClaimSchema(BaseModel):
             "recovered_amount": obj.get("recovered_amount"),
             "currency": obj.get("currency"),
             "contingency_fee": obj.get("contingency_fee"),
+            "platform_fee_percent": obj.get("platform_fee_percent") if obj.get("platform_fee_percent") is not None else 10.0,
+            "platform_fee_amount": obj.get("platform_fee_amount"),
+            "artist_net_amount": obj.get("artist_net_amount"),
+            "remittance_method": obj.get("remittance_method"),
+            "remittance_reference_number": obj.get("remittance_reference_number"),
+            "remittance_received_at": obj.get("remittance_received_at"),
+            "trolley_payment_id": obj.get("trolley_payment_id"),
+            "trolley_payment_status": obj.get("trolley_payment_status"),
+            "trolley_fx_rate": obj.get("trolley_fx_rate"),
+            "trolley_local_amount": obj.get("trolley_local_amount"),
+            "trolley_local_currency": obj.get("trolley_local_currency"),
+            "payout_retry_count": obj.get("payout_retry_count") if obj.get("payout_retry_count") is not None else 0,
+            "payout_failure_reason": obj.get("payout_failure_reason"),
             "evidence": obj.get("evidence"),
+            "payer_name": obj.get("payer_name"),
+            "payer_contact": obj.get("payer_contact"),
+            "original_due_date": obj.get("original_due_date"),
+            "proof_submitted_at": obj.get("proof_submitted_at"),
+            "grace_period_days": obj.get("grace_period_days") if obj.get("grace_period_days") is not None else 60,
+            "sol_deadline": obj.get("sol_deadline"),
+            "governing_law_state": obj.get("governing_law_state") if obj.get("governing_law_state") is not None else 'USA',
+            "contract_type": obj.get("contract_type") if obj.get("contract_type") is not None else 'recording',
+            "infringement_date": obj.get("infringement_date"),
+            "discovery_date": obj.get("discovery_date"),
+            "sol_window_years": obj.get("sol_window_years"),
+            "sol_citation_source": obj.get("sol_citation_source"),
+            "communications": obj.get("communications"),
+            "anomaly_report": obj.get("anomaly_report"),
+            "supporting_documents": obj.get("supporting_documents"),
+            "attorney_file_generated": obj.get("attorney_file_generated") if obj.get("attorney_file_generated") is not None else False,
+            "attorney_file_generated_at": obj.get("attorney_file_generated_at"),
             "created_at": obj.get("created_at"),
             "updated_at": obj.get("updated_at")
         })

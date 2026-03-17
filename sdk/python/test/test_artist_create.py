@@ -20,10 +20,10 @@ class TestArtistCreate(unittest.TestCase):
     """ArtistCreate unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> ArtistCreate:
         """Test ArtistCreate
@@ -36,10 +36,18 @@ class TestArtistCreate(unittest.TestCase):
         if include_optional:
             return ArtistCreate(
                 name = '',
+                email = '',
+                first_name = '',
+                last_name = '',
+                country_code = 'US',
+                role = '',
                 ipi_number = '',
                 stage_names = [
                     ''
-                    ]
+                    ],
+                default_attorney_grace_period_days = 56,
+                primary_jurisdiction = 'USA',
+                preferred_contract_type = 'recording'
             )
         else:
             return ArtistCreate(

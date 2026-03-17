@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.catalog_confirmation_schema import CatalogConfirmationSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of CatalogConfirmationSchema from a JSON string
 catalog_confirmation_schema_instance = CatalogConfirmationSchema.from_json(json)

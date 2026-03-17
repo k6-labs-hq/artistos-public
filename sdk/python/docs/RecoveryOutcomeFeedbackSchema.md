@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.recovery_outcome_feedback_schema import RecoveryOutcomeFeedbackSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of RecoveryOutcomeFeedbackSchema from a JSON string
 recovery_outcome_feedback_schema_instance = RecoveryOutcomeFeedbackSchema.from_json(json)

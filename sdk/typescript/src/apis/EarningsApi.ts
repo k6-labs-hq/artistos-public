@@ -41,6 +41,10 @@ export interface GetEarningsSummaryArtistsArtistIdEarningsGetRequest {
     artistId: string;
 }
 
+export interface GetPostRepairForecastArtistsArtistIdEarningsForecastGetRequest {
+    artistId: string;
+}
+
 export interface ReconstructEarningsArtistsArtistIdEarningsReconstructPostRequest {
     artistId: string;
     reconstructRequest: ReconstructRequest;
@@ -207,6 +211,55 @@ export class EarningsApi extends runtime.BaseAPI {
      */
     async getEarningsSummaryArtistsArtistIdEarningsGet(requestParameters: GetEarningsSummaryArtistsArtistIdEarningsGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.getEarningsSummaryArtistsArtistIdEarningsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getPostRepairForecastArtistsArtistIdEarningsForecastGet without sending the request
+     */
+    async getPostRepairForecastArtistsArtistIdEarningsForecastGetRequestOpts(requestParameters: GetPostRepairForecastArtistsArtistIdEarningsForecastGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling getPostRepairForecastArtistsArtistIdEarningsForecastGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/earnings/forecast`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Get Post Repair Forecast
+     */
+    async getPostRepairForecastArtistsArtistIdEarningsForecastGetRaw(requestParameters: GetPostRepairForecastArtistsArtistIdEarningsForecastGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.getPostRepairForecastArtistsArtistIdEarningsForecastGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Get Post Repair Forecast
+     */
+    async getPostRepairForecastArtistsArtistIdEarningsForecastGet(requestParameters: GetPostRepairForecastArtistsArtistIdEarningsForecastGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.getPostRepairForecastArtistsArtistIdEarningsForecastGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -7,16 +7,22 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **name** | **str** |  | 
 **email** | **str** |  | [optional] 
+**first_name** | **str** |  | [optional] 
+**last_name** | **str** |  | [optional] 
+**country_code** | **str** |  | [optional] [default to 'US']
 **role** | **str** |  | [optional] 
 **ipi_number** | **str** |  | [optional] 
 **stage_names** | **List[str]** |  | [optional] 
+**default_attorney_grace_period_days** | **int** |  | [optional] [default to 60]
+**primary_jurisdiction** | **str** |  | [optional] [default to 'USA']
+**preferred_contract_type** | **str** |  | [optional] [default to 'recording']
 
 ## Example
 
 ```python
 from xr7_sdk.models.artist_create import ArtistCreate
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of ArtistCreate from a JSON string
 artist_create_instance = ArtistCreate.from_json(json)

@@ -20,10 +20,10 @@ class TestWorkflowRunRequest(unittest.TestCase):
     """WorkflowRunRequest unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> WorkflowRunRequest:
         """Test WorkflowRunRequest

@@ -4,7 +4,10 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**applySplitRepairsArtistsArtistIdSplitsRepairPost**](OnboardingApi.md#applysplitrepairsartistsartistidsplitsrepairpost) | **POST** /artists/{artist_id}/splits/repair | Apply Split Repairs |
 | [**buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost**](OnboardingApi.md#buildcatalogworkgraphartistsartistidcataloggraphbuildpost) | **POST** /artists/{artist_id}/catalog/graph/build | Build Catalog Work Graph |
+| [**catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet**](OnboardingApi.md#catalogmetadatahealthartistsartistidcatalogmetadatahealthget) | **GET** /artists/{artist_id}/catalog/metadata-health | Catalog Metadata Health |
+| [**catalogRepairsArtistsArtistIdCatalogRepairsGet**](OnboardingApi.md#catalogrepairsartistsartistidcatalogrepairsget) | **GET** /artists/{artist_id}/catalog/repairs | Catalog Repairs |
 | [**confirmCatalogItemArtistsArtistIdCatalogConfirmPost**](OnboardingApi.md#confirmcatalogitemartistsartistidcatalogconfirmpost) | **POST** /artists/{artist_id}/catalog/confirm | Confirm Catalog Item |
 | [**createSyncJobArtistsArtistIdSyncJobsPost**](OnboardingApi.md#createsyncjobartistsartistidsyncjobspost) | **POST** /artists/{artist_id}/sync/jobs | Create Sync Job |
 | [**generateAuditEvidencePacketClaimsClaimIdEvidenceGenerateAuditPost**](OnboardingApi.md#generateauditevidencepacketclaimsclaimidevidencegenerateauditpost) | **POST** /claims/{claim_id}/evidence/generate-audit | Generate Audit Evidence Packet |
@@ -29,6 +32,75 @@ All URIs are relative to *http://localhost*
 | [**upsertParserPluginArtistsArtistIdParsersPluginsPut**](OnboardingApi.md#upsertparserpluginartistsartistidparserspluginsput) | **PUT** /artists/{artist_id}/parsers/plugins | Upsert Parser Plugin |
 | [**varianceScanArtistsArtistIdVarianceScanPost**](OnboardingApi.md#variancescanartistsartistidvariancescanpost) | **POST** /artists/{artist_id}/variance/scan | Variance Scan |
 
+
+
+## applySplitRepairsArtistsArtistIdSplitsRepairPost
+
+> any applySplitRepairsArtistsArtistIdSplitsRepairPost(artistId, splitRepairRequest)
+
+Apply Split Repairs
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OnboardingApi,
+} from '@xr7/sdk';
+import type { ApplySplitRepairsArtistsArtistIdSplitsRepairPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new OnboardingApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+    // SplitRepairRequest
+    splitRepairRequest: ...,
+  } satisfies ApplySplitRepairsArtistsArtistIdSplitsRepairPostRequest;
+
+  try {
+    const data = await api.applySplitRepairsArtistsArtistIdSplitsRepairPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+| **splitRepairRequest** | [SplitRepairRequest](SplitRepairRequest.md) |  | |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost
@@ -57,6 +129,138 @@ async function example() {
 
   try {
     const data = await api.buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet
+
+> any catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet(artistId)
+
+Catalog Metadata Health
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OnboardingApi,
+} from '@xr7/sdk';
+import type { CatalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new OnboardingApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+  } satisfies CatalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGetRequest;
+
+  try {
+    const data = await api.catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## catalogRepairsArtistsArtistIdCatalogRepairsGet
+
+> any catalogRepairsArtistsArtistIdCatalogRepairsGet(artistId)
+
+Catalog Repairs
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OnboardingApi,
+} from '@xr7/sdk';
+import type { CatalogRepairsArtistsArtistIdCatalogRepairsGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new OnboardingApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+  } satisfies CatalogRepairsArtistsArtistIdCatalogRepairsGetRequest;
+
+  try {
+    const data = await api.catalogRepairsArtistsArtistIdCatalogRepairsGet(body);
     console.log(data);
   } catch (error) {
     console.error(error);

@@ -17,7 +17,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.create_review_item_request import CreateReviewItemRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of CreateReviewItemRequest from a JSON string
 create_review_item_request_instance = CreateReviewItemRequest.from_json(json)

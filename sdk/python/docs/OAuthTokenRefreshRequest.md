@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.o_auth_token_refresh_request import OAuthTokenRefreshRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of OAuthTokenRefreshRequest from a JSON string
 o_auth_token_refresh_request_instance = OAuthTokenRefreshRequest.from_json(json)

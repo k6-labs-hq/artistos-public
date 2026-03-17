@@ -24,175 +24,196 @@ class TestOnboardingApi(unittest.TestCase):
         self.api = OnboardingApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_apply_split_repairs_artists_artist_id_splits_repair_post(self) -> None:
+        """Test case for apply_split_repairs_artists_artist_id_splits_repair_post
+
+        Apply Split Repairs
+        """
+        pass
 
     def test_build_catalog_work_graph_artists_artist_id_catalog_graph_build_post(self) -> None:
         """Test case for build_catalog_work_graph_artists_artist_id_catalog_graph_build_post
 
         Build Catalog Work Graph
         """
-        assert True
+        pass
+
+    def test_catalog_metadata_health_artists_artist_id_catalog_metadata_health_get(self) -> None:
+        """Test case for catalog_metadata_health_artists_artist_id_catalog_metadata_health_get
+
+        Catalog Metadata Health
+        """
+        pass
+
+    def test_catalog_repairs_artists_artist_id_catalog_repairs_get(self) -> None:
+        """Test case for catalog_repairs_artists_artist_id_catalog_repairs_get
+
+        Catalog Repairs
+        """
+        pass
 
     def test_confirm_catalog_item_artists_artist_id_catalog_confirm_post(self) -> None:
         """Test case for confirm_catalog_item_artists_artist_id_catalog_confirm_post
 
         Confirm Catalog Item
         """
-        assert True
+        pass
 
     def test_create_sync_job_artists_artist_id_sync_jobs_post(self) -> None:
         """Test case for create_sync_job_artists_artist_id_sync_jobs_post
 
         Create Sync Job
         """
-        assert True
+        pass
 
     def test_generate_audit_evidence_packet_claims_claim_id_evidence_generate_audit_post(self) -> None:
         """Test case for generate_audit_evidence_packet_claims_claim_id_evidence_generate_audit_post
 
         Generate Audit Evidence Packet
         """
-        assert True
+        pass
 
     def test_get_permissions_dashboard_ui_permissions_ui_get(self) -> None:
         """Test case for get_permissions_dashboard_ui_permissions_ui_get
 
         Get Permissions Dashboard Ui
         """
-        assert True
+        pass
 
     def test_get_sync_job_artists_artist_id_sync_jobs_job_id_get(self) -> None:
         """Test case for get_sync_job_artists_artist_id_sync_jobs_job_id_get
 
         Get Sync Job
         """
-        assert True
+        pass
 
     def test_infer_catalog_artists_artist_id_catalog_infer_post(self) -> None:
         """Test case for infer_catalog_artists_artist_id_catalog_infer_post
 
         Infer Catalog
         """
-        assert True
+        pass
 
     def test_list_catalog_confirmations_artists_artist_id_catalog_confirm_get(self) -> None:
         """Test case for list_catalog_confirmations_artists_artist_id_catalog_confirm_get
 
         List Catalog Confirmations
         """
-        assert True
+        pass
 
     def test_list_immutable_ledger_entries_artists_artist_id_ledger_immutable_get(self) -> None:
         """Test case for list_immutable_ledger_entries_artists_artist_id_ledger_immutable_get
 
         List Immutable Ledger Entries
         """
-        assert True
+        pass
 
     def test_list_parser_plugins_artists_artist_id_parsers_plugins_get(self) -> None:
         """Test case for list_parser_plugins_artists_artist_id_parsers_plugins_get
 
         List Parser Plugins
         """
-        assert True
+        pass
 
     def test_list_sync_jobs_artists_artist_id_sync_jobs_get(self) -> None:
         """Test case for list_sync_jobs_artists_artist_id_sync_jobs_get
 
         List Sync Jobs
         """
-        assert True
+        pass
 
     def test_missing_data_status_artists_artist_id_ingestion_missing_data_get(self) -> None:
         """Test case for missing_data_status_artists_artist_id_ingestion_missing_data_get
 
         Missing Data Status
         """
-        assert True
+        pass
 
     def test_onboarding_status_artists_artist_id_onboarding_status_get(self) -> None:
         """Test case for onboarding_status_artists_artist_id_onboarding_status_get
 
         Onboarding Status
         """
-        assert True
+        pass
 
     def test_parse_statement_with_engine_artists_artist_id_parsers_parser_type_post(self) -> None:
         """Test case for parse_statement_with_engine_artists_artist_id_parsers_parser_type_post
 
         Parse Statement With Engine
         """
-        assert True
+        pass
 
     def test_permissions_dashboard_artists_artist_id_connect_permissions_dashboard_get(self) -> None:
         """Test case for permissions_dashboard_artists_artist_id_connect_permissions_dashboard_get
 
         Permissions Dashboard
         """
-        assert True
+        pass
 
     def test_preview_full_workflow_artists_artist_id_workflow_preview_get(self) -> None:
         """Test case for preview_full_workflow_artists_artist_id_workflow_preview_get
 
         Preview Full Workflow
         """
-        assert True
+        pass
 
     def test_requeue_due_sync_jobs_artists_artist_id_sync_jobs_requeue_due_post(self) -> None:
         """Test case for requeue_due_sync_jobs_artists_artist_id_sync_jobs_requeue_due_post
 
         Requeue Due Sync Jobs
         """
-        assert True
+        pass
 
     def test_run_data_fetcher_artists_artist_id_fetchers_integration_post(self) -> None:
         """Test case for run_data_fetcher_artists_artist_id_fetchers_integration_post
 
         Run Data Fetcher
         """
-        assert True
+        pass
 
     def test_run_full_workflow_artists_artist_id_workflow_run_post(self) -> None:
         """Test case for run_full_workflow_artists_artist_id_workflow_run_post
 
         Run Full Workflow
         """
-        assert True
+        pass
 
     def test_run_recovery_automation_artists_artist_id_recovery_automate_post(self) -> None:
         """Test case for run_recovery_automation_artists_artist_id_recovery_automate_post
 
         Run Recovery Automation
         """
-        assert True
+        pass
 
     def test_run_sync_job_now_artists_artist_id_sync_jobs_job_id_run_post(self) -> None:
         """Test case for run_sync_job_now_artists_artist_id_sync_jobs_job_id_run_post
 
         Run Sync Job Now
         """
-        assert True
+        pass
 
     def test_upload_any_statement_artists_artist_id_ingestion_upload_any_post(self) -> None:
         """Test case for upload_any_statement_artists_artist_id_ingestion_upload_any_post
 
         Upload Any Statement
         """
-        assert True
+        pass
 
     def test_upsert_parser_plugin_artists_artist_id_parsers_plugins_put(self) -> None:
         """Test case for upsert_parser_plugin_artists_artist_id_parsers_plugins_put
 
         Upsert Parser Plugin
         """
-        assert True
+        pass
 
     def test_variance_scan_artists_artist_id_variance_scan_post(self) -> None:
         """Test case for variance_scan_artists_artist_id_variance_scan_post
 
         Variance Scan
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

@@ -11,6 +11,9 @@ Name | Type | Description | Notes
 **chain_hash** | **str** |  | 
 **anchor_provider** | **str** |  | 
 **anchor_reference** | **str** |  | 
+**cid** | **str** |  | [optional] 
+**tx_hash** | **str** |  | [optional] 
+**blockchain_status** | **str** |  | 
 **created_at** | **datetime** |  | 
 
 ## Example
@@ -18,7 +21,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.evidence_anchor_schema import EvidenceAnchorSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of EvidenceAnchorSchema from a JSON string
 evidence_anchor_schema_instance = EvidenceAnchorSchema.from_json(json)

@@ -62,6 +62,7 @@ export interface ListAuditLogsAdminAuditLogsGetRequest {
 export interface ListClaimsAdminClaimsGetRequest {
     status?: string | null;
     artistId?: string | null;
+    jurisdiction?: string | null;
     sort?: string;
     limit?: number;
     offset?: number;
@@ -85,6 +86,12 @@ export interface ListTransactionsAdminTransactionsGetRequest {
     artistId?: string | null;
     limit?: number;
     offset?: number;
+    xAdminKey?: string;
+    xAdminActor?: string | null;
+}
+
+export interface SolRiskReportAdminReportsSolRiskGetRequest {
+    jurisdiction?: string | null;
     xAdminKey?: string;
     xAdminActor?: string | null;
 }
@@ -356,6 +363,10 @@ export class AdminApi extends runtime.BaseAPI {
             queryParameters['artist_id'] = requestParameters['artistId'];
         }
 
+        if (requestParameters['jurisdiction'] != null) {
+            queryParameters['jurisdiction'] = requestParameters['jurisdiction'];
+        }
+
         if (requestParameters['sort'] != null) {
             queryParameters['sort'] = requestParameters['sort'];
         }
@@ -546,6 +557,59 @@ export class AdminApi extends runtime.BaseAPI {
      */
     async listTransactionsAdminTransactionsGet(requestParameters: ListTransactionsAdminTransactionsGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.listTransactionsAdminTransactionsGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for solRiskReportAdminReportsSolRiskGet without sending the request
+     */
+    async solRiskReportAdminReportsSolRiskGetRequestOpts(requestParameters: SolRiskReportAdminReportsSolRiskGetRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        if (requestParameters['jurisdiction'] != null) {
+            queryParameters['jurisdiction'] = requestParameters['jurisdiction'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xAdminKey'] != null) {
+            headerParameters['X-Admin-Key'] = String(requestParameters['xAdminKey']);
+        }
+
+        if (requestParameters['xAdminActor'] != null) {
+            headerParameters['X-Admin-Actor'] = String(requestParameters['xAdminActor']);
+        }
+
+
+        let urlPath = `/admin/reports/sol-risk`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Sol Risk Report
+     */
+    async solRiskReportAdminReportsSolRiskGetRaw(requestParameters: SolRiskReportAdminReportsSolRiskGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.solRiskReportAdminReportsSolRiskGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Sol Risk Report
+     */
+    async solRiskReportAdminReportsSolRiskGet(requestParameters: SolRiskReportAdminReportsSolRiskGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.solRiskReportAdminReportsSolRiskGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

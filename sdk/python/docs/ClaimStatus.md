@@ -11,9 +11,15 @@
 
 * `SUBMITTED` (value: `'SUBMITTED'`)
 
+* `PROOF_SUBMITTED` (value: `'PROOF_SUBMITTED'`)
+
 * `IN_REVIEW` (value: `'IN_REVIEW'`)
 
 * `ACCEPTED` (value: `'ACCEPTED'`)
+
+* `FUNDS_RECEIVED` (value: `'FUNDS_RECEIVED'`)
+
+* `DISBURSEMENT_FAILED` (value: `'DISBURSEMENT_FAILED'`)
 
 * `PAID` (value: `'PAID'`)
 

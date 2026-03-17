@@ -20,10 +20,10 @@ class TestReviewSourceType(unittest.TestCase):
     """ReviewSourceType unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def testReviewSourceType(self):
         """Test ReviewSourceType"""

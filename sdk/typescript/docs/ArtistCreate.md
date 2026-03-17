@@ -8,22 +8,34 @@ Name | Type
 ------------ | -------------
 `name` | string
 `email` | string
+`firstName` | string
+`lastName` | string
+`countryCode` | string
 `role` | string
 `ipiNumber` | string
 `stageNames` | Array&lt;string&gt;
+`defaultAttorneyGracePeriodDays` | number
+`primaryJurisdiction` | string
+`preferredContractType` | string
 
 ## Example
 
 ```typescript
 import type { ArtistCreate } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "name": null,
   "email": null,
+  "firstName": null,
+  "lastName": null,
+  "countryCode": null,
   "role": null,
   "ipiNumber": null,
   "stageNames": null,
+  "defaultAttorneyGracePeriodDays": null,
+  "primaryJurisdiction": null,
+  "preferredContractType": null,
 } satisfies ArtistCreate
 
 console.log(example)

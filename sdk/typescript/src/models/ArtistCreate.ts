@@ -36,6 +36,24 @@ export interface ArtistCreate {
      * @type {string}
      * @memberof ArtistCreate
      */
+    firstName?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    lastName?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    countryCode?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
     role?: string | null;
     /**
      * 
@@ -49,6 +67,24 @@ export interface ArtistCreate {
      * @memberof ArtistCreate
      */
     stageNames?: Array<string> | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ArtistCreate
+     */
+    defaultAttorneyGracePeriodDays?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    primaryJurisdiction?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    preferredContractType?: string;
 }
 
 /**
@@ -71,9 +107,15 @@ export function ArtistCreateFromJSONTyped(json: any, ignoreDiscriminator: boolea
         
         'name': json['name'],
         'email': json['email'] == null ? undefined : json['email'],
+        'firstName': json['first_name'] == null ? undefined : json['first_name'],
+        'lastName': json['last_name'] == null ? undefined : json['last_name'],
+        'countryCode': json['country_code'] == null ? undefined : json['country_code'],
         'role': json['role'] == null ? undefined : json['role'],
         'ipiNumber': json['ipi_number'] == null ? undefined : json['ipi_number'],
         'stageNames': json['stage_names'] == null ? undefined : json['stage_names'],
+        'defaultAttorneyGracePeriodDays': json['default_attorney_grace_period_days'] == null ? undefined : json['default_attorney_grace_period_days'],
+        'primaryJurisdiction': json['primary_jurisdiction'] == null ? undefined : json['primary_jurisdiction'],
+        'preferredContractType': json['preferred_contract_type'] == null ? undefined : json['preferred_contract_type'],
     };
 }
 
@@ -90,9 +132,15 @@ export function ArtistCreateToJSONTyped(value?: ArtistCreate | null, ignoreDiscr
         
         'name': value['name'],
         'email': value['email'],
+        'first_name': value['firstName'],
+        'last_name': value['lastName'],
+        'country_code': value['countryCode'],
         'role': value['role'],
         'ipi_number': value['ipiNumber'],
         'stage_names': value['stageNames'],
+        'default_attorney_grace_period_days': value['defaultAttorneyGracePeriodDays'],
+        'primary_jurisdiction': value['primaryJurisdiction'],
+        'preferred_contract_type': value['preferredContractType'],
     };
 }
 

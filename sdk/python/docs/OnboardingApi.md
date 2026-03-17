@@ -4,7 +4,10 @@ All URIs are relative to *http://localhost*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**apply_split_repairs_artists_artist_id_splits_repair_post**](OnboardingApi.md#apply_split_repairs_artists_artist_id_splits_repair_post) | **POST** /artists/{artist_id}/splits/repair | Apply Split Repairs
 [**build_catalog_work_graph_artists_artist_id_catalog_graph_build_post**](OnboardingApi.md#build_catalog_work_graph_artists_artist_id_catalog_graph_build_post) | **POST** /artists/{artist_id}/catalog/graph/build | Build Catalog Work Graph
+[**catalog_metadata_health_artists_artist_id_catalog_metadata_health_get**](OnboardingApi.md#catalog_metadata_health_artists_artist_id_catalog_metadata_health_get) | **GET** /artists/{artist_id}/catalog/metadata-health | Catalog Metadata Health
+[**catalog_repairs_artists_artist_id_catalog_repairs_get**](OnboardingApi.md#catalog_repairs_artists_artist_id_catalog_repairs_get) | **GET** /artists/{artist_id}/catalog/repairs | Catalog Repairs
 [**confirm_catalog_item_artists_artist_id_catalog_confirm_post**](OnboardingApi.md#confirm_catalog_item_artists_artist_id_catalog_confirm_post) | **POST** /artists/{artist_id}/catalog/confirm | Confirm Catalog Item
 [**create_sync_job_artists_artist_id_sync_jobs_post**](OnboardingApi.md#create_sync_job_artists_artist_id_sync_jobs_post) | **POST** /artists/{artist_id}/sync/jobs | Create Sync Job
 [**generate_audit_evidence_packet_claims_claim_id_evidence_generate_audit_post**](OnboardingApi.md#generate_audit_evidence_packet_claims_claim_id_evidence_generate_audit_post) | **POST** /claims/{claim_id}/evidence/generate-audit | Generate Audit Evidence Packet
@@ -29,6 +32,75 @@ Method | HTTP request | Description
 [**upsert_parser_plugin_artists_artist_id_parsers_plugins_put**](OnboardingApi.md#upsert_parser_plugin_artists_artist_id_parsers_plugins_put) | **PUT** /artists/{artist_id}/parsers/plugins | Upsert Parser Plugin
 [**variance_scan_artists_artist_id_variance_scan_post**](OnboardingApi.md#variance_scan_artists_artist_id_variance_scan_post) | **POST** /artists/{artist_id}/variance/scan | Variance Scan
 
+
+# **apply_split_repairs_artists_artist_id_splits_repair_post**
+> object apply_split_repairs_artists_artist_id_splits_repair_post(artist_id, split_repair_request)
+
+Apply Split Repairs
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.models.split_repair_request import SplitRepairRequest
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.OnboardingApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+    split_repair_request = xr7_sdk.SplitRepairRequest() # SplitRepairRequest | 
+
+    try:
+        # Apply Split Repairs
+        api_response = api_instance.apply_split_repairs_artists_artist_id_splits_repair_post(artist_id, split_repair_request)
+        print("The response of OnboardingApi->apply_split_repairs_artists_artist_id_splits_repair_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling OnboardingApi->apply_split_repairs_artists_artist_id_splits_repair_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+ **split_repair_request** | [**SplitRepairRequest**](SplitRepairRequest.md)|  | 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **build_catalog_work_graph_artists_artist_id_catalog_graph_build_post**
 > object build_catalog_work_graph_artists_artist_id_catalog_graph_build_post(artist_id)
@@ -63,6 +135,138 @@ with xr7_sdk.ApiClient(configuration) as api_client:
         pprint(api_response)
     except Exception as e:
         print("Exception when calling OnboardingApi->build_catalog_work_graph_artists_artist_id_catalog_graph_build_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **catalog_metadata_health_artists_artist_id_catalog_metadata_health_get**
+> object catalog_metadata_health_artists_artist_id_catalog_metadata_health_get(artist_id)
+
+Catalog Metadata Health
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.OnboardingApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+
+    try:
+        # Catalog Metadata Health
+        api_response = api_instance.catalog_metadata_health_artists_artist_id_catalog_metadata_health_get(artist_id)
+        print("The response of OnboardingApi->catalog_metadata_health_artists_artist_id_catalog_metadata_health_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling OnboardingApi->catalog_metadata_health_artists_artist_id_catalog_metadata_health_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **catalog_repairs_artists_artist_id_catalog_repairs_get**
+> object catalog_repairs_artists_artist_id_catalog_repairs_get(artist_id)
+
+Catalog Repairs
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.OnboardingApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+
+    try:
+        # Catalog Repairs
+        api_response = api_instance.catalog_repairs_artists_artist_id_catalog_repairs_get(artist_id)
+        print("The response of OnboardingApi->catalog_repairs_artists_artist_id_catalog_repairs_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling OnboardingApi->catalog_repairs_artists_artist_id_catalog_repairs_get: %s\n" % e)
 ```
 
 

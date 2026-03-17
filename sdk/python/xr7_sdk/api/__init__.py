@@ -1,22 +1,35 @@
 # flake8: noqa
 
 # import apis into api package
+from xr7_sdk.api.recovery_intelligence_llm_api import RecoveryIntelligenceLLMApi
 from xr7_sdk.api.admin_api import AdminApi
 from xr7_sdk.api.anomalies_api import AnomaliesApi
 from xr7_sdk.api.artists_api import ArtistsApi
+from xr7_sdk.api.b2b_api import B2bApi
 from xr7_sdk.api.billing_api import BillingApi
-from xr7_sdk.api.celero_api import CeleroApi
+from xr7_sdk.api.branding_api import BrandingApi
 from xr7_sdk.api.claims_api import ClaimsApi
+from xr7_sdk.api.connect_api import ConnectApi
 from xr7_sdk.api.dashboard_api import DashboardApi
 from xr7_sdk.api.default_api import DefaultApi
 from xr7_sdk.api.earnings_api import EarningsApi
 from xr7_sdk.api.expansion_api import ExpansionApi
+from xr7_sdk.api.fetchers_api import FetchersApi
 from xr7_sdk.api.forensic_api_api import ForensicApiApi
 from xr7_sdk.api.ingestion_api import IngestionApi
 from xr7_sdk.api.intelligence_api import IntelligenceApi
+from xr7_sdk.api.notifications_api import NotificationsApi
 from xr7_sdk.api.onboarding_api import OnboardingApi
+from xr7_sdk.api.payers_api import PayersApi
+from xr7_sdk.api.public_api import PublicApi
 from xr7_sdk.api.recovery_api import RecoveryApi
 from xr7_sdk.api.review_queue_api import ReviewQueueApi
+from xr7_sdk.api.support_api import SupportApi
+from xr7_sdk.api.team_api import TeamApi
 from xr7_sdk.api.terms_api import TermsApi
+from xr7_sdk.api.transparency_api import TransparencyApi
+from xr7_sdk.api.trolley_api import TrolleyApi
 from xr7_sdk.api.widget_api import WidgetApi
+from xr7_sdk.api.workflow_api import WorkflowApi
+from xr7_sdk.api.workspace_api import WorkspaceApi
 

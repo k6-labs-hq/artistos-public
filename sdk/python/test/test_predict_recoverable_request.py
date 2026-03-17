@@ -20,10 +20,10 @@ class TestPredictRecoverableRequest(unittest.TestCase):
     """PredictRecoverableRequest unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> PredictRecoverableRequest:
         """Test PredictRecoverableRequest

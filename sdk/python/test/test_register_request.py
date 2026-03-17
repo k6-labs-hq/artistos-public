@@ -20,10 +20,10 @@ class TestRegisterRequest(unittest.TestCase):
     """RegisterRequest unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> RegisterRequest:
         """Test RegisterRequest

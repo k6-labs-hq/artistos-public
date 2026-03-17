@@ -24,21 +24,21 @@ class TestDefaultApi(unittest.TestCase):
         self.api = DefaultApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_health_health_get(self) -> None:
         """Test case for health_health_get
 
         Health
         """
-        assert True
+        pass
 
     def test_readiness_health_readiness_get(self) -> None:
         """Test case for readiness_health_readiness_get
 
         Readiness
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

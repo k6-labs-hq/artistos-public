@@ -77,10 +77,190 @@ export interface ClaimSchema {
     contingencyFee?: number | null;
     /**
      * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    platformFeePercent?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    platformFeeAmount?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    artistNetAmount?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    remittanceMethod?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    remittanceReferenceNumber?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    remittanceReceivedAt?: Date | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    trolleyPaymentId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    trolleyPaymentStatus?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    trolleyFxRate?: number | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    trolleyLocalAmount?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    trolleyLocalCurrency?: string | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    payoutRetryCount?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    payoutFailureReason?: string | null;
+    /**
+     * 
      * @type {{ [key: string]: any; }}
      * @memberof ClaimSchema
      */
     evidence?: { [key: string]: any; } | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    payerName?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    payerContact?: string | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    originalDueDate?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    proofSubmittedAt?: Date | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    gracePeriodDays?: number;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    solDeadline?: Date | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    governingLawState?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    contractType?: string;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    infringementDate?: Date | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    discoveryDate?: Date | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ClaimSchema
+     */
+    solWindowYears?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ClaimSchema
+     */
+    solCitationSource?: string | null;
+    /**
+     * 
+     * @type {Array<{ [key: string]: any; }>}
+     * @memberof ClaimSchema
+     */
+    communications?: Array<{ [key: string]: any; }> | null;
+    /**
+     * 
+     * @type {{ [key: string]: any; }}
+     * @memberof ClaimSchema
+     */
+    anomalyReport?: { [key: string]: any; } | null;
+    /**
+     * 
+     * @type {Array<{ [key: string]: any; }>}
+     * @memberof ClaimSchema
+     */
+    supportingDocuments?: Array<{ [key: string]: any; }> | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ClaimSchema
+     */
+    attorneyFileGenerated?: boolean;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ClaimSchema
+     */
+    attorneyFileGeneratedAt?: Date | null;
     /**
      * 
      * @type {Date}
@@ -130,7 +310,37 @@ export function ClaimSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolean
         'recoveredAmount': json['recovered_amount'] == null ? undefined : json['recovered_amount'],
         'currency': json['currency'],
         'contingencyFee': json['contingency_fee'] == null ? undefined : json['contingency_fee'],
+        'platformFeePercent': json['platform_fee_percent'] == null ? undefined : json['platform_fee_percent'],
+        'platformFeeAmount': json['platform_fee_amount'] == null ? undefined : json['platform_fee_amount'],
+        'artistNetAmount': json['artist_net_amount'] == null ? undefined : json['artist_net_amount'],
+        'remittanceMethod': json['remittance_method'] == null ? undefined : json['remittance_method'],
+        'remittanceReferenceNumber': json['remittance_reference_number'] == null ? undefined : json['remittance_reference_number'],
+        'remittanceReceivedAt': json['remittance_received_at'] == null ? undefined : (new Date(json['remittance_received_at'])),
+        'trolleyPaymentId': json['trolley_payment_id'] == null ? undefined : json['trolley_payment_id'],
+        'trolleyPaymentStatus': json['trolley_payment_status'] == null ? undefined : json['trolley_payment_status'],
+        'trolleyFxRate': json['trolley_fx_rate'] == null ? undefined : json['trolley_fx_rate'],
+        'trolleyLocalAmount': json['trolley_local_amount'] == null ? undefined : json['trolley_local_amount'],
+        'trolleyLocalCurrency': json['trolley_local_currency'] == null ? undefined : json['trolley_local_currency'],
+        'payoutRetryCount': json['payout_retry_count'] == null ? undefined : json['payout_retry_count'],
+        'payoutFailureReason': json['payout_failure_reason'] == null ? undefined : json['payout_failure_reason'],
         'evidence': json['evidence'] == null ? undefined : json['evidence'],
+        'payerName': json['payer_name'] == null ? undefined : json['payer_name'],
+        'payerContact': json['payer_contact'] == null ? undefined : json['payer_contact'],
+        'originalDueDate': json['original_due_date'] == null ? undefined : (new Date(json['original_due_date'])),
+        'proofSubmittedAt': json['proof_submitted_at'] == null ? undefined : (new Date(json['proof_submitted_at'])),
+        'gracePeriodDays': json['grace_period_days'] == null ? undefined : json['grace_period_days'],
+        'solDeadline': json['sol_deadline'] == null ? undefined : (new Date(json['sol_deadline'])),
+        'governingLawState': json['governing_law_state'] == null ? undefined : json['governing_law_state'],
+        'contractType': json['contract_type'] == null ? undefined : json['contract_type'],
+        'infringementDate': json['infringement_date'] == null ? undefined : (new Date(json['infringement_date'])),
+        'discoveryDate': json['discovery_date'] == null ? undefined : (new Date(json['discovery_date'])),
+        'solWindowYears': json['sol_window_years'] == null ? undefined : json['sol_window_years'],
+        'solCitationSource': json['sol_citation_source'] == null ? undefined : json['sol_citation_source'],
+        'communications': json['communications'] == null ? undefined : json['communications'],
+        'anomalyReport': json['anomaly_report'] == null ? undefined : json['anomaly_report'],
+        'supportingDocuments': json['supporting_documents'] == null ? undefined : json['supporting_documents'],
+        'attorneyFileGenerated': json['attorney_file_generated'] == null ? undefined : json['attorney_file_generated'],
+        'attorneyFileGeneratedAt': json['attorney_file_generated_at'] == null ? undefined : (new Date(json['attorney_file_generated_at'])),
         'createdAt': (new Date(json['created_at'])),
         'updatedAt': (new Date(json['updated_at'])),
     };
@@ -155,7 +365,37 @@ export function ClaimSchemaToJSONTyped(value?: ClaimSchema | null, ignoreDiscrim
         'recovered_amount': value['recoveredAmount'],
         'currency': value['currency'],
         'contingency_fee': value['contingencyFee'],
+        'platform_fee_percent': value['platformFeePercent'],
+        'platform_fee_amount': value['platformFeeAmount'],
+        'artist_net_amount': value['artistNetAmount'],
+        'remittance_method': value['remittanceMethod'],
+        'remittance_reference_number': value['remittanceReferenceNumber'],
+        'remittance_received_at': value['remittanceReceivedAt'] == null ? value['remittanceReceivedAt'] : value['remittanceReceivedAt'].toISOString(),
+        'trolley_payment_id': value['trolleyPaymentId'],
+        'trolley_payment_status': value['trolleyPaymentStatus'],
+        'trolley_fx_rate': value['trolleyFxRate'],
+        'trolley_local_amount': value['trolleyLocalAmount'],
+        'trolley_local_currency': value['trolleyLocalCurrency'],
+        'payout_retry_count': value['payoutRetryCount'],
+        'payout_failure_reason': value['payoutFailureReason'],
         'evidence': value['evidence'],
+        'payer_name': value['payerName'],
+        'payer_contact': value['payerContact'],
+        'original_due_date': value['originalDueDate'] == null ? value['originalDueDate'] : value['originalDueDate'].toISOString(),
+        'proof_submitted_at': value['proofSubmittedAt'] == null ? value['proofSubmittedAt'] : value['proofSubmittedAt'].toISOString(),
+        'grace_period_days': value['gracePeriodDays'],
+        'sol_deadline': value['solDeadline'] == null ? value['solDeadline'] : value['solDeadline'].toISOString(),
+        'governing_law_state': value['governingLawState'],
+        'contract_type': value['contractType'],
+        'infringement_date': value['infringementDate'] == null ? value['infringementDate'] : value['infringementDate'].toISOString(),
+        'discovery_date': value['discoveryDate'] == null ? value['discoveryDate'] : value['discoveryDate'].toISOString(),
+        'sol_window_years': value['solWindowYears'],
+        'sol_citation_source': value['solCitationSource'],
+        'communications': value['communications'],
+        'anomaly_report': value['anomalyReport'],
+        'supporting_documents': value['supportingDocuments'],
+        'attorney_file_generated': value['attorneyFileGenerated'],
+        'attorney_file_generated_at': value['attorneyFileGeneratedAt'] == null ? value['attorneyFileGeneratedAt'] : value['attorneyFileGeneratedAt'].toISOString(),
         'created_at': value['createdAt'].toISOString(),
         'updated_at': value['updatedAt'].toISOString(),
     };

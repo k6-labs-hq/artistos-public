@@ -7,6 +7,7 @@ Method | HTTP request | Description
 [**forecast_earnings_artists_artist_id_ml_forecast_post**](EarningsApi.md#forecast_earnings_artists_artist_id_ml_forecast_post) | **POST** /artists/{artist_id}/ml/forecast | Forecast Earnings
 [**get_earnings_history_artists_artist_id_earnings_history_get**](EarningsApi.md#get_earnings_history_artists_artist_id_earnings_history_get) | **GET** /artists/{artist_id}/earnings/history | Get Earnings History
 [**get_earnings_summary_artists_artist_id_earnings_get**](EarningsApi.md#get_earnings_summary_artists_artist_id_earnings_get) | **GET** /artists/{artist_id}/earnings | Get Earnings Summary
+[**get_post_repair_forecast_artists_artist_id_earnings_forecast_get**](EarningsApi.md#get_post_repair_forecast_artists_artist_id_earnings_forecast_get) | **GET** /artists/{artist_id}/earnings/forecast | Get Post Repair Forecast
 [**reconstruct_earnings_artists_artist_id_earnings_reconstruct_post**](EarningsApi.md#reconstruct_earnings_artists_artist_id_earnings_reconstruct_post) | **POST** /artists/{artist_id}/earnings/reconstruct | Reconstruct Earnings
 
 
@@ -183,6 +184,72 @@ with xr7_sdk.ApiClient(configuration) as api_client:
         pprint(api_response)
     except Exception as e:
         print("Exception when calling EarningsApi->get_earnings_summary_artists_artist_id_earnings_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_post_repair_forecast_artists_artist_id_earnings_forecast_get**
+> object get_post_repair_forecast_artists_artist_id_earnings_forecast_get(artist_id)
+
+Get Post Repair Forecast
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.EarningsApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+
+    try:
+        # Get Post Repair Forecast
+        api_response = api_instance.get_post_repair_forecast_artists_artist_id_earnings_forecast_get(artist_id)
+        print("The response of EarningsApi->get_post_repair_forecast_artists_artist_id_earnings_forecast_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling EarningsApi->get_post_repair_forecast_artists_artist_id_earnings_forecast_get: %s\n" % e)
 ```
 
 

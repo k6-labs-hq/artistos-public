@@ -20,10 +20,10 @@ class TestArtistSchema(unittest.TestCase):
     """ArtistSchema unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> ArtistSchema:
         """Test ArtistSchema
@@ -37,6 +37,8 @@ class TestArtistSchema(unittest.TestCase):
             return ArtistSchema(
                 id = '',
                 name = '',
+                email = '',
+                role = '',
                 ipi_number = '',
                 stage_names = [
                     ''
@@ -45,7 +47,18 @@ class TestArtistSchema(unittest.TestCase):
                 status = 'NEW',
                 onboarded_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 activated_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
-                celero_customer_vault_id = ''
+                first_name = '',
+                last_name = '',
+                country_code = 'US',
+                trolley_recipient_id = '',
+                payout_account_status = 'not_started',
+                payout_method_type = '',
+                payout_last4 = '',
+                tax_form_status = 'pending',
+                default_attorney_grace_period_days = 56,
+                primary_jurisdiction = 'USA',
+                preferred_contract_type = 'recording',
+                xr7_future_leakage_prevented = 1.337
             )
         else:
             return ArtistSchema(

@@ -18,7 +18,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of ImmutableLedgerEntrySchema from a JSON string
 immutable_ledger_entry_schema_instance = ImmutableLedgerEntrySchema.from_json(json)

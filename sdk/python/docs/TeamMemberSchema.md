@@ -16,7 +16,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.team_member_schema import TeamMemberSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of TeamMemberSchema from a JSON string
 team_member_schema_instance = TeamMemberSchema.from_json(json)

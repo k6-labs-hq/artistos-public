@@ -20,10 +20,10 @@ class TestAnomalyCategory(unittest.TestCase):
     """AnomalyCategory unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def testAnomalyCategory(self):
         """Test AnomalyCategory"""

@@ -18,7 +18,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of AdminAuditLogSchema from a JSON string
 admin_audit_log_schema_instance = AdminAuditLogSchema.from_json(json)

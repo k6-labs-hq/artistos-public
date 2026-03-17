@@ -26,7 +26,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.widget_lead_schema import WidgetLeadSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of WidgetLeadSchema from a JSON string
 widget_lead_schema_instance = WidgetLeadSchema.from_json(json)

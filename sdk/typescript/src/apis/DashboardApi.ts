@@ -22,14 +22,362 @@ import {
     HTTPValidationErrorToJSON,
 } from '../models/index';
 
+export interface AgentTraceArtistsArtistIdAgentTraceRunIdGetRequest {
+    artistId: string;
+    runId: string;
+}
+
+export interface ChatRoyaltiesArtistsArtistIdChatRoyaltiesPostRequest {
+    artistId: string;
+    question: string;
+}
+
+export interface DashboardBenchmarksArtistsArtistIdBenchmarksGetRequest {
+    artistId: string;
+}
+
+export interface DashboardFlowArtistsArtistIdDashboardFlowGetRequest {
+    artistId: string;
+}
+
+export interface ExportFullTransparencyArtistsArtistIdExportFullTransparencyGetRequest {
+    artistId: string;
+}
+
+export interface ExportGuidanceArtistsArtistIdDashboardExportGuidanceGetRequest {
+    artistId: string;
+    platform?: string;
+}
+
 export interface GetArtistDashboardArtistsArtistIdDashboardGetRequest {
     artistId: string;
+}
+
+export interface GetDashboardUiDashboardUiGetRequest {
+    orgId?: string | null;
 }
 
 /**
  * 
  */
 export class DashboardApi extends runtime.BaseAPI {
+
+    /**
+     * Creates request options for agentTraceArtistsArtistIdAgentTraceRunIdGet without sending the request
+     */
+    async agentTraceArtistsArtistIdAgentTraceRunIdGetRequestOpts(requestParameters: AgentTraceArtistsArtistIdAgentTraceRunIdGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling agentTraceArtistsArtistIdAgentTraceRunIdGet().'
+            );
+        }
+
+        if (requestParameters['runId'] == null) {
+            throw new runtime.RequiredError(
+                'runId',
+                'Required parameter "runId" was null or undefined when calling agentTraceArtistsArtistIdAgentTraceRunIdGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/agent-trace/{run_id}`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        urlPath = urlPath.replace(`{${"run_id"}}`, encodeURIComponent(String(requestParameters['runId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Agent Trace
+     */
+    async agentTraceArtistsArtistIdAgentTraceRunIdGetRaw(requestParameters: AgentTraceArtistsArtistIdAgentTraceRunIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.agentTraceArtistsArtistIdAgentTraceRunIdGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Agent Trace
+     */
+    async agentTraceArtistsArtistIdAgentTraceRunIdGet(requestParameters: AgentTraceArtistsArtistIdAgentTraceRunIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.agentTraceArtistsArtistIdAgentTraceRunIdGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for chatRoyaltiesArtistsArtistIdChatRoyaltiesPost without sending the request
+     */
+    async chatRoyaltiesArtistsArtistIdChatRoyaltiesPostRequestOpts(requestParameters: ChatRoyaltiesArtistsArtistIdChatRoyaltiesPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling chatRoyaltiesArtistsArtistIdChatRoyaltiesPost().'
+            );
+        }
+
+        if (requestParameters['question'] == null) {
+            throw new runtime.RequiredError(
+                'question',
+                'Required parameter "question" was null or undefined when calling chatRoyaltiesArtistsArtistIdChatRoyaltiesPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['question'] != null) {
+            queryParameters['question'] = requestParameters['question'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/chat/royalties`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Chat Royalties
+     */
+    async chatRoyaltiesArtistsArtistIdChatRoyaltiesPostRaw(requestParameters: ChatRoyaltiesArtistsArtistIdChatRoyaltiesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.chatRoyaltiesArtistsArtistIdChatRoyaltiesPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Chat Royalties
+     */
+    async chatRoyaltiesArtistsArtistIdChatRoyaltiesPost(requestParameters: ChatRoyaltiesArtistsArtistIdChatRoyaltiesPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.chatRoyaltiesArtistsArtistIdChatRoyaltiesPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for dashboardBenchmarksArtistsArtistIdBenchmarksGet without sending the request
+     */
+    async dashboardBenchmarksArtistsArtistIdBenchmarksGetRequestOpts(requestParameters: DashboardBenchmarksArtistsArtistIdBenchmarksGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling dashboardBenchmarksArtistsArtistIdBenchmarksGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/benchmarks`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Dashboard Benchmarks
+     */
+    async dashboardBenchmarksArtistsArtistIdBenchmarksGetRaw(requestParameters: DashboardBenchmarksArtistsArtistIdBenchmarksGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.dashboardBenchmarksArtistsArtistIdBenchmarksGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Dashboard Benchmarks
+     */
+    async dashboardBenchmarksArtistsArtistIdBenchmarksGet(requestParameters: DashboardBenchmarksArtistsArtistIdBenchmarksGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.dashboardBenchmarksArtistsArtistIdBenchmarksGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for dashboardFlowArtistsArtistIdDashboardFlowGet without sending the request
+     */
+    async dashboardFlowArtistsArtistIdDashboardFlowGetRequestOpts(requestParameters: DashboardFlowArtistsArtistIdDashboardFlowGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling dashboardFlowArtistsArtistIdDashboardFlowGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/dashboard/flow`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Dashboard Flow
+     */
+    async dashboardFlowArtistsArtistIdDashboardFlowGetRaw(requestParameters: DashboardFlowArtistsArtistIdDashboardFlowGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.dashboardFlowArtistsArtistIdDashboardFlowGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Dashboard Flow
+     */
+    async dashboardFlowArtistsArtistIdDashboardFlowGet(requestParameters: DashboardFlowArtistsArtistIdDashboardFlowGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.dashboardFlowArtistsArtistIdDashboardFlowGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for exportFullTransparencyArtistsArtistIdExportFullTransparencyGet without sending the request
+     */
+    async exportFullTransparencyArtistsArtistIdExportFullTransparencyGetRequestOpts(requestParameters: ExportFullTransparencyArtistsArtistIdExportFullTransparencyGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling exportFullTransparencyArtistsArtistIdExportFullTransparencyGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/export/full-transparency`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Export Full Transparency
+     */
+    async exportFullTransparencyArtistsArtistIdExportFullTransparencyGetRaw(requestParameters: ExportFullTransparencyArtistsArtistIdExportFullTransparencyGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.exportFullTransparencyArtistsArtistIdExportFullTransparencyGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Export Full Transparency
+     */
+    async exportFullTransparencyArtistsArtistIdExportFullTransparencyGet(requestParameters: ExportFullTransparencyArtistsArtistIdExportFullTransparencyGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.exportFullTransparencyArtistsArtistIdExportFullTransparencyGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for exportGuidanceArtistsArtistIdDashboardExportGuidanceGet without sending the request
+     */
+    async exportGuidanceArtistsArtistIdDashboardExportGuidanceGetRequestOpts(requestParameters: ExportGuidanceArtistsArtistIdDashboardExportGuidanceGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling exportGuidanceArtistsArtistIdDashboardExportGuidanceGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['platform'] != null) {
+            queryParameters['platform'] = requestParameters['platform'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/dashboard/export-guidance`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Export Guidance
+     */
+    async exportGuidanceArtistsArtistIdDashboardExportGuidanceGetRaw(requestParameters: ExportGuidanceArtistsArtistIdDashboardExportGuidanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.exportGuidanceArtistsArtistIdDashboardExportGuidanceGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Export Guidance
+     */
+    async exportGuidanceArtistsArtistIdDashboardExportGuidanceGet(requestParameters: ExportGuidanceArtistsArtistIdDashboardExportGuidanceGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.exportGuidanceArtistsArtistIdDashboardExportGuidanceGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Creates request options for getArtistDashboardArtistsArtistIdDashboardGet without sending the request
@@ -59,7 +407,7 @@ export class DashboardApi extends runtime.BaseAPI {
     }
 
     /**
-     * Return the artist\'s full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Celero disbursements received - ``deposits`` — per-deposit log with Celero transaction IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
+     * Return the artist\'s full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Trolley disbursements received - ``deposits`` — per-deposit log with Trolley payment IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
      * Get Artist Dashboard
      */
     async getArtistDashboardArtistsArtistIdDashboardGetRaw(requestParameters: GetArtistDashboardArtistsArtistIdDashboardGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
@@ -74,7 +422,7 @@ export class DashboardApi extends runtime.BaseAPI {
     }
 
     /**
-     * Return the artist\'s full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Celero disbursements received - ``deposits`` — per-deposit log with Celero transaction IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
+     * Return the artist\'s full recovery dashboard.  **leakage_discovered** - ``total_anomalies`` — total number of anomalies detected - ``total_estimated_recoverable`` — sum of estimated recoverable amounts - ``by_category`` — breakdown by revenue category (ROYALTY, TOURING, etc.) - ``by_severity`` — breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL) - ``recent_discoveries`` — last 10 newly detected anomalies  **in_pursuit** - ``active_claim_count`` — number of open claims - ``total_amount_in_pursuit`` — total dollar value of active claims - ``total_gross_recovered`` — total recovered across all closed/paid claims - ``total_net_recovered`` — gross minus XR7 contingency fees  **recovered_and_deposited** - ``total_deposited`` — sum of all Trolley disbursements received - ``deposits`` — per-deposit log with Trolley payment IDs  **balance_still_pursuing** - ``balance_still_pursuing`` — the key number: money we are still chasing - ``total_pending_deposit`` — approved but not yet ACH-settled  **deadlines** - ``expired_count`` — anomalies whose SOL window has already closed - ``urgent_count`` — anomalies with <90 days remaining on their SOL window - ``at_risk_count`` — anomalies with 90–180 days remaining - ``top_urgent_items`` — up to 5 most time-sensitive anomalies with days_remaining  **priority_actions** - ``top_10_actions`` — ranked action items (anomalies + claims) by ROI × urgency - ``total_open_items`` — total items in the priority queue  **catalog_health** - ``health_score`` — ML composite score 0–100 - ``grade`` — letter grade A–F - ``signals`` — per-signal breakdown (metadata, payment regularity, etc.) - ``recommendations`` — list of actionable improvement suggestions  **earnings_trend** - ``trend`` — GROWING / FLAT / DECLINING / INSUFFICIENT_DATA - ``predicted_total`` — predicted earnings over next 90 days - ``predicted_low`` / ``predicted_high`` — 95% confidence interval  **activity_feed** - Up to 50 timestamped events: leakage discoveries, claim updates,   and payment deposits, newest first.
      * Get Artist Dashboard
      */
     async getArtistDashboardArtistsArtistIdDashboardGet(requestParameters: GetArtistDashboardArtistsArtistIdDashboardGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
@@ -85,8 +433,12 @@ export class DashboardApi extends runtime.BaseAPI {
     /**
      * Creates request options for getDashboardUiDashboardUiGet without sending the request
      */
-    async getDashboardUiDashboardUiGetRequestOpts(): Promise<runtime.RequestOpts> {
+    async getDashboardUiDashboardUiGetRequestOpts(requestParameters: GetDashboardUiDashboardUiGetRequest): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
+
+        if (requestParameters['orgId'] != null) {
+            queryParameters['org_id'] = requestParameters['orgId'];
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -105,8 +457,8 @@ export class DashboardApi extends runtime.BaseAPI {
      * Serve the standalone artist recovery dashboard UI page.
      * Get Dashboard Ui
      */
-    async getDashboardUiDashboardUiGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
-        const requestOptions = await this.getDashboardUiDashboardUiGetRequestOpts();
+    async getDashboardUiDashboardUiGetRaw(requestParameters: GetDashboardUiDashboardUiGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.getDashboardUiDashboardUiGetRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         if (this.isJsonMime(response.headers.get('content-type'))) {
@@ -120,8 +472,8 @@ export class DashboardApi extends runtime.BaseAPI {
      * Serve the standalone artist recovery dashboard UI page.
      * Get Dashboard Ui
      */
-    async getDashboardUiDashboardUiGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.getDashboardUiDashboardUiGetRaw(initOverrides);
+    async getDashboardUiDashboardUiGet(requestParameters: GetDashboardUiDashboardUiGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.getDashboardUiDashboardUiGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

@@ -4,10 +4,79 @@ All URIs are relative to *http://localhost*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet**](AnomaliesApi.md#anomalyrecoveryprobabilityendpointanomaliesanomalyidrecoveryprobabilityget) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint |
 | [**detectAnomaliesArtistsArtistIdAnomaliesDetectPost**](AnomaliesApi.md#detectanomaliesartistsartistidanomaliesdetectpost) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies |
+| [**fraudScanArtistsArtistIdAnomaliesFraudScanPost**](AnomaliesApi.md#fraudscanartistsartistidanomaliesfraudscanpost) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan |
 | [**getAnomalyAnomaliesAnomalyIdGet**](AnomaliesApi.md#getanomalyanomaliesanomalyidget) | **GET** /anomalies/{anomaly_id} | Get Anomaly |
 | [**listAnomaliesArtistsArtistIdAnomaliesGet**](AnomaliesApi.md#listanomaliesartistsartistidanomaliesget) | **GET** /artists/{artist_id}/anomalies | List Anomalies |
+| [**scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost**](AnomaliesApi.md#scanaiinfluenceartistsartistidaimusicscaninfluencepost) | **POST** /artists/{artist_id}/ai-music/scan-influence | Scan Ai Influence |
 
+
+
+## anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet
+
+> any anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet(anomalyId)
+
+Anomaly Recovery Probability Endpoint
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AnomaliesApi,
+} from '@xr7/sdk';
+import type { AnomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AnomaliesApi();
+
+  const body = {
+    // string
+    anomalyId: anomalyId_example,
+  } satisfies AnomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGetRequest;
+
+  try {
+    const data = await api.anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **anomalyId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
 ## detectAnomaliesArtistsArtistIdAnomaliesDetectPost
@@ -36,6 +105,72 @@ async function example() {
 
   try {
     const data = await api.detectAnomaliesArtistsArtistIdAnomaliesDetectPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## fraudScanArtistsArtistIdAnomaliesFraudScanPost
+
+> any fraudScanArtistsArtistIdAnomaliesFraudScanPost(artistId)
+
+Fraud Scan
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AnomaliesApi,
+} from '@xr7/sdk';
+import type { FraudScanArtistsArtistIdAnomaliesFraudScanPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AnomaliesApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+  } satisfies FraudScanArtistsArtistIdAnomaliesFraudScanPostRequest;
+
+  try {
+    const data = await api.fraudScanArtistsArtistIdAnomaliesFraudScanPost(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -190,6 +325,72 @@ example().catch(console.error);
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **status** | `string` |  | [Optional] [Defaults to `undefined`] |
 | **debug** | `boolean` |  | [Optional] [Defaults to `false`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost
+
+> any scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost(artistId)
+
+Scan Ai Influence
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AnomaliesApi,
+} from '@xr7/sdk';
+import type { ScanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AnomaliesApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+  } satisfies ScanAiInfluenceArtistsArtistIdAiMusicScanInfluencePostRequest;
+
+  try {
+    const data = await api.scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
 
 ### Return type
 

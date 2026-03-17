@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.o_auth_session_create_request import OAuthSessionCreateRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of OAuthSessionCreateRequest from a JSON string
 o_auth_session_create_request_instance = OAuthSessionCreateRequest.from_json(json)

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.notification_dispatch_request import NotificationDispatchRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of NotificationDispatchRequest from a JSON string
 notification_dispatch_request_instance = NotificationDispatchRequest.from_json(json)

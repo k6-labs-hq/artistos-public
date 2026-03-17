@@ -20,10 +20,10 @@ class TestAnomalySchema(unittest.TestCase):
     """AnomalySchema unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> AnomalySchema:
         """Test AnomalySchema
@@ -49,6 +49,9 @@ class TestAnomalySchema(unittest.TestCase):
                 territory = '',
                 status = 'OPEN',
                 description = '',
+                anomaly_score = 1.337,
+                model_version = '',
+                feature_snapshot = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')
             )
         else:

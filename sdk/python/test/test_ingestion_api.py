@@ -24,42 +24,70 @@ class TestIngestionApi(unittest.TestCase):
         self.api = IngestionApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_connect_regional_global_artists_artist_id_connect_regional_global_post(self) -> None:
+        """Test case for connect_regional_global_artists_artist_id_connect_regional_global_post
+
+        Connect Regional Global
+        """
+        pass
+
+    def test_connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post(self) -> None:
+        """Test case for connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post
+
+        Connect Soundexchange Mlc
+        """
+        pass
 
     def test_get_statement_artists_artist_id_statements_statement_id_get(self) -> None:
         """Test case for get_statement_artists_artist_id_statements_statement_id_get
 
         Get Statement
         """
-        assert True
+        pass
 
     def test_list_statements_artists_artist_id_statements_get(self) -> None:
         """Test case for list_statements_artists_artist_id_statements_get
 
         List Statements
         """
-        assert True
+        pass
+
+    def test_regional_global_status_artists_artist_id_connect_regional_global_status_get(self) -> None:
+        """Test case for regional_global_status_artists_artist_id_connect_regional_global_status_get
+
+        Regional Global Status
+        """
+        pass
+
+    def test_soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get(self) -> None:
+        """Test case for soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get
+
+        Soundexchange Mlc Status
+        """
+        pass
 
     def test_supported_formats_ingestion_supported_formats_get(self) -> None:
         """Test case for supported_formats_ingestion_supported_formats_get
 
         Supported Formats
         """
-        assert True
+        pass
 
     def test_upload_statement_artists_artist_id_statements_upload_post(self) -> None:
         """Test case for upload_statement_artists_artist_id_statements_upload_post
 
         Upload Statement
         """
-        assert True
+        pass
 
     def test_upload_statement_batch_artists_artist_id_statements_upload_batch_post(self) -> None:
         """Test case for upload_statement_batch_artists_artist_id_statements_upload_batch_post
 
         Upload Statement Batch
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

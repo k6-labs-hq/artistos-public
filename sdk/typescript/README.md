@@ -59,33 +59,72 @@ All URIs are relative to *http://localhost*
 *AdminApi* | [**listClaimsAdminClaimsGet**](docs/AdminApi.md#listclaimsadminclaimsget) | **GET** /admin/claims | List Claims
 *AdminApi* | [**listReviewQueueAdminReviewQueueGet**](docs/AdminApi.md#listreviewqueueadminreviewqueueget) | **GET** /admin/review-queue | List Review Queue
 *AdminApi* | [**listTransactionsAdminTransactionsGet**](docs/AdminApi.md#listtransactionsadmintransactionsget) | **GET** /admin/transactions | List Transactions
+*AdminApi* | [**solRiskReportAdminReportsSolRiskGet**](docs/AdminApi.md#solriskreportadminreportssolriskget) | **GET** /admin/reports/sol-risk | Sol Risk Report
+*AnomaliesApi* | [**anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet**](docs/AnomaliesApi.md#anomalyrecoveryprobabilityendpointanomaliesanomalyidrecoveryprobabilityget) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detectAnomaliesArtistsArtistIdAnomaliesDetectPost**](docs/AnomaliesApi.md#detectanomaliesartistsartistidanomaliesdetectpost) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
+*AnomaliesApi* | [**fraudScanArtistsArtistIdAnomaliesFraudScanPost**](docs/AnomaliesApi.md#fraudscanartistsartistidanomaliesfraudscanpost) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
 *AnomaliesApi* | [**getAnomalyAnomaliesAnomalyIdGet**](docs/AnomaliesApi.md#getanomalyanomaliesanomalyidget) | **GET** /anomalies/{anomaly_id} | Get Anomaly
 *AnomaliesApi* | [**listAnomaliesArtistsArtistIdAnomaliesGet**](docs/AnomaliesApi.md#listanomaliesartistsartistidanomaliesget) | **GET** /artists/{artist_id}/anomalies | List Anomalies
+*AnomaliesApi* | [**scanAiInfluenceArtistsArtistIdAiMusicScanInfluencePost**](docs/AnomaliesApi.md#scanaiinfluenceartistsartistidaimusicscaninfluencepost) | **POST** /artists/{artist_id}/ai-music/scan-influence | Scan Ai Influence
 *ArtistsApi* | [**artistSummaryArtistsArtistIdSummaryGet**](docs/ArtistsApi.md#artistsummaryartistsartistidsummaryget) | **GET** /artists/{artist_id}/summary | Artist Summary
 *ArtistsApi* | [**catalogHealthArtistsArtistIdMlCatalogHealthGet**](docs/ArtistsApi.md#cataloghealthartistsartistidmlcataloghealthget) | **GET** /artists/{artist_id}/ml/catalog-health | Catalog Health
 *ArtistsApi* | [**connectArtistArtistsArtistIdConnectPost**](docs/ArtistsApi.md#connectartistartistsartistidconnectpost) | **POST** /artists/{artist_id}/connect | Connect Artist
+*ArtistsApi* | [**connectProviderArtistsArtistIdConnectProviderPost**](docs/ArtistsApi.md#connectproviderartistsartistidconnectproviderpost) | **POST** /artists/{artist_id}/connect/{provider} | Connect Provider
 *ArtistsApi* | [**createArtistArtistsPost**](docs/ArtistsApi.md#createartistartistspost) | **POST** /artists/ | Create Artist
 *ArtistsApi* | [**getArtistArtistsArtistIdGet**](docs/ArtistsApi.md#getartistartistsartistidget) | **GET** /artists/{artist_id} | Get Artist
+*ArtistsApi* | [**getArtistPreferencesArtistsArtistIdPreferencesGet**](docs/ArtistsApi.md#getartistpreferencesartistsartistidpreferencesget) | **GET** /artists/{artist_id}/preferences | Get Artist Preferences
+*ArtistsApi* | [**providerConnectionStatusArtistsArtistIdConnectProviderStatusGet**](docs/ArtistsApi.md#providerconnectionstatusartistsartistidconnectproviderstatusget) | **GET** /artists/{artist_id}/connect/{provider}/status | Provider Connection Status
+*ArtistsApi* | [**updateArtistPreferencesArtistsArtistIdPreferencesPut**](docs/ArtistsApi.md#updateartistpreferencesartistsartistidpreferencesput) | **PUT** /artists/{artist_id}/preferences | Update Artist Preferences
+*ArtistsApi* | [**weeklyDigestArtistsArtistIdDigestWeeklyGet**](docs/ArtistsApi.md#weeklydigestartistsartistiddigestweeklyget) | **GET** /artists/{artist_id}/digest/weekly | Weekly Digest
+*B2bApi* | [**b2bDashboardB2bOrgOrgIdDashboardGet**](docs/B2bApi.md#b2bdashboardb2borgorgiddashboardget) | **GET** /b2b/org/{org_id}/dashboard | B2B Dashboard
+*B2bApi* | [**bulkOnboardB2bOrgOrgIdArtistsBulkOnboardPost**](docs/B2bApi.md#bulkonboardb2borgorgidartistsbulkonboardpost) | **POST** /b2b/org/{org_id}/artists/bulk-onboard | Bulk Onboard
+*B2bApi* | [**managementAnomaliesDrilldownManagementOrgIdAnomaliesGet**](docs/B2bApi.md#managementanomaliesdrilldownmanagementorgidanomaliesget) | **GET** /management/{org_id}/anomalies | Management Anomalies Drilldown
+*B2bApi* | [**managementArtistDrilldownManagementOrgIdArtistsArtistIdGet**](docs/B2bApi.md#managementartistdrilldownmanagementorgidartistsartistidget) | **GET** /management/{org_id}/artists/{artist_id} | Management Artist Drilldown
+*B2bApi* | [**managementCatalogDrilldownManagementOrgIdCatalogGet**](docs/B2bApi.md#managementcatalogdrilldownmanagementorgidcatalogget) | **GET** /management/{org_id}/catalog | Management Catalog Drilldown
+*B2bApi* | [**managementClaimsDrilldownManagementOrgIdClaimsGet**](docs/B2bApi.md#managementclaimsdrilldownmanagementorgidclaimsget) | **GET** /management/{org_id}/claims | Management Claims Drilldown
+*B2bApi* | [**managementDashboardManagementOrgIdDashboardGet**](docs/B2bApi.md#managementdashboardmanagementorgiddashboardget) | **GET** /management/{org_id}/dashboard | Management Dashboard
+*B2bApi* | [**managementForecastManagementOrgIdForecastGet**](docs/B2bApi.md#managementforecastmanagementorgidforecastget) | **GET** /management/{org_id}/forecast | Management Forecast
+*B2bApi* | [**orgPortfolioOrgOrgIdPortfolioGet**](docs/B2bApi.md#orgportfolioorgorgidportfolioget) | **GET** /org/{org_id}/portfolio | Org Portfolio
+*B2bApi* | [**xr7OperatorDashboardXr7OperatorDashboardGet**](docs/B2bApi.md#xr7operatordashboardxr7operatordashboardget) | **GET** /xr7/operator/dashboard | Xr7 Operator Dashboard
 *BillingApi* | [**getBillingSummaryArtistsArtistIdBillingGet**](docs/BillingApi.md#getbillingsummaryartistsartistidbillingget) | **GET** /artists/{artist_id}/billing | Get Billing Summary
 *BillingApi* | [**listInvoicesArtistsArtistIdInvoicesGet**](docs/BillingApi.md#listinvoicesartistsartistidinvoicesget) | **GET** /artists/{artist_id}/invoices | List Invoices
-*CeleroApi* | [**celeroWebhookCeleroWebhookPost**](docs/CeleroApi.md#celerowebhookcelerowebhookpost) | **POST** /celero/webhook | Celero Webhook
-*CeleroApi* | [**chargeContingencyFeeArtistsArtistIdCeleroChargePost**](docs/CeleroApi.md#chargecontingencyfeeartistsartistidcelerochargepost) | **POST** /artists/{artist_id}/celero/charge | Charge Contingency Fee
-*CeleroApi* | [**disburseToArtistArtistsArtistIdCeleroDisbursePost**](docs/CeleroApi.md#disbursetoartistartistsartistidcelerodisbursepost) | **POST** /artists/{artist_id}/celero/disburse | Disburse To Artist
-*CeleroApi* | [**getCeleroStatusArtistsArtistIdCeleroStatusGet**](docs/CeleroApi.md#getcelerostatusartistsartistidcelerostatusget) | **GET** /artists/{artist_id}/celero/status | Get Celero Status
-*CeleroApi* | [**getCeleroTransactionArtistsArtistIdCeleroTransactionsTransactionIdGet**](docs/CeleroApi.md#getcelerotransactionartistsartistidcelerotransactionstransactionidget) | **GET** /artists/{artist_id}/celero/transactions/{transaction_id} | Get Celero Transaction
-*CeleroApi* | [**listCeleroTransactionsArtistsArtistIdCeleroTransactionsGet**](docs/CeleroApi.md#listcelerotransactionsartistsartistidcelerotransactionsget) | **GET** /artists/{artist_id}/celero/transactions | List Celero Transactions
-*CeleroApi* | [**refundTransactionArtistsArtistIdCeleroTransactionsTransactionIdRefundPost**](docs/CeleroApi.md#refundtransactionartistsartistidcelerotransactionstransactionidrefundpost) | **POST** /artists/{artist_id}/celero/transactions/{transaction_id}/refund | Refund Transaction
-*CeleroApi* | [**registerArtistWithCeleroArtistsArtistIdCeleroRegisterPost**](docs/CeleroApi.md#registerartistwithceleroartistsartistidceleroregisterpost) | **POST** /artists/{artist_id}/celero/register | Register Artist With Celero
-*CeleroApi* | [**updateCeleroCustomerArtistsArtistIdCeleroCustomerPut**](docs/CeleroApi.md#updatecelerocustomerartistsartistidcelerocustomerput) | **PUT** /artists/{artist_id}/celero/customer | Update Celero Customer
-*CeleroApi* | [**voidTransactionArtistsArtistIdCeleroTransactionsTransactionIdVoidPost**](docs/CeleroApi.md#voidtransactionartistsartistidcelerotransactionstransactionidvoidpost) | **POST** /artists/{artist_id}/celero/transactions/{transaction_id}/void | Void Transaction
+*BrandingApi* | [**brandingTemplatesBrandingOrgIdTemplatesGet**](docs/BrandingApi.md#brandingtemplatesbrandingorgidtemplatesget) | **GET** /branding/{org_id}/templates | Branding Templates
+*BrandingApi* | [**createBrandingBrandingOrgIdPost**](docs/BrandingApi.md#createbrandingbrandingorgidpost) | **POST** /branding/{org_id} | Create Branding
+*BrandingApi* | [**createHelpArticleBrandingOrgIdHelpArticlesPost**](docs/BrandingApi.md#createhelparticlebrandingorgidhelparticlespost) | **POST** /branding/{org_id}/help-articles | Create Help Article
+*BrandingApi* | [**getBrandingBrandingOrgIdGet**](docs/BrandingApi.md#getbrandingbrandingorgidget) | **GET** /branding/{org_id} | Get Branding
+*BrandingApi* | [**listHelpArticlesBrandingOrgIdHelpArticlesGet**](docs/BrandingApi.md#listhelparticlesbrandingorgidhelparticlesget) | **GET** /branding/{org_id}/help-articles | List Help Articles
+*BrandingApi* | [**patchBrandingBrandingOrgIdPatch**](docs/BrandingApi.md#patchbrandingbrandingorgidpatch) | **PATCH** /branding/{org_id} | Patch Branding
+*BrandingApi* | [**uiShellUiShellGet**](docs/BrandingApi.md#uishelluishellget) | **GET** /ui/shell | Ui Shell
+*ClaimsApi* | [**activateNegotiatorAgentClaimsClaimIdActivateAgentPost**](docs/ClaimsApi.md#activatenegotiatoragentclaimsclaimidactivateagentpost) | **POST** /claims/{claim_id}/activate-agent | Activate Negotiator Agent
 *ClaimsApi* | [**advanceClaimClaimsClaimIdAdvancePost**](docs/ClaimsApi.md#advanceclaimclaimsclaimidadvancepost) | **POST** /claims/{claim_id}/advance | Advance Claim
+*ClaimsApi* | [**claimAutomationPlanClaimsClaimIdAutomationPlanGet**](docs/ClaimsApi.md#claimautomationplanclaimsclaimidautomationplanget) | **GET** /claims/{claim_id}/automation-plan | Claim Automation Plan
+*ClaimsApi* | [**claimEvidenceOptimizedClaimsClaimIdEvidenceOptimizedGet**](docs/ClaimsApi.md#claimevidenceoptimizedclaimsclaimidevidenceoptimizedget) | **GET** /claims/{claim_id}/evidence/optimized | Claim Evidence Optimized
+*ClaimsApi* | [**claimEvidenceStrengthClaimsClaimIdEvidenceStrengthGet**](docs/ClaimsApi.md#claimevidencestrengthclaimsclaimidevidencestrengthget) | **GET** /claims/{claim_id}/evidence/strength | Claim Evidence Strength
+*ClaimsApi* | [**claimForecastClaimsClaimIdForecastGet**](docs/ClaimsApi.md#claimforecastclaimsclaimidforecastget) | **GET** /claims/{claim_id}/forecast | Claim Forecast
+*ClaimsApi* | [**claimNegotiationIntelClaimsClaimIdNegotiationIntelGet**](docs/ClaimsApi.md#claimnegotiationintelclaimsclaimidnegotiationintelget) | **GET** /claims/{claim_id}/negotiation-intel | Claim Negotiation Intel
+*ClaimsApi* | [**claimPlaybookClaimsClaimIdPlaybookGet**](docs/ClaimsApi.md#claimplaybookclaimsclaimidplaybookget) | **GET** /claims/{claim_id}/playbook | Claim Playbook
+*ClaimsApi* | [**claimSlaPredictionClaimsClaimIdSlaPredictionGet**](docs/ClaimsApi.md#claimslapredictionclaimsclaimidslapredictionget) | **GET** /claims/{claim_id}/sla-prediction | Claim Sla Prediction
+*ClaimsApi* | [**claimStrengthExplainerClaimsClaimIdStrengthExplainerGet**](docs/ClaimsApi.md#claimstrengthexplainerclaimsclaimidstrengthexplainerget) | **GET** /claims/{claim_id}/strength-explainer | Claim Strength Explainer
+*ClaimsApi* | [**escalateLegalClaimsClaimIdEscalateLegalPost**](docs/ClaimsApi.md#escalatelegalclaimsclaimidescalatelegalpost) | **POST** /claims/{claim_id}/escalate-legal | Escalate Legal
 *ClaimsApi* | [**exportEvidencePacketClaimsClaimIdEvidenceExportGet**](docs/ClaimsApi.md#exportevidencepacketclaimsclaimidevidenceexportget) | **GET** /claims/{claim_id}/evidence/export | Export Evidence Packet
+*ClaimsApi* | [**exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPost**](docs/ClaimsApi.md#exportevidencepacketexpertmodeclaimsclaimidevidenceexportpost) | **POST** /claims/{claim_id}/evidence/export | Export Evidence Packet Expert Mode
+*ClaimsApi* | [**generateAttorneyEvidenceFileApiClaimsClaimIdAttorneyEvidencePost**](docs/ClaimsApi.md#generateattorneyevidencefileapiclaimsclaimidattorneyevidencepost) | **POST** /api/claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File
+*ClaimsApi* | [**generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost**](docs/ClaimsApi.md#generateattorneyevidencefileclaimsclaimidattorneyevidencepost) | **POST** /claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File
 *ClaimsApi* | [**generateEvidenceClaimsClaimIdEvidencePost**](docs/ClaimsApi.md#generateevidenceclaimsclaimidevidencepost) | **POST** /claims/{claim_id}/evidence | Generate Evidence
 *ClaimsApi* | [**getClaimClaimsClaimIdGet**](docs/ClaimsApi.md#getclaimclaimsclaimidget) | **GET** /claims/{claim_id} | Get Claim
 *ClaimsApi* | [**listClaimsArtistsArtistIdClaimsGet**](docs/ClaimsApi.md#listclaimsartistsartistidclaimsget) | **GET** /artists/{artist_id}/claims | List Claims
 *ClaimsApi* | [**reconcileClaimClaimsClaimIdReconcilePost**](docs/ClaimsApi.md#reconcileclaimclaimsclaimidreconcilepost) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 *ClaimsApi* | [**verifyEvidencePacketClaimsClaimIdEvidenceVerifyGet**](docs/ClaimsApi.md#verifyevidencepacketclaimsclaimidevidenceverifyget) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
+*ConnectApi* | [**connectGlobalSocialArtistsArtistIdConnectGlobalSocialPost**](docs/ConnectApi.md#connectglobalsocialartistsartistidconnectglobalsocialpost) | **POST** /artists/{artist_id}/connect/global-social | Connect Global Social
+*ConnectApi* | [**connectGlobalSocialStatusArtistsArtistIdConnectGlobalSocialStatusGet**](docs/ConnectApi.md#connectglobalsocialstatusartistsartistidconnectglobalsocialstatusget) | **GET** /artists/{artist_id}/connect/global-social/status | Connect Global Social Status
+*ConnectApi* | [**connectSoundcloudArtistsArtistIdConnectSoundcloudPost**](docs/ConnectApi.md#connectsoundcloudartistsartistidconnectsoundcloudpost) | **POST** /artists/{artist_id}/connect/soundcloud | Connect Soundcloud
+*ConnectApi* | [**connectSoundcloudStatusArtistsArtistIdConnectSoundcloudStatusGet**](docs/ConnectApi.md#connectsoundcloudstatusartistsartistidconnectsoundcloudstatusget) | **GET** /artists/{artist_id}/connect/soundcloud/status | Connect Soundcloud Status
+*DashboardApi* | [**agentTraceArtistsArtistIdAgentTraceRunIdGet**](docs/DashboardApi.md#agenttraceartistsartistidagenttracerunidget) | **GET** /artists/{artist_id}/agent-trace/{run_id} | Agent Trace
+*DashboardApi* | [**chatRoyaltiesArtistsArtistIdChatRoyaltiesPost**](docs/DashboardApi.md#chatroyaltiesartistsartistidchatroyaltiespost) | **POST** /artists/{artist_id}/chat/royalties | Chat Royalties
+*DashboardApi* | [**dashboardBenchmarksArtistsArtistIdBenchmarksGet**](docs/DashboardApi.md#dashboardbenchmarksartistsartistidbenchmarksget) | **GET** /artists/{artist_id}/benchmarks | Dashboard Benchmarks
+*DashboardApi* | [**dashboardFlowArtistsArtistIdDashboardFlowGet**](docs/DashboardApi.md#dashboardflowartistsartistiddashboardflowget) | **GET** /artists/{artist_id}/dashboard/flow | Dashboard Flow
+*DashboardApi* | [**exportFullTransparencyArtistsArtistIdExportFullTransparencyGet**](docs/DashboardApi.md#exportfulltransparencyartistsartistidexportfulltransparencyget) | **GET** /artists/{artist_id}/export/full-transparency | Export Full Transparency
+*DashboardApi* | [**exportGuidanceArtistsArtistIdDashboardExportGuidanceGet**](docs/DashboardApi.md#exportguidanceartistsartistiddashboardexportguidanceget) | **GET** /artists/{artist_id}/dashboard/export-guidance | Export Guidance
 *DashboardApi* | [**getArtistDashboardArtistsArtistIdDashboardGet**](docs/DashboardApi.md#getartistdashboardartistsartistiddashboardget) | **GET** /artists/{artist_id}/dashboard | Get Artist Dashboard
 *DashboardApi* | [**getDashboardUiDashboardUiGet**](docs/DashboardApi.md#getdashboarduidashboarduiget) | **GET** /dashboard/ui | Get Dashboard Ui
 *DefaultApi* | [**healthHealthGet**](docs/DefaultApi.md#healthhealthget) | **GET** /health | Health
@@ -93,14 +132,14 @@ All URIs are relative to *http://localhost*
 *EarningsApi* | [**forecastEarningsArtistsArtistIdMlForecastPost**](docs/EarningsApi.md#forecastearningsartistsartistidmlforecastpost) | **POST** /artists/{artist_id}/ml/forecast | Forecast Earnings
 *EarningsApi* | [**getEarningsHistoryArtistsArtistIdEarningsHistoryGet**](docs/EarningsApi.md#getearningshistoryartistsartistidearningshistoryget) | **GET** /artists/{artist_id}/earnings/history | Get Earnings History
 *EarningsApi* | [**getEarningsSummaryArtistsArtistIdEarningsGet**](docs/EarningsApi.md#getearningssummaryartistsartistidearningsget) | **GET** /artists/{artist_id}/earnings | Get Earnings Summary
+*EarningsApi* | [**getPostRepairForecastArtistsArtistIdEarningsForecastGet**](docs/EarningsApi.md#getpostrepairforecastartistsartistidearningsforecastget) | **GET** /artists/{artist_id}/earnings/forecast | Get Post Repair Forecast
 *EarningsApi* | [**reconstructEarningsArtistsArtistIdEarningsReconstructPost**](docs/EarningsApi.md#reconstructearningsartistsartistidearningsreconstructpost) | **POST** /artists/{artist_id}/earnings/reconstruct | Reconstruct Earnings
 *ExpansionApi* | [**addTeamMemberArtistsArtistIdTeamMembersPost**](docs/ExpansionApi.md#addteammemberartistsartistidteammemberspost) | **POST** /artists/{artist_id}/team/members | Add Team Member
-*ExpansionApi* | [**anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost**](docs/ExpansionApi.md#anchorevidencepacketclaimsclaimidevidenceanchorpost) | **POST** /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet
+*ExpansionApi* | [**anchorEvidencePacketInternalImmutableLog**](docs/ExpansionApi.md#anchorevidencepacketinternalimmutablelog) | **POST** /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet
 *ExpansionApi* | [**benchmarkPercentilesArtistsArtistIdRecoveryBenchmarkPercentilesGet**](docs/ExpansionApi.md#benchmarkpercentilesartistsartistidrecoverybenchmarkpercentilesget) | **GET** /artists/{artist_id}/recovery/benchmark-percentiles | Benchmark Percentiles
 *ExpansionApi* | [**createOauthSessionArtistsArtistIdConnectOauthSessionPost**](docs/ExpansionApi.md#createoauthsessionartistsartistidconnectoauthsessionpost) | **POST** /artists/{artist_id}/connect/oauth-session | Create Oauth Session
 *ExpansionApi* | [**dashboardChartsDataArtistsArtistIdDashboardChartsGet**](docs/ExpansionApi.md#dashboardchartsdataartistsartistiddashboardchartsget) | **GET** /artists/{artist_id}/dashboard/charts | Dashboard Charts Data
 *ExpansionApi* | [**disconnectConnectedAccountArtistsArtistIdConnectAccountsAccountIdDelete**](docs/ExpansionApi.md#disconnectconnectedaccountartistsartistidconnectaccountsaccountiddelete) | **DELETE** /artists/{artist_id}/connect/accounts/{account_id} | Disconnect Connected Account
-*ExpansionApi* | [**dispatchNotificationArtistsArtistIdNotificationsDispatchPost**](docs/ExpansionApi.md#dispatchnotificationartistsartistidnotificationsdispatchpost) | **POST** /artists/{artist_id}/notifications/dispatch | Dispatch Notification
 *ExpansionApi* | [**educationGuideDetailEducationGuidesGuideIdGet**](docs/ExpansionApi.md#educationguidedetaileducationguidesguideidget) | **GET** /education/guides/{guide_id} | Education Guide Detail
 *ExpansionApi* | [**educationGuidesIndexEducationGuidesGet**](docs/ExpansionApi.md#educationguidesindexeducationguidesget) | **GET** /education/guides | Education Guides Index
 *ExpansionApi* | [**estimateWithholdingArtistsArtistIdIntelligenceWithholdingEstimatePost**](docs/ExpansionApi.md#estimatewithholdingartistsartistidintelligencewithholdingestimatepost) | **POST** /artists/{artist_id}/intelligence/withholding-estimate | Estimate Withholding
@@ -120,6 +159,7 @@ All URIs are relative to *http://localhost*
 *ExpansionApi* | [**upsertNotificationPreferencesArtistsArtistIdNotificationsPreferencesPut**](docs/ExpansionApi.md#upsertnotificationpreferencesartistsartistidnotificationspreferencesput) | **PUT** /artists/{artist_id}/notifications/preferences | Upsert Notification Preferences
 *ExpansionApi* | [**urgentSolNotificationCheckArtistsArtistIdNotificationsUrgentSolCheckPost**](docs/ExpansionApi.md#urgentsolnotificationcheckartistsartistidnotificationsurgentsolcheckpost) | **POST** /artists/{artist_id}/notifications/urgent-sol-check | Urgent Sol Notification Check
 *ExpansionApi* | [**whiteLabelPortfolioB2bPortfolioOrgIdGet**](docs/ExpansionApi.md#whitelabelportfoliob2bportfolioorgidget) | **GET** /b2b/portfolio/{org_id} | White Label Portfolio
+*FetchersApi* | [**fetchGlobalSocialArtistsArtistIdFetchersGlobalSocialPost**](docs/FetchersApi.md#fetchglobalsocialartistsartistidfetchersglobalsocialpost) | **POST** /artists/{artist_id}/fetchers/global-social | Fetch Global Social
 *ForensicApiApi* | [**authConnectAuthConnectProviderPost**](docs/ForensicApiApi.md#authconnectauthconnectproviderpost) | **POST** /auth/connect/{provider} | Auth Connect
 *ForensicApiApi* | [**authProvidersAuthProvidersGet**](docs/ForensicApiApi.md#authprovidersauthprovidersget) | **GET** /auth/providers | Auth Providers
 *ForensicApiApi* | [**confirmCatalogCatalogConfirmPost**](docs/ForensicApiApi.md#confirmcatalogcatalogconfirmpost) | **POST** /catalog/confirm | Confirm Catalog
@@ -131,20 +171,39 @@ All URIs are relative to *http://localhost*
 *ForensicApiApi* | [**statementsStatusStatementsStatementIdStatusGet**](docs/ForensicApiApi.md#statementsstatusstatementsstatementidstatusget) | **GET** /statements/{statement_id}/status | Statements Status
 *ForensicApiApi* | [**statementsUploadStatementsUploadPost**](docs/ForensicApiApi.md#statementsuploadstatementsuploadpost) | **POST** /statements/upload | Statements Upload
 *ForensicApiApi* | [**varianceEvidenceVarianceVarianceIdEvidenceGet**](docs/ForensicApiApi.md#varianceevidencevariancevarianceidevidenceget) | **GET** /variance/{variance_id}/evidence | Variance Evidence
+*IngestionApi* | [**connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPost**](docs/IngestionApi.md#connectregionalglobalartistsartistidconnectregionalglobalpost) | **POST** /artists/{artist_id}/connect/regional-global | Connect Regional Global
+*IngestionApi* | [**connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPost**](docs/IngestionApi.md#connectsoundexchangemlcartistsartistidconnectsoundexchangemlcpost) | **POST** /artists/{artist_id}/connect/soundexchange-mlc | Connect Soundexchange Mlc
 *IngestionApi* | [**getStatementArtistsArtistIdStatementsStatementIdGet**](docs/IngestionApi.md#getstatementartistsartistidstatementsstatementidget) | **GET** /artists/{artist_id}/statements/{statement_id} | Get Statement
 *IngestionApi* | [**listStatementsArtistsArtistIdStatementsGet**](docs/IngestionApi.md#liststatementsartistsartistidstatementsget) | **GET** /artists/{artist_id}/statements | List Statements
+*IngestionApi* | [**regionalGlobalStatusArtistsArtistIdConnectRegionalGlobalStatusGet**](docs/IngestionApi.md#regionalglobalstatusartistsartistidconnectregionalglobalstatusget) | **GET** /artists/{artist_id}/connect/regional-global/status | Regional Global Status
+*IngestionApi* | [**soundexchangeMlcStatusArtistsArtistIdConnectSoundexchangeMlcStatusGet**](docs/IngestionApi.md#soundexchangemlcstatusartistsartistidconnectsoundexchangemlcstatusget) | **GET** /artists/{artist_id}/connect/soundexchange-mlc/status | Soundexchange Mlc Status
 *IngestionApi* | [**supportedFormatsIngestionSupportedFormatsGet**](docs/IngestionApi.md#supportedformatsingestionsupportedformatsget) | **GET** /ingestion/supported-formats | Supported Formats
 *IngestionApi* | [**uploadStatementArtistsArtistIdStatementsUploadPost**](docs/IngestionApi.md#uploadstatementartistsartistidstatementsuploadpost) | **POST** /artists/{artist_id}/statements/upload | Upload Statement
 *IngestionApi* | [**uploadStatementBatchArtistsArtistIdStatementsUploadBatchPost**](docs/IngestionApi.md#uploadstatementbatchartistsartistidstatementsuploadbatchpost) | **POST** /artists/{artist_id}/statements/upload-batch | Upload Statement Batch
+*IntelligenceApi* | [**catalogValuationArtistsArtistIdMlCatalogValuationPost**](docs/IntelligenceApi.md#catalogvaluationartistsartistidmlcatalogvaluationpost) | **POST** /artists/{artist_id}/ml/catalog-valuation | Catalog Valuation
 *IntelligenceApi* | [**createOutcomeFeedbackArtistsArtistIdIntelligenceFeedbackPost**](docs/IntelligenceApi.md#createoutcomefeedbackartistsartistidintelligencefeedbackpost) | **POST** /artists/{artist_id}/intelligence/feedback | Create Outcome Feedback
 *IntelligenceApi* | [**extractContractTermsArtistsArtistIdIntelligenceContractsExtractPost**](docs/IntelligenceApi.md#extractcontracttermsartistsartistidintelligencecontractsextractpost) | **POST** /artists/{artist_id}/intelligence/contracts/extract | Extract Contract Terms
 *IntelligenceApi* | [**extractContractTermsUploadArtistsArtistIdIntelligenceContractsExtractUploadPost**](docs/IntelligenceApi.md#extractcontracttermsuploadartistsartistidintelligencecontractsextractuploadpost) | **POST** /artists/{artist_id}/intelligence/contracts/extract-upload | Extract Contract Terms Upload
+*IntelligenceApi* | [**financingMatchesArtistsArtistIdMlFinancingMatchesPost**](docs/IntelligenceApi.md#financingmatchesartistsartistidmlfinancingmatchespost) | **POST** /artists/{artist_id}/ml/financing-matches | Financing Matches
 *IntelligenceApi* | [**getCalibrationHealthArtistsArtistIdIntelligenceCalibrationGet**](docs/IntelligenceApi.md#getcalibrationhealthartistsartistidintelligencecalibrationget) | **GET** /artists/{artist_id}/intelligence/calibration | Get Calibration Health
 *IntelligenceApi* | [**ingestRoyaltyLedgerArtistsArtistIdIntelligenceLedgerIngestPost**](docs/IntelligenceApi.md#ingestroyaltyledgerartistsartistidintelligenceledgeringestpost) | **POST** /artists/{artist_id}/intelligence/ledger/ingest | Ingest Royalty Ledger
 *IntelligenceApi* | [**listFeedbackEventsArtistsArtistIdIntelligenceFeedbackEventsGet**](docs/IntelligenceApi.md#listfeedbackeventsartistsartistidintelligencefeedbackeventsget) | **GET** /artists/{artist_id}/intelligence/feedback/events | List Feedback Events
+*IntelligenceApi* | [**preSignatureContractReviewArtistsArtistIdIntelligenceContractsPreSignatureReviewPost**](docs/IntelligenceApi.md#presignaturecontractreviewartistsartistidintelligencecontractspresignaturereviewpost) | **POST** /artists/{artist_id}/intelligence/contracts/pre-signature-review | Pre Signature Contract Review
 *IntelligenceApi* | [**rankByExpectedUtilityArtistsArtistIdIntelligenceRankUtilityPost**](docs/IntelligenceApi.md#rankbyexpectedutilityartistsartistidintelligencerankutilitypost) | **POST** /artists/{artist_id}/intelligence/rank-utility | Rank By Expected Utility
+*IntelligenceApi* | [**registrationAutoFixArtistsArtistIdRegistrationAutoFixPost**](docs/IntelligenceApi.md#registrationautofixartistsartistidregistrationautofixpost) | **POST** /artists/{artist_id}/registration/auto-fix | Registration Auto Fix
+*IntelligenceApi* | [**registrationStatusArtistsArtistIdRegistrationStatusGet**](docs/IntelligenceApi.md#registrationstatusartistsartistidregistrationstatusget) | **GET** /artists/{artist_id}/registration/status | Registration Status
+*IntelligenceApi* | [**runCatalogAuditOnDemandArtistsArtistIdMlCatalogAuditPost**](docs/IntelligenceApi.md#runcatalogauditondemandartistsartistidmlcatalogauditpost) | **POST** /artists/{artist_id}/ml/catalog-audit | Run Catalog Audit On Demand
+*IntelligenceApi* | [**runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPost**](docs/IntelligenceApi.md#runtaxoptimizerartistsartistidintelligencetaxoptimizerpost) | **POST** /artists/{artist_id}/intelligence/tax-optimizer | Run Tax Optimizer
 *IntelligenceApi* | [**simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPost**](docs/IntelligenceApi.md#simulateexpectedpayoutartistsartistidintelligencesimulateexpectedpayoutpost) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout
+*IntelligenceApi* | [**simulateOptimizationArtistsArtistIdMlSimulateOptimizationPost**](docs/IntelligenceApi.md#simulateoptimizationartistsartistidmlsimulateoptimizationpost) | **POST** /artists/{artist_id}/ml/simulate-optimization | Simulate Optimization
+*NotificationsApi* | [**dispatchNotificationsArtistsArtistIdNotificationsDispatchPost**](docs/NotificationsApi.md#dispatchnotificationsartistsartistidnotificationsdispatchpost) | **POST** /artists/{artist_id}/notifications/dispatch | Dispatch Notifications
+*NotificationsApi* | [**pushRegisterArtistsArtistIdNotificationsPushRegisterPost**](docs/NotificationsApi.md#pushregisterartistsartistidnotificationspushregisterpost) | **POST** /artists/{artist_id}/notifications/push-register | Push Register
+*NotificationsApi* | [**setNotificationPreferencesArtistsArtistIdNotificationsPreferencesPost**](docs/NotificationsApi.md#setnotificationpreferencesartistsartistidnotificationspreferencespost) | **POST** /artists/{artist_id}/notifications/preferences | Set Notification Preferences
+*NotificationsApi* | [**voiceQueryArtistsArtistIdNotificationsVoiceQueryPost**](docs/NotificationsApi.md#voicequeryartistsartistidnotificationsvoicequerypost) | **POST** /artists/{artist_id}/notifications/voice-query | Voice Query
+*OnboardingApi* | [**applySplitRepairsArtistsArtistIdSplitsRepairPost**](docs/OnboardingApi.md#applysplitrepairsartistsartistidsplitsrepairpost) | **POST** /artists/{artist_id}/splits/repair | Apply Split Repairs
 *OnboardingApi* | [**buildCatalogWorkGraphArtistsArtistIdCatalogGraphBuildPost**](docs/OnboardingApi.md#buildcatalogworkgraphartistsartistidcataloggraphbuildpost) | **POST** /artists/{artist_id}/catalog/graph/build | Build Catalog Work Graph
+*OnboardingApi* | [**catalogMetadataHealthArtistsArtistIdCatalogMetadataHealthGet**](docs/OnboardingApi.md#catalogmetadatahealthartistsartistidcatalogmetadatahealthget) | **GET** /artists/{artist_id}/catalog/metadata-health | Catalog Metadata Health
+*OnboardingApi* | [**catalogRepairsArtistsArtistIdCatalogRepairsGet**](docs/OnboardingApi.md#catalogrepairsartistsartistidcatalogrepairsget) | **GET** /artists/{artist_id}/catalog/repairs | Catalog Repairs
 *OnboardingApi* | [**confirmCatalogItemArtistsArtistIdCatalogConfirmPost**](docs/OnboardingApi.md#confirmcatalogitemartistsartistidcatalogconfirmpost) | **POST** /artists/{artist_id}/catalog/confirm | Confirm Catalog Item
 *OnboardingApi* | [**createSyncJobArtistsArtistIdSyncJobsPost**](docs/OnboardingApi.md#createsyncjobartistsartistidsyncjobspost) | **POST** /artists/{artist_id}/sync/jobs | Create Sync Job
 *OnboardingApi* | [**generateAuditEvidencePacketClaimsClaimIdEvidenceGenerateAuditPost**](docs/OnboardingApi.md#generateauditevidencepacketclaimsclaimidevidencegenerateauditpost) | **POST** /claims/{claim_id}/evidence/generate-audit | Generate Audit Evidence Packet
@@ -168,11 +227,45 @@ All URIs are relative to *http://localhost*
 *OnboardingApi* | [**uploadAnyStatementArtistsArtistIdIngestionUploadAnyPost**](docs/OnboardingApi.md#uploadanystatementartistsartistidingestionuploadanypost) | **POST** /artists/{artist_id}/ingestion/upload-any | Upload Any Statement
 *OnboardingApi* | [**upsertParserPluginArtistsArtistIdParsersPluginsPut**](docs/OnboardingApi.md#upsertparserpluginartistsartistidparserspluginsput) | **PUT** /artists/{artist_id}/parsers/plugins | Upsert Parser Plugin
 *OnboardingApi* | [**varianceScanArtistsArtistIdVarianceScanPost**](docs/OnboardingApi.md#variancescanartistsartistidvariancescanpost) | **POST** /artists/{artist_id}/variance/scan | Variance Scan
+*PayersApi* | [**payerBehaviorPayersPayerIdBehaviorGet**](docs/PayersApi.md#payerbehaviorpayerspayeridbehaviorget) | **GET** /payers/{payer_id}/behavior | Payer Behavior
+*PayersApi* | [**payerRiskPayersPayerIdRiskGet**](docs/PayersApi.md#payerriskpayerspayeridriskget) | **GET** /payers/{payer_id}/risk | Payer Risk
+*PublicApi* | [**advocacyKitArtistsArtistIdAdvocacyKitPost**](docs/PublicApi.md#advocacykitartistsartistidadvocacykitpost) | **POST** /artists/{artist_id}/advocacy/kit | Advocacy Kit
+*PublicApi* | [**publicAggregatesStatsPublicAggregatesGet**](docs/PublicApi.md#publicaggregatesstatspublicaggregatesget) | **GET** /stats/public/aggregates | Public Aggregates
+*PublicApi* | [**publicLeaderboardStatsPublicLeaderboardGet**](docs/PublicApi.md#publicleaderboardstatspublicleaderboardget) | **GET** /stats/public/leaderboard | Public Leaderboard
+*PublicApi* | [**publicSuccessStoriesStatsPublicSuccessStoriesGet**](docs/PublicApi.md#publicsuccessstoriesstatspublicsuccessstoriesget) | **GET** /stats/public/success-stories | Public Success Stories
+*RecoveryApi* | [**artistBenchmarkingArtistsArtistIdBenchmarkingGet**](docs/RecoveryApi.md#artistbenchmarkingartistsartistidbenchmarkingget) | **GET** /artists/{artist_id}/benchmarking | Artist Benchmarking
 *RecoveryApi* | [**auditEligibilityArtistsArtistIdRecoveryAuditEligibilityGet**](docs/RecoveryApi.md#auditeligibilityartistsartistidrecoveryauditeligibilityget) | **GET** /artists/{artist_id}/recovery/audit-eligibility | Audit Eligibility
+*RecoveryApi* | [**catalogIntegrityArtistsArtistIdCatalogIntegrityGet**](docs/RecoveryApi.md#catalogintegrityartistsartistidcatalogintegrityget) | **GET** /artists/{artist_id}/catalog/integrity | Catalog Integrity
+*RecoveryApi* | [**deadlineRiskArtistsArtistIdRecoveryDeadlineRiskGet**](docs/RecoveryApi.md#deadlineriskartistsartistidrecoverydeadlineriskget) | **GET** /artists/{artist_id}/recovery/deadline-risk | Deadline Risk
+*RecoveryApi* | [**edmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost**](docs/RecoveryApi.md#edmfestivalauditartistsartistidrecoveryedmfestivalauditpost) | **POST** /artists/{artist_id}/recovery/edm-festival-audit | Edm Festival Audit
+*RecoveryApi* | [**fraudScanArtistsArtistIdFraudScanPost**](docs/RecoveryApi.md#fraudscanartistsartistidfraudscanpost) | **POST** /artists/{artist_id}/fraud-scan | Fraud Scan
+*RecoveryApi* | [**hiphopBrandAuditArtistsArtistIdRecoveryHiphopBrandAuditPost**](docs/RecoveryApi.md#hiphopbrandauditartistsartistidrecoveryhiphopbrandauditpost) | **POST** /artists/{artist_id}/recovery/hiphop-brand-audit | Hiphop Brand Audit
+*RecoveryApi* | [**playbookSummaryArtistsArtistIdRecoveryPlaybookSummaryGet**](docs/RecoveryApi.md#playbooksummaryartistsartistidrecoveryplaybooksummaryget) | **GET** /artists/{artist_id}/recovery/playbook-summary | Playbook Summary
+*RecoveryApi* | [**pooledClaimArtistsArtistIdNetworkPooledClaimPost**](docs/RecoveryApi.md#pooledclaimartistsartistidnetworkpooledclaimpost) | **POST** /artists/{artist_id}/network/pooled-claim | Pooled Claim
 *RecoveryApi* | [**priorityQueueArtistsArtistIdRecoveryPriorityQueueGet**](docs/RecoveryApi.md#priorityqueueartistsartistidrecoverypriorityqueueget) | **GET** /artists/{artist_id}/recovery/priority-queue | Priority Queue
+*RecoveryApi* | [**rateBenchmarkAdvancedArtistsArtistIdRecoveryRateBenchmarkAdvancedGet**](docs/RecoveryApi.md#ratebenchmarkadvancedartistsartistidrecoveryratebenchmarkadvancedget) | **GET** /artists/{artist_id}/recovery/rate-benchmark-advanced | Rate Benchmark Advanced
 *RecoveryApi* | [**rateBenchmarkArtistsArtistIdRecoveryRateBenchmarkGet**](docs/RecoveryApi.md#ratebenchmarkartistsartistidrecoveryratebenchmarkget) | **GET** /artists/{artist_id}/recovery/rate-benchmark | Rate Benchmark
+*RecoveryApi* | [**reconstructHistoricalArtistsArtistIdRecoveryReconstructHistoricalPost**](docs/RecoveryApi.md#reconstructhistoricalartistsartistidrecoveryreconstructhistoricalpost) | **POST** /artists/{artist_id}/recovery/reconstruct-historical | Reconstruct Historical
 *RecoveryApi* | [**recoupmentArtistsArtistIdRecoveryRecoupmentGet**](docs/RecoveryApi.md#recoupmentartistsartistidrecoveryrecoupmentget) | **GET** /artists/{artist_id}/recovery/recoupment | Recoupment
+*RecoveryApi* | [**recoupmentDeepAuditArtistsArtistIdRecoveryRecoupmentDeepAuditGet**](docs/RecoveryApi.md#recoupmentdeepauditartistsartistidrecoveryrecoupmentdeepauditget) | **GET** /artists/{artist_id}/recovery/recoupment-deep-audit | Recoupment Deep Audit
+*RecoveryApi* | [**recoveryAttributionArtistsArtistIdRecoveryAttributionGet**](docs/RecoveryApi.md#recoveryattributionartistsartistidrecoveryattributionget) | **GET** /artists/{artist_id}/recovery/attribution | Recovery Attribution
+*RecoveryApi* | [**recoveryExpectedValueArtistsArtistIdRecoveryExpectedValueGet**](docs/RecoveryApi.md#recoveryexpectedvalueartistsartistidrecoveryexpectedvalueget) | **GET** /artists/{artist_id}/recovery/expected-value | Recovery Expected Value
+*RecoveryApi* | [**recoveryFunnelArtistsArtistIdRecoveryFunnelGet**](docs/RecoveryApi.md#recoveryfunnelartistsartistidrecoveryfunnelget) | **GET** /artists/{artist_id}/recovery/funnel | Recovery Funnel
+*RecoveryApi* | [**recoveryPlaybookArtistsArtistIdRecoveryPlaybookGet**](docs/RecoveryApi.md#recoveryplaybookartistsartistidrecoveryplaybookget) | **GET** /artists/{artist_id}/recovery/playbook | Recovery Playbook
+*RecoveryApi* | [**recoveryRoiArtistsArtistIdRecoveryRoiGet**](docs/RecoveryApi.md#recoveryroiartistsartistidrecoveryroiget) | **GET** /artists/{artist_id}/recovery/roi | Recovery Roi
+*RecoveryApi* | [**slaStatusArtistsArtistIdSlaStatusGet**](docs/RecoveryApi.md#slastatusartistsartistidslastatusget) | **GET** /artists/{artist_id}/sla/status | Sla Status
 *RecoveryApi* | [**solStatusArtistsArtistIdRecoverySolStatusGet**](docs/RecoveryApi.md#solstatusartistsartistidrecoverysolstatusget) | **GET** /artists/{artist_id}/recovery/sol-status | Sol Status
+*RecoveryApi* | [**splitConflictsArtistsArtistIdSplitsConflictsGet**](docs/RecoveryApi.md#splitconflictsartistsartistidsplitsconflictsget) | **GET** /artists/{artist_id}/splits/conflicts | Split Conflicts
+*RecoveryApi* | [**splitVerificationArtistsArtistIdSplitsVerificationGet**](docs/RecoveryApi.md#splitverificationartistsartistidsplitsverificationget) | **GET** /artists/{artist_id}/splits/verification | Split Verification
+*RecoveryApi* | [**touringAuditArtistsArtistIdRecoveryTouringAuditPost**](docs/RecoveryApi.md#touringauditartistsartistidrecoverytouringauditpost) | **POST** /artists/{artist_id}/recovery/touring-audit | Touring Audit
+*RecoveryApi* | [**ugcAutoClaimArtistsArtistIdRecoveryUgcAutoClaimPost**](docs/RecoveryApi.md#ugcautoclaimartistsartistidrecoveryugcautoclaimpost) | **POST** /artists/{artist_id}/recovery/ugc-auto-claim | Ugc Auto Claim
+*RecoveryApi* | [**ugcClaimArtistsArtistIdUgcClaimPost**](docs/RecoveryApi.md#ugcclaimartistsartistidugcclaimpost) | **POST** /artists/{artist_id}/ugc/claim | Ugc Claim
+*RecoveryApi* | [**ugcGlobalScanArtistsArtistIdUgcGlobalScanPost**](docs/RecoveryApi.md#ugcglobalscanartistsartistidugcglobalscanpost) | **POST** /artists/{artist_id}/ugc/global-scan | Ugc Global Scan
+*RecoveryApi* | [**ugcMonitorArtistsArtistIdUgcMonitorGet**](docs/RecoveryApi.md#ugcmonitorartistsartistidugcmonitorget) | **GET** /artists/{artist_id}/ugc/monitor | Ugc Monitor
+*RecoveryApi* | [**underpaymentHeatmapArtistsArtistIdRecoveryHeatmapGet**](docs/RecoveryApi.md#underpaymentheatmapartistsartistidrecoveryheatmapget) | **GET** /artists/{artist_id}/recovery/heatmap | Underpayment Heatmap
+*RecoveryIntelligenceLLMApi* | [**llmDemandLetterArtistsArtistIdLlmDemandLetterPost**](docs/RecoveryIntelligenceLLMApi.md#llmdemandletterartistsartistidllmdemandletterpost) | **POST** /artists/{artist_id}/llm/demand-letter | Llm Demand Letter
+*RecoveryIntelligenceLLMApi* | [**llmNegotiationScriptArtistsArtistIdLlmNegotiationScriptPost**](docs/RecoveryIntelligenceLLMApi.md#llmnegotiationscriptartistsartistidllmnegotiationscriptpost) | **POST** /artists/{artist_id}/llm/negotiation-script | Llm Negotiation Script
+*RecoveryIntelligenceLLMApi* | [**llmPersonalizedAdviceArtistsArtistIdLlmAdvicePost**](docs/RecoveryIntelligenceLLMApi.md#llmpersonalizedadviceartistsartistidllmadvicepost) | **POST** /artists/{artist_id}/llm/advice | Llm Personalized Advice
 *ReviewQueueApi* | [**assignReviewItemReviewQueueItemsItemIdAssignPost**](docs/ReviewQueueApi.md#assignreviewitemreviewqueueitemsitemidassignpost) | **POST** /review-queue/items/{item_id}/assign | Assign Review Item
 *ReviewQueueApi* | [**checkThresholdReviewQueueThresholdCheckPost**](docs/ReviewQueueApi.md#checkthresholdreviewqueuethresholdcheckpost) | **POST** /review-queue/threshold-check | Check Threshold
 *ReviewQueueApi* | [**createReviewItemReviewQueueItemsPost**](docs/ReviewQueueApi.md#createreviewitemreviewqueueitemspost) | **POST** /review-queue/items | Create Review Item
@@ -180,36 +273,56 @@ All URIs are relative to *http://localhost*
 *ReviewQueueApi* | [**listDecisionsReviewQueueDecisionsGet**](docs/ReviewQueueApi.md#listdecisionsreviewqueuedecisionsget) | **GET** /review-queue/decisions | List Decisions
 *ReviewQueueApi* | [**listReviewItemsReviewQueueItemsGet**](docs/ReviewQueueApi.md#listreviewitemsreviewqueueitemsget) | **GET** /review-queue/items | List Review Items
 *ReviewQueueApi* | [**reviewQueueMetricsReviewQueueMetricsGet**](docs/ReviewQueueApi.md#reviewqueuemetricsreviewqueuemetricsget) | **GET** /review-queue/metrics | Review Queue Metrics
+*SupportApi* | [**supportActionArtistsArtistIdSupportActionPost**](docs/SupportApi.md#supportactionartistsartistidsupportactionpost) | **POST** /artists/{artist_id}/support/action | Support Action
+*SupportApi* | [**supportChatArtistsArtistIdSupportChatPost**](docs/SupportApi.md#supportchatartistsartistidsupportchatpost) | **POST** /artists/{artist_id}/support/chat | Support Chat
+*SupportApi* | [**supportHistoryArtistsArtistIdSupportHistoryGet**](docs/SupportApi.md#supporthistoryartistsartistidsupporthistoryget) | **GET** /artists/{artist_id}/support/history | Support History
+*SupportApi* | [**supportSuggestionsArtistsArtistIdSupportSuggestionsGet**](docs/SupportApi.md#supportsuggestionsartistsartistidsupportsuggestionsget) | **GET** /artists/{artist_id}/support/suggestions | Support Suggestions
+*TeamApi* | [**networkInviteArtistsArtistIdNetworkInvitePost**](docs/TeamApi.md#networkinviteartistsartistidnetworkinvitepost) | **POST** /artists/{artist_id}/network/invite | Network Invite
 *TermsApi* | [**acceptTermsArtistsArtistIdTermsAcceptPost**](docs/TermsApi.md#accepttermsartistsartistidtermsacceptpost) | **POST** /artists/{artist_id}/terms/accept | Accept Terms
 *TermsApi* | [**getTermsTermsGet**](docs/TermsApi.md#gettermstermsget) | **GET** /terms | Get Terms
 *TermsApi* | [**termsStatusArtistsArtistIdTermsStatusGet**](docs/TermsApi.md#termsstatusartistsartistidtermsstatusget) | **GET** /artists/{artist_id}/terms/status | Terms Status
+*TransparencyApi* | [**explainAnomalyArtistsArtistIdAnomaliesAnomalyIdExplainGet**](docs/TransparencyApi.md#explainanomalyartistsartistidanomaliesanomalyidexplainget) | **GET** /artists/{artist_id}/anomalies/{anomaly_id}/explain | Explain Anomaly
+*TransparencyApi* | [**fullLedgerArtistsArtistIdLedgerFullGet**](docs/TransparencyApi.md#fullledgerartistsartistidledgerfullget) | **GET** /artists/{artist_id}/ledger/full | Full Ledger
+*TrolleyApi* | [**createTrolleyRecipientArtistsArtistIdTrolleyRecipientPost**](docs/TrolleyApi.md#createtrolleyrecipientartistsartistidtrolleyrecipientpost) | **POST** /artists/{artist_id}/trolley/recipient | Create Trolley Recipient
+*TrolleyApi* | [**disburseClaimClaimsClaimIdDisbursePost**](docs/TrolleyApi.md#disburseclaimclaimsclaimiddisbursepost) | **POST** /claims/{claim_id}/disburse | Disburse Claim
+*TrolleyApi* | [**getTrolleyStatusArtistsArtistIdTrolleyStatusGet**](docs/TrolleyApi.md#gettrolleystatusartistsartistidtrolleystatusget) | **GET** /artists/{artist_id}/trolley/status | Get Trolley Status
+*TrolleyApi* | [**getTrolleyWidgetUrlArtistsArtistIdTrolleyWidgetUrlGet**](docs/TrolleyApi.md#gettrolleywidgeturlartistsartistidtrolleywidgeturlget) | **GET** /artists/{artist_id}/trolley/widget-url | Get Trolley Widget Url
+*TrolleyApi* | [**manualRemittanceArtistsArtistIdClaimsClaimIdManualRemittancePost**](docs/TrolleyApi.md#manualremittanceartistsartistidclaimsclaimidmanualremittancepost) | **POST** /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance
+*TrolleyApi* | [**trolleyWebhookWebhooksTrolleyPost**](docs/TrolleyApi.md#trolleywebhookwebhookstrolleypost) | **POST** /webhooks/trolley | Trolley Webhook
 *WidgetApi* | [**claimWidgetClaimPost**](docs/WidgetApi.md#claimwidgetclaimpost) | **POST** /widget/claim | Claim
 *WidgetApi* | [**estimateWidgetEstimatePost**](docs/WidgetApi.md#estimatewidgetestimatepost) | **POST** /widget/estimate | Estimate
 *WidgetApi* | [**listLeadsWidgetLeadsGet**](docs/WidgetApi.md#listleadswidgetleadsget) | **GET** /widget/leads | List Leads
 *WidgetApi* | [**registerWidgetRegisterPost**](docs/WidgetApi.md#registerwidgetregisterpost) | **POST** /widget/register | Register
 *WidgetApi* | [**verifyWidgetVerifyPost**](docs/WidgetApi.md#verifywidgetverifypost) | **POST** /widget/verify | Verify
+*WorkflowApi* | [**runFullAutonomousWorkflowArtistsArtistIdWorkflowRunFullAutonomousPost**](docs/WorkflowApi.md#runfullautonomousworkflowartistsartistidworkflowrunfullautonomouspost) | **POST** /artists/{artist_id}/workflow/run-full-autonomous | Run Full Autonomous Workflow
+*WorkflowApi* | [**workflowRunStatusArtistsArtistIdWorkflowRunsRunIdGet**](docs/WorkflowApi.md#workflowrunstatusartistsartistidworkflowrunsrunidget) | **GET** /artists/{artist_id}/workflow/runs/{run_id} | Workflow Run Status
+*WorkspaceApi* | [**workspaceArtistsWorkspaceArtistsGet**](docs/WorkspaceApi.md#workspaceartistsworkspaceartistsget) | **GET** /workspace/artists | Workspace Artists
+*WorkspaceApi* | [**workspaceClaimsWorkspaceClaimsGet**](docs/WorkspaceApi.md#workspaceclaimsworkspaceclaimsget) | **GET** /workspace/claims | Workspace Claims
+*WorkspaceApi* | [**workspaceDeadlinesWorkspaceDeadlinesGet**](docs/WorkspaceApi.md#workspacedeadlinesworkspacedeadlinesget) | **GET** /workspace/deadlines | Workspace Deadlines
+*WorkspaceApi* | [**workspaceOverviewWorkspaceOverviewGet**](docs/WorkspaceApi.md#workspaceoverviewworkspaceoverviewget) | **GET** /workspace/overview | Workspace Overview
 
 
 ### Models
 
 - [AdminAuditLogSchema](docs/AdminAuditLogSchema.md)
+- [AdviceRequest](docs/AdviceRequest.md)
+- [AdviceResponse](docs/AdviceResponse.md)
 - [AnomalyCategory](docs/AnomalyCategory.md)
 - [AnomalySchema](docs/AnomalySchema.md)
 - [AnomalySeverity](docs/AnomalySeverity.md)
 - [AnomalyStatus](docs/AnomalyStatus.md)
 - [ArtistCreate](docs/ArtistCreate.md)
 - [ArtistLifecycleStatus](docs/ArtistLifecycleStatus.md)
+- [ArtistPreferenceUpdateRequest](docs/ArtistPreferenceUpdateRequest.md)
 - [ArtistSchema](docs/ArtistSchema.md)
 - [AssignReviewItemRequest](docs/AssignReviewItemRequest.md)
+- [AttorneyEvidenceRequest](docs/AttorneyEvidenceRequest.md)
 - [AuthConnectResponse](docs/AuthConnectResponse.md)
+- [BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost](docs/BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.md)
+- [BrandingProfilePatchRequest](docs/BrandingProfilePatchRequest.md)
+- [BrandingProfileUpsertRequest](docs/BrandingProfileUpsertRequest.md)
+- [BulkOnboardRequest](docs/BulkOnboardRequest.md)
 - [CatalogConfirmationSchema](docs/CatalogConfirmationSchema.md)
-- [CeleroChargeRequest](docs/CeleroChargeRequest.md)
-- [CeleroDisburseRequest](docs/CeleroDisburseRequest.md)
-- [CeleroRefundRequest](docs/CeleroRefundRequest.md)
-- [CeleroRegisterRequest](docs/CeleroRegisterRequest.md)
-- [CeleroTransactionSchema](docs/CeleroTransactionSchema.md)
-- [CeleroTxnStatus](docs/CeleroTxnStatus.md)
-- [CeleroTxnType](docs/CeleroTxnType.md)
 - [ClaimRequest](docs/ClaimRequest.md)
 - [ClaimSchema](docs/ClaimSchema.md)
 - [ClaimStatus](docs/ClaimStatus.md)
@@ -218,6 +331,8 @@ All URIs are relative to *http://localhost*
 - [CreateReviewItemRequest](docs/CreateReviewItemRequest.md)
 - [CurrencyTaxEstimateRequest](docs/CurrencyTaxEstimateRequest.md)
 - [DecideReviewItemRequest](docs/DecideReviewItemRequest.md)
+- [DemandLetterRequest](docs/DemandLetterRequest.md)
+- [DemandLetterResponse](docs/DemandLetterResponse.md)
 - [EstimateRequest](docs/EstimateRequest.md)
 - [EvidenceAnchorSchema](docs/EvidenceAnchorSchema.md)
 - [FeedbackOutcome](docs/FeedbackOutcome.md)
@@ -225,20 +340,28 @@ All URIs are relative to *http://localhost*
 - [ForensicUniversalRoyaltyEventCreate](docs/ForensicUniversalRoyaltyEventCreate.md)
 - [ForensicUniversalRoyaltyEventSchema](docs/ForensicUniversalRoyaltyEventSchema.md)
 - [HTTPValidationError](docs/HTTPValidationError.md)
+- [HelpArticleCreateRequest](docs/HelpArticleCreateRequest.md)
 - [ImmutableLedgerEntrySchema](docs/ImmutableLedgerEntrySchema.md)
+- [InviteRequest](docs/InviteRequest.md)
 - [LedgerIngestRequest](docs/LedgerIngestRequest.md)
 - [LedgerRecordType](docs/LedgerRecordType.md)
 - [LocationInner](docs/LocationInner.md)
 - [MLFeedbackEventSchema](docs/MLFeedbackEventSchema.md)
 - [MLFeedbackType](docs/MLFeedbackType.md)
+- [ManualRemittanceRequest](docs/ManualRemittanceRequest.md)
+- [NegotiationScriptRequest](docs/NegotiationScriptRequest.md)
+- [NegotiationScriptResponse](docs/NegotiationScriptResponse.md)
 - [NotificationDispatchRequest](docs/NotificationDispatchRequest.md)
+- [NotificationPreferenceRequest](docs/NotificationPreferenceRequest.md)
 - [NotificationPreferenceSchema](docs/NotificationPreferenceSchema.md)
 - [NotificationPreferenceUpsert](docs/NotificationPreferenceUpsert.md)
 - [OAuthSessionCreateRequest](docs/OAuthSessionCreateRequest.md)
 - [OAuthTokenExchangeRequest](docs/OAuthTokenExchangeRequest.md)
 - [OAuthTokenRefreshRequest](docs/OAuthTokenRefreshRequest.md)
+- [OptimizationSimulationRequest](docs/OptimizationSimulationRequest.md)
 - [ParserPluginSchema](docs/ParserPluginSchema.md)
 - [ParserPluginUpsertRequest](docs/ParserPluginUpsertRequest.md)
+- [PreSignatureContractReviewRequest](docs/PreSignatureContractReviewRequest.md)
 - [PredictRecoverableRequest](docs/PredictRecoverableRequest.md)
 - [ReconcileRequest](docs/ReconcileRequest.md)
 - [ReconstructRequest](docs/ReconstructRequest.md)
@@ -254,15 +377,27 @@ All URIs are relative to *http://localhost*
 - [ReviewSourceType](docs/ReviewSourceType.md)
 - [RoyaltyLedgerEntryCreate](docs/RoyaltyLedgerEntryCreate.md)
 - [SimulatePayoutRequest](docs/SimulatePayoutRequest.md)
+- [SplitRepairRequest](docs/SplitRepairRequest.md)
 - [StatementSchema](docs/StatementSchema.md)
 - [StructuredFeedbackRequest](docs/StructuredFeedbackRequest.md)
+- [SupportActionRequest](docs/SupportActionRequest.md)
+- [SupportActionResponse](docs/SupportActionResponse.md)
+- [SupportChatRequest](docs/SupportChatRequest.md)
+- [SupportChatResponse](docs/SupportChatResponse.md)
+- [SupportHistoryResponse](docs/SupportHistoryResponse.md)
+- [SupportMessageView](docs/SupportMessageView.md)
+- [SupportSuggestionResponse](docs/SupportSuggestionResponse.md)
 - [SyncJobCreateRequest](docs/SyncJobCreateRequest.md)
 - [SyncJobSchema](docs/SyncJobSchema.md)
+- [TaxOptimizerRequest](docs/TaxOptimizerRequest.md)
 - [TeamMemberCreate](docs/TeamMemberCreate.md)
 - [TeamMemberSchema](docs/TeamMemberSchema.md)
 - [TeamRole](docs/TeamRole.md)
 - [TermsAcceptRequest](docs/TermsAcceptRequest.md)
 - [TermsAcceptanceSchema](docs/TermsAcceptanceSchema.md)
+- [TrolleyTransactionSchema](docs/TrolleyTransactionSchema.md)
+- [TrolleyTxnStatus](docs/TrolleyTxnStatus.md)
+- [TrolleyTxnType](docs/TrolleyTxnType.md)
 - [UtilityRankRequest](docs/UtilityRankRequest.md)
 - [ValidationError](docs/ValidationError.md)
 - [VarianceScanRequest](docs/VarianceScanRequest.md)
@@ -270,6 +405,7 @@ All URIs are relative to *http://localhost*
 - [VerifyResponse](docs/VerifyResponse.md)
 - [WidgetLeadSchema](docs/WidgetLeadSchema.md)
 - [WorkflowRunRequest](docs/WorkflowRunRequest.md)
+- [WorkflowRunResponse](docs/WorkflowRunResponse.md)
 - [XR7ApiRoutersForensicCatalogConfirmRequest](docs/XR7ApiRoutersForensicCatalogConfirmRequest.md)
 - [XR7ApiRoutersOnboardingCatalogConfirmRequest](docs/XR7ApiRoutersOnboardingCatalogConfirmRequest.md)
 

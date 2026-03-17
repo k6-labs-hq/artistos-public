@@ -15,8 +15,8 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Dict, List
+from pydantic import StrictInt, StrictStr
+from typing import Any, Dict, List, Optional
 from xr7_sdk.models.statement_schema import StatementSchema
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
@@ -35,6 +35,577 @@ class IngestionApi:
         if api_client is None:
             api_client = ApiClient.get_default()
         self.api_client = api_client
+
+
+    @validate_call
+    def connect_regional_global_artists_artist_id_connect_regional_global_post(
+        self,
+        artist_id: StrictStr,
+        genre: Optional[StrictStr] = None,
+        territory: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Connect Regional Global
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param genre:
+        :type genre: str
+        :param territory:
+        :type territory: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._connect_regional_global_artists_artist_id_connect_regional_global_post_serialize(
+            artist_id=artist_id,
+            genre=genre,
+            territory=territory,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def connect_regional_global_artists_artist_id_connect_regional_global_post_with_http_info(
+        self,
+        artist_id: StrictStr,
+        genre: Optional[StrictStr] = None,
+        territory: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Connect Regional Global
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param genre:
+        :type genre: str
+        :param territory:
+        :type territory: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._connect_regional_global_artists_artist_id_connect_regional_global_post_serialize(
+            artist_id=artist_id,
+            genre=genre,
+            territory=territory,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def connect_regional_global_artists_artist_id_connect_regional_global_post_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        genre: Optional[StrictStr] = None,
+        territory: Optional[StrictStr] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Connect Regional Global
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param genre:
+        :type genre: str
+        :param territory:
+        :type territory: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._connect_regional_global_artists_artist_id_connect_regional_global_post_serialize(
+            artist_id=artist_id,
+            genre=genre,
+            territory=territory,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _connect_regional_global_artists_artist_id_connect_regional_global_post_serialize(
+        self,
+        artist_id,
+        genre,
+        territory,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        if genre is not None:
+            
+            _query_params.append(('genre', genre))
+            
+        if territory is not None:
+            
+            _query_params.append(('territory', territory))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='POST',
+            resource_path='/artists/{artist_id}/connect/regional-global',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post(
+        self,
+        artist_id: StrictStr,
+        years_back: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Connect Soundexchange Mlc
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param years_back:
+        :type years_back: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post_serialize(
+            artist_id=artist_id,
+            years_back=years_back,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post_with_http_info(
+        self,
+        artist_id: StrictStr,
+        years_back: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Connect Soundexchange Mlc
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param years_back:
+        :type years_back: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post_serialize(
+            artist_id=artist_id,
+            years_back=years_back,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        years_back: Optional[StrictInt] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Connect Soundexchange Mlc
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param years_back:
+        :type years_back: int
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post_serialize(
+            artist_id=artist_id,
+            years_back=years_back,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _connect_soundexchange_mlc_artists_artist_id_connect_soundexchange_mlc_post_serialize(
+        self,
+        artist_id,
+        years_back,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        if years_back is not None:
+            
+            _query_params.append(('years_back', years_back))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='POST',
+            resource_path='/artists/{artist_id}/connect/soundexchange-mlc',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
 
 
     @validate_call
@@ -579,6 +1150,526 @@ class IngestionApi:
 
 
     @validate_call
+    def regional_global_status_artists_artist_id_connect_regional_global_status_get(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Regional Global Status
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._regional_global_status_artists_artist_id_connect_regional_global_status_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def regional_global_status_artists_artist_id_connect_regional_global_status_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Regional Global Status
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._regional_global_status_artists_artist_id_connect_regional_global_status_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def regional_global_status_artists_artist_id_connect_regional_global_status_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Regional Global Status
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._regional_global_status_artists_artist_id_connect_regional_global_status_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _regional_global_status_artists_artist_id_connect_regional_global_status_get_serialize(
+        self,
+        artist_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/connect/regional-global/status',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> object:
+        """Soundexchange Mlc Status
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get_with_http_info(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[object]:
+        """Soundexchange Mlc Status
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get_without_preload_content(
+        self,
+        artist_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Soundexchange Mlc Status
+
+
+        :param artist_id: (required)
+        :type artist_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get_serialize(
+            artist_id=artist_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "object",
+            '422': "HTTPValidationError",
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _soundexchange_mlc_status_artists_artist_id_connect_soundexchange_mlc_status_get_serialize(
+        self,
+        artist_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/artists/{artist_id}/connect/soundexchange-mlc/status',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
     def supported_formats_ingestion_supported_formats_get(
         self,
         _request_timeout: Union[
@@ -596,7 +1687,7 @@ class IngestionApi:
     ) -> Dict[str, object]:
         """Supported Formats
 
-        Return the complete list of explicitly supported royalty statement CSV formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format's CSV - ``description`` — how to obtain the file and what it covers  Any CSV that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
+        Return the complete list of explicitly supported royalty statement formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format's CSV - ``description`` — how to obtain the file and what it covers  Any file that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -659,7 +1750,7 @@ class IngestionApi:
     ) -> ApiResponse[Dict[str, object]]:
         """Supported Formats
 
-        Return the complete list of explicitly supported royalty statement CSV formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format's CSV - ``description`` — how to obtain the file and what it covers  Any CSV that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
+        Return the complete list of explicitly supported royalty statement formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format's CSV - ``description`` — how to obtain the file and what it covers  Any file that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -722,7 +1813,7 @@ class IngestionApi:
     ) -> RESTResponseType:
         """Supported Formats
 
-        Return the complete list of explicitly supported royalty statement CSV formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format's CSV - ``description`` — how to obtain the file and what it covers  Any CSV that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
+        Return the complete list of explicitly supported royalty statement formats, grouped by type (distributor, PRO, DSP, generic).  For each format the response includes: - ``name`` — human-readable distributor/PRO name - ``type`` — ``\"distributor\"`` | ``\"pro\"`` | ``\"dsp\"`` | ``\"generic\"`` - ``key_columns`` — representative column headers from that format's CSV - ``description`` — how to obtain the file and what it covers  Any file that does not match an explicit format is handled by the ``\"generic\"`` fallback, which recognises any file with recognisable date, source, quantity, and amount columns.  This covers distributors such as Songtradr, Vydia, AWAL, Symphonic, INgrooves, Believe, Kobalt, and others.
 
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -843,7 +1934,7 @@ class IngestionApi:
     ) -> StatementSchema:
         """Upload Statement
 
-        Upload a royalty statement CSV and ingest it into the database.  Supported formats are automatically detected from the column headers: **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**, **Spotify for Artists**, and a **generic** fallback for any CSV with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
+        Upload a royalty statement file and ingest it into the database.  Supported formats are automatically detected from the column headers:     **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,     **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -915,7 +2006,7 @@ class IngestionApi:
     ) -> ApiResponse[StatementSchema]:
         """Upload Statement
 
-        Upload a royalty statement CSV and ingest it into the database.  Supported formats are automatically detected from the column headers: **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**, **Spotify for Artists**, and a **generic** fallback for any CSV with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
+        Upload a royalty statement file and ingest it into the database.  Supported formats are automatically detected from the column headers:     **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,     **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -987,7 +2078,7 @@ class IngestionApi:
     ) -> RESTResponseType:
         """Upload Statement
 
-        Upload a royalty statement CSV and ingest it into the database.  Supported formats are automatically detected from the column headers: **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**, **Spotify for Artists**, and a **generic** fallback for any CSV with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
+        Upload a royalty statement file and ingest it into the database.  Supported formats are automatically detected from the column headers:     **DistroKid**, **TuneCore**, **CD Baby**, **ASCAP**, **BMI**,     **Spotify for Artists**, **SoundCloud**, and a **generic** fallback for any statement with recognisable date / amount / quantity columns.  After ingestion, anomaly detection is run automatically so that any under-payment issues are immediately flagged.  Returns a :class:`~XR7.models.statement.Statement` record summarising what was parsed and saved.  **Requires prior acceptance of the Artist Recovery Services Agreement.** Call ``GET /terms`` to read the agreement and ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint returns HTTP 403 until the artist has agreed to the terms.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -1134,7 +2225,7 @@ class IngestionApi:
     ) -> object:
         """Upload Statement Batch
 
-        Upload and process a batch of statement CSV files in a single request.
+        Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -1206,7 +2297,7 @@ class IngestionApi:
     ) -> ApiResponse[object]:
         """Upload Statement Batch
 
-        Upload and process a batch of statement CSV files in a single request.
+        Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing.
 
         :param artist_id: (required)
         :type artist_id: str
@@ -1278,7 +2369,7 @@ class IngestionApi:
     ) -> RESTResponseType:
         """Upload Statement Batch
 
-        Upload and process a batch of statement CSV files in a single request.
+        Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing.
 
         :param artist_id: (required)
         :type artist_id: str

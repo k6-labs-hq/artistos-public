@@ -24,21 +24,63 @@ class TestDashboardApi(unittest.TestCase):
         self.api = DashboardApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_agent_trace_artists_artist_id_agent_trace_run_id_get(self) -> None:
+        """Test case for agent_trace_artists_artist_id_agent_trace_run_id_get
+
+        Agent Trace
+        """
+        pass
+
+    def test_chat_royalties_artists_artist_id_chat_royalties_post(self) -> None:
+        """Test case for chat_royalties_artists_artist_id_chat_royalties_post
+
+        Chat Royalties
+        """
+        pass
+
+    def test_dashboard_benchmarks_artists_artist_id_benchmarks_get(self) -> None:
+        """Test case for dashboard_benchmarks_artists_artist_id_benchmarks_get
+
+        Dashboard Benchmarks
+        """
+        pass
+
+    def test_dashboard_flow_artists_artist_id_dashboard_flow_get(self) -> None:
+        """Test case for dashboard_flow_artists_artist_id_dashboard_flow_get
+
+        Dashboard Flow
+        """
+        pass
+
+    def test_export_full_transparency_artists_artist_id_export_full_transparency_get(self) -> None:
+        """Test case for export_full_transparency_artists_artist_id_export_full_transparency_get
+
+        Export Full Transparency
+        """
+        pass
+
+    def test_export_guidance_artists_artist_id_dashboard_export_guidance_get(self) -> None:
+        """Test case for export_guidance_artists_artist_id_dashboard_export_guidance_get
+
+        Export Guidance
+        """
+        pass
 
     def test_get_artist_dashboard_artists_artist_id_dashboard_get(self) -> None:
         """Test case for get_artist_dashboard_artists_artist_id_dashboard_get
 
         Get Artist Dashboard
         """
-        assert True
+        pass
 
     def test_get_dashboard_ui_dashboard_ui_get(self) -> None:
         """Test case for get_dashboard_ui_dashboard_ui_get
 
         Get Dashboard Ui
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

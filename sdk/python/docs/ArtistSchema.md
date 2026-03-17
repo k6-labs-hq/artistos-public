@@ -15,14 +15,25 @@ Name | Type | Description | Notes
 **status** | [**ArtistLifecycleStatus**](ArtistLifecycleStatus.md) |  | 
 **onboarded_at** | **datetime** |  | [optional] 
 **activated_at** | **datetime** |  | [optional] 
-**celero_customer_vault_id** | **str** |  | [optional] 
+**first_name** | **str** |  | [optional] 
+**last_name** | **str** |  | [optional] 
+**country_code** | **str** |  | [optional] [default to 'US']
+**trolley_recipient_id** | **str** |  | [optional] 
+**payout_account_status** | **str** |  | [optional] [default to 'not_started']
+**payout_method_type** | **str** |  | [optional] 
+**payout_last4** | **str** |  | [optional] 
+**tax_form_status** | **str** |  | [optional] [default to 'pending']
+**default_attorney_grace_period_days** | **int** |  | [optional] [default to 60]
+**primary_jurisdiction** | **str** |  | [optional] [default to 'USA']
+**preferred_contract_type** | **str** |  | [optional] [default to 'recording']
+**xr7_future_leakage_prevented** | **float** |  | [optional] [default to 0.0]
 
 ## Example
 
 ```python
 from xr7_sdk.models.artist_schema import ArtistSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of ArtistSchema from a JSON string
 artist_schema_instance = ArtistSchema.from_json(json)

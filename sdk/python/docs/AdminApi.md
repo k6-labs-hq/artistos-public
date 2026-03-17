@@ -11,6 +11,7 @@ Method | HTTP request | Description
 [**list_claims_admin_claims_get**](AdminApi.md#list_claims_admin_claims_get) | **GET** /admin/claims | List Claims
 [**list_review_queue_admin_review_queue_get**](AdminApi.md#list_review_queue_admin_review_queue_get) | **GET** /admin/review-queue | List Review Queue
 [**list_transactions_admin_transactions_get**](AdminApi.md#list_transactions_admin_transactions_get) | **GET** /admin/transactions | List Transactions
+[**sol_risk_report_admin_reports_sol_risk_get**](AdminApi.md#sol_risk_report_admin_reports_sol_risk_get) | **GET** /admin/reports/sol-risk | Sol Risk Report
 
 
 # **admin_overview_admin_overview_get**
@@ -315,7 +316,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list_claims_admin_claims_get**
-> object list_claims_admin_claims_get(status=status, artist_id=artist_id, sort=sort, limit=limit, offset=offset, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+> object list_claims_admin_claims_get(status=status, artist_id=artist_id, jurisdiction=jurisdiction, sort=sort, limit=limit, offset=offset, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
 
 List Claims
 
@@ -340,6 +341,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
     api_instance = xr7_sdk.AdminApi(api_client)
     status = 'status_example' # str |  (optional)
     artist_id = 'artist_id_example' # str |  (optional)
+    jurisdiction = 'jurisdiction_example' # str |  (optional)
     sort = 'updated_at_desc' # str |  (optional) (default to 'updated_at_desc')
     limit = 50 # int |  (optional) (default to 50)
     offset = 0 # int |  (optional) (default to 0)
@@ -348,7 +350,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
     try:
         # List Claims
-        api_response = api_instance.list_claims_admin_claims_get(status=status, artist_id=artist_id, sort=sort, limit=limit, offset=offset, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+        api_response = api_instance.list_claims_admin_claims_get(status=status, artist_id=artist_id, jurisdiction=jurisdiction, sort=sort, limit=limit, offset=offset, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
         print("The response of AdminApi->list_claims_admin_claims_get:\n")
         pprint(api_response)
     except Exception as e:
@@ -364,6 +366,7 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **status** | **str**|  | [optional] 
  **artist_id** | **str**|  | [optional] 
+ **jurisdiction** | **str**|  | [optional] 
  **sort** | **str**|  | [optional] [default to &#39;updated_at_desc&#39;]
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
@@ -523,6 +526,76 @@ Name | Type | Description  | Notes
  **artist_id** | **str**|  | [optional] 
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
+ **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_admin_actor** | **str**|  | [optional] 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **sol_risk_report_admin_reports_sol_risk_get**
+> object sol_risk_report_admin_reports_sol_risk_get(jurisdiction=jurisdiction, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+
+Sol Risk Report
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdminApi(api_client)
+    jurisdiction = 'jurisdiction_example' # str |  (optional)
+    x_admin_key = '' # str |  (optional) (default to '')
+    x_admin_actor = 'x_admin_actor_example' # str |  (optional)
+
+    try:
+        # Sol Risk Report
+        api_response = api_instance.sol_risk_report_admin_reports_sol_risk_get(jurisdiction=jurisdiction, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+        print("The response of AdminApi->sol_risk_report_admin_reports_sol_risk_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdminApi->sol_risk_report_admin_reports_sol_risk_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **jurisdiction** | **str**|  | [optional] 
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_admin_actor** | **str**|  | [optional] 
 

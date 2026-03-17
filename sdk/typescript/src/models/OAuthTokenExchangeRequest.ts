@@ -85,6 +85,12 @@ export interface OAuthTokenExchangeRequest {
      * @memberof OAuthTokenExchangeRequest
      */
     displayName?: string | null;
+    /**
+     * 
+     * @type {{ [key: string]: string; }}
+     * @memberof OAuthTokenExchangeRequest
+     */
+    profileMetadata?: { [key: string]: string; } | null;
 }
 
 /**
@@ -118,6 +124,7 @@ export function OAuthTokenExchangeRequestFromJSONTyped(json: any, ignoreDiscrimi
         'tokenType': json['token_type'] == null ? undefined : json['token_type'],
         'expiresInSeconds': json['expires_in_seconds'] == null ? undefined : json['expires_in_seconds'],
         'displayName': json['display_name'] == null ? undefined : json['display_name'],
+        'profileMetadata': json['profile_metadata'] == null ? undefined : json['profile_metadata'],
     };
 }
 
@@ -143,6 +150,7 @@ export function OAuthTokenExchangeRequestToJSONTyped(value?: OAuthTokenExchangeR
         'token_type': value['tokenType'],
         'expires_in_seconds': value['expiresInSeconds'],
         'display_name': value['displayName'],
+        'profile_metadata': value['profileMetadata'],
     };
 }
 

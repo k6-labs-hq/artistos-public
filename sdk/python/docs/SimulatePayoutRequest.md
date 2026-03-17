@@ -18,7 +18,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.simulate_payout_request import SimulatePayoutRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of SimulatePayoutRequest from a JSON string
 simulate_payout_request_instance = SimulatePayoutRequest.from_json(json)

@@ -14,7 +14,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.register_request import RegisterRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of RegisterRequest from a JSON string
 register_request_instance = RegisterRequest.from_json(json)

@@ -16,12 +16,15 @@
 import * as runtime from '../runtime';
 import type {
   ArtistCreate,
+  ArtistPreferenceUpdateRequest,
   ArtistSchema,
   HTTPValidationError,
 } from '../models/index';
 import {
     ArtistCreateFromJSON,
     ArtistCreateToJSON,
+    ArtistPreferenceUpdateRequestFromJSON,
+    ArtistPreferenceUpdateRequestToJSON,
     ArtistSchemaFromJSON,
     ArtistSchemaToJSON,
     HTTPValidationErrorFromJSON,
@@ -40,11 +43,34 @@ export interface ConnectArtistArtistsArtistIdConnectPostRequest {
     artistId: string;
 }
 
+export interface ConnectProviderArtistsArtistIdConnectProviderPostRequest {
+    artistId: string;
+    provider: string;
+}
+
 export interface CreateArtistArtistsPostRequest {
     artistCreate: ArtistCreate;
 }
 
 export interface GetArtistArtistsArtistIdGetRequest {
+    artistId: string;
+}
+
+export interface GetArtistPreferencesArtistsArtistIdPreferencesGetRequest {
+    artistId: string;
+}
+
+export interface ProviderConnectionStatusArtistsArtistIdConnectProviderStatusGetRequest {
+    artistId: string;
+    provider: string;
+}
+
+export interface UpdateArtistPreferencesArtistsArtistIdPreferencesPutRequest {
+    artistId: string;
+    artistPreferenceUpdateRequest: ArtistPreferenceUpdateRequest;
+}
+
+export interface WeeklyDigestArtistsArtistIdDigestWeeklyGetRequest {
     artistId: string;
 }
 
@@ -205,6 +231,63 @@ export class ArtistsApi extends runtime.BaseAPI {
     }
 
     /**
+     * Creates request options for connectProviderArtistsArtistIdConnectProviderPost without sending the request
+     */
+    async connectProviderArtistsArtistIdConnectProviderPostRequestOpts(requestParameters: ConnectProviderArtistsArtistIdConnectProviderPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling connectProviderArtistsArtistIdConnectProviderPost().'
+            );
+        }
+
+        if (requestParameters['provider'] == null) {
+            throw new runtime.RequiredError(
+                'provider',
+                'Required parameter "provider" was null or undefined when calling connectProviderArtistsArtistIdConnectProviderPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/connect/{provider}`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        urlPath = urlPath.replace(`{${"provider"}}`, encodeURIComponent(String(requestParameters['provider'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Connect Provider
+     */
+    async connectProviderArtistsArtistIdConnectProviderPostRaw(requestParameters: ConnectProviderArtistsArtistIdConnectProviderPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.connectProviderArtistsArtistIdConnectProviderPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Connect Provider
+     */
+    async connectProviderArtistsArtistIdConnectProviderPost(requestParameters: ConnectProviderArtistsArtistIdConnectProviderPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.connectProviderArtistsArtistIdConnectProviderPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Creates request options for createArtistArtistsPost without sending the request
      */
     async createArtistArtistsPostRequestOpts(requestParameters: CreateArtistArtistsPostRequest): Promise<runtime.RequestOpts> {
@@ -293,6 +376,220 @@ export class ArtistsApi extends runtime.BaseAPI {
      */
     async getArtistArtistsArtistIdGet(requestParameters: GetArtistArtistsArtistIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ArtistSchema> {
         const response = await this.getArtistArtistsArtistIdGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for getArtistPreferencesArtistsArtistIdPreferencesGet without sending the request
+     */
+    async getArtistPreferencesArtistsArtistIdPreferencesGetRequestOpts(requestParameters: GetArtistPreferencesArtistsArtistIdPreferencesGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling getArtistPreferencesArtistsArtistIdPreferencesGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/preferences`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Get Artist Preferences
+     */
+    async getArtistPreferencesArtistsArtistIdPreferencesGetRaw(requestParameters: GetArtistPreferencesArtistsArtistIdPreferencesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.getArtistPreferencesArtistsArtistIdPreferencesGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Get Artist Preferences
+     */
+    async getArtistPreferencesArtistsArtistIdPreferencesGet(requestParameters: GetArtistPreferencesArtistsArtistIdPreferencesGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.getArtistPreferencesArtistsArtistIdPreferencesGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for providerConnectionStatusArtistsArtistIdConnectProviderStatusGet without sending the request
+     */
+    async providerConnectionStatusArtistsArtistIdConnectProviderStatusGetRequestOpts(requestParameters: ProviderConnectionStatusArtistsArtistIdConnectProviderStatusGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling providerConnectionStatusArtistsArtistIdConnectProviderStatusGet().'
+            );
+        }
+
+        if (requestParameters['provider'] == null) {
+            throw new runtime.RequiredError(
+                'provider',
+                'Required parameter "provider" was null or undefined when calling providerConnectionStatusArtistsArtistIdConnectProviderStatusGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/connect/{provider}/status`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        urlPath = urlPath.replace(`{${"provider"}}`, encodeURIComponent(String(requestParameters['provider'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Provider Connection Status
+     */
+    async providerConnectionStatusArtistsArtistIdConnectProviderStatusGetRaw(requestParameters: ProviderConnectionStatusArtistsArtistIdConnectProviderStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.providerConnectionStatusArtistsArtistIdConnectProviderStatusGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Provider Connection Status
+     */
+    async providerConnectionStatusArtistsArtistIdConnectProviderStatusGet(requestParameters: ProviderConnectionStatusArtistsArtistIdConnectProviderStatusGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.providerConnectionStatusArtistsArtistIdConnectProviderStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateArtistPreferencesArtistsArtistIdPreferencesPut without sending the request
+     */
+    async updateArtistPreferencesArtistsArtistIdPreferencesPutRequestOpts(requestParameters: UpdateArtistPreferencesArtistsArtistIdPreferencesPutRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling updateArtistPreferencesArtistsArtistIdPreferencesPut().'
+            );
+        }
+
+        if (requestParameters['artistPreferenceUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'artistPreferenceUpdateRequest',
+                'Required parameter "artistPreferenceUpdateRequest" was null or undefined when calling updateArtistPreferencesArtistsArtistIdPreferencesPut().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/artists/{artist_id}/preferences`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ArtistPreferenceUpdateRequestToJSON(requestParameters['artistPreferenceUpdateRequest']),
+        };
+    }
+
+    /**
+     * Update Artist Preferences
+     */
+    async updateArtistPreferencesArtistsArtistIdPreferencesPutRaw(requestParameters: UpdateArtistPreferencesArtistsArtistIdPreferencesPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.updateArtistPreferencesArtistsArtistIdPreferencesPutRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Update Artist Preferences
+     */
+    async updateArtistPreferencesArtistsArtistIdPreferencesPut(requestParameters: UpdateArtistPreferencesArtistsArtistIdPreferencesPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.updateArtistPreferencesArtistsArtistIdPreferencesPutRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for weeklyDigestArtistsArtistIdDigestWeeklyGet without sending the request
+     */
+    async weeklyDigestArtistsArtistIdDigestWeeklyGetRequestOpts(requestParameters: WeeklyDigestArtistsArtistIdDigestWeeklyGetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling weeklyDigestArtistsArtistIdDigestWeeklyGet().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+
+        let urlPath = `/artists/{artist_id}/digest/weekly`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Weekly Digest
+     */
+    async weeklyDigestArtistsArtistIdDigestWeeklyGetRaw(requestParameters: WeeklyDigestArtistsArtistIdDigestWeeklyGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.weeklyDigestArtistsArtistIdDigestWeeklyGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Weekly Digest
+     */
+    async weeklyDigestArtistsArtistIdDigestWeeklyGet(requestParameters: WeeklyDigestArtistsArtistIdDigestWeeklyGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.weeklyDigestArtistsArtistIdDigestWeeklyGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

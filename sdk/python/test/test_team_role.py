@@ -20,10 +20,10 @@ class TestTeamRole(unittest.TestCase):
     """TeamRole unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def testTeamRole(self):
         """Test TeamRole"""

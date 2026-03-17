@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.reconcile_request import ReconcileRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of ReconcileRequest from a JSON string
 reconcile_request_instance = ReconcileRequest.from_json(json)

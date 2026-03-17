@@ -57,6 +57,24 @@ export interface EvidenceAnchorSchema {
     anchorReference: string;
     /**
      * 
+     * @type {string}
+     * @memberof EvidenceAnchorSchema
+     */
+    cid?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvidenceAnchorSchema
+     */
+    txHash?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof EvidenceAnchorSchema
+     */
+    blockchainStatus: string;
+    /**
+     * 
      * @type {Date}
      * @memberof EvidenceAnchorSchema
      */
@@ -73,6 +91,7 @@ export function instanceOfEvidenceAnchorSchema(value: object): value is Evidence
     if (!('chainHash' in value) || value['chainHash'] === undefined) return false;
     if (!('anchorProvider' in value) || value['anchorProvider'] === undefined) return false;
     if (!('anchorReference' in value) || value['anchorReference'] === undefined) return false;
+    if (!('blockchainStatus' in value) || value['blockchainStatus'] === undefined) return false;
     if (!('createdAt' in value) || value['createdAt'] === undefined) return false;
     return true;
 }
@@ -93,6 +112,9 @@ export function EvidenceAnchorSchemaFromJSONTyped(json: any, ignoreDiscriminator
         'chainHash': json['chain_hash'],
         'anchorProvider': json['anchor_provider'],
         'anchorReference': json['anchor_reference'],
+        'cid': json['cid'] == null ? undefined : json['cid'],
+        'txHash': json['tx_hash'] == null ? undefined : json['tx_hash'],
+        'blockchainStatus': json['blockchain_status'],
         'createdAt': (new Date(json['created_at'])),
     };
 }
@@ -114,6 +136,9 @@ export function EvidenceAnchorSchemaToJSONTyped(value?: EvidenceAnchorSchema | n
         'chain_hash': value['chainHash'],
         'anchor_provider': value['anchorProvider'],
         'anchor_reference': value['anchorReference'],
+        'cid': value['cid'],
+        'tx_hash': value['txHash'],
+        'blockchain_status': value['blockchainStatus'],
         'created_at': value['createdAt'].toISOString(),
     };
 }

@@ -19,7 +19,6 @@ import type {
   CurrencyTaxEstimateRequest,
   EvidenceAnchorSchema,
   HTTPValidationError,
-  NotificationDispatchRequest,
   NotificationPreferenceSchema,
   NotificationPreferenceUpsert,
   OAuthSessionCreateRequest,
@@ -38,8 +37,6 @@ import {
     EvidenceAnchorSchemaToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
-    NotificationDispatchRequestFromJSON,
-    NotificationDispatchRequestToJSON,
     NotificationPreferenceSchemaFromJSON,
     NotificationPreferenceSchemaToJSON,
     NotificationPreferenceUpsertFromJSON,
@@ -65,7 +62,7 @@ export interface AddTeamMemberArtistsArtistIdTeamMembersPostRequest {
     xActorRole?: string | null;
 }
 
-export interface AnchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequest {
+export interface AnchorEvidencePacketInternalImmutableLogRequest {
     claimId: string;
 }
 
@@ -92,13 +89,6 @@ export interface DashboardChartsDataArtistsArtistIdDashboardChartsGetRequest {
 export interface DisconnectConnectedAccountArtistsArtistIdConnectAccountsAccountIdDeleteRequest {
     artistId: string;
     accountId: string;
-    xActorEmail?: string | null;
-    xActorRole?: string | null;
-}
-
-export interface DispatchNotificationArtistsArtistIdNotificationsDispatchPostRequest {
-    artistId: string;
-    notificationDispatchRequest: NotificationDispatchRequest;
     xActorEmail?: string | null;
     xActorRole?: string | null;
 }
@@ -277,13 +267,13 @@ export class ExpansionApi extends runtime.BaseAPI {
     }
 
     /**
-     * Creates request options for anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost without sending the request
+     * Creates request options for anchorEvidencePacketInternalImmutableLog without sending the request
      */
-    async anchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequestOpts(requestParameters: AnchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequest): Promise<runtime.RequestOpts> {
+    async anchorEvidencePacketInternalImmutableLogRequestOpts(requestParameters: AnchorEvidencePacketInternalImmutableLogRequest): Promise<runtime.RequestOpts> {
         if (requestParameters['claimId'] == null) {
             throw new runtime.RequiredError(
                 'claimId',
-                'Required parameter "claimId" was null or undefined when calling anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost().'
+                'Required parameter "claimId" was null or undefined when calling anchorEvidencePacketInternalImmutableLog().'
             );
         }
 
@@ -306,8 +296,8 @@ export class ExpansionApi extends runtime.BaseAPI {
     /**
      * Anchor Evidence Packet
      */
-    async anchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRaw(requestParameters: AnchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EvidenceAnchorSchema>> {
-        const requestOptions = await this.anchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequestOpts(requestParameters);
+    async anchorEvidencePacketInternalImmutableLogRaw(requestParameters: AnchorEvidencePacketInternalImmutableLogRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<EvidenceAnchorSchema>> {
+        const requestOptions = await this.anchorEvidencePacketInternalImmutableLogRequestOpts(requestParameters);
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse(response, (jsonValue) => EvidenceAnchorSchemaFromJSON(jsonValue));
@@ -316,8 +306,8 @@ export class ExpansionApi extends runtime.BaseAPI {
     /**
      * Anchor Evidence Packet
      */
-    async anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost(requestParameters: AnchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EvidenceAnchorSchema> {
-        const response = await this.anchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRaw(requestParameters, initOverrides);
+    async anchorEvidencePacketInternalImmutableLog(requestParameters: AnchorEvidencePacketInternalImmutableLogRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EvidenceAnchorSchema> {
+        const response = await this.anchorEvidencePacketInternalImmutableLogRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -568,73 +558,6 @@ export class ExpansionApi extends runtime.BaseAPI {
      */
     async disconnectConnectedAccountArtistsArtistIdConnectAccountsAccountIdDelete(requestParameters: DisconnectConnectedAccountArtistsArtistIdConnectAccountsAccountIdDeleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.disconnectConnectedAccountArtistsArtistIdConnectAccountsAccountIdDeleteRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Creates request options for dispatchNotificationArtistsArtistIdNotificationsDispatchPost without sending the request
-     */
-    async dispatchNotificationArtistsArtistIdNotificationsDispatchPostRequestOpts(requestParameters: DispatchNotificationArtistsArtistIdNotificationsDispatchPostRequest): Promise<runtime.RequestOpts> {
-        if (requestParameters['artistId'] == null) {
-            throw new runtime.RequiredError(
-                'artistId',
-                'Required parameter "artistId" was null or undefined when calling dispatchNotificationArtistsArtistIdNotificationsDispatchPost().'
-            );
-        }
-
-        if (requestParameters['notificationDispatchRequest'] == null) {
-            throw new runtime.RequiredError(
-                'notificationDispatchRequest',
-                'Required parameter "notificationDispatchRequest" was null or undefined when calling dispatchNotificationArtistsArtistIdNotificationsDispatchPost().'
-            );
-        }
-
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (requestParameters['xActorEmail'] != null) {
-            headerParameters['X-Actor-Email'] = String(requestParameters['xActorEmail']);
-        }
-
-        if (requestParameters['xActorRole'] != null) {
-            headerParameters['X-Actor-Role'] = String(requestParameters['xActorRole']);
-        }
-
-
-        let urlPath = `/artists/{artist_id}/notifications/dispatch`;
-        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
-
-        return {
-            path: urlPath,
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: NotificationDispatchRequestToJSON(requestParameters['notificationDispatchRequest']),
-        };
-    }
-
-    /**
-     * Dispatch Notification
-     */
-    async dispatchNotificationArtistsArtistIdNotificationsDispatchPostRaw(requestParameters: DispatchNotificationArtistsArtistIdNotificationsDispatchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
-        const requestOptions = await this.dispatchNotificationArtistsArtistIdNotificationsDispatchPostRequestOpts(requestParameters);
-        const response = await this.request(requestOptions, initOverrides);
-
-        if (this.isJsonMime(response.headers.get('content-type'))) {
-            return new runtime.JSONApiResponse<any>(response);
-        } else {
-            return new runtime.TextApiResponse(response) as any;
-        }
-    }
-
-    /**
-     * Dispatch Notification
-     */
-    async dispatchNotificationArtistsArtistIdNotificationsDispatchPost(requestParameters: DispatchNotificationArtistsArtistIdNotificationsDispatchPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
-        const response = await this.dispatchNotificationArtistsArtistIdNotificationsDispatchPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

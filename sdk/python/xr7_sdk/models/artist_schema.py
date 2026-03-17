@@ -18,8 +18,8 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from xr7_sdk.models.artist_lifecycle_status import ArtistLifecycleStatus
 from typing import Optional, Set
 from typing_extensions import Self
@@ -39,8 +39,19 @@ class ArtistSchema(BaseModel):
     status: ArtistLifecycleStatus
     onboarded_at: Optional[datetime] = None
     activated_at: Optional[datetime] = None
-    celero_customer_vault_id: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["id", "name", "email", "role", "ipi_number", "stage_names", "created_at", "status", "onboarded_at", "activated_at", "celero_customer_vault_id"]
+    first_name: Optional[StrictStr] = None
+    last_name: Optional[StrictStr] = None
+    country_code: Optional[StrictStr] = 'US'
+    trolley_recipient_id: Optional[StrictStr] = None
+    payout_account_status: Optional[StrictStr] = 'not_started'
+    payout_method_type: Optional[StrictStr] = None
+    payout_last4: Optional[StrictStr] = None
+    tax_form_status: Optional[StrictStr] = 'pending'
+    default_attorney_grace_period_days: Optional[StrictInt] = 60
+    primary_jurisdiction: Optional[StrictStr] = 'USA'
+    preferred_contract_type: Optional[StrictStr] = 'recording'
+    xr7_future_leakage_prevented: Optional[Union[StrictFloat, StrictInt]] = 0.0
+    __properties: ClassVar[List[str]] = ["id", "name", "email", "role", "ipi_number", "stage_names", "created_at", "status", "onboarded_at", "activated_at", "first_name", "last_name", "country_code", "trolley_recipient_id", "payout_account_status", "payout_method_type", "payout_last4", "tax_form_status", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type", "xr7_future_leakage_prevented"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -111,10 +122,30 @@ class ArtistSchema(BaseModel):
         if self.activated_at is None and "activated_at" in self.model_fields_set:
             _dict['activated_at'] = None
 
-        # set to None if celero_customer_vault_id (nullable) is None
+        # set to None if first_name (nullable) is None
         # and model_fields_set contains the field
-        if self.celero_customer_vault_id is None and "celero_customer_vault_id" in self.model_fields_set:
-            _dict['celero_customer_vault_id'] = None
+        if self.first_name is None and "first_name" in self.model_fields_set:
+            _dict['first_name'] = None
+
+        # set to None if last_name (nullable) is None
+        # and model_fields_set contains the field
+        if self.last_name is None and "last_name" in self.model_fields_set:
+            _dict['last_name'] = None
+
+        # set to None if trolley_recipient_id (nullable) is None
+        # and model_fields_set contains the field
+        if self.trolley_recipient_id is None and "trolley_recipient_id" in self.model_fields_set:
+            _dict['trolley_recipient_id'] = None
+
+        # set to None if payout_method_type (nullable) is None
+        # and model_fields_set contains the field
+        if self.payout_method_type is None and "payout_method_type" in self.model_fields_set:
+            _dict['payout_method_type'] = None
+
+        # set to None if payout_last4 (nullable) is None
+        # and model_fields_set contains the field
+        if self.payout_last4 is None and "payout_last4" in self.model_fields_set:
+            _dict['payout_last4'] = None
 
         return _dict
 
@@ -138,7 +169,18 @@ class ArtistSchema(BaseModel):
             "status": obj.get("status"),
             "onboarded_at": obj.get("onboarded_at"),
             "activated_at": obj.get("activated_at"),
-            "celero_customer_vault_id": obj.get("celero_customer_vault_id")
+            "first_name": obj.get("first_name"),
+            "last_name": obj.get("last_name"),
+            "country_code": obj.get("country_code") if obj.get("country_code") is not None else 'US',
+            "trolley_recipient_id": obj.get("trolley_recipient_id"),
+            "payout_account_status": obj.get("payout_account_status") if obj.get("payout_account_status") is not None else 'not_started',
+            "payout_method_type": obj.get("payout_method_type"),
+            "payout_last4": obj.get("payout_last4"),
+            "tax_form_status": obj.get("tax_form_status") if obj.get("tax_form_status") is not None else 'pending',
+            "default_attorney_grace_period_days": obj.get("default_attorney_grace_period_days") if obj.get("default_attorney_grace_period_days") is not None else 60,
+            "primary_jurisdiction": obj.get("primary_jurisdiction") if obj.get("primary_jurisdiction") is not None else 'USA',
+            "preferred_contract_type": obj.get("preferred_contract_type") if obj.get("preferred_contract_type") is not None else 'recording',
+            "xr7_future_leakage_prevented": obj.get("xr7_future_leakage_prevented") if obj.get("xr7_future_leakage_prevented") is not None else 0.0
         })
         return _obj
 

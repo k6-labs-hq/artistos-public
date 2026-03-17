@@ -92,7 +92,73 @@ export interface ArtistSchema {
      * @type {string}
      * @memberof ArtistSchema
      */
-    celeroCustomerVaultId?: string | null;
+    firstName?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    lastName?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    countryCode?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    trolleyRecipientId?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    payoutAccountStatus?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    payoutMethodType?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    payoutLast4?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    taxFormStatus?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ArtistSchema
+     */
+    defaultAttorneyGracePeriodDays?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    primaryJurisdiction?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    preferredContractType?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ArtistSchema
+     */
+    xr7FutureLeakagePrevented?: number;
 }
 
 
@@ -128,7 +194,18 @@ export function ArtistSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'status': ArtistLifecycleStatusFromJSON(json['status']),
         'onboardedAt': json['onboarded_at'] == null ? undefined : (new Date(json['onboarded_at'])),
         'activatedAt': json['activated_at'] == null ? undefined : (new Date(json['activated_at'])),
-        'celeroCustomerVaultId': json['celero_customer_vault_id'] == null ? undefined : json['celero_customer_vault_id'],
+        'firstName': json['first_name'] == null ? undefined : json['first_name'],
+        'lastName': json['last_name'] == null ? undefined : json['last_name'],
+        'countryCode': json['country_code'] == null ? undefined : json['country_code'],
+        'trolleyRecipientId': json['trolley_recipient_id'] == null ? undefined : json['trolley_recipient_id'],
+        'payoutAccountStatus': json['payout_account_status'] == null ? undefined : json['payout_account_status'],
+        'payoutMethodType': json['payout_method_type'] == null ? undefined : json['payout_method_type'],
+        'payoutLast4': json['payout_last4'] == null ? undefined : json['payout_last4'],
+        'taxFormStatus': json['tax_form_status'] == null ? undefined : json['tax_form_status'],
+        'defaultAttorneyGracePeriodDays': json['default_attorney_grace_period_days'] == null ? undefined : json['default_attorney_grace_period_days'],
+        'primaryJurisdiction': json['primary_jurisdiction'] == null ? undefined : json['primary_jurisdiction'],
+        'preferredContractType': json['preferred_contract_type'] == null ? undefined : json['preferred_contract_type'],
+        'xr7FutureLeakagePrevented': json['xr7_future_leakage_prevented'] == null ? undefined : json['xr7_future_leakage_prevented'],
     };
 }
 
@@ -153,7 +230,18 @@ export function ArtistSchemaToJSONTyped(value?: ArtistSchema | null, ignoreDiscr
         'status': ArtistLifecycleStatusToJSON(value['status']),
         'onboarded_at': value['onboardedAt'] == null ? value['onboardedAt'] : value['onboardedAt'].toISOString(),
         'activated_at': value['activatedAt'] == null ? value['activatedAt'] : value['activatedAt'].toISOString(),
-        'celero_customer_vault_id': value['celeroCustomerVaultId'],
+        'first_name': value['firstName'],
+        'last_name': value['lastName'],
+        'country_code': value['countryCode'],
+        'trolley_recipient_id': value['trolleyRecipientId'],
+        'payout_account_status': value['payoutAccountStatus'],
+        'payout_method_type': value['payoutMethodType'],
+        'payout_last4': value['payoutLast4'],
+        'tax_form_status': value['taxFormStatus'],
+        'default_attorney_grace_period_days': value['defaultAttorneyGracePeriodDays'],
+        'primary_jurisdiction': value['primaryJurisdiction'],
+        'preferred_contract_type': value['preferredContractType'],
+        'xr7_future_leakage_prevented': value['xr7FutureLeakagePrevented'],
     };
 }
 

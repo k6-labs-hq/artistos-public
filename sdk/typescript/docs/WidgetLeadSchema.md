@@ -27,7 +27,7 @@ Name | Type
 ```typescript
 import type { WidgetLeadSchema } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "id": null,
   "artistName": null,

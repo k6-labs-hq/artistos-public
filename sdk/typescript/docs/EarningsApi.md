@@ -7,6 +7,7 @@ All URIs are relative to *http://localhost*
 | [**forecastEarningsArtistsArtistIdMlForecastPost**](EarningsApi.md#forecastearningsartistsartistidmlforecastpost) | **POST** /artists/{artist_id}/ml/forecast | Forecast Earnings |
 | [**getEarningsHistoryArtistsArtistIdEarningsHistoryGet**](EarningsApi.md#getearningshistoryartistsartistidearningshistoryget) | **GET** /artists/{artist_id}/earnings/history | Get Earnings History |
 | [**getEarningsSummaryArtistsArtistIdEarningsGet**](EarningsApi.md#getearningssummaryartistsartistidearningsget) | **GET** /artists/{artist_id}/earnings | Get Earnings Summary |
+| [**getPostRepairForecastArtistsArtistIdEarningsForecastGet**](EarningsApi.md#getpostrepairforecastartistsartistidearningsforecastget) | **GET** /artists/{artist_id}/earnings/forecast | Get Post Repair Forecast |
 | [**reconstructEarningsArtistsArtistIdEarningsReconstructPost**](EarningsApi.md#reconstructearningsartistsartistidearningsreconstructpost) | **POST** /artists/{artist_id}/earnings/reconstruct | Reconstruct Earnings |
 
 
@@ -174,6 +175,72 @@ async function example() {
 
   try {
     const data = await api.getEarningsSummaryArtistsArtistIdEarningsGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getPostRepairForecastArtistsArtistIdEarningsForecastGet
+
+> any getPostRepairForecastArtistsArtistIdEarningsForecastGet(artistId)
+
+Get Post Repair Forecast
+
+### Example
+
+```ts
+import {
+  Configuration,
+  EarningsApi,
+} from '@xr7/sdk';
+import type { GetPostRepairForecastArtistsArtistIdEarningsForecastGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new EarningsApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+  } satisfies GetPostRepairForecastArtistsArtistIdEarningsForecastGetRequest;
+
+  try {
+    const data = await api.getPostRepairForecastArtistsArtistIdEarningsForecastGet(body);
     console.log(data);
   } catch (error) {
     console.error(error);

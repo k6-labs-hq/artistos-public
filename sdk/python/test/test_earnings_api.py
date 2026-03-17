@@ -24,35 +24,42 @@ class TestEarningsApi(unittest.TestCase):
         self.api = EarningsApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_forecast_earnings_artists_artist_id_ml_forecast_post(self) -> None:
         """Test case for forecast_earnings_artists_artist_id_ml_forecast_post
 
         Forecast Earnings
         """
-        assert True
+        pass
 
     def test_get_earnings_history_artists_artist_id_earnings_history_get(self) -> None:
         """Test case for get_earnings_history_artists_artist_id_earnings_history_get
 
         Get Earnings History
         """
-        assert True
+        pass
 
     def test_get_earnings_summary_artists_artist_id_earnings_get(self) -> None:
         """Test case for get_earnings_summary_artists_artist_id_earnings_get
 
         Get Earnings Summary
         """
-        assert True
+        pass
+
+    def test_get_post_repair_forecast_artists_artist_id_earnings_forecast_get(self) -> None:
+        """Test case for get_post_repair_forecast_artists_artist_id_earnings_forecast_get
+
+        Get Post Repair Forecast
+        """
+        pass
 
     def test_reconstruct_earnings_artists_artist_id_earnings_reconstruct_post(self) -> None:
         """Test case for reconstruct_earnings_artists_artist_id_earnings_reconstruct_post
 
         Reconstruct Earnings
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

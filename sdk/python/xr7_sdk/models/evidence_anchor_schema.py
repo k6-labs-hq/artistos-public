@@ -19,7 +19,7 @@ import json
 
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, StrictStr
-from typing import Any, ClassVar, Dict, List
+from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
 from pydantic_core import to_jsonable_python
@@ -34,8 +34,11 @@ class EvidenceAnchorSchema(BaseModel):
     chain_hash: StrictStr
     anchor_provider: StrictStr
     anchor_reference: StrictStr
+    cid: Optional[StrictStr] = None
+    tx_hash: Optional[StrictStr] = None
+    blockchain_status: StrictStr
     created_at: datetime
-    __properties: ClassVar[List[str]] = ["id", "claim_id", "packet_hash", "chain_hash", "anchor_provider", "anchor_reference", "created_at"]
+    __properties: ClassVar[List[str]] = ["id", "claim_id", "packet_hash", "chain_hash", "anchor_provider", "anchor_reference", "cid", "tx_hash", "blockchain_status", "created_at"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -76,6 +79,16 @@ class EvidenceAnchorSchema(BaseModel):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # set to None if cid (nullable) is None
+        # and model_fields_set contains the field
+        if self.cid is None and "cid" in self.model_fields_set:
+            _dict['cid'] = None
+
+        # set to None if tx_hash (nullable) is None
+        # and model_fields_set contains the field
+        if self.tx_hash is None and "tx_hash" in self.model_fields_set:
+            _dict['tx_hash'] = None
+
         return _dict
 
     @classmethod
@@ -94,6 +107,9 @@ class EvidenceAnchorSchema(BaseModel):
             "chain_hash": obj.get("chain_hash"),
             "anchor_provider": obj.get("anchor_provider"),
             "anchor_reference": obj.get("anchor_reference"),
+            "cid": obj.get("cid"),
+            "tx_hash": obj.get("tx_hash"),
+            "blockchain_status": obj.get("blockchain_status"),
             "created_at": obj.get("created_at")
         })
         return _obj

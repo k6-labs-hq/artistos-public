@@ -16,13 +16,14 @@ Name | Type | Description | Notes
 **token_type** | **str** |  | [optional] [default to 'Bearer']
 **expires_in_seconds** | **int** |  | [optional] 
 **display_name** | **str** |  | [optional] 
+**profile_metadata** | **Dict[str, str]** |  | [optional] 
 
 ## Example
 
 ```python
 from xr7_sdk.models.o_auth_token_exchange_request import OAuthTokenExchangeRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of OAuthTokenExchangeRequest from a JSON string
 o_auth_token_exchange_request_instance = OAuthTokenExchangeRequest.from_json(json)

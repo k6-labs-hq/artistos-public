@@ -18,7 +18,7 @@ Name | Type
 ```typescript
 import type { CreateReviewItemRequest } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "artistId": null,
   "sourceType": null,

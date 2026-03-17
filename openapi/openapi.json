@@ -3417,67 +3417,13 @@
         }
       }
     },
-    "/artists/{artist_id}/celero/register": {
+    "/artists/{artist_id}/trolley/recipient": {
       "post": {
         "tags": [
-          "celero"
+          "trolley"
         ],
-        "summary": "Register Artist With Celero",
-        "description": "Register an artist in the Celero Commerce Customer Vault.\n\nCreates a new vault record with the artist's contact details.  The\nreturned ``celero_customer_vault_id`` is stored on the Artist and used\nfor all subsequent charges and disbursements.\n\nThe artist's actual payment credentials (card number / bank account)\nare added separately using Celero's **Collect.js** or **Collect Checkout**\nhosted form \u2014 XR7 never handles raw payment data.\n\nRequires ``CELERO_SECURITY_KEY`` to be configured.",
-        "operationId": "register_artist_with_celero_artists__artist_id__celero_register_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CeleroRegisterRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArtistSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/status": {
-      "get": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Get Celero Status",
-        "description": "Return the Celero Commerce integration status for an artist.\n\nShows whether the artist has been registered in the Celero vault and\na summary of their transaction history.",
-        "operationId": "get_celero_status_artists__artist_id__celero_status_get",
+        "summary": "Create Trolley Recipient",
+        "operationId": "create_trolley_recipient_artists__artist_id__trolley_recipient_post",
         "parameters": [
           {
             "name": "artist_id",
@@ -3511,287 +3457,13 @@
         }
       }
     },
-    "/artists/{artist_id}/celero/customer": {
-      "put": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Update Celero Customer",
-        "description": "Update an artist's contact details in the Celero Customer Vault.",
-        "operationId": "update_celero_customer_artists__artist_id__celero_customer_put",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CeleroRegisterRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ArtistSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/charge": {
-      "post": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Charge Contingency Fee",
-        "description": "Charge the artist's Celero-vaulted payment method for XR7's\n10% contingency fee on a reconciled claim.\n\nThe claim must be in ``PAID`` status with a ``recovered_amount`` set.\nThe charge amount is calculated as ``recovered_amount \u00d7 10%``.\n\nRequires:\n- The artist to be registered with Celero (``celero_customer_vault_id`` set).\n- ``CELERO_SECURITY_KEY`` to be configured.",
-        "operationId": "charge_contingency_fee_artists__artist_id__celero_charge_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CeleroChargeRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CeleroTransactionSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/disburse": {
-      "post": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Disburse To Artist",
-        "description": "Disburse the artist's net recovery amount via ACH credit through Celero.\n\nThe ``amount`` should be the gross recovery minus XR7's contingency\nfee.  Celero will credit the artist's bank account stored in their vault.\n\nRequires:\n- The artist to have a bank account on file in their Celero vault.\n- Celero ACH payout capability to be enabled on the XR7 merchant account.\n- ``CELERO_SECURITY_KEY`` to be configured.",
-        "operationId": "disburse_to_artist_artists__artist_id__celero_disburse_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CeleroDisburseRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CeleroTransactionSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/transactions/{transaction_id}/refund": {
-      "post": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Refund Transaction",
-        "description": "Issue a partial or full refund for a previous CHARGE transaction.\n\nIf ``amount`` is omitted, the full transaction amount is refunded.",
-        "operationId": "refund_transaction_artists__artist_id__celero_transactions__transaction_id__refund_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          },
-          {
-            "name": "transaction_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Transaction Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CeleroRefundRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CeleroTransactionSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/transactions/{transaction_id}/void": {
-      "post": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Void Transaction",
-        "description": "Void an unsettled CHARGE transaction (typically same-day).\n\nUse ``refund`` for transactions that have already settled.",
-        "operationId": "void_transaction_artists__artist_id__celero_transactions__transaction_id__void_post",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          },
-          {
-            "name": "transaction_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Transaction Id"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CeleroTransactionSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/transactions": {
+    "/artists/{artist_id}/trolley/widget-url": {
       "get": {
         "tags": [
-          "celero"
+          "trolley"
         ],
-        "summary": "List Celero Transactions",
-        "description": "Return all Celero transactions for an artist, newest first.",
-        "operationId": "list_celero_transactions_artists__artist_id__celero_transactions_get",
+        "summary": "Get Trolley Widget Url",
+        "operationId": "get_trolley_widget_url_artists__artist_id__trolley_widget_url_get",
         "parameters": [
           {
             "name": "artist_id",
@@ -3800,106 +3472,6 @@
             "schema": {
               "type": "string",
               "title": "Artist Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/CeleroTransactionSchema"
-                  },
-                  "title": "Response List Celero Transactions Artists  Artist Id  Celero Transactions Get"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/celero/transactions/{transaction_id}": {
-      "get": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Get Celero Transaction",
-        "description": "Return a single Celero transaction record.",
-        "operationId": "get_celero_transaction_artists__artist_id__celero_transactions__transaction_id__get",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          },
-          {
-            "name": "transaction_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Transaction Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CeleroTransactionSchema"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/celero/webhook": {
-      "post": {
-        "tags": [
-          "celero"
-        ],
-        "summary": "Celero Webhook",
-        "description": "Receive and process real-time event notifications from Celero Commerce.\n\nConfigure this URL in the Celero merchant dashboard:\n  Settings \u2192 Webhooks \u2192 Add Endpoint \u2192 ``https://your-domain/celero/webhook``\n\nSupported events: ``transaction.approved``, ``transaction.declined``,\n``transaction.void``, ``transaction.refund``, ``disbursement.settled``,\n``disbursement.failed``.\n\nEvery request is validated against the HMAC-SHA256 signature in the\n``X-Celero-Signature`` header using ``CELERO_WEBHOOK_SECRET``.",
-        "operationId": "celero_webhook_celero_webhook_post",
-        "parameters": [
-          {
-            "name": "X-Celero-Signature",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "type": "string",
-              "default": "",
-              "title": "X-Celero-Signature"
             }
           }
         ],
@@ -3919,6 +3491,166 @@
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
                 }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/trolley/status": {
+      "get": {
+        "tags": [
+          "trolley"
+        ],
+        "summary": "Get Trolley Status",
+        "operationId": "get_trolley_status_artists__artist_id__trolley_status_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/claims/{claim_id}/manual-remittance": {
+      "post": {
+        "tags": [
+          "trolley"
+        ],
+        "summary": "Manual Remittance",
+        "operationId": "manual_remittance_artists__artist_id__claims__claim_id__manual_remittance_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ManualRemittanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/claims/{claim_id}/disburse": {
+      "post": {
+        "tags": [
+          "trolley"
+        ],
+        "summary": "Disburse Claim",
+        "operationId": "disburse_claim_claims__claim_id__disburse_post",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrolleyTransactionSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/webhooks/trolley": {
+      "post": {
+        "tags": [
+          "trolley"
+        ],
+        "summary": "Trolley Webhook",
+        "operationId": "trolley_webhook_webhooks_trolley_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
               }
             }
           }
@@ -3979,7 +3711,7 @@
           "dashboard"
         ],
         "summary": "Get Artist Dashboard",
-        "description": "Return the artist's full recovery dashboard.\n\n**leakage_discovered**\n- ``total_anomalies`` \u2014 total number of anomalies detected\n- ``total_estimated_recoverable`` \u2014 sum of estimated recoverable amounts\n- ``by_category`` \u2014 breakdown by revenue category (ROYALTY, TOURING, etc.)\n- ``by_severity`` \u2014 breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL)\n- ``recent_discoveries`` \u2014 last 10 newly detected anomalies\n\n**in_pursuit**\n- ``active_claim_count`` \u2014 number of open claims\n- ``total_amount_in_pursuit`` \u2014 total dollar value of active claims\n- ``total_gross_recovered`` \u2014 total recovered across all closed/paid claims\n- ``total_net_recovered`` \u2014 gross minus XR7 contingency fees\n\n**recovered_and_deposited**\n- ``total_deposited`` \u2014 sum of all Celero disbursements received\n- ``deposits`` \u2014 per-deposit log with Celero transaction IDs\n\n**balance_still_pursuing**\n- ``balance_still_pursuing`` \u2014 the key number: money we are still chasing\n- ``total_pending_deposit`` \u2014 approved but not yet ACH-settled\n\n**deadlines**\n- ``expired_count`` \u2014 anomalies whose SOL window has already closed\n- ``urgent_count`` \u2014 anomalies with <90 days remaining on their SOL window\n- ``at_risk_count`` \u2014 anomalies with 90\u2013180 days remaining\n- ``top_urgent_items`` \u2014 up to 5 most time-sensitive anomalies with days_remaining\n\n**priority_actions**\n- ``top_10_actions`` \u2014 ranked action items (anomalies + claims) by ROI \u00d7 urgency\n- ``total_open_items`` \u2014 total items in the priority queue\n\n**catalog_health**\n- ``health_score`` \u2014 ML composite score 0\u2013100\n- ``grade`` \u2014 letter grade A\u2013F\n- ``signals`` \u2014 per-signal breakdown (metadata, payment regularity, etc.)\n- ``recommendations`` \u2014 list of actionable improvement suggestions\n\n**earnings_trend**\n- ``trend`` \u2014 GROWING / FLAT / DECLINING / INSUFFICIENT_DATA\n- ``predicted_total`` \u2014 predicted earnings over next 90 days\n- ``predicted_low`` / ``predicted_high`` \u2014 95% confidence interval\n\n**activity_feed**\n- Up to 50 timestamped events: leakage discoveries, claim updates,\n  and payment deposits, newest first.",
+        "description": "Return the artist's full recovery dashboard.\n\n**leakage_discovered**\n- ``total_anomalies`` \u2014 total number of anomalies detected\n- ``total_estimated_recoverable`` \u2014 sum of estimated recoverable amounts\n- ``by_category`` \u2014 breakdown by revenue category (ROYALTY, TOURING, etc.)\n- ``by_severity`` \u2014 breakdown by severity (LOW / MEDIUM / HIGH / CRITICAL)\n- ``recent_discoveries`` \u2014 last 10 newly detected anomalies\n\n**in_pursuit**\n- ``active_claim_count`` \u2014 number of open claims\n- ``total_amount_in_pursuit`` \u2014 total dollar value of active claims\n- ``total_gross_recovered`` \u2014 total recovered across all closed/paid claims\n- ``total_net_recovered`` \u2014 gross minus XR7 contingency fees\n\n**recovered_and_deposited**\n- ``total_deposited`` \u2014 sum of all Trolley disbursements received\n- ``deposits`` \u2014 per-deposit log with Trolley payment IDs\n\n**balance_still_pursuing**\n- ``balance_still_pursuing`` \u2014 the key number: money we are still chasing\n- ``total_pending_deposit`` \u2014 approved but not yet ACH-settled\n\n**deadlines**\n- ``expired_count`` \u2014 anomalies whose SOL window has already closed\n- ``urgent_count`` \u2014 anomalies with <90 days remaining on their SOL window\n- ``at_risk_count`` \u2014 anomalies with 90\u2013180 days remaining\n- ``top_urgent_items`` \u2014 up to 5 most time-sensitive anomalies with days_remaining\n\n**priority_actions**\n- ``top_10_actions`` \u2014 ranked action items (anomalies + claims) by ROI \u00d7 urgency\n- ``total_open_items`` \u2014 total items in the priority queue\n\n**catalog_health**\n- ``health_score`` \u2014 ML composite score 0\u2013100\n- ``grade`` \u2014 letter grade A\u2013F\n- ``signals`` \u2014 per-signal breakdown (metadata, payment regularity, etc.)\n- ``recommendations`` \u2014 list of actionable improvement suggestions\n\n**earnings_trend**\n- ``trend`` \u2014 GROWING / FLAT / DECLINING / INSUFFICIENT_DATA\n- ``predicted_total`` \u2014 predicted earnings over next 90 days\n- ``predicted_low`` / ``predicted_high`` \u2014 95% confidence interval\n\n**activity_feed**\n- Up to 50 timestamped events: leakage discoveries, claim updates,\n  and payment deposits, newest first.",
         "operationId": "get_artist_dashboard_artists__artist_id__dashboard_get",
         "parameters": [
           {
@@ -13502,6 +13234,33 @@
             ],
             "title": "Email"
           },
+          "first_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "country_code": {
+            "type": "string",
+            "title": "Country Code",
+            "default": "US"
+          },
           "role": {
             "anyOf": [
               {
@@ -13683,7 +13442,7 @@
             ],
             "title": "Activated At"
           },
-          "celero_customer_vault_id": {
+          "first_name": {
             "anyOf": [
               {
                 "type": "string"
@@ -13692,7 +13451,66 @@
                 "type": "null"
               }
             ],
-            "title": "Celero Customer Vault Id"
+            "title": "First Name"
+          },
+          "last_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Name"
+          },
+          "country_code": {
+            "type": "string",
+            "title": "Country Code",
+            "default": "US"
+          },
+          "trolley_recipient_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Recipient Id"
+          },
+          "payout_account_status": {
+            "type": "string",
+            "title": "Payout Account Status",
+            "default": "not_started"
+          },
+          "payout_method_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Method Type"
+          },
+          "payout_last4": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Last4"
+          },
+          "tax_form_status": {
+            "type": "string",
+            "title": "Tax Form Status",
+            "default": "pending"
           },
           "default_attorney_grace_period_days": {
             "type": "integer",
@@ -14253,305 +14071,6 @@
         ],
         "title": "CatalogConfirmationSchema"
       },
-      "CeleroChargeRequest": {
-        "properties": {
-          "claim_id": {
-            "type": "string",
-            "title": "Claim Id"
-          },
-          "ip_address": {
-            "type": "string",
-            "title": "Ip Address",
-            "default": ""
-          }
-        },
-        "type": "object",
-        "required": [
-          "claim_id"
-        ],
-        "title": "CeleroChargeRequest",
-        "description": "Charge the artist's Celero vault for a specific claim's contingency fee."
-      },
-      "CeleroDisburseRequest": {
-        "properties": {
-          "amount": {
-            "type": "number",
-            "title": "Amount"
-          },
-          "currency": {
-            "type": "string",
-            "title": "Currency",
-            "default": "USD"
-          },
-          "claim_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Claim Id"
-          },
-          "description": {
-            "type": "string",
-            "title": "Description",
-            "default": ""
-          }
-        },
-        "type": "object",
-        "required": [
-          "amount"
-        ],
-        "title": "CeleroDisburseRequest",
-        "description": "Disburse a net recovery amount to the artist via ACH.\n\n``amount`` is the net amount in USD after XR7's fee has been deducted.\n``claim_id`` is optional \u2014 omit for manual / ad-hoc disbursements."
-      },
-      "CeleroRefundRequest": {
-        "properties": {
-          "amount": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Amount"
-          }
-        },
-        "type": "object",
-        "title": "CeleroRefundRequest",
-        "description": "Refund a previous charge, optionally for a partial amount."
-      },
-      "CeleroRegisterRequest": {
-        "properties": {
-          "first_name": {
-            "type": "string",
-            "title": "First Name"
-          },
-          "last_name": {
-            "type": "string",
-            "title": "Last Name"
-          },
-          "email": {
-            "type": "string",
-            "title": "Email"
-          },
-          "company": {
-            "type": "string",
-            "title": "Company",
-            "default": ""
-          },
-          "address1": {
-            "type": "string",
-            "title": "Address1",
-            "default": ""
-          },
-          "city": {
-            "type": "string",
-            "title": "City",
-            "default": ""
-          },
-          "state": {
-            "type": "string",
-            "title": "State",
-            "default": ""
-          },
-          "zip_code": {
-            "type": "string",
-            "title": "Zip Code",
-            "default": ""
-          },
-          "country": {
-            "type": "string",
-            "title": "Country",
-            "default": "US"
-          },
-          "phone": {
-            "type": "string",
-            "title": "Phone",
-            "default": ""
-          }
-        },
-        "type": "object",
-        "required": [
-          "first_name",
-          "last_name",
-          "email"
-        ],
-        "title": "CeleroRegisterRequest",
-        "description": "Information needed to create an artist as a Celero customer.\n\nCard / bank account details are collected separately via Celero's\nhosted Collect.js form and never pass through XR7 servers."
-      },
-      "CeleroTransactionSchema": {
-        "properties": {
-          "id": {
-            "type": "string",
-            "title": "Id"
-          },
-          "artist_id": {
-            "type": "string",
-            "title": "Artist Id"
-          },
-          "claim_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Claim Id"
-          },
-          "type": {
-            "$ref": "#/components/schemas/CeleroTxnType"
-          },
-          "amount": {
-            "type": "number",
-            "title": "Amount"
-          },
-          "currency": {
-            "type": "string",
-            "title": "Currency"
-          },
-          "status": {
-            "$ref": "#/components/schemas/CeleroTxnStatus"
-          },
-          "celero_transaction_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Celero Transaction Id"
-          },
-          "celero_customer_vault_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Celero Customer Vault Id"
-          },
-          "celero_auth_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Celero Auth Code"
-          },
-          "celero_response_code": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Celero Response Code"
-          },
-          "celero_response_text": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Celero Response Text"
-          },
-          "order_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Order Id"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Created At"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Updated At"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "artist_id",
-          "claim_id",
-          "type",
-          "amount",
-          "currency",
-          "status",
-          "celero_transaction_id",
-          "celero_customer_vault_id",
-          "celero_auth_code",
-          "celero_response_code",
-          "celero_response_text",
-          "order_id",
-          "description",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "CeleroTransactionSchema"
-      },
-      "CeleroTxnStatus": {
-        "type": "string",
-        "enum": [
-          "PENDING",
-          "APPROVED",
-          "DECLINED",
-          "VOIDED",
-          "REFUNDED",
-          "SETTLED",
-          "FAILED",
-          "ERROR"
-        ],
-        "title": "CeleroTxnStatus"
-      },
-      "CeleroTxnType": {
-        "type": "string",
-        "enum": [
-          "CHARGE",
-          "REFUND",
-          "VOID",
-          "DISBURSEMENT"
-        ],
-        "title": "CeleroTxnType"
-      },
       "ClaimRequest": {
         "properties": {
           "lead_id": {
@@ -14611,6 +14130,138 @@
               }
             ],
             "title": "Contingency Fee"
+          },
+          "platform_fee_percent": {
+            "type": "number",
+            "title": "Platform Fee Percent",
+            "default": 10.0
+          },
+          "platform_fee_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Fee Amount"
+          },
+          "artist_net_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist Net Amount"
+          },
+          "remittance_method": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remittance Method"
+          },
+          "remittance_reference_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remittance Reference Number"
+          },
+          "remittance_received_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remittance Received At"
+          },
+          "trolley_payment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Payment Id"
+          },
+          "trolley_payment_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Payment Status"
+          },
+          "trolley_fx_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Fx Rate"
+          },
+          "trolley_local_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Local Amount"
+          },
+          "trolley_local_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Local Currency"
+          },
+          "payout_retry_count": {
+            "type": "integer",
+            "title": "Payout Retry Count",
+            "default": 0
+          },
+          "payout_failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payout Failure Reason"
           },
           "evidence": {
             "anyOf": [
@@ -14836,6 +14487,8 @@
           "PROOF_SUBMITTED",
           "IN_REVIEW",
           "ACCEPTED",
+          "FUNDS_RECEIVED",
+          "DISBURSEMENT_FAILED",
           "PAID",
           "CLOSED"
         ],
@@ -15935,6 +15588,35 @@
           "ANOMALY_OUTCOME"
         ],
         "title": "MLFeedbackType"
+      },
+      "ManualRemittanceRequest": {
+        "properties": {
+          "gross_amount": {
+            "type": "number",
+            "title": "Gross Amount"
+          },
+          "remittance_method": {
+            "type": "string",
+            "title": "Remittance Method"
+          },
+          "received_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Received Date"
+          },
+          "reference_number": {
+            "type": "string",
+            "title": "Reference Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "gross_amount",
+          "remittance_method",
+          "received_date",
+          "reference_number"
+        ],
+        "title": "ManualRemittanceRequest"
       },
       "NegotiationScriptRequest": {
         "properties": {
@@ -18074,6 +17756,206 @@
           "accepted_at"
         ],
         "title": "TermsAcceptanceSchema"
+      },
+      "TrolleyTransactionSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "claim_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Id"
+          },
+          "type": {
+            "$ref": "#/components/schemas/TrolleyTxnType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TrolleyTxnStatus"
+          },
+          "gross_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gross Amount"
+          },
+          "platform_fee_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform Fee Amount"
+          },
+          "net_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Amount"
+          },
+          "source_currency": {
+            "type": "string",
+            "title": "Source Currency",
+            "default": "USD"
+          },
+          "local_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Amount"
+          },
+          "local_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Local Currency"
+          },
+          "exchange_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exchange Rate"
+          },
+          "trolley_payment_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Payment Id"
+          },
+          "trolley_batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trolley Batch Id"
+          },
+          "external_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Id"
+          },
+          "failure_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failure Reason"
+          },
+          "retry_count": {
+            "type": "integer",
+            "title": "Retry Count",
+            "default": 0
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "claim_id",
+          "type",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TrolleyTransactionSchema"
+      },
+      "TrolleyTxnStatus": {
+        "type": "string",
+        "enum": [
+          "PENDING",
+          "PROCESSING",
+          "PAID",
+          "FAILED",
+          "RETURNED"
+        ],
+        "title": "TrolleyTxnStatus"
+      },
+      "TrolleyTxnType": {
+        "type": "string",
+        "enum": [
+          "REMITTANCE",
+          "DISBURSEMENT"
+        ],
+        "title": "TrolleyTxnType"
       },
       "UtilityRankRequest": {
         "properties": {

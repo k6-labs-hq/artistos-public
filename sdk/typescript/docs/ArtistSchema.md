@@ -16,14 +16,25 @@ Name | Type
 `status` | [ArtistLifecycleStatus](ArtistLifecycleStatus.md)
 `onboardedAt` | Date
 `activatedAt` | Date
-`celeroCustomerVaultId` | string
+`firstName` | string
+`lastName` | string
+`countryCode` | string
+`trolleyRecipientId` | string
+`payoutAccountStatus` | string
+`payoutMethodType` | string
+`payoutLast4` | string
+`taxFormStatus` | string
+`defaultAttorneyGracePeriodDays` | number
+`primaryJurisdiction` | string
+`preferredContractType` | string
+`xr7FutureLeakagePrevented` | number
 
 ## Example
 
 ```typescript
 import type { ArtistSchema } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "id": null,
   "name": null,
@@ -35,7 +46,18 @@ const example = {
   "status": null,
   "onboardedAt": null,
   "activatedAt": null,
-  "celeroCustomerVaultId": null,
+  "firstName": null,
+  "lastName": null,
+  "countryCode": null,
+  "trolleyRecipientId": null,
+  "payoutAccountStatus": null,
+  "payoutMethodType": null,
+  "payoutLast4": null,
+  "taxFormStatus": null,
+  "defaultAttorneyGracePeriodDays": null,
+  "primaryJurisdiction": null,
+  "preferredContractType": null,
+  "xr7FutureLeakagePrevented": null,
 } satisfies ArtistSchema
 
 console.log(example)

@@ -5,12 +5,11 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**addTeamMemberArtistsArtistIdTeamMembersPost**](ExpansionApi.md#addteammemberartistsartistidteammemberspost) | **POST** /artists/{artist_id}/team/members | Add Team Member |
-| [**anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost**](ExpansionApi.md#anchorevidencepacketclaimsclaimidevidenceanchorpost) | **POST** /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet |
+| [**anchorEvidencePacketInternalImmutableLog**](ExpansionApi.md#anchorevidencepacketinternalimmutablelog) | **POST** /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet |
 | [**benchmarkPercentilesArtistsArtistIdRecoveryBenchmarkPercentilesGet**](ExpansionApi.md#benchmarkpercentilesartistsartistidrecoverybenchmarkpercentilesget) | **GET** /artists/{artist_id}/recovery/benchmark-percentiles | Benchmark Percentiles |
 | [**createOauthSessionArtistsArtistIdConnectOauthSessionPost**](ExpansionApi.md#createoauthsessionartistsartistidconnectoauthsessionpost) | **POST** /artists/{artist_id}/connect/oauth-session | Create Oauth Session |
 | [**dashboardChartsDataArtistsArtistIdDashboardChartsGet**](ExpansionApi.md#dashboardchartsdataartistsartistiddashboardchartsget) | **GET** /artists/{artist_id}/dashboard/charts | Dashboard Charts Data |
 | [**disconnectConnectedAccountArtistsArtistIdConnectAccountsAccountIdDelete**](ExpansionApi.md#disconnectconnectedaccountartistsartistidconnectaccountsaccountiddelete) | **DELETE** /artists/{artist_id}/connect/accounts/{account_id} | Disconnect Connected Account |
-| [**dispatchNotificationArtistsArtistIdNotificationsDispatchPost**](ExpansionApi.md#dispatchnotificationartistsartistidnotificationsdispatchpost) | **POST** /artists/{artist_id}/notifications/dispatch | Dispatch Notification |
 | [**educationGuideDetailEducationGuidesGuideIdGet**](ExpansionApi.md#educationguidedetaileducationguidesguideidget) | **GET** /education/guides/{guide_id} | Education Guide Detail |
 | [**educationGuidesIndexEducationGuidesGet**](ExpansionApi.md#educationguidesindexeducationguidesget) | **GET** /education/guides | Education Guides Index |
 | [**estimateWithholdingArtistsArtistIdIntelligenceWithholdingEstimatePost**](ExpansionApi.md#estimatewithholdingartistsartistidintelligencewithholdingestimatepost) | **POST** /artists/{artist_id}/intelligence/withholding-estimate | Estimate Withholding |
@@ -108,9 +107,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
-## anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost
+## anchorEvidencePacketInternalImmutableLog
 
-> EvidenceAnchorSchema anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost(claimId)
+> EvidenceAnchorSchema anchorEvidencePacketInternalImmutableLog(claimId)
 
 Anchor Evidence Packet
 
@@ -121,7 +120,7 @@ import {
   Configuration,
   ExpansionApi,
 } from '@xr7/sdk';
-import type { AnchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequest } from '@xr7/sdk';
+import type { AnchorEvidencePacketInternalImmutableLogRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
@@ -130,10 +129,10 @@ async function example() {
   const body = {
     // string
     claimId: claimId_example,
-  } satisfies AnchorEvidencePacketClaimsClaimIdEvidenceAnchorPostRequest;
+  } satisfies AnchorEvidencePacketInternalImmutableLogRequest;
 
   try {
-    const data = await api.anchorEvidencePacketClaimsClaimIdEvidenceAnchorPost(body);
+    const data = await api.anchorEvidencePacketInternalImmutableLog(body);
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -459,81 +458,6 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: `application/json`
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-
-
-## dispatchNotificationArtistsArtistIdNotificationsDispatchPost
-
-> any dispatchNotificationArtistsArtistIdNotificationsDispatchPost(artistId, notificationDispatchRequest, xActorEmail, xActorRole)
-
-Dispatch Notification
-
-### Example
-
-```ts
-import {
-  Configuration,
-  ExpansionApi,
-} from '@xr7/sdk';
-import type { DispatchNotificationArtistsArtistIdNotificationsDispatchPostRequest } from '@xr7/sdk';
-
-async function example() {
-  console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new ExpansionApi();
-
-  const body = {
-    // string
-    artistId: artistId_example,
-    // NotificationDispatchRequest
-    notificationDispatchRequest: ...,
-    // string (optional)
-    xActorEmail: xActorEmail_example,
-    // string (optional)
-    xActorRole: xActorRole_example,
-  } satisfies DispatchNotificationArtistsArtistIdNotificationsDispatchPostRequest;
-
-  try {
-    const data = await api.dispatchNotificationArtistsArtistIdNotificationsDispatchPost(body);
-    console.log(data);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-// Run the test
-example().catch(console.error);
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **artistId** | `string` |  | [Defaults to `undefined`] |
-| **notificationDispatchRequest** | [NotificationDispatchRequest](NotificationDispatchRequest.md) |  | |
-| **xActorEmail** | `string` |  | [Optional] [Defaults to `undefined`] |
-| **xActorRole** | `string` |  | [Optional] [Defaults to `undefined`] |
-
-### Return type
-
-**any**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

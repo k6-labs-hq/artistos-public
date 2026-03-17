@@ -20,10 +20,10 @@ class TestLocationInner(unittest.TestCase):
     """LocationInner unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> LocationInner:
         """Test LocationInner

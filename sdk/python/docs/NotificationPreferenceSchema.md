@@ -23,7 +23,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.notification_preference_schema import NotificationPreferenceSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of NotificationPreferenceSchema from a JSON string
 notification_preference_schema_instance = NotificationPreferenceSchema.from_json(json)

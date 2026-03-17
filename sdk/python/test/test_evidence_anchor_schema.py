@@ -20,10 +20,10 @@ class TestEvidenceAnchorSchema(unittest.TestCase):
     """EvidenceAnchorSchema unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> EvidenceAnchorSchema:
         """Test EvidenceAnchorSchema
@@ -41,6 +41,9 @@ class TestEvidenceAnchorSchema(unittest.TestCase):
                 chain_hash = '',
                 anchor_provider = '',
                 anchor_reference = '',
+                cid = '',
+                tx_hash = '',
+                blockchain_status = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')
             )
         else:
@@ -51,6 +54,7 @@ class TestEvidenceAnchorSchema(unittest.TestCase):
                 chain_hash = '',
                 anchor_provider = '',
                 anchor_reference = '',
+                blockchain_status = '',
                 created_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
         )
         """

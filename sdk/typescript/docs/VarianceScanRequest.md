@@ -13,7 +13,7 @@ Name | Type
 ```typescript
 import type { VarianceScanRequest } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "rows": null,
 } satisfies VarianceScanRequest

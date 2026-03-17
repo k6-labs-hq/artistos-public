@@ -24,84 +24,84 @@ class TestForensicApiApi(unittest.TestCase):
         self.api = ForensicApiApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
 
     def test_auth_connect_auth_connect_provider_post(self) -> None:
         """Test case for auth_connect_auth_connect_provider_post
 
         Auth Connect
         """
-        assert True
+        pass
 
     def test_auth_providers_auth_providers_get(self) -> None:
         """Test case for auth_providers_auth_providers_get
 
         Auth Providers
         """
-        assert True
+        pass
 
     def test_confirm_catalog_catalog_confirm_post(self) -> None:
         """Test case for confirm_catalog_catalog_confirm_post
 
         Confirm Catalog
         """
-        assert True
+        pass
 
     def test_get_catalog_catalog_get(self) -> None:
         """Test case for get_catalog_catalog_get
 
         Get Catalog
         """
-        assert True
+        pass
 
     def test_get_ledger_entry_ledger_entry_id_get(self) -> None:
         """Test case for get_ledger_entry_ledger_entry_id_get
 
         Get Ledger Entry
         """
-        assert True
+        pass
 
     def test_list_ledger_ledger_get(self) -> None:
         """Test case for list_ledger_ledger_get
 
         List Ledger
         """
-        assert True
+        pass
 
     def test_list_variance_variance_get(self) -> None:
         """Test case for list_variance_variance_get
 
         List Variance
         """
-        assert True
+        pass
 
     def test_recovery_submit_recovery_claim_id_submit_post(self) -> None:
         """Test case for recovery_submit_recovery_claim_id_submit_post
 
         Recovery Submit
         """
-        assert True
+        pass
 
     def test_statements_status_statements_statement_id_status_get(self) -> None:
         """Test case for statements_status_statements_statement_id_status_get
 
         Statements Status
         """
-        assert True
+        pass
 
     def test_statements_upload_statements_upload_post(self) -> None:
         """Test case for statements_upload_statements_upload_post
 
         Statements Upload
         """
-        assert True
+        pass
 
     def test_variance_evidence_variance_variance_id_evidence_get(self) -> None:
         """Test case for variance_evidence_variance_variance_id_evidence_get
 
         Variance Evidence
         """
-        assert True
+        pass
 
 
 if __name__ == '__main__':

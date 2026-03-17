@@ -24,42 +24,217 @@ class TestRecoveryApi(unittest.TestCase):
         self.api = RecoveryApi()
 
     def tearDown(self) -> None:
-        assert True
+        pass
+
+    def test_artist_benchmarking_artists_artist_id_benchmarking_get(self) -> None:
+        """Test case for artist_benchmarking_artists_artist_id_benchmarking_get
+
+        Artist Benchmarking
+        """
+        pass
 
     def test_audit_eligibility_artists_artist_id_recovery_audit_eligibility_get(self) -> None:
         """Test case for audit_eligibility_artists_artist_id_recovery_audit_eligibility_get
 
         Audit Eligibility
         """
-        assert True
+        pass
+
+    def test_catalog_integrity_artists_artist_id_catalog_integrity_get(self) -> None:
+        """Test case for catalog_integrity_artists_artist_id_catalog_integrity_get
+
+        Catalog Integrity
+        """
+        pass
+
+    def test_deadline_risk_artists_artist_id_recovery_deadline_risk_get(self) -> None:
+        """Test case for deadline_risk_artists_artist_id_recovery_deadline_risk_get
+
+        Deadline Risk
+        """
+        pass
+
+    def test_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post(self) -> None:
+        """Test case for edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post
+
+        Edm Festival Audit
+        """
+        pass
+
+    def test_fraud_scan_artists_artist_id_fraud_scan_post(self) -> None:
+        """Test case for fraud_scan_artists_artist_id_fraud_scan_post
+
+        Fraud Scan
+        """
+        pass
+
+    def test_hiphop_brand_audit_artists_artist_id_recovery_hiphop_brand_audit_post(self) -> None:
+        """Test case for hiphop_brand_audit_artists_artist_id_recovery_hiphop_brand_audit_post
+
+        Hiphop Brand Audit
+        """
+        pass
+
+    def test_playbook_summary_artists_artist_id_recovery_playbook_summary_get(self) -> None:
+        """Test case for playbook_summary_artists_artist_id_recovery_playbook_summary_get
+
+        Playbook Summary
+        """
+        pass
+
+    def test_pooled_claim_artists_artist_id_network_pooled_claim_post(self) -> None:
+        """Test case for pooled_claim_artists_artist_id_network_pooled_claim_post
+
+        Pooled Claim
+        """
+        pass
 
     def test_priority_queue_artists_artist_id_recovery_priority_queue_get(self) -> None:
         """Test case for priority_queue_artists_artist_id_recovery_priority_queue_get
 
         Priority Queue
         """
-        assert True
+        pass
+
+    def test_rate_benchmark_advanced_artists_artist_id_recovery_rate_benchmark_advanced_get(self) -> None:
+        """Test case for rate_benchmark_advanced_artists_artist_id_recovery_rate_benchmark_advanced_get
+
+        Rate Benchmark Advanced
+        """
+        pass
 
     def test_rate_benchmark_artists_artist_id_recovery_rate_benchmark_get(self) -> None:
         """Test case for rate_benchmark_artists_artist_id_recovery_rate_benchmark_get
 
         Rate Benchmark
         """
-        assert True
+        pass
+
+    def test_reconstruct_historical_artists_artist_id_recovery_reconstruct_historical_post(self) -> None:
+        """Test case for reconstruct_historical_artists_artist_id_recovery_reconstruct_historical_post
+
+        Reconstruct Historical
+        """
+        pass
 
     def test_recoupment_artists_artist_id_recovery_recoupment_get(self) -> None:
         """Test case for recoupment_artists_artist_id_recovery_recoupment_get
 
         Recoupment
         """
-        assert True
+        pass
+
+    def test_recoupment_deep_audit_artists_artist_id_recovery_recoupment_deep_audit_get(self) -> None:
+        """Test case for recoupment_deep_audit_artists_artist_id_recovery_recoupment_deep_audit_get
+
+        Recoupment Deep Audit
+        """
+        pass
+
+    def test_recovery_attribution_artists_artist_id_recovery_attribution_get(self) -> None:
+        """Test case for recovery_attribution_artists_artist_id_recovery_attribution_get
+
+        Recovery Attribution
+        """
+        pass
+
+    def test_recovery_expected_value_artists_artist_id_recovery_expected_value_get(self) -> None:
+        """Test case for recovery_expected_value_artists_artist_id_recovery_expected_value_get
+
+        Recovery Expected Value
+        """
+        pass
+
+    def test_recovery_funnel_artists_artist_id_recovery_funnel_get(self) -> None:
+        """Test case for recovery_funnel_artists_artist_id_recovery_funnel_get
+
+        Recovery Funnel
+        """
+        pass
+
+    def test_recovery_playbook_artists_artist_id_recovery_playbook_get(self) -> None:
+        """Test case for recovery_playbook_artists_artist_id_recovery_playbook_get
+
+        Recovery Playbook
+        """
+        pass
+
+    def test_recovery_roi_artists_artist_id_recovery_roi_get(self) -> None:
+        """Test case for recovery_roi_artists_artist_id_recovery_roi_get
+
+        Recovery Roi
+        """
+        pass
+
+    def test_sla_status_artists_artist_id_sla_status_get(self) -> None:
+        """Test case for sla_status_artists_artist_id_sla_status_get
+
+        Sla Status
+        """
+        pass
 
     def test_sol_status_artists_artist_id_recovery_sol_status_get(self) -> None:
         """Test case for sol_status_artists_artist_id_recovery_sol_status_get
 
         Sol Status
         """
-        assert True
+        pass
+
+    def test_split_conflicts_artists_artist_id_splits_conflicts_get(self) -> None:
+        """Test case for split_conflicts_artists_artist_id_splits_conflicts_get
+
+        Split Conflicts
+        """
+        pass
+
+    def test_split_verification_artists_artist_id_splits_verification_get(self) -> None:
+        """Test case for split_verification_artists_artist_id_splits_verification_get
+
+        Split Verification
+        """
+        pass
+
+    def test_touring_audit_artists_artist_id_recovery_touring_audit_post(self) -> None:
+        """Test case for touring_audit_artists_artist_id_recovery_touring_audit_post
+
+        Touring Audit
+        """
+        pass
+
+    def test_ugc_auto_claim_artists_artist_id_recovery_ugc_auto_claim_post(self) -> None:
+        """Test case for ugc_auto_claim_artists_artist_id_recovery_ugc_auto_claim_post
+
+        Ugc Auto Claim
+        """
+        pass
+
+    def test_ugc_claim_artists_artist_id_ugc_claim_post(self) -> None:
+        """Test case for ugc_claim_artists_artist_id_ugc_claim_post
+
+        Ugc Claim
+        """
+        pass
+
+    def test_ugc_global_scan_artists_artist_id_ugc_global_scan_post(self) -> None:
+        """Test case for ugc_global_scan_artists_artist_id_ugc_global_scan_post
+
+        Ugc Global Scan
+        """
+        pass
+
+    def test_ugc_monitor_artists_artist_id_ugc_monitor_get(self) -> None:
+        """Test case for ugc_monitor_artists_artist_id_ugc_monitor_get
+
+        Ugc Monitor
+        """
+        pass
+
+    def test_underpayment_heatmap_artists_artist_id_recovery_heatmap_get(self) -> None:
+        """Test case for underpayment_heatmap_artists_artist_id_recovery_heatmap_get
+
+        Underpayment Heatmap
+        """
+        pass
 
 
 if __name__ == '__main__':

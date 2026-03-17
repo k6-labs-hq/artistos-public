@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 252
+Total endpoints: 248
 
 ## Endpoint Table
 
@@ -38,18 +38,10 @@ Total endpoints: 252
 | recovery | GET | /artists/{artist_id}/catalog/integrity | Catalog Integrity | catalog_integrity_artists__artist_id__catalog_integrity_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/integrity |
 | onboarding | GET | /artists/{artist_id}/catalog/metadata-health | Catalog Metadata Health | catalog_metadata_health_artists__artist_id__catalog_metadata_health_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/metadata-health |
 | onboarding | GET | /artists/{artist_id}/catalog/repairs | Catalog Repairs | catalog_repairs_artists__artist_id__catalog_repairs_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/repairs |
-| celero | POST | /artists/{artist_id}/celero/charge | Charge Contingency Fee | charge_contingency_fee_artists__artist_id__celero_charge_post | CeleroChargeRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/charge -H 'Content-Type: application/json' -d '{}' |
-| celero | PUT | /artists/{artist_id}/celero/customer | Update Celero Customer | update_celero_customer_artists__artist_id__celero_customer_put | CeleroRegisterRequest | ArtistSchema | curl -X PUT http://localhost:8000/artists/<artist_id>/celero/customer -H 'Content-Type: application/json' -d '{}' |
-| celero | POST | /artists/{artist_id}/celero/disburse | Disburse To Artist | disburse_to_artist_artists__artist_id__celero_disburse_post | CeleroDisburseRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/disburse -H 'Content-Type: application/json' -d '{}' |
-| celero | POST | /artists/{artist_id}/celero/register | Register Artist With Celero | register_artist_with_celero_artists__artist_id__celero_register_post | CeleroRegisterRequest | ArtistSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/register -H 'Content-Type: application/json' -d '{}' |
-| celero | GET | /artists/{artist_id}/celero/status | Get Celero Status | get_celero_status_artists__artist_id__celero_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/celero/status |
-| celero | GET | /artists/{artist_id}/celero/transactions | List Celero Transactions | list_celero_transactions_artists__artist_id__celero_transactions_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/celero/transactions |
-| celero | GET | /artists/{artist_id}/celero/transactions/{transaction_id} | Get Celero Transaction | get_celero_transaction_artists__artist_id__celero_transactions__transaction_id__get | - | CeleroTransactionSchema | curl -X GET http://localhost:8000/artists/<artist_id>/celero/transactions/{transaction_id} |
-| celero | POST | /artists/{artist_id}/celero/transactions/{transaction_id}/refund | Refund Transaction | refund_transaction_artists__artist_id__celero_transactions__transaction_id__refund_post | CeleroRefundRequest | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/transactions/{transaction_id}/refund -H 'Content-Type: application/json' -d '{}' |
-| celero | POST | /artists/{artist_id}/celero/transactions/{transaction_id}/void | Void Transaction | void_transaction_artists__artist_id__celero_transactions__transaction_id__void_post | - | CeleroTransactionSchema | curl -X POST http://localhost:8000/artists/<artist_id>/celero/transactions/{transaction_id}/void |
 | dashboard | POST | /artists/{artist_id}/chat/royalties | Chat Royalties | chat_royalties_artists__artist_id__chat_royalties_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/chat/royalties |
 | claims | GET | /artists/{artist_id}/claims | List Claims | list_claims_artists__artist_id__claims_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/claims |
 | expansion | POST | /artists/{artist_id}/claims/templates | Generate Claim Template | generate_claim_template_artists__artist_id__claims_templates_post | ClaimTemplateRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/claims/templates -H 'Content-Type: application/json' -d '{}' |
+| trolley | POST | /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance | manual_remittance_artists__artist_id__claims__claim_id__manual_remittance_post | ManualRemittanceRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/claims/<claim_id>/manual-remittance -H 'Content-Type: application/json' -d '{}' |
 | artists | POST | /artists/{artist_id}/connect | Connect Artist | connect_artist_artists__artist_id__connect_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect |
 | expansion | GET | /artists/{artist_id}/connect/accounts | List Connected Accounts | list_connected_accounts_artists__artist_id__connect_accounts_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/accounts |
 | expansion | DELETE | /artists/{artist_id}/connect/accounts/{account_id} | Disconnect Connected Account | disconnect_connected_account_artists__artist_id__connect_accounts__account_id__delete | - | - | curl -X DELETE http://localhost:8000/artists/<artist_id>/connect/accounts/{account_id} |
@@ -171,6 +163,9 @@ Total endpoints: 252
 | expansion | DELETE | /artists/{artist_id}/team/members/{member_id} | Remove Team Member | remove_team_member_artists__artist_id__team_members__member_id__delete | - | - | curl -X DELETE http://localhost:8000/artists/<artist_id>/team/members/{member_id} |
 | terms | POST | /artists/{artist_id}/terms/accept | Accept Terms | accept_terms_artists__artist_id__terms_accept_post | TermsAcceptRequest | TermsAcceptanceSchema | curl -X POST http://localhost:8000/artists/<artist_id>/terms/accept -H 'Content-Type: application/json' -d '{}' |
 | terms | GET | /artists/{artist_id}/terms/status | Terms Status | terms_status_artists__artist_id__terms_status_get | - | object | curl -X GET http://localhost:8000/artists/<artist_id>/terms/status |
+| trolley | POST | /artists/{artist_id}/trolley/recipient | Create Trolley Recipient | create_trolley_recipient_artists__artist_id__trolley_recipient_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/trolley/recipient |
+| trolley | GET | /artists/{artist_id}/trolley/status | Get Trolley Status | get_trolley_status_artists__artist_id__trolley_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/trolley/status |
+| trolley | GET | /artists/{artist_id}/trolley/widget-url | Get Trolley Widget Url | get_trolley_widget_url_artists__artist_id__trolley_widget_url_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/trolley/widget-url |
 | recovery | POST | /artists/{artist_id}/ugc/claim | Ugc Claim | ugc_claim_artists__artist_id__ugc_claim_post | object | - | curl -X POST http://localhost:8000/artists/<artist_id>/ugc/claim -H 'Content-Type: application/json' -d '{}' |
 | recovery | POST | /artists/{artist_id}/ugc/global-scan | Ugc Global Scan | ugc_global_scan_artists__artist_id__ugc_global_scan_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/ugc/global-scan |
 | recovery | GET | /artists/{artist_id}/ugc/monitor | Ugc Monitor | ugc_monitor_artists__artist_id__ugc_monitor_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/ugc/monitor |
@@ -192,12 +187,12 @@ Total endpoints: 252
 | branding | GET | /branding/{org_id}/templates | Branding Templates | branding_templates_branding__org_id__templates_get | - | - | curl -X GET http://localhost:8000/branding/{org_id}/templates |
 | forensic-api | GET | /catalog | Get Catalog | get_catalog_catalog_get | - | - | curl -X GET http://localhost:8000/catalog |
 | forensic-api | POST | /catalog/confirm | Confirm Catalog | confirm_catalog_catalog_confirm_post | XR7__api__routers__forensic__CatalogConfirmRequest | - | curl -X POST http://localhost:8000/catalog/confirm -H 'Content-Type: application/json' -d '{}' |
-| celero | POST | /celero/webhook | Celero Webhook | celero_webhook_celero_webhook_post | - | - | curl -X POST http://localhost:8000/celero/webhook |
 | claims | GET | /claims/{claim_id} | Get Claim | get_claim_claims__claim_id__get | - | ClaimSchema | curl -X GET http://localhost:8000/claims/<claim_id> |
 | claims | POST | /claims/{claim_id}/activate-agent | Activate Negotiator Agent | activate_negotiator_agent_claims__claim_id__activate_agent_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/activate-agent |
 | claims | POST | /claims/{claim_id}/advance | Advance Claim | advance_claim_claims__claim_id__advance_post | - | ClaimSchema | curl -X POST http://localhost:8000/claims/<claim_id>/advance |
 | claims | POST | /claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File | generate_attorney_evidence_file_claims__claim_id__attorney_evidence_post | AttorneyEvidenceRequest | - | curl -X POST http://localhost:8000/claims/<claim_id>/attorney-evidence -H 'Content-Type: application/json' -d '{}' |
 | claims | GET | /claims/{claim_id}/automation-plan | Claim Automation Plan | claim_automation_plan_claims__claim_id__automation_plan_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/automation-plan |
+| trolley | POST | /claims/{claim_id}/disburse | Disburse Claim | disburse_claim_claims__claim_id__disburse_post | - | TrolleyTransactionSchema | curl -X POST http://localhost:8000/claims/<claim_id>/disburse |
 | claims | POST | /claims/{claim_id}/escalate-legal | Escalate Legal | escalate_legal_claims__claim_id__escalate_legal_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/escalate-legal |
 | claims | POST | /claims/{claim_id}/evidence | Generate Evidence | generate_evidence_claims__claim_id__evidence_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/evidence |
 | expansion | POST | /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet | anchor_evidence_packet_internal_immutable_log | - | EvidenceAnchorSchema | curl -X POST http://localhost:8000/claims/<claim_id>/evidence/anchor |
@@ -250,6 +245,7 @@ Total endpoints: 252
 | branding | GET | /ui/shell | Ui Shell | ui_shell_ui_shell_get | - | - | curl -X GET http://localhost:8000/ui/shell |
 | forensic-api | GET | /variance | List Variance | list_variance_variance_get | - | - | curl -X GET http://localhost:8000/variance |
 | forensic-api | GET | /variance/{variance_id}/evidence | Variance Evidence | variance_evidence_variance__variance_id__evidence_get | - | - | curl -X GET http://localhost:8000/variance/{variance_id}/evidence |
+| trolley | POST | /webhooks/trolley | Trolley Webhook | trolley_webhook_webhooks_trolley_post | - | - | curl -X POST http://localhost:8000/webhooks/trolley |
 | widget | POST | /widget/claim | Claim | claim_widget_claim_post | ClaimRequest | - | curl -X POST http://localhost:8000/widget/claim -H 'Content-Type: application/json' -d '{}' |
 | widget | POST | /widget/estimate | Estimate | estimate_widget_estimate_post | EstimateRequest | - | curl -X POST http://localhost:8000/widget/estimate -H 'Content-Type: application/json' -d '{}' |
 | widget | GET | /widget/leads | List Leads | list_leads_widget_leads_get | - | array | curl -X GET http://localhost:8000/widget/leads |

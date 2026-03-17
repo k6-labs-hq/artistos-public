@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.decide_review_item_request import DecideReviewItemRequest
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of DecideReviewItemRequest from a JSON string
 decide_review_item_request_instance = DecideReviewItemRequest.from_json(json)

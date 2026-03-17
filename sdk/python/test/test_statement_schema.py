@@ -20,10 +20,10 @@ class TestStatementSchema(unittest.TestCase):
     """StatementSchema unit test stubs"""
 
     def setUp(self):
-        assert True
+        pass
 
     def tearDown(self):
-        assert True
+        pass
 
     def make_instance(self, include_optional) -> StatementSchema:
         """Test StatementSchema
@@ -46,6 +46,7 @@ class TestStatementSchema(unittest.TestCase):
                 skipped_rows = 56,
                 status = '',
                 error_summary = '',
+                ingestion_metadata_json = '',
                 uploaded_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f')
             )
         else:
@@ -61,6 +62,7 @@ class TestStatementSchema(unittest.TestCase):
                 skipped_rows = 56,
                 status = '',
                 error_summary = '',
+                ingestion_metadata_json = '',
                 uploaded_at = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
         )
         """

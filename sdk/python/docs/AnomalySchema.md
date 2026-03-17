@@ -29,7 +29,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.anomaly_schema import AnomalySchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of AnomalySchema from a JSON string
 anomaly_schema_instance = AnomalySchema.from_json(json)

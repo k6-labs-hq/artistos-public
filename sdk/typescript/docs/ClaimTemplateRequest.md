@@ -16,7 +16,7 @@ Name | Type
 ```typescript
 import type { ClaimTemplateRequest } from '@xr7/sdk'
 
-// Example values shown below; adjust for your use case
+// TODO: Update the object below with actual values
 const example = {
   "subtype": null,
   "counterpartyName": null,

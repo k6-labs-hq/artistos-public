@@ -20,7 +20,7 @@ Name | Type | Description | Notes
 ```python
 from xr7_sdk.models.parser_plugin_schema import ParserPluginSchema
 
-# Example JSON shown below; adjust for your use case
+# TODO update the JSON string below
 json = "{}"
 # create an instance of ParserPluginSchema from a JSON string
 parser_plugin_schema_instance = ParserPluginSchema.from_json(json)
