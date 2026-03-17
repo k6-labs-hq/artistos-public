@@ -35,12 +35,19 @@ def send_event_notification(
     if not pref:
         return {"sent": False, "reason": "no_preferences"}
 
+    founder_events = {
+        "founder_slot_confirmed",
+        "founder_slots_closing",
+        "founder_slots_almost_gone",
+        "founder_cohort_closed",
+    }
+
     allowed = {
         "anomaly_detected": pref.notify_anomaly_detected,
         "urgent_sol": pref.notify_urgent_sol,
         "deposit_received": pref.notify_deposit_received,
         "claim_advanced": pref.notify_claim_advanced,
-    }.get(event_key, False)
+    }.get(event_key, event_key in founder_events)
 
     if not allowed:
         return {"sent": False, "reason": "event_disabled"}
@@ -58,6 +65,10 @@ def send_event_notification(
         "urgent_sol": "sol_urgency",
         "deposit_received": "deposit_notification",
         "claim_advanced": "claim_update",
+        "founder_slot_confirmed": "founder_slot_confirmed",
+        "founder_slots_closing": "founder_slots_closing",
+        "founder_slots_almost_gone": "founder_slots_almost_gone",
+        "founder_cohort_closed": "founder_cohort_closed",
     }.get(event_key)
     templates = communication_templates()
     selected = templates.get(template_key or "", {})

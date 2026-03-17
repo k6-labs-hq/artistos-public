@@ -715,6 +715,7 @@
       const leakage = data.leakage_discovered || {};
       const pursuit = data.in_pursuit || {};
       const balance = data.balance_still_pursuing || {};
+      const pricing = data.artist_pricing || {};
       const cal = data.calibration_health || {};
       const trend = data.earnings_trend || {};
       const actions = state.filteredActions;
@@ -759,6 +760,14 @@
           money(balance.balance_still_pursuing),
           `Pending deposit: ${money(balance.total_pending_deposit)}.` +
           `<div class="stamp">Last updated: ${fmtTs(data.generated_at)}</div>`
+        ),
+        card(
+          pricing.is_founder ? "Founder Rate" : "Platform Fee",
+          pricing.is_founder ? "10%" : `${Number(pricing.fee_percent || 0).toFixed(2)}%`,
+          pricing.is_founder
+            ? `${esc(pricing.founder_badge || "Founder - 10% for life")}<div class="stamp">${esc(pricing.payout_copy || "Your founder rate: 10% - Locked permanently")}</div>`
+            : `${esc(pricing.payout_copy || `Platform fee: ${Number(pricing.fee_percent || 0).toFixed(2)}%`)}<div class="stamp">Last updated: ${fmtTs(data.generated_at)}</div>`,
+          null
         ),
 
         `<article class="card wide">

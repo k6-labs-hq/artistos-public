@@ -219,6 +219,9 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
                 "xr7_pro_affiliations": ", ".join(pros[:50]),
                 "xr7_oauth_sources": ", ".join(context.get("oauth_sources") or []),
                 "xr7_profile_image_url": context.get("oauth_profile_image"),
+                "xr7_is_founder": bool(getattr(artist, "is_founder", False)),
+                "xr7_founder_slot": getattr(artist, "founder_slot_number", None),
+                "xr7_contingency_fee": float(getattr(artist, "contingency_fee_percent", 0.0) or 0.0),
             },
         )
 
@@ -229,6 +232,9 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
                 "source": "XR7 Artist Brand",
                 "xr7_distributor_list": ", ".join(distributors[:50]),
                 "xr7_pro_affiliations": ", ".join(pros[:50]),
+                "xr7_is_founder": bool(getattr(artist, "is_founder", False)),
+                "xr7_founder_slot": getattr(artist, "founder_slot_number", None),
+                "xr7_contingency_fee": float(getattr(artist, "contingency_fee_percent", 0.0) or 0.0),
             },
         )
 

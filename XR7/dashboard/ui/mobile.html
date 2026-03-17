@@ -58,6 +58,19 @@
       font-size: 0.95rem;
     }
 
+    .founder-badge {
+      margin-top: 8px;
+      display: inline-block;
+      background: #fbbf24;
+      color: #78350f;
+      border: 1px solid rgba(120, 53, 15, 0.2);
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
     .controls {
       border: 1px solid var(--line);
       border-radius: 18px;
@@ -443,6 +456,7 @@
     <section class="headline">
       <h1>{{BRAND.NAME}} Mobile Recovery Console</h1>
       <p>Fast access to dashboard totals and global-social monetization opportunities from one mobile-first view.</p>
+      <div id="founderBadge" class="founder-badge" style="display:none;"></div>
       <p class="subtext">{{BRAND.LEGAL_DISCLAIMER}}</p>
     </section>
 
@@ -505,6 +519,7 @@
         We recommend a minimum of 60 days to give payers reasonable time to resolve payment before legal escalation.
       </div>
       <button class="btn-dashboard" id="savePreferences" type="button">Save Settings</button>
+      <div class="subtext" id="contingencyFeeDisplay"></div>
       <div class="status" id="settingsStatus"></div>
     </section>
   </main>
@@ -578,9 +593,12 @@
     const attorneyModalStatus = document.getElementById("attorneyModalStatus");
     const generateEvidenceFileBtn = document.getElementById("generateEvidenceFile");
     const savePreferencesBtn = document.getElementById("savePreferences");
+    const founderBadgeEl = document.getElementById("founderBadge");
+    const contingencyFeeDisplayEl = document.getElementById("contingencyFeeDisplay");
     let supportThreadId = null;
     let loadedClaims = [];
     let selectedClaimRow = null;
+    let currentArtistProfile = null;
 
     const attorneyChecklistItems = [
       "Original payment agreement / contract reference",
@@ -658,6 +676,9 @@
         return;
       }
       const data = await res.json();
+      const artistRes = await fetch(`/artists/${encodeURIComponent(id)}`);
+      const artist = artistRes.ok ? await artistRes.json() : null;
+      currentArtistProfile = artist;
       dashboardMetrics.innerHTML = "";
 
       const leakage = data?.leakage_discovered?.total_estimated_recoverable ?? 0;
@@ -669,6 +690,15 @@
       dashboardMetrics.appendChild(metricNode("In Pursuit", `$${Number(inPursuit).toFixed(2)}`));
       dashboardMetrics.appendChild(metricNode("Deposited", `$${Number(deposited).toFixed(2)}`));
       dashboardMetrics.appendChild(metricNode("Still Pursuing", `$${Number(balance).toFixed(2)}`));
+      const feePercent = Number((artist && artist.contingency_fee_percent) || 0);
+      dashboardMetrics.appendChild(metricNode("Platform Fee", `${feePercent.toFixed(2)}%`));
+
+      if (artist && artist.is_founder && artist.founder_slot_number) {
+        founderBadgeEl.textContent = `Founder #${artist.founder_slot_number} - 10% for life`;
+        founderBadgeEl.style.display = "inline-block";
+      } else {
+        founderBadgeEl.style.display = "none";
+      }
 
       const meta = data?.metadata_health_future_leakage_prevention || {};
       metadataHealthMetrics.innerHTML = "";
@@ -773,6 +803,7 @@
       }
       const data = await res.json();
       defaultGraceDaysInput.value = String(data.default_attorney_grace_period_days || 60);
+      contingencyFeeDisplayEl.textContent = data.fee_display || `Contingency fee: ${Number(data.contingency_fee_percent || 0).toFixed(2)}%`;
       setSettingsStatus("Settings loaded.");
     }
 
@@ -823,6 +854,10 @@
         const title = document.createElement("div");
         title.className = "claim-title";
         title.textContent = `${claim.payer_name || "Unknown payer"} - ${claim.id}`;
+
+        if (currentArtistProfile && currentArtistProfile.is_founder && currentArtistProfile.founder_slot_number) {
+          title.appendChild(badgeNode(`Founder #${currentArtistProfile.founder_slot_number}`));
+        }
 
         if (escalation.attorney_file_generated) {
           title.appendChild(

@@ -16,11 +16,23 @@ def get_billing_summary(artist_id: str, db: Session = Depends(get_db)):
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     engine = BillingEngine(db)
-    return inject_branding_metadata(db, engine.get_artist_billing_summary(artist_id))
+    summary = engine.get_artist_billing_summary(artist_id)
+    fee_percent = float(artist.contingency_fee_percent or 0.0)
+    summary["contingency_fee_percent"] = fee_percent
+    summary["fee_display"] = (
+        "Contingency fee: 10% (Founder rate - permanent)"
+        if artist.is_founder
+        else f"Contingency fee: {fee_percent:.2f}%"
+    )
+    return inject_branding_metadata(db, summary)
 
 
 @router.get("/artists/{artist_id}/invoices")
 def list_invoices(artist_id: str, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
     claims = (
         db.query(Claim)
         .filter(Claim.artist_id == artist_id, Claim.contingency_fee.is_not(None))
@@ -35,6 +47,12 @@ def list_invoices(artist_id: str, db: Session = Depends(get_db)):
             "claim_id": c.id,
             "recovered_amount": c.recovered_amount,
             "contingency_fee": c.contingency_fee,
+            "contingency_fee_percent": float(artist.contingency_fee_percent or 0.0),
+            "fee_copy": (
+                f"XR7 retains {float(artist.contingency_fee_percent or 0.0):.2f}% "
+                f"(${float(c.contingency_fee or 0.0):,.2f}) You receive "
+                f"${float((c.recovered_amount or 0.0) - (c.contingency_fee or 0.0)):,.2f}"
+            ),
             "currency": c.currency,
             "claim_status": c.status,
         })

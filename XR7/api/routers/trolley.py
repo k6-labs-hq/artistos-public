@@ -14,6 +14,7 @@ from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema, TrolleyTxnStatus, TrolleyTxnType
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from XR7.services.branding import inject_branding_metadata
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from XR7.trolley.client import TrolleyClient, TrolleyException, verify_trolley_signature
 from XR7.auth.event_notifications import send_event_notification
@@ -49,11 +50,11 @@ def create_trolley_recipient(artist_id: str, db: Session = Depends(get_db)):
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     if artist.trolley_recipient_id:
-        return {
+        return inject_branding_metadata(db, {
             "artist_id": artist_id,
             "trolley_recipient_id": artist.trolley_recipient_id,
             "status": artist.payout_account_status,
-        }
+        })
 
     first_name = artist.first_name
     last_name = artist.last_name
@@ -83,11 +84,11 @@ def create_trolley_recipient(artist_id: str, db: Session = Depends(get_db)):
     artist.trolley_recipient_id = recipient_id
     artist.payout_account_status = "pending"
     db.commit()
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "trolley_recipient_id": recipient_id,
         "status": artist.payout_account_status,
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/trolley/widget-url")
@@ -103,11 +104,11 @@ def get_trolley_widget_url(artist_id: str, db: Session = Depends(get_db)):
     except TrolleyException as exc:
         raise HTTPException(status_code=503, detail=str(exc))
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "trolley_recipient_id": artist.trolley_recipient_id,
         "url": response.get("url"),
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/trolley/status")
@@ -117,13 +118,13 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Artist not found")
 
     if not artist.trolley_recipient_id:
-        return {
+        return inject_branding_metadata(db, {
             "artist_id": artist.id,
             "status": "not_started",
             "recipient_id": None,
             "payout_method": None,
             "tax_form_status": artist.tax_form_status,
-        }
+        })
 
     try:
         response = TrolleyClient.from_env().get_recipient(artist.trolley_recipient_id)
@@ -142,7 +143,7 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
     artist.tax_form_status = "verified" if (compliance or {}).get("status") == "verified" else "pending"
     db.commit()
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist.id,
         "status": artist.payout_account_status,
         "recipient_id": artist.trolley_recipient_id,
@@ -152,7 +153,7 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
             "country": artist.country_code,
         },
         "tax_form_status": artist.tax_form_status,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/claims/{claim_id}/manual-remittance")
@@ -177,8 +178,14 @@ def manual_remittance(artist_id: str, claim_id: str, body: ManualRemittanceReque
         "claim_id": updated.id,
         "status": updated.status,
         "gross_amount": updated.recovered_amount,
+        "fee_percent": updated.platform_fee_percent,
         "platform_fee_amount": updated.platform_fee_amount,
         "artist_net_amount": updated.artist_net_amount,
+        "fee_copy": (
+            f"XR7 retains {float(updated.platform_fee_percent or 0.0):.2f}% "
+            f"(${float(updated.platform_fee_amount or 0.0):,.2f}) You receive "
+            f"${float(updated.artist_net_amount or 0.0):,.2f}"
+        ),
     }
 
 

@@ -35,11 +35,21 @@ class ArtistPreferenceUpdateRequest(BaseModel):
 
 
 def _attorney_grace_period_settings_payload(artist: Artist) -> dict:
+    fee_percent = float(artist.contingency_fee_percent or 0.0)
+    if artist.is_founder:
+        fee_display = "Contingency fee: 10% (Founder rate - permanent)"
+    else:
+        fee_display = f"Contingency fee: {fee_percent:.2f}%"
+
     return {
         "artist_id": artist.id,
         "default_attorney_grace_period_days": int(artist.default_attorney_grace_period_days or 60),
         "primary_jurisdiction": str(artist.primary_jurisdiction or "USA"),
         "preferred_contract_type": str(artist.preferred_contract_type or "recording"),
+        "is_founder": bool(artist.is_founder),
+        "founder_slot_number": artist.founder_slot_number,
+        "contingency_fee_percent": fee_percent,
+        "fee_display": fee_display,
         "helper_text": (
             "We recommend a minimum of 60 days to give payers reasonable time "
             "to resolve payment before legal escalation."

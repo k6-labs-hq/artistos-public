@@ -236,6 +236,27 @@ def communication_templates() -> dict[str, dict[str, str]]:
             "subject": "{{BRAND.NAME}} Mobile",
             "body": "{{BRAND.NAME}} notification received.",
         },
+        "founder_slot_confirmed": {
+            "subject": "You're Founder #{slot_number} - your 10% rate is locked for life",
+            "body": (
+                "You just became one of XR7's {founder_cohort_limit} founding artists.\n\n"
+                "Your contingency fee is locked at 10% permanently - on every claim you ever file through XR7, "
+                "for as long as you use the platform.\n\n"
+                "{slots_remaining} founder slots remain."
+            ),
+        },
+        "founder_slots_closing": {
+            "subject": "500 founder slots remaining - upload your first statement to lock in 10% for life",
+            "body": "500 founder slots remain. Upload your first statement to lock in 10% for life.",
+        },
+        "founder_slots_almost_gone": {
+            "subject": "Only 100 founder slots left",
+            "body": "Only 100 founder slots are left.",
+        },
+        "founder_cohort_closed": {
+            "subject": "Founder cohort is now full.",
+            "body": "Founder cohort is now full.",
+        },
     }
 
 

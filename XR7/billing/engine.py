@@ -1,29 +1,41 @@
 import uuid
-import os
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.models.metadata_issue import MetadataIssue
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from XR7.services.founder_program import get_or_create_platform_config, resolve_standard_fee_percent
 from XR7.trolley.client import TrolleyClient, TrolleyException
 
 
 class BillingEngine:
-    CONTINGENCY_RATE = 0.10
-
     def __init__(self, db_session: Session):
         self.db_session = db_session
         self._invoices: dict[str, dict] = {}
 
-    def calculate_contingency_fee(self, recovered_amount: float) -> float:
-        return recovered_amount * self.CONTINGENCY_RATE
+    def _artist_fee_percent(self, artist_id: str) -> float:
+        artist = self.db_session.query(Artist).filter(Artist.id == artist_id).first()
+        if artist and artist.contingency_fee_percent is not None:
+            return float(artist.contingency_fee_percent)
 
-    def create_invoice(self, claim_id: str, recovered_amount: float, currency: str) -> dict:
+        cfg = get_or_create_platform_config(self.db_session)
+        fallback = resolve_standard_fee_percent(cfg)
+        if artist:
+            artist.contingency_fee_percent = fallback
+            self.db_session.flush()
+        return fallback
+
+    def calculate_contingency_fee(self, recovered_amount: float, artist_id: str) -> float:
+        fee_pct = self._artist_fee_percent(artist_id)
+        return recovered_amount * (fee_pct / 100.0)
+
+    def create_invoice(self, claim_id: str, recovered_amount: float, currency: str, artist_id: str) -> dict:
         invoice_id = str(uuid.uuid4())
-        contingency_fee = self.calculate_contingency_fee(recovered_amount)
+        contingency_fee = self.calculate_contingency_fee(recovered_amount, artist_id)
         invoice = {
             "invoice_id": invoice_id,
             "claim_id": claim_id,
@@ -78,12 +90,6 @@ class BillingEngine:
         invoice["status"] = "PAID"
         return invoice
 
-    def _platform_fee_percent(self) -> float:
-        try:
-            return float(os.environ.get("TROLLEY_PLATFORM_FEE_PERCENT", "10"))
-        except Exception:  # noqa: BLE001
-            return 10.0
-
     def record_manual_remittance(
         self,
         *,
@@ -99,7 +105,7 @@ class BillingEngine:
         if gross_amount <= 0:
             raise ValueError("gross_amount must be greater than 0")
 
-        fee_pct = self._platform_fee_percent()
+        fee_pct = self._artist_fee_percent(claim.artist_id)
         platform_fee = round(gross_amount * fee_pct / 100.0, 2)
         artist_net = round(gross_amount - platform_fee, 2)
 

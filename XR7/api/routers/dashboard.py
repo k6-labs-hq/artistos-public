@@ -176,6 +176,27 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
       "unread_support_messages": unread_support_messages,
       "proactive_tip": _support_proactive_tip(dashboard),
     }
+    fee_percent = float(artist.contingency_fee_percent or 0.0)
+    dashboard["artist_pricing"] = {
+      "fee_percent": fee_percent,
+      "is_founder": bool(artist.is_founder),
+      "founder_slot_number": artist.founder_slot_number,
+      "founder_badge": (
+        f"Founder #{int(artist.founder_slot_number)} - 10% for life"
+        if artist.is_founder and artist.founder_slot_number is not None
+        else None
+      ),
+      "payout_copy": (
+        "Your founder rate: 10% - Locked permanently"
+        if artist.is_founder
+        else f"Platform fee: {fee_percent:.2f}%"
+      ),
+      "settings_copy": (
+        "Contingency fee: 10% (Founder rate - permanent)"
+        if artist.is_founder
+        else f"Contingency fee: {fee_percent:.2f}%"
+      ),
+    }
     state = get_latest_artist_state(artist_id)
     if not state:
       dashboard.setdefault("agent_orchestra_status", {

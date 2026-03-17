@@ -78,6 +78,66 @@
     .progress-step.active  { color: #c4b5fd; border-bottom-color: var(--brand); }
     .progress-step.done    { color: var(--accent); border-bottom-color: var(--accent); }
 
+    .founder-counter {
+      margin: 0 2rem 1rem;
+      border: 1px solid #7c6328;
+      background: linear-gradient(135deg, rgba(245,158,11,0.16), rgba(124,58,237,0.1));
+      border-radius: 12px;
+      padding: 0.8rem 0.9rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+    .founder-counter.hidden { display: none; }
+    .founder-counter .count {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #facc15;
+      letter-spacing: -0.01em;
+    }
+    .founder-counter .count.pulse { animation: founderPulse 1s ease-in-out infinite; }
+    .founder-counter .subtext {
+      color: #ddd6fe;
+      font-size: 0.8rem;
+    }
+    .founder-counter .label {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      background: rgba(250,204,21,0.16);
+      color: #fde68a;
+      border: 1px solid rgba(250,204,21,0.35);
+    }
+    .founder-counter .label.final {
+      background: rgba(239,68,68,0.16);
+      border-color: rgba(239,68,68,0.45);
+      color: #fca5a5;
+    }
+    .founder-progress {
+      width: 100%;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.35);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .founder-progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #f59e0b, #f43f5e);
+      transition: width 0.45s ease;
+    }
+
+    @keyframes founderPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.85; transform: scale(1.02); }
+    }
+
     /* ─── Step panes ────────────────────────────────────────────────────── */
     .panes { position: relative; }
     .pane { display: none; padding: 2rem; }
@@ -305,6 +365,13 @@
     <div class="tagline">Find out what you're owed — free, instant, confidential</div>
   </div>
 
+  <div class="founder-counter" id="founderCounter" aria-live="polite">
+    <div class="count" id="founderCounterCount">Loading founder slots...</div>
+    <div class="subtext">Lock in 10% for life.</div>
+    <div class="label" id="founderCounterLabel"></div>
+    <div class="founder-progress"><span id="founderCounterProgress"></span></div>
+  </div>
+
   <!-- Progress -->
   <div class="progress-track" id="progressTrack">
     <div class="progress-step active" id="ps1">Identity</div>
@@ -482,6 +549,55 @@
   // When running locally with `uvicorn XR7.api.app:app`, use the default
   // empty string so all fetch() calls go to the same origin.
   const API_BASE = (window.XR7_API_BASE || '').replace(/\/$/, '');
+
+  const founderCounterEl = document.getElementById('founderCounter');
+  const founderCounterCountEl = document.getElementById('founderCounterCount');
+  const founderCounterLabelEl = document.getElementById('founderCounterLabel');
+  const founderCounterProgressEl = document.getElementById('founderCounterProgress');
+  let lastFounderStatus = null;
+
+  function renderFounderCounter(status) {
+    if (!status || Number(status.slots_remaining || 0) <= 0) {
+      founderCounterEl.classList.add('hidden');
+      return;
+    }
+
+    founderCounterEl.classList.remove('hidden');
+
+    const total = Number(status.slots_total || 0);
+    const filled = Number(status.slots_filled || 0);
+    const remaining = Number(status.slots_remaining || 0);
+    const progress = total > 0 ? Math.max(0, Math.min(100, (filled / total) * 100)) : 0;
+
+    founderCounterCountEl.textContent = `${remaining.toLocaleString()} founder slots remaining`;
+    founderCounterCountEl.classList.toggle('pulse', remaining < 500);
+    founderCounterProgressEl.style.width = `${progress}%`;
+
+    founderCounterLabelEl.classList.remove('final');
+    if (remaining < 100) {
+      founderCounterLabelEl.textContent = 'Final slots';
+      founderCounterLabelEl.classList.add('final');
+    } else if (remaining < 500) {
+      founderCounterLabelEl.textContent = 'Almost gone';
+    } else if (remaining <= 1000) {
+      founderCounterLabelEl.textContent = 'Going fast';
+    } else {
+      founderCounterLabelEl.textContent = 'Founder cohort open';
+    }
+  }
+
+  async function pollFounderStatus() {
+    try {
+      const res = await fetch(`${API_BASE}/config/founder-status`, { cache: 'no-store' });
+      if (!res.ok) {
+        throw new Error('status_unavailable');
+      }
+      lastFounderStatus = await res.json();
+    } catch (_err) {
+      // Keep the last known value and do not surface transient API errors.
+    }
+    renderFounderCounter(lastFounderStatus);
+  }
 
   /* ─── State ──────────────────────────────────────────────────────────── */
   let sessionId     = null;
@@ -831,6 +947,9 @@
     [1,2,3,4].forEach(n => clearAlert(n));
     goTo(1);
   }
+
+  pollFounderStatus();
+  setInterval(pollFounderStatus, 60000);
 </script>
 
 </body>

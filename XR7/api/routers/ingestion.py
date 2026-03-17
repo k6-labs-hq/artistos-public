@@ -47,6 +47,7 @@ from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
+from XR7.services.founder_program import handle_founder_notifications
 from XR7.services.statement_signal_extractor import extract_statement_signals, merge_statement_signals, to_json
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
@@ -349,10 +350,14 @@ async def upload_statement(
     )
     db.add(statement)
     became_active = False
+    founder_assignment = None
     if status != "FAILED":
-        became_active = promote_to_active(artist)
+        became_active, founder_assignment = promote_to_active(db, artist)
     db.commit()
     db.refresh(statement)
+    if founder_assignment is not None:
+        handle_founder_notifications(db, artist, founder_assignment)
+        db.commit()
 
     if status != "FAILED" and became_active and not artist.trolley_recipient_id:
         first_name = artist.first_name or (artist.name.split(" ")[0] if artist.name else "")
@@ -527,8 +532,11 @@ async def upload_statement_batch(
 
     # Trigger anomaly detection once after the full batch.
     if processed:
-        became_active = promote_to_active(artist)
+        became_active, founder_assignment = promote_to_active(db, artist)
         db.commit()
+        if founder_assignment is not None:
+            handle_founder_notifications(db, artist, founder_assignment)
+            db.commit()
         if became_active and not artist.trolley_recipient_id:
             first_name = artist.first_name or (artist.name.split(" ")[0] if artist.name else "")
             last_name = artist.last_name or (" ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else "")

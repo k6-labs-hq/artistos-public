@@ -28,6 +28,7 @@ from XR7.models.ml_feedback import (
 )
 from XR7.models.model_registry import ModelRegistryEntry, ModelRegistryEntrySchema
 from XR7.models.catalog_segment import CatalogSegment, CatalogSegmentSchema
+from XR7.models.platform_config import PlatformConfig
 
 __all__ = [
     "Base", "engine", "SessionLocal", "get_db",
@@ -46,4 +47,5 @@ __all__ = [
     "CalibrationSnapshot", "CalibrationSnapshotSchema",
     "ModelRegistryEntry", "ModelRegistryEntrySchema",
     "CatalogSegment", "CatalogSegmentSchema",
+    "PlatformConfig",
 ]
