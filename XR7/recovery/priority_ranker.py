@@ -28,6 +28,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
+from XR7.utils.datetime_utils import parse_datetime as _parse_datetime
+
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -116,17 +118,6 @@ class PriorityItem:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
-def _parse_datetime(val: Any) -> datetime | None:
-    if val is None:
-        return None
-    if isinstance(val, datetime):
-        return val
-    try:
-        return datetime.fromisoformat(str(val))
-    except (ValueError, TypeError):
-        return None
-
 
 def _age_factor(created_at: datetime | None, reference_dt: datetime) -> float:
     """

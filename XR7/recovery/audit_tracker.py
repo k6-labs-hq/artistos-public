@@ -23,6 +23,8 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
+from XR7.utils.datetime_utils import parse_date as _parse_date
+
 
 # ---------------------------------------------------------------------------
 # Default audit eligibility windows (years) and estimated recovery rates
@@ -103,19 +105,6 @@ class AuditRecommendation:
 # ---------------------------------------------------------------------------
 # Core logic
 # ---------------------------------------------------------------------------
-
-def _parse_date(val: Any) -> date | None:
-    if val is None:
-        return None
-    if isinstance(val, date):
-        return val
-    if isinstance(val, datetime):
-        return val.date()
-    try:
-        return date.fromisoformat(str(val))
-    except (ValueError, TypeError):
-        return None
-
 
 def _payments_in_period(
     payments: list[dict],

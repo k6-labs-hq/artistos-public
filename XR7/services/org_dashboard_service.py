@@ -15,6 +15,7 @@ from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry
 from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.sync_job import SyncJob
 from XR7.services.post_repair_forecast_pipeline import FORECAST_DISCLAIMER, PostRepairForecastPipeline
+from XR7.utils.datetime_utils import as_utc as _as_utc
 
 
 _DEFAULT_HISTORICAL_START_DATE = datetime(2000, 1, 1, tzinfo=timezone.utc)
@@ -38,14 +39,6 @@ def _to_float(value: Any) -> float:
 
 def _iso(value: datetime | None) -> str | None:
     return value.isoformat() if value else None
-
-
-def _as_utc(value: datetime | None) -> datetime | None:
-    if value is None:
-        return None
-    if value.tzinfo is None:
-        return value.replace(tzinfo=timezone.utc)
-    return value.astimezone(timezone.utc)
 
 
 class OrgDashboardService:

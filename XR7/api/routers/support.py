@@ -7,10 +7,11 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import run_support_agent_turn_sync
+from XR7.api.authz import artist_or_404 as _artist_or_404
+from XR7.api.authz import authorize_team_access as _authorize_team_access
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
@@ -19,7 +20,7 @@ from XR7.models.claim import Claim
 from XR7.models.contract import Contract
 from XR7.models.payment import Payment
 from XR7.models.support_message import SupportMessage, SupportMessageRole
-from XR7.models.team_access import TeamMember, TeamRole
+from XR7.models.team_access import TeamRole
 from XR7.models.work import Work
 from XR7.recovery.weekly_digest import build_weekly_digest
 from XR7.agents.onboarding_agents import ArtistReadinessScoreAgent
@@ -75,48 +76,6 @@ class SupportActionResponse(BaseModel):
 class SupportSuggestionResponse(BaseModel):
     artist_id: str
     suggestions: list[str]
-
-
-def _artist_or_404(artist_id: str, db: Session) -> Artist:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
-    return artist
-
-
-def _authorize_team_access(
-    artist_id: str,
-    db: Session,
-    allowed_roles: set[TeamRole],
-    *,
-    actor_email: str | None,
-    actor_role: str | None,
-) -> None:
-    members_exist = db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
-    if not members_exist:
-        return
-
-    if not actor_email:
-        raise HTTPException(status_code=403, detail="X-Actor-Email is required for this artist")
-
-    member = (
-        db.query(TeamMember)
-        .filter(
-            TeamMember.artist_id == artist_id,
-            func.lower(TeamMember.user_email) == actor_email.strip().lower(),
-        )
-        .first()
-    )
-    if not member:
-        raise HTTPException(status_code=403, detail="Actor is not a team member for this artist")
-
-    member_role = TeamRole(member.role)
-    if member_role not in allowed_roles:
-        allowed = ", ".join(sorted(r.value for r in allowed_roles))
-        raise HTTPException(status_code=403, detail=f"Insufficient role. Allowed roles: {allowed}")
-
-    if actor_role and actor_role.strip().lower() != member_role.value:
-        raise HTTPException(status_code=403, detail="X-Actor-Role does not match assigned role")
 
 
 def _parse_metadata(raw: str | None) -> dict[str, Any]:

@@ -5,6 +5,8 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+from XR7.utils.datetime_utils import as_utc as _as_utc
+
 
 SOL_DISCLAIMER = "Statute windows are informational only and may vary by forum, tolling rules, and contract terms. Consult qualified counsel before filing."
 
@@ -27,21 +29,6 @@ def _load_rules() -> dict[str, Any]:
     path = Path(__file__).with_name("sol_jurisdictions.json")
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
-
-
-def _as_utc(value: datetime | str | None) -> datetime | None:
-    if value is None:
-        return None
-    if isinstance(value, str):
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError:
-            return None
-    else:
-        parsed = value
-    if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=timezone.utc)
-    return parsed.astimezone(timezone.utc)
 
 
 def calculate_sol(

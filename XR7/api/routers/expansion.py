@@ -13,6 +13,8 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
+from XR7.api.authz import artist_or_404 as _artist_or_404
+from XR7.api.authz import authorize_team_access as _authorize_team_access
 from XR7.ingestion.connectors.oauth_providers import (
     OAuthProviderError,
     OAuthProviderService,
@@ -43,53 +45,11 @@ from XR7.models.payment import Payment
 from XR7.models.team_access import TeamMember, TeamMemberCreate, TeamMemberSchema, TeamRole
 from XR7.recovery.audit_tracker import analyze_audit_eligibility
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
+from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
 from XR7.services.branding import branding_metadata, get_branding_for_artist, get_branding_profile, inject_branding_metadata
+from XR7.utils.datetime_utils import as_utc as _as_utc
 
 router = APIRouter(tags=["expansion"])
-
-
-def _safe_pdf_text(text: str) -> str:
-    return text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
-
-
-def _build_simple_pdf(lines: list[str]) -> bytes:
-    """Build a minimal single-page PDF payload without external dependencies."""
-    page_lines = lines[:46]
-    content_ops = ["BT", "/F1 10 Tf", "50 780 Td", "12 TL"]
-    for line in page_lines:
-        content_ops.append(f"({_safe_pdf_text(line)}) Tj")
-        content_ops.append("T*")
-    content_ops.append("ET")
-    content = "\n".join(content_ops).encode("utf-8")
-
-    objects = []
-    objects.append(b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n")
-    objects.append(b"2 0 obj << /Type /Pages /Count 1 /Kids [3 0 R] >> endobj\n")
-    objects.append(
-        b"3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
-        b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n"
-    )
-    objects.append(b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n")
-    objects.append(f"5 0 obj << /Length {len(content)} >> stream\n".encode("utf-8") + content + b"\nendstream endobj\n")
-
-    output = io.BytesIO()
-    output.write(b"%PDF-1.4\n")
-    offsets = [0]
-    for obj in objects:
-        offsets.append(output.tell())
-        output.write(obj)
-    xref_start = output.tell()
-    output.write(f"xref\n0 {len(objects) + 1}\n".encode("utf-8"))
-    output.write(b"0000000000 65535 f \n")
-    for off in offsets[1:]:
-        output.write(f"{off:010d} 00000 n \n".encode("utf-8"))
-    output.write(
-        (
-            f"trailer << /Size {len(objects) + 1} /Root 1 0 R >>\n"
-            f"startxref\n{xref_start}\n%%EOF"
-        ).encode("utf-8")
-    )
-    return output.getvalue()
 
 
 class NotificationDispatchRequest(BaseModel):
@@ -152,14 +112,6 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _as_utc(dt: datetime | None) -> datetime | None:
-    if dt is None:
-        return None
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
-
-
 def _session_or_404(artist_id: str, session_id: str, db: Session) -> OAuthConnectorSession:
     session = (
         db.query(OAuthConnectorSession)
@@ -182,59 +134,6 @@ def _account_or_404(artist_id: str, account_id: str, db: Session) -> ConnectorAc
     return account
 
 
-def _artist_or_404(artist_id: str, db: Session) -> Artist:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
-    return artist
-
-
-def _authorize_team_access(
-    artist_id: str,
-    db: Session,
-    allowed_roles: set[TeamRole],
-    *,
-    actor_email: str | None,
-    actor_role: str | None,
-) -> None:
-    """Enforce team-member access when team records exist for an artist.
-
-    Bootstrap mode: if the artist has no team members yet, access is allowed.
-    """
-    members_exist = db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
-    if not members_exist:
-        return
-
-    if not actor_email:
-        raise HTTPException(
-            status_code=403,
-            detail="X-Actor-Email is required once team access is configured for this artist.",
-        )
-
-    member = (
-        db.query(TeamMember)
-        .filter(
-            TeamMember.artist_id == artist_id,
-            func.lower(TeamMember.user_email) == actor_email.strip().lower(),
-        )
-        .first()
-    )
-    if not member:
-        raise HTTPException(status_code=403, detail="Actor is not a team member for this artist.")
-
-    member_role = TeamRole(member.role)
-    if member_role not in allowed_roles:
-        allowed = ", ".join(sorted(r.value for r in allowed_roles))
-        raise HTTPException(
-            status_code=403,
-            detail=f"Insufficient role. Allowed roles: {allowed}.",
-        )
-
-    if actor_role and actor_role.strip().lower() != member_role.value:
-        raise HTTPException(
-            status_code=403,
-            detail="X-Actor-Role does not match the role assigned to this team member.",
-        )
 
 
 @router.put("/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema)

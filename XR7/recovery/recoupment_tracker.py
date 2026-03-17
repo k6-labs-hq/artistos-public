@@ -27,8 +27,6 @@ This module:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
-from typing import Any
 
 
 # ---------------------------------------------------------------------------
@@ -83,23 +81,6 @@ class RecoupmentPosition:
             "flags": self.flags,
             "anomalies": self.anomalies,
         }
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-def _parse_date(val: Any) -> date | None:
-    if val is None:
-        return None
-    if isinstance(val, date):
-        return val
-    if isinstance(val, datetime):
-        return val.date()
-    try:
-        return date.fromisoformat(str(val))
-    except (ValueError, TypeError):
-        return None
 
 
 def _filter_payments_for_contract(
