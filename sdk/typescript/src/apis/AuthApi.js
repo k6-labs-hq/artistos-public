@@ -88,11 +88,15 @@ export class AuthApi extends runtime.BaseAPI {
     /**
      * Creates request options for authMeAuthMeGet without sending the request
      */
-    async authMeAuthMeGetRequestOpts(requestParameters) {
+    async authMeAuthMeGetRequestOpts() {
         const queryParameters = {};
         const headerParameters = {};
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
         }
         let urlPath = `/auth/me`;
         return {
@@ -105,16 +109,16 @@ export class AuthApi extends runtime.BaseAPI {
     /**
      * Auth Me
      */
-    async authMeAuthMeGetRaw(requestParameters, initOverrides) {
-        const requestOptions = await this.authMeAuthMeGetRequestOpts(requestParameters);
+    async authMeAuthMeGetRaw(initOverrides) {
+        const requestOptions = await this.authMeAuthMeGetRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
         return new runtime.JSONApiResponse(response);
     }
     /**
      * Auth Me
      */
-    async authMeAuthMeGet(requestParameters = {}, initOverrides) {
-        const response = await this.authMeAuthMeGetRaw(requestParameters, initOverrides);
+    async authMeAuthMeGet(initOverrides) {
+        const response = await this.authMeAuthMeGetRaw(initOverrides);
         return await response.value();
     }
 }

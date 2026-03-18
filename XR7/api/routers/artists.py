@@ -80,6 +80,10 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
         default_attorney_grace_period_days=max(1, int(artist_in.default_attorney_grace_period_days or 60)),
         primary_jurisdiction=(artist_in.primary_jurisdiction or "USA").strip().upper(),
         preferred_contract_type=(artist_in.preferred_contract_type or "recording").strip().lower(),
+        primary_vertical=(artist_in.primary_vertical or "MUSIC").strip().upper(),
+        tvfilm_role=(artist_in.tvfilm_role or None),
+        organization_type=(artist_in.organization_type or None),
+        enterprise_mode_enabled=bool(artist_in.enterprise_mode_enabled),
         created_at=datetime.now(timezone.utc),
     )
     db.add(artist)

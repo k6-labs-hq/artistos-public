@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 import * as runtime from '../runtime';
-import { CatalogConfirmationSchemaFromJSON, ImmutableLedgerEntrySchemaFromJSON, ParserPluginSchemaFromJSON, ParserPluginUpsertRequestToJSON, SplitRepairRequestToJSON, SyncJobCreateRequestToJSON, SyncJobSchemaFromJSON, VarianceScanRequestToJSON, WorkflowRunRequestToJSON, XR7ApiRoutersOnboardingCatalogConfirmRequestToJSON, } from '../models/index';
+import { CatalogConfirmationSchemaFromJSON, ImmutableLedgerEntrySchemaFromJSON, OnboardingAutoRequestToJSON, ParserPluginSchemaFromJSON, ParserPluginUpsertRequestToJSON, SplitRepairRequestToJSON, SyncJobCreateRequestToJSON, SyncJobSchemaFromJSON, VarianceScanRequestToJSON, WorkflowRunRequestToJSON, XR7ApiRoutersOnboardingCatalogConfirmRequestToJSON, } from '../models/index';
 /**
  *
  */
@@ -565,6 +565,51 @@ export class OnboardingApi extends runtime.BaseAPI {
      */
     async missingDataStatusArtistsArtistIdIngestionMissingDataGet(requestParameters, initOverrides) {
         const response = await this.missingDataStatusArtistsArtistIdIngestionMissingDataGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for onboardingAutoArtistsArtistIdOnboardingAutoPost without sending the request
+     */
+    async onboardingAutoArtistsArtistIdOnboardingAutoPostRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling onboardingAutoArtistsArtistIdOnboardingAutoPost().');
+        }
+        if (requestParameters['onboardingAutoRequest'] == null) {
+            throw new runtime.RequiredError('onboardingAutoRequest', 'Required parameter "onboardingAutoRequest" was null or undefined when calling onboardingAutoArtistsArtistIdOnboardingAutoPost().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
+        let urlPath = `/artists/{artist_id}/onboarding/auto`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: OnboardingAutoRequestToJSON(requestParameters['onboardingAutoRequest']),
+        };
+    }
+    /**
+     * Run one-call onboarding bootstrap for baseline activation.  This endpoint marks the artist as onboarded (if still NEW), executes due sync jobs when requested, and returns an updated onboarding summary.
+     * Onboarding Auto
+     */
+    async onboardingAutoArtistsArtistIdOnboardingAutoPostRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.onboardingAutoArtistsArtistIdOnboardingAutoPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Run one-call onboarding bootstrap for baseline activation.  This endpoint marks the artist as onboarded (if still NEW), executes due sync jobs when requested, and returns an updated onboarding summary.
+     * Onboarding Auto
+     */
+    async onboardingAutoArtistsArtistIdOnboardingAutoPost(requestParameters, initOverrides) {
+        const response = await this.onboardingAutoArtistsArtistIdOnboardingAutoPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**

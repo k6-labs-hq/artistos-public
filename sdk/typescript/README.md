@@ -339,6 +339,24 @@ All URIs are relative to *http://localhost*
 *TrolleyApi* | [**manualRemittanceArtistsArtistIdClaimsClaimIdManualRemittancePost**](docs/TrolleyApi.md#manualremittanceartistsartistidclaimsclaimidmanualremittancepost) | **POST** /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance
 *TrolleyApi* | [**trolleyWebhookWebhooksTrolleyPost**](docs/TrolleyApi.md#trolleywebhookwebhookstrolleypost) | **POST** /webhooks/trolley | Trolley Webhook
 *TrustApi* | [**getTrustTraceArtistsArtistIdTrustTraceGet**](docs/TrustApi.md#gettrusttraceartistsartistidtrusttraceget) | **GET** /artists/{artist_id}/trust/trace | Get Trust Trace
+*TvfilmApi* | [**runTvfilmAgentsTvfilmArtistsArtistIdAgentsRunPost**](docs/TvfilmApi.md#runtvfilmagentstvfilmartistsartistidagentsrunpost) | **POST** /tvfilm/artists/{artist_id}/agents/run | Run Tvfilm Agents
+*TvfilmApi* | [**tvfilmAnomalyRuleCatalogTvfilmCatalogsAnomalyRulesGet**](docs/TvfilmApi.md#tvfilmanomalyrulecatalogtvfilmcatalogsanomalyrulesget) | **GET** /tvfilm/catalogs/anomaly-rules | Tvfilm Anomaly Rule Catalog
+*TvfilmApi* | [**tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPost**](docs/TvfilmApi.md#tvfilmbulkdraftclaimstvfilmartistsartistidclaimsbulkdraftpost) | **POST** /tvfilm/artists/{artist_id}/claims/bulk-draft | Tvfilm Bulk Draft Claims
+*TvfilmApi* | [**tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPost**](docs/TvfilmApi.md#tvfilmbulkexportclaimstvfilmartistsartistidclaimsbulkexportpost) | **POST** /tvfilm/artists/{artist_id}/claims/bulk-export | Tvfilm Bulk Export Claims
+*TvfilmApi* | [**tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGet**](docs/TvfilmApi.md#tvfilmcalculationaudittvfilmartistsartistidcalculationauditget) | **GET** /tvfilm/artists/{artist_id}/calculation-audit | Tvfilm Calculation Audit
+*TvfilmApi* | [**tvfilmDashboardTvfilmArtistsArtistIdDashboardGet**](docs/TvfilmApi.md#tvfilmdashboardtvfilmartistsartistiddashboardget) | **GET** /tvfilm/artists/{artist_id}/dashboard | Tvfilm Dashboard
+*TvfilmApi* | [**tvfilmDraftClaimsTvfilmArtistsArtistIdClaimsDraftPost**](docs/TvfilmApi.md#tvfilmdraftclaimstvfilmartistsartistidclaimsdraftpost) | **POST** /tvfilm/artists/{artist_id}/claims/draft | Tvfilm Draft Claims
+*TvfilmApi* | [**tvfilmEnterprisePortfolioAnalyzeTvfilmEnterprisePortfolioAnalyzePost**](docs/TvfilmApi.md#tvfilmenterpriseportfolioanalyzetvfilmenterpriseportfolioanalyzepost) | **POST** /tvfilm/enterprise/portfolio/analyze | Tvfilm Enterprise Portfolio Analyze
+*TvfilmApi* | [**tvfilmEnterprisePortfolioJobTvfilmEnterprisePortfolioJobIdGet**](docs/TvfilmApi.md#tvfilmenterpriseportfoliojobtvfilmenterpriseportfoliojobidget) | **GET** /tvfilm/enterprise/portfolio/{job_id} | Tvfilm Enterprise Portfolio Job
+*TvfilmApi* | [**tvfilmEvidenceTemplatesTvfilmCatalogsEvidenceTemplatesGet**](docs/TvfilmApi.md#tvfilmevidencetemplatestvfilmcatalogsevidencetemplatesget) | **GET** /tvfilm/catalogs/evidence-templates | Tvfilm Evidence Templates
+*TvfilmApi* | [**tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGet**](docs/TvfilmApi.md#tvfilmexportevidencepackettvfilmclaimsclaimidevidenceexportget) | **GET** /tvfilm/claims/{claim_id}/evidence/export | Tvfilm Export Evidence Packet
+*TvfilmApi* | [**tvfilmForecastTvfilmArtistsArtistIdForecastPost**](docs/TvfilmApi.md#tvfilmforecasttvfilmartistsartistidforecastpost) | **POST** /tvfilm/artists/{artist_id}/forecast | Tvfilm Forecast
+*TvfilmApi* | [**tvfilmIngestionCommitTvfilmArtistsArtistIdIngestionCommitPost**](docs/TvfilmApi.md#tvfilmingestioncommittvfilmartistsartistidingestioncommitpost) | **POST** /tvfilm/artists/{artist_id}/ingestion/commit | Tvfilm Ingestion Commit
+*TvfilmApi* | [**tvfilmIngestionFormatsTvfilmIngestionFormatsGet**](docs/TvfilmApi.md#tvfilmingestionformatstvfilmingestionformatsget) | **GET** /tvfilm/ingestion/formats | Tvfilm Ingestion Formats
+*TvfilmApi* | [**tvfilmIngestionPreviewTvfilmIngestionPreviewPost**](docs/TvfilmApi.md#tvfilmingestionpreviewtvfilmingestionpreviewpost) | **POST** /tvfilm/ingestion/preview | Tvfilm Ingestion Preview
+*TvfilmApi* | [**tvfilmRoleOptionsTvfilmRolesOptionsGet**](docs/TvfilmApi.md#tvfilmroleoptionstvfilmrolesoptionsget) | **GET** /tvfilm/roles/options | Tvfilm Role Options
+*TvfilmApi* | [**tvfilmScanAnomaliesTvfilmArtistsArtistIdAnomaliesScanPost**](docs/TvfilmApi.md#tvfilmscananomaliestvfilmartistsartistidanomaliesscanpost) | **POST** /tvfilm/artists/{artist_id}/anomalies/scan | Tvfilm Scan Anomalies
+*TvfilmApi* | [**tvfilmTrustExplainTvfilmTrustExplainPost**](docs/TvfilmApi.md#tvfilmtrustexplaintvfilmtrustexplainpost) | **POST** /tvfilm/trust/explain | Tvfilm Trust Explain
 *WidgetApi* | [**claimWidgetClaimPost**](docs/WidgetApi.md#claimwidgetclaimpost) | **POST** /widget/claim | Claim
 *WidgetApi* | [**estimateWidgetEstimatePost**](docs/WidgetApi.md#estimatewidgetestimatepost) | **POST** /widget/estimate | Estimate
 *WidgetApi* | [**listLeadsWidgetLeadsGet**](docs/WidgetApi.md#listleadswidgetleadsget) | **GET** /widget/leads | List Leads
@@ -485,6 +503,12 @@ All URIs are relative to *http://localhost*
 - [SupportSuggestionResponse](docs/SupportSuggestionResponse.md)
 - [SyncJobCreateRequest](docs/SyncJobCreateRequest.md)
 - [SyncJobSchema](docs/SyncJobSchema.md)
+- [TVFilmBulkClaimDraftRequest](docs/TVFilmBulkClaimDraftRequest.md)
+- [TVFilmBulkExportRequest](docs/TVFilmBulkExportRequest.md)
+- [TVFilmClaimDraftRequest](docs/TVFilmClaimDraftRequest.md)
+- [TVFilmForecastRequest](docs/TVFilmForecastRequest.md)
+- [TVFilmPortfolioAnalysisRequest](docs/TVFilmPortfolioAnalysisRequest.md)
+- [TVFilmTrustExplainRequest](docs/TVFilmTrustExplainRequest.md)
 - [TaxOptimizerRequest](docs/TaxOptimizerRequest.md)
 - [TeamMemberCreate](docs/TeamMemberCreate.md)
 - [TeamMemberSchema](docs/TeamMemberSchema.md)

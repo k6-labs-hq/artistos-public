@@ -51,6 +51,10 @@ class Artist(Base):
     founder_slot_number: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
     founder_locked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     contingency_fee_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
+    primary_vertical: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    tvfilm_role: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    organization_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    enterprise_mode_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
 
 class ArtistSchema(BaseModel):
@@ -82,6 +86,10 @@ class ArtistSchema(BaseModel):
     founder_slot_number: int | None = None
     founder_locked_at: datetime | None = None
     contingency_fee_percent: float | None = None
+    primary_vertical: str | None = None
+    tvfilm_role: str | None = None
+    organization_type: str | None = None
+    enterprise_mode_enabled: bool = False
 
 
 class ArtistCreate(BaseModel):
@@ -96,3 +104,7 @@ class ArtistCreate(BaseModel):
     default_attorney_grace_period_days: int = 60
     primary_jurisdiction: str = "USA"
     preferred_contract_type: str = "recording"
+    primary_vertical: str | None = "MUSIC"
+    tvfilm_role: str | None = None
+    organization_type: str | None = None
+    enterprise_mode_enabled: bool = False

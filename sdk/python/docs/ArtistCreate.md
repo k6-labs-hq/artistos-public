@@ -16,6 +16,10 @@ Name | Type | Description | Notes
 **default_attorney_grace_period_days** | **int** |  | [optional] [default to 60]
 **primary_jurisdiction** | **str** |  | [optional] [default to 'USA']
 **preferred_contract_type** | **str** |  | [optional] [default to 'recording']
+**primary_vertical** | **str** |  | [optional] 
+**tvfilm_role** | **str** |  | [optional] 
+**organization_type** | **str** |  | [optional] 
+**enterprise_mode_enabled** | **bool** |  | [optional] [default to False]
 
 ## Example
 

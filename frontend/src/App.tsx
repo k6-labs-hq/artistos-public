@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
+import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
+
 type ThemeMode = "dark" | "light";
 
 const navLinks = ["Platform", "How It Works", "Use Cases", "Security", "Docs"];
@@ -171,7 +174,7 @@ export function App() {
 
   const heroSubtitle = useMemo(
     () =>
-      "Detect leakage across Spotify, TikTok, YouTube, PROs, MLC and more. Surface actionable recovery opportunities with AI-powered analysis.",
+      "Detect leakage across music, TV, and film revenue systems. Surface actionable recovery opportunities with AI-powered analysis, trust-layer explainability, and enterprise portfolio automation.",
     [],
   );
 
@@ -265,7 +268,7 @@ export function App() {
         <section id="features" className="features" data-reveal="true">
           <div className="section-head">
             <h2>Core XR7 Capabilities</h2>
-            <p>Built for artists, managers, songwriters, and publishers that need forensic-grade royalty visibility.</p>
+            <p>Built for artists, managers, songwriters, agencies, production teams, and rights operators that need forensic-grade revenue visibility.</p>
           </div>
           <div className="feature-grid">
             {featureCards.map((card) => (
@@ -298,6 +301,10 @@ export function App() {
             ))}
           </ol>
         </section>
+
+        <TVFilmWorkspace />
+
+        <TVFilmEnterprisePanels />
 
         <section className="dashboard-preview" data-reveal="true">
           <div className="section-head">

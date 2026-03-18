@@ -124,6 +124,12 @@ from xr7_sdk.models.support_message_view import SupportMessageView
 from xr7_sdk.models.support_suggestion_response import SupportSuggestionResponse
 from xr7_sdk.models.sync_job_create_request import SyncJobCreateRequest
 from xr7_sdk.models.sync_job_schema import SyncJobSchema
+from xr7_sdk.models.tv_film_bulk_claim_draft_request import TVFilmBulkClaimDraftRequest
+from xr7_sdk.models.tv_film_bulk_export_request import TVFilmBulkExportRequest
+from xr7_sdk.models.tv_film_claim_draft_request import TVFilmClaimDraftRequest
+from xr7_sdk.models.tv_film_forecast_request import TVFilmForecastRequest
+from xr7_sdk.models.tv_film_portfolio_analysis_request import TVFilmPortfolioAnalysisRequest
+from xr7_sdk.models.tv_film_trust_explain_request import TVFilmTrustExplainRequest
 from xr7_sdk.models.tax_optimizer_request import TaxOptimizerRequest
 from xr7_sdk.models.team_member_create import TeamMemberCreate
 from xr7_sdk.models.team_member_schema import TeamMemberSchema

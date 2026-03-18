@@ -45,6 +45,7 @@ from XR7.api.routers import class_action as class_action_router
 from XR7.api.routers import ml_suite as ml_suite_router
 from XR7.api.routers import governance as governance_router
 from XR7.api.routers import advance_governance as advance_governance_router
+from XR7.api.routers import tvfilm as tvfilm_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -88,6 +89,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.advance_approval  # noqa: F401
     import XR7.models.advance_offer  # noqa: F401
     import XR7.models.advance_recovery_packet  # noqa: F401
+    import XR7.models.tvfilm_portfolio_job  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -226,6 +228,7 @@ app.include_router(class_action_router.router)
 app.include_router(ml_suite_router.router)
 app.include_router(governance_router.router)
 app.include_router(advance_governance_router.router)
+app.include_router(tvfilm_router.router)
 
 
 @app.get("/health")

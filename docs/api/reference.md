@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 318
+Total endpoints: 336
 
 ## Endpoint Table
 
@@ -312,6 +312,24 @@ Total endpoints: 318
 | expansion | GET | /stats/public/recovery | Public Recovery Stats | public_recovery_stats_stats_public_recovery_get | - | - | curl -X GET http://localhost:8000/stats/public/recovery |
 | public | GET | /stats/public/success-stories | Public Success Stories | public_success_stories_stats_public_success_stories_get | - | - | curl -X GET http://localhost:8000/stats/public/success-stories |
 | terms | GET | /terms | Get Terms | get_terms_terms_get | - | object | curl -X GET http://localhost:8000/terms |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/agents/run | Run Tvfilm Agents | run_tvfilm_agents_tvfilm_artists__artist_id__agents_run_post | - | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/agents/run |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/anomalies/scan | Tvfilm Scan Anomalies | tvfilm_scan_anomalies_tvfilm_artists__artist_id__anomalies_scan_post | - | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/anomalies/scan |
+| tvfilm | GET | /tvfilm/artists/{artist_id}/calculation-audit | Tvfilm Calculation Audit | tvfilm_calculation_audit_tvfilm_artists__artist_id__calculation_audit_get | - | - | curl -X GET http://localhost:8000/tvfilm/artists/<artist_id>/calculation-audit |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/claims/bulk-draft | Tvfilm Bulk Draft Claims | tvfilm_bulk_draft_claims_tvfilm_artists__artist_id__claims_bulk_draft_post | TVFilmBulkClaimDraftRequest | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/claims/bulk-draft -H 'Content-Type: application/json' -d '{}' |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/claims/bulk-export | Tvfilm Bulk Export Claims | tvfilm_bulk_export_claims_tvfilm_artists__artist_id__claims_bulk_export_post | TVFilmBulkExportRequest | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/claims/bulk-export -H 'Content-Type: application/json' -d '{}' |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/claims/draft | Tvfilm Draft Claims | tvfilm_draft_claims_tvfilm_artists__artist_id__claims_draft_post | TVFilmClaimDraftRequest | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/claims/draft -H 'Content-Type: application/json' -d '{}' |
+| tvfilm | GET | /tvfilm/artists/{artist_id}/dashboard | Tvfilm Dashboard | tvfilm_dashboard_tvfilm_artists__artist_id__dashboard_get | - | - | curl -X GET http://localhost:8000/tvfilm/artists/<artist_id>/dashboard |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/forecast | Tvfilm Forecast | tvfilm_forecast_tvfilm_artists__artist_id__forecast_post | TVFilmForecastRequest | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/forecast -H 'Content-Type: application/json' -d '{}' |
+| tvfilm | POST | /tvfilm/artists/{artist_id}/ingestion/commit | Tvfilm Ingestion Commit | tvfilm_ingestion_commit_tvfilm_artists__artist_id__ingestion_commit_post | - | - | curl -X POST http://localhost:8000/tvfilm/artists/<artist_id>/ingestion/commit |
+| tvfilm | GET | /tvfilm/catalogs/anomaly-rules | Tvfilm Anomaly Rule Catalog | tvfilm_anomaly_rule_catalog_tvfilm_catalogs_anomaly_rules_get | - | - | curl -X GET http://localhost:8000/tvfilm/catalogs/anomaly-rules |
+| tvfilm | GET | /tvfilm/catalogs/evidence-templates | Tvfilm Evidence Templates | tvfilm_evidence_templates_tvfilm_catalogs_evidence_templates_get | - | - | curl -X GET http://localhost:8000/tvfilm/catalogs/evidence-templates |
+| tvfilm | GET | /tvfilm/claims/{claim_id}/evidence/export | Tvfilm Export Evidence Packet | tvfilm_export_evidence_packet_tvfilm_claims__claim_id__evidence_export_get | - | - | curl -X GET http://localhost:8000/tvfilm/claims/<claim_id>/evidence/export |
+| tvfilm | POST | /tvfilm/enterprise/portfolio/analyze | Tvfilm Enterprise Portfolio Analyze | tvfilm_enterprise_portfolio_analyze_tvfilm_enterprise_portfolio_analyze_post | TVFilmPortfolioAnalysisRequest | - | curl -X POST http://localhost:8000/tvfilm/enterprise/portfolio/analyze -H 'Content-Type: application/json' -d '{}' |
+| tvfilm | GET | /tvfilm/enterprise/portfolio/{job_id} | Tvfilm Enterprise Portfolio Job | tvfilm_enterprise_portfolio_job_tvfilm_enterprise_portfolio__job_id__get | - | - | curl -X GET http://localhost:8000/tvfilm/enterprise/portfolio/<job_id> |
+| tvfilm | GET | /tvfilm/ingestion/formats | Tvfilm Ingestion Formats | tvfilm_ingestion_formats_tvfilm_ingestion_formats_get | - | - | curl -X GET http://localhost:8000/tvfilm/ingestion/formats |
+| tvfilm | POST | /tvfilm/ingestion/preview | Tvfilm Ingestion Preview | tvfilm_ingestion_preview_tvfilm_ingestion_preview_post | - | - | curl -X POST http://localhost:8000/tvfilm/ingestion/preview |
+| tvfilm | GET | /tvfilm/roles/options | Tvfilm Role Options | tvfilm_role_options_tvfilm_roles_options_get | - | - | curl -X GET http://localhost:8000/tvfilm/roles/options |
+| tvfilm | POST | /tvfilm/trust/explain | Tvfilm Trust Explain | tvfilm_trust_explain_tvfilm_trust_explain_post | TVFilmTrustExplainRequest | - | curl -X POST http://localhost:8000/tvfilm/trust/explain -H 'Content-Type: application/json' -d '{}' |
 | branding | GET | /ui/shell | Ui Shell | ui_shell_ui_shell_get | - | - | curl -X GET http://localhost:8000/ui/shell |
 | forensic-api | GET | /variance | List Variance | list_variance_variance_get | - | - | curl -X GET http://localhost:8000/variance |
 | forensic-api | GET | /variance/{variance_id}/evidence | Variance Evidence | variance_evidence_variance__variance_id__evidence_get | - | - | curl -X GET http://localhost:8000/variance/{variance_id}/evidence |

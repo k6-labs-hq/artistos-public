@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 import * as runtime from '../runtime';
-import { BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostToJSON, } from '../models/index';
+import { BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostToJSON, RecoveryAutoRequestToJSON, } from '../models/index';
 /**
  *
  */
@@ -790,6 +790,58 @@ export class RecoveryApi extends runtime.BaseAPI {
      */
     async recoveryRoiArtistsArtistIdRecoveryRoiGet(requestParameters, initOverrides) {
         const response = await this.recoveryRoiArtistsArtistIdRecoveryRoiGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost without sending the request
+     */
+    async runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost().');
+        }
+        if (requestParameters['recoveryAutoRequest'] == null) {
+            throw new runtime.RequiredError('recoveryAutoRequest', 'Required parameter "recoveryAutoRequest" was null or undefined when calling runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        let urlPath = `/artists/{artist_id}/recovery/auto`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RecoveryAutoRequestToJSON(requestParameters['recoveryAutoRequest']),
+        };
+    }
+    /**
+     * Run autonomous recovery-management agents for this artist.  Executes payer chasing, evidence packet generation, SOL monitoring, settlement tracking, and optionally rights registration planning.
+     * Run Recovery Autopilot
+     */
+    async runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Run autonomous recovery-management agents for this artist.  Executes payer chasing, evidence packet generation, SOL monitoring, settlement tracking, and optionally rights registration planning.
+     * Run Recovery Autopilot
+     */
+    async runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost(requestParameters, initOverrides) {
+        const response = await this.runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**

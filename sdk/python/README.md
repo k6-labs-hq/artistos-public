@@ -375,6 +375,24 @@ Class | Method | HTTP request | Description
 *TrolleyApi* | [**manual_remittance_artists_artist_id_claims_claim_id_manual_remittance_post**](docs/TrolleyApi.md#manual_remittance_artists_artist_id_claims_claim_id_manual_remittance_post) | **POST** /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance
 *TrolleyApi* | [**trolley_webhook_webhooks_trolley_post**](docs/TrolleyApi.md#trolley_webhook_webhooks_trolley_post) | **POST** /webhooks/trolley | Trolley Webhook
 *TrustApi* | [**get_trust_trace_artists_artist_id_trust_trace_get**](docs/TrustApi.md#get_trust_trace_artists_artist_id_trust_trace_get) | **GET** /artists/{artist_id}/trust/trace | Get Trust Trace
+*TvfilmApi* | [**run_tvfilm_agents_tvfilm_artists_artist_id_agents_run_post**](docs/TvfilmApi.md#run_tvfilm_agents_tvfilm_artists_artist_id_agents_run_post) | **POST** /tvfilm/artists/{artist_id}/agents/run | Run Tvfilm Agents
+*TvfilmApi* | [**tvfilm_anomaly_rule_catalog_tvfilm_catalogs_anomaly_rules_get**](docs/TvfilmApi.md#tvfilm_anomaly_rule_catalog_tvfilm_catalogs_anomaly_rules_get) | **GET** /tvfilm/catalogs/anomaly-rules | Tvfilm Anomaly Rule Catalog
+*TvfilmApi* | [**tvfilm_bulk_draft_claims_tvfilm_artists_artist_id_claims_bulk_draft_post**](docs/TvfilmApi.md#tvfilm_bulk_draft_claims_tvfilm_artists_artist_id_claims_bulk_draft_post) | **POST** /tvfilm/artists/{artist_id}/claims/bulk-draft | Tvfilm Bulk Draft Claims
+*TvfilmApi* | [**tvfilm_bulk_export_claims_tvfilm_artists_artist_id_claims_bulk_export_post**](docs/TvfilmApi.md#tvfilm_bulk_export_claims_tvfilm_artists_artist_id_claims_bulk_export_post) | **POST** /tvfilm/artists/{artist_id}/claims/bulk-export | Tvfilm Bulk Export Claims
+*TvfilmApi* | [**tvfilm_calculation_audit_tvfilm_artists_artist_id_calculation_audit_get**](docs/TvfilmApi.md#tvfilm_calculation_audit_tvfilm_artists_artist_id_calculation_audit_get) | **GET** /tvfilm/artists/{artist_id}/calculation-audit | Tvfilm Calculation Audit
+*TvfilmApi* | [**tvfilm_dashboard_tvfilm_artists_artist_id_dashboard_get**](docs/TvfilmApi.md#tvfilm_dashboard_tvfilm_artists_artist_id_dashboard_get) | **GET** /tvfilm/artists/{artist_id}/dashboard | Tvfilm Dashboard
+*TvfilmApi* | [**tvfilm_draft_claims_tvfilm_artists_artist_id_claims_draft_post**](docs/TvfilmApi.md#tvfilm_draft_claims_tvfilm_artists_artist_id_claims_draft_post) | **POST** /tvfilm/artists/{artist_id}/claims/draft | Tvfilm Draft Claims
+*TvfilmApi* | [**tvfilm_enterprise_portfolio_analyze_tvfilm_enterprise_portfolio_analyze_post**](docs/TvfilmApi.md#tvfilm_enterprise_portfolio_analyze_tvfilm_enterprise_portfolio_analyze_post) | **POST** /tvfilm/enterprise/portfolio/analyze | Tvfilm Enterprise Portfolio Analyze
+*TvfilmApi* | [**tvfilm_enterprise_portfolio_job_tvfilm_enterprise_portfolio_job_id_get**](docs/TvfilmApi.md#tvfilm_enterprise_portfolio_job_tvfilm_enterprise_portfolio_job_id_get) | **GET** /tvfilm/enterprise/portfolio/{job_id} | Tvfilm Enterprise Portfolio Job
+*TvfilmApi* | [**tvfilm_evidence_templates_tvfilm_catalogs_evidence_templates_get**](docs/TvfilmApi.md#tvfilm_evidence_templates_tvfilm_catalogs_evidence_templates_get) | **GET** /tvfilm/catalogs/evidence-templates | Tvfilm Evidence Templates
+*TvfilmApi* | [**tvfilm_export_evidence_packet_tvfilm_claims_claim_id_evidence_export_get**](docs/TvfilmApi.md#tvfilm_export_evidence_packet_tvfilm_claims_claim_id_evidence_export_get) | **GET** /tvfilm/claims/{claim_id}/evidence/export | Tvfilm Export Evidence Packet
+*TvfilmApi* | [**tvfilm_forecast_tvfilm_artists_artist_id_forecast_post**](docs/TvfilmApi.md#tvfilm_forecast_tvfilm_artists_artist_id_forecast_post) | **POST** /tvfilm/artists/{artist_id}/forecast | Tvfilm Forecast
+*TvfilmApi* | [**tvfilm_ingestion_commit_tvfilm_artists_artist_id_ingestion_commit_post**](docs/TvfilmApi.md#tvfilm_ingestion_commit_tvfilm_artists_artist_id_ingestion_commit_post) | **POST** /tvfilm/artists/{artist_id}/ingestion/commit | Tvfilm Ingestion Commit
+*TvfilmApi* | [**tvfilm_ingestion_formats_tvfilm_ingestion_formats_get**](docs/TvfilmApi.md#tvfilm_ingestion_formats_tvfilm_ingestion_formats_get) | **GET** /tvfilm/ingestion/formats | Tvfilm Ingestion Formats
+*TvfilmApi* | [**tvfilm_ingestion_preview_tvfilm_ingestion_preview_post**](docs/TvfilmApi.md#tvfilm_ingestion_preview_tvfilm_ingestion_preview_post) | **POST** /tvfilm/ingestion/preview | Tvfilm Ingestion Preview
+*TvfilmApi* | [**tvfilm_role_options_tvfilm_roles_options_get**](docs/TvfilmApi.md#tvfilm_role_options_tvfilm_roles_options_get) | **GET** /tvfilm/roles/options | Tvfilm Role Options
+*TvfilmApi* | [**tvfilm_scan_anomalies_tvfilm_artists_artist_id_anomalies_scan_post**](docs/TvfilmApi.md#tvfilm_scan_anomalies_tvfilm_artists_artist_id_anomalies_scan_post) | **POST** /tvfilm/artists/{artist_id}/anomalies/scan | Tvfilm Scan Anomalies
+*TvfilmApi* | [**tvfilm_trust_explain_tvfilm_trust_explain_post**](docs/TvfilmApi.md#tvfilm_trust_explain_tvfilm_trust_explain_post) | **POST** /tvfilm/trust/explain | Tvfilm Trust Explain
 *WidgetApi* | [**claim_widget_claim_post**](docs/WidgetApi.md#claim_widget_claim_post) | **POST** /widget/claim | Claim
 *WidgetApi* | [**estimate_widget_estimate_post**](docs/WidgetApi.md#estimate_widget_estimate_post) | **POST** /widget/estimate | Estimate
 *WidgetApi* | [**list_leads_widget_leads_get**](docs/WidgetApi.md#list_leads_widget_leads_get) | **GET** /widget/leads | List Leads
@@ -521,6 +539,12 @@ Class | Method | HTTP request | Description
  - [SupportSuggestionResponse](docs/SupportSuggestionResponse.md)
  - [SyncJobCreateRequest](docs/SyncJobCreateRequest.md)
  - [SyncJobSchema](docs/SyncJobSchema.md)
+ - [TVFilmBulkClaimDraftRequest](docs/TVFilmBulkClaimDraftRequest.md)
+ - [TVFilmBulkExportRequest](docs/TVFilmBulkExportRequest.md)
+ - [TVFilmClaimDraftRequest](docs/TVFilmClaimDraftRequest.md)
+ - [TVFilmForecastRequest](docs/TVFilmForecastRequest.md)
+ - [TVFilmPortfolioAnalysisRequest](docs/TVFilmPortfolioAnalysisRequest.md)
+ - [TVFilmTrustExplainRequest](docs/TVFilmTrustExplainRequest.md)
  - [TaxOptimizerRequest](docs/TaxOptimizerRequest.md)
  - [TeamMemberCreate](docs/TeamMemberCreate.md)
  - [TeamMemberSchema](docs/TeamMemberSchema.md)

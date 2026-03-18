@@ -183,6 +183,30 @@ export interface ArtistSchema {
      * @memberof ArtistSchema
      */
     contingencyFeePercent?: number | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    primaryVertical?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    tvfilmRole?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistSchema
+     */
+    organizationType?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ArtistSchema
+     */
+    enterpriseModeEnabled?: boolean;
 }
 
 
@@ -234,6 +258,10 @@ export function ArtistSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'founderSlotNumber': json['founder_slot_number'] == null ? undefined : json['founder_slot_number'],
         'founderLockedAt': json['founder_locked_at'] == null ? undefined : (new Date(json['founder_locked_at'])),
         'contingencyFeePercent': json['contingency_fee_percent'] == null ? undefined : json['contingency_fee_percent'],
+        'primaryVertical': json['primary_vertical'] == null ? undefined : json['primary_vertical'],
+        'tvfilmRole': json['tvfilm_role'] == null ? undefined : json['tvfilm_role'],
+        'organizationType': json['organization_type'] == null ? undefined : json['organization_type'],
+        'enterpriseModeEnabled': json['enterprise_mode_enabled'] == null ? undefined : json['enterprise_mode_enabled'],
     };
 }
 
@@ -274,6 +302,10 @@ export function ArtistSchemaToJSONTyped(value?: ArtistSchema | null, ignoreDiscr
         'founder_slot_number': value['founderSlotNumber'],
         'founder_locked_at': value['founderLockedAt'] == null ? value['founderLockedAt'] : value['founderLockedAt'].toISOString(),
         'contingency_fee_percent': value['contingencyFeePercent'],
+        'primary_vertical': value['primaryVertical'],
+        'tvfilm_role': value['tvfilmRole'],
+        'organization_type': value['organizationType'],
+        'enterprise_mode_enabled': value['enterpriseModeEnabled'],
     };
 }
 

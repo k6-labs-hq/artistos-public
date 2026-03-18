@@ -85,6 +85,30 @@ export interface ArtistCreate {
      * @memberof ArtistCreate
      */
     preferredContractType?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    primaryVertical?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    tvfilmRole?: string | null;
+    /**
+     * 
+     * @type {string}
+     * @memberof ArtistCreate
+     */
+    organizationType?: string | null;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ArtistCreate
+     */
+    enterpriseModeEnabled?: boolean;
 }
 
 /**
@@ -116,6 +140,10 @@ export function ArtistCreateFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'defaultAttorneyGracePeriodDays': json['default_attorney_grace_period_days'] == null ? undefined : json['default_attorney_grace_period_days'],
         'primaryJurisdiction': json['primary_jurisdiction'] == null ? undefined : json['primary_jurisdiction'],
         'preferredContractType': json['preferred_contract_type'] == null ? undefined : json['preferred_contract_type'],
+        'primaryVertical': json['primary_vertical'] == null ? undefined : json['primary_vertical'],
+        'tvfilmRole': json['tvfilm_role'] == null ? undefined : json['tvfilm_role'],
+        'organizationType': json['organization_type'] == null ? undefined : json['organization_type'],
+        'enterpriseModeEnabled': json['enterprise_mode_enabled'] == null ? undefined : json['enterprise_mode_enabled'],
     };
 }
 
@@ -141,6 +169,10 @@ export function ArtistCreateToJSONTyped(value?: ArtistCreate | null, ignoreDiscr
         'default_attorney_grace_period_days': value['defaultAttorneyGracePeriodDays'],
         'primary_jurisdiction': value['primaryJurisdiction'],
         'preferred_contract_type': value['preferredContractType'],
+        'primary_vertical': value['primaryVertical'],
+        'tvfilm_role': value['tvfilmRole'],
+        'organization_type': value['organizationType'],
+        'enterprise_mode_enabled': value['enterpriseModeEnabled'],
     };
 }
 

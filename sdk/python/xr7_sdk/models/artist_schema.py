@@ -55,7 +55,11 @@ class ArtistSchema(BaseModel):
     founder_slot_number: Optional[StrictInt] = None
     founder_locked_at: Optional[datetime] = None
     contingency_fee_percent: Optional[Union[StrictFloat, StrictInt]] = None
-    __properties: ClassVar[List[str]] = ["id", "name", "email", "role", "ipi_number", "stage_names", "created_at", "status", "onboarded_at", "activated_at", "first_name", "last_name", "country_code", "trolley_recipient_id", "payout_account_status", "payout_method_type", "payout_last4", "tax_form_status", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type", "xr7_future_leakage_prevented", "is_founder", "founder_slot_number", "founder_locked_at", "contingency_fee_percent"]
+    primary_vertical: Optional[StrictStr] = None
+    tvfilm_role: Optional[StrictStr] = None
+    organization_type: Optional[StrictStr] = None
+    enterprise_mode_enabled: Optional[StrictBool] = False
+    __properties: ClassVar[List[str]] = ["id", "name", "email", "role", "ipi_number", "stage_names", "created_at", "status", "onboarded_at", "activated_at", "first_name", "last_name", "country_code", "trolley_recipient_id", "payout_account_status", "payout_method_type", "payout_last4", "tax_form_status", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type", "xr7_future_leakage_prevented", "is_founder", "founder_slot_number", "founder_locked_at", "contingency_fee_percent", "primary_vertical", "tvfilm_role", "organization_type", "enterprise_mode_enabled"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -166,6 +170,21 @@ class ArtistSchema(BaseModel):
         if self.contingency_fee_percent is None and "contingency_fee_percent" in self.model_fields_set:
             _dict['contingency_fee_percent'] = None
 
+        # set to None if primary_vertical (nullable) is None
+        # and model_fields_set contains the field
+        if self.primary_vertical is None and "primary_vertical" in self.model_fields_set:
+            _dict['primary_vertical'] = None
+
+        # set to None if tvfilm_role (nullable) is None
+        # and model_fields_set contains the field
+        if self.tvfilm_role is None and "tvfilm_role" in self.model_fields_set:
+            _dict['tvfilm_role'] = None
+
+        # set to None if organization_type (nullable) is None
+        # and model_fields_set contains the field
+        if self.organization_type is None and "organization_type" in self.model_fields_set:
+            _dict['organization_type'] = None
+
         return _dict
 
     @classmethod
@@ -203,7 +222,11 @@ class ArtistSchema(BaseModel):
             "is_founder": obj.get("is_founder") if obj.get("is_founder") is not None else False,
             "founder_slot_number": obj.get("founder_slot_number"),
             "founder_locked_at": obj.get("founder_locked_at"),
-            "contingency_fee_percent": obj.get("contingency_fee_percent")
+            "contingency_fee_percent": obj.get("contingency_fee_percent"),
+            "primary_vertical": obj.get("primary_vertical"),
+            "tvfilm_role": obj.get("tvfilm_role"),
+            "organization_type": obj.get("organization_type"),
+            "enterprise_mode_enabled": obj.get("enterprise_mode_enabled") if obj.get("enterprise_mode_enabled") is not None else False
         })
         return _obj
 

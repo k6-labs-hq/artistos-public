@@ -31,6 +31,10 @@ Name | Type | Description | Notes
 **founder_slot_number** | **int** |  | [optional] 
 **founder_locked_at** | **datetime** |  | [optional] 
 **contingency_fee_percent** | **float** |  | [optional] 
+**primary_vertical** | **str** |  | [optional] 
+**tvfilm_role** | **str** |  | [optional] 
+**organization_type** | **str** |  | [optional] 
+**enterprise_mode_enabled** | **bool** |  | [optional] [default to False]
 
 ## Example
 

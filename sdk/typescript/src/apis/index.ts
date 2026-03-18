@@ -40,6 +40,7 @@ export * from './TermsApi';
 export * from './TransparencyApi';
 export * from './TrolleyApi';
 export * from './TrustApi';
+export * from './TvfilmApi';
 export * from './WidgetApi';
 export * from './WorkflowApi';
 export * from './WorkspaceApi';

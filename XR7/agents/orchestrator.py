@@ -54,6 +54,26 @@ from XR7.agents.onboarding_agents import (
     WelcomeSummaryAgent,
 )
 from XR7.agents.advance_recovery_agents import AdvanceRecoveryPacketAgent
+from XR7.agents.tvfilm_agents import (
+    BackendParticipationAgent,
+    DistributionWindowAgent,
+    EpisodeSeasonRepairAgent,
+    FirstClaimFastTrackAgentTVFilm,
+    ForeignResidualsAgent,
+    KitRentalAgent,
+    OvertimePenaltyAgent,
+    PayrollAuditAgent,
+    ProductionIDRepairAgent,
+    ProductionMetadataBuilderAgent,
+    ResidualsReconstructionAgent,
+    RoleInterpreterAgent,
+    StreamingReuseAgent,
+    StuntAdjustmentAgent,
+    SyndicationScannerAgent,
+    TVFilmComfortAgent,
+    TVFilmExplainerAgent,
+    UGCClipScannerAgent,
+)
 from XR7.agents.state import XR7State, add_trace_event, initial_state
 from XR7.graph.nodes.support_agent import ArtistSupportAgent
 from xr7_common.logging import get_logger
@@ -129,6 +149,24 @@ AGENTS: dict[str, AgentFn] = {
     "claim_escalation_agent": ClaimEscalationAgent,
     "attorney_export_agent": AttorneyExportAgent,
     "advance_recovery_packet_agent": AdvanceRecoveryPacketAgent,
+    "role_interpreter_agent": RoleInterpreterAgent,
+    "production_metadata_builder_agent": ProductionMetadataBuilderAgent,
+    "residuals_reconstruction_agent": ResidualsReconstructionAgent,
+    "distribution_window_agent": DistributionWindowAgent,
+    "backend_participation_agent": BackendParticipationAgent,
+    "foreign_residuals_agent": ForeignResidualsAgent,
+    "payroll_audit_agent": PayrollAuditAgent,
+    "overtime_penalty_agent": OvertimePenaltyAgent,
+    "kit_rental_agent": KitRentalAgent,
+    "stunt_adjustment_agent": StuntAdjustmentAgent,
+    "syndication_scanner_agent": SyndicationScannerAgent,
+    "streaming_reuse_agent": StreamingReuseAgent,
+    "ugc_clip_scanner_agent": UGCClipScannerAgent,
+    "episode_season_repair_agent": EpisodeSeasonRepairAgent,
+    "production_id_repair_agent": ProductionIDRepairAgent,
+    "tvfilm_comfort_agent": TVFilmComfortAgent,
+    "tvfilm_explainer_agent": TVFilmExplainerAgent,
+    "first_claim_fast_track_tvfilm_agent": FirstClaimFastTrackAgentTVFilm,
     "negotiation_agent": NegotiationAgent,
     "escalation_agent": EscalationAgent,
     "disbursement_agent": DisbursementAgent,
@@ -188,6 +226,27 @@ RECOVERY_ORDER: list[str] = [
     "calibration_agent",
 ]
 
+TVFILM_ORDER: list[str] = [
+    "role_interpreter_agent",
+    "production_metadata_builder_agent",
+    "episode_season_repair_agent",
+    "production_id_repair_agent",
+    "residuals_reconstruction_agent",
+    "distribution_window_agent",
+    "backend_participation_agent",
+    "foreign_residuals_agent",
+    "payroll_audit_agent",
+    "overtime_penalty_agent",
+    "kit_rental_agent",
+    "stunt_adjustment_agent",
+    "syndication_scanner_agent",
+    "streaming_reuse_agent",
+    "ugc_clip_scanner_agent",
+    "first_claim_fast_track_tvfilm_agent",
+    "tvfilm_explainer_agent",
+    "tvfilm_comfort_agent",
+]
+
 REFLECTION_AFTER = {
     "smart_upload_fixer",
     "catalog_auto_builder",
@@ -202,6 +261,12 @@ REFLECTION_AFTER = {
     "legal_counsel_prep_agent",
     "claim_escalation_agent",
     "attorney_export_agent",
+    "production_metadata_builder_agent",
+    "residuals_reconstruction_agent",
+    "backend_participation_agent",
+    "foreign_residuals_agent",
+    "ugc_clip_scanner_agent",
+    "first_claim_fast_track_tvfilm_agent",
 }
 
 
@@ -585,12 +650,35 @@ async def run_export_prep_pipeline(artist_id: str, run_id: str | None = None) ->
     return state
 
 
+async def run_tvfilm_vertical_orchestra(artist_id: str, run_id: str | None = None) -> XR7State:
+    rid = run_id or _ARTIST_LATEST_RUN.get(artist_id) or str(uuid4())
+    state = dict(_RUN_STATE.get(rid) or initial_state(artist_id, rid))
+
+    for node in TVFILM_ORDER:
+        state = await _run_node(state, node)
+        if state.get("next_action") == "reflection":
+            state = await _run_node(state, "reflection")
+            action = str(state.get("next_action") or "proceed")
+            pending = str(state.get("pending_agent") or "")
+            if action == "retry_previous_node" and pending in AGENTS:
+                state = await _run_node(state, pending)
+
+    _RUN_STATE[rid] = state
+    _ARTIST_LATEST_RUN[artist_id] = rid
+    _RUN_TRACE.setdefault(rid, [])
+    return state
+
+
 def run_xr7_recovery_orchestra_sync(artist_id: str, run_id: str | None = None) -> XR7State:
     return asyncio.run(run_xr7_recovery_orchestra(artist_id, run_id))
 
 
 def run_export_prep_pipeline_sync(artist_id: str, run_id: str | None = None) -> XR7State:
     return asyncio.run(run_export_prep_pipeline(artist_id, run_id))
+
+
+def run_tvfilm_vertical_orchestra_sync(artist_id: str, run_id: str | None = None) -> XR7State:
+    return asyncio.run(run_tvfilm_vertical_orchestra(artist_id, run_id))
 
 
 def run_support_agent_turn_sync(

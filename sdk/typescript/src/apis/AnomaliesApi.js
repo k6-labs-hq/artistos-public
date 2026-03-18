@@ -179,6 +179,13 @@ export class AnomaliesApi extends runtime.BaseAPI {
             queryParameters['debug'] = requestParameters['debug'];
         }
         const headerParameters = {};
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         let urlPath = `/artists/{artist_id}/anomalies`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
         return {

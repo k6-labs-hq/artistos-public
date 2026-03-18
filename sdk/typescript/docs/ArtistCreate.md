@@ -17,6 +17,10 @@ Name | Type
 `defaultAttorneyGracePeriodDays` | number
 `primaryJurisdiction` | string
 `preferredContractType` | string
+`primaryVertical` | string
+`tvfilmRole` | string
+`organizationType` | string
+`enterpriseModeEnabled` | boolean
 
 ## Example
 
@@ -36,6 +40,10 @@ const example = {
   "defaultAttorneyGracePeriodDays": null,
   "primaryJurisdiction": null,
   "preferredContractType": null,
+  "primaryVertical": null,
+  "tvfilmRole": null,
+  "organizationType": null,
+  "enterpriseModeEnabled": null,
 } satisfies ArtistCreate
 
 console.log(example)

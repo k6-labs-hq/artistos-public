@@ -71,6 +71,13 @@ export class EarningsApi extends runtime.BaseAPI {
         }
         const queryParameters = {};
         const headerParameters = {};
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         let urlPath = `/artists/{artist_id}/earnings/history`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
         return {
@@ -109,6 +116,13 @@ export class EarningsApi extends runtime.BaseAPI {
         }
         const queryParameters = {};
         const headerParameters = {};
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
         let urlPath = `/artists/{artist_id}/earnings`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
         return {

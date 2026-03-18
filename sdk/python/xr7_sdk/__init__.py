@@ -58,6 +58,7 @@ __all__ = [
     "TransparencyApi",
     "TrolleyApi",
     "TrustApi",
+    "TvfilmApi",
     "WidgetApi",
     "WorkflowApi",
     "WorkspaceApi",
@@ -185,6 +186,12 @@ __all__ = [
     "SupportSuggestionResponse",
     "SyncJobCreateRequest",
     "SyncJobSchema",
+    "TVFilmBulkClaimDraftRequest",
+    "TVFilmBulkExportRequest",
+    "TVFilmClaimDraftRequest",
+    "TVFilmForecastRequest",
+    "TVFilmPortfolioAnalysisRequest",
+    "TVFilmTrustExplainRequest",
     "TaxOptimizerRequest",
     "TeamMemberCreate",
     "TeamMemberSchema",
@@ -253,6 +260,7 @@ from xr7_sdk.api.terms_api import TermsApi as TermsApi
 from xr7_sdk.api.transparency_api import TransparencyApi as TransparencyApi
 from xr7_sdk.api.trolley_api import TrolleyApi as TrolleyApi
 from xr7_sdk.api.trust_api import TrustApi as TrustApi
+from xr7_sdk.api.tvfilm_api import TvfilmApi as TvfilmApi
 from xr7_sdk.api.widget_api import WidgetApi as WidgetApi
 from xr7_sdk.api.workflow_api import WorkflowApi as WorkflowApi
 from xr7_sdk.api.workspace_api import WorkspaceApi as WorkspaceApi
@@ -384,6 +392,12 @@ from xr7_sdk.models.support_message_view import SupportMessageView as SupportMes
 from xr7_sdk.models.support_suggestion_response import SupportSuggestionResponse as SupportSuggestionResponse
 from xr7_sdk.models.sync_job_create_request import SyncJobCreateRequest as SyncJobCreateRequest
 from xr7_sdk.models.sync_job_schema import SyncJobSchema as SyncJobSchema
+from xr7_sdk.models.tv_film_bulk_claim_draft_request import TVFilmBulkClaimDraftRequest as TVFilmBulkClaimDraftRequest
+from xr7_sdk.models.tv_film_bulk_export_request import TVFilmBulkExportRequest as TVFilmBulkExportRequest
+from xr7_sdk.models.tv_film_claim_draft_request import TVFilmClaimDraftRequest as TVFilmClaimDraftRequest
+from xr7_sdk.models.tv_film_forecast_request import TVFilmForecastRequest as TVFilmForecastRequest
+from xr7_sdk.models.tv_film_portfolio_analysis_request import TVFilmPortfolioAnalysisRequest as TVFilmPortfolioAnalysisRequest
+from xr7_sdk.models.tv_film_trust_explain_request import TVFilmTrustExplainRequest as TVFilmTrustExplainRequest
 from xr7_sdk.models.tax_optimizer_request import TaxOptimizerRequest as TaxOptimizerRequest
 from xr7_sdk.models.team_member_create import TeamMemberCreate as TeamMemberCreate
 from xr7_sdk.models.team_member_schema import TeamMemberSchema as TeamMemberSchema

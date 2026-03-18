@@ -17,7 +17,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from pydantic import BaseModel, ConfigDict, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
 from typing import Optional, Set
 from typing_extensions import Self
@@ -38,7 +38,11 @@ class ArtistCreate(BaseModel):
     default_attorney_grace_period_days: Optional[StrictInt] = 60
     primary_jurisdiction: Optional[StrictStr] = 'USA'
     preferred_contract_type: Optional[StrictStr] = 'recording'
-    __properties: ClassVar[List[str]] = ["name", "email", "first_name", "last_name", "country_code", "role", "ipi_number", "stage_names", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type"]
+    primary_vertical: Optional[StrictStr] = None
+    tvfilm_role: Optional[StrictStr] = None
+    organization_type: Optional[StrictStr] = None
+    enterprise_mode_enabled: Optional[StrictBool] = False
+    __properties: ClassVar[List[str]] = ["name", "email", "first_name", "last_name", "country_code", "role", "ipi_number", "stage_names", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type", "primary_vertical", "tvfilm_role", "organization_type", "enterprise_mode_enabled"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -109,6 +113,21 @@ class ArtistCreate(BaseModel):
         if self.stage_names is None and "stage_names" in self.model_fields_set:
             _dict['stage_names'] = None
 
+        # set to None if primary_vertical (nullable) is None
+        # and model_fields_set contains the field
+        if self.primary_vertical is None and "primary_vertical" in self.model_fields_set:
+            _dict['primary_vertical'] = None
+
+        # set to None if tvfilm_role (nullable) is None
+        # and model_fields_set contains the field
+        if self.tvfilm_role is None and "tvfilm_role" in self.model_fields_set:
+            _dict['tvfilm_role'] = None
+
+        # set to None if organization_type (nullable) is None
+        # and model_fields_set contains the field
+        if self.organization_type is None and "organization_type" in self.model_fields_set:
+            _dict['organization_type'] = None
+
         return _dict
 
     @classmethod
@@ -131,7 +150,11 @@ class ArtistCreate(BaseModel):
             "stage_names": obj.get("stage_names"),
             "default_attorney_grace_period_days": obj.get("default_attorney_grace_period_days") if obj.get("default_attorney_grace_period_days") is not None else 60,
             "primary_jurisdiction": obj.get("primary_jurisdiction") if obj.get("primary_jurisdiction") is not None else 'USA',
-            "preferred_contract_type": obj.get("preferred_contract_type") if obj.get("preferred_contract_type") is not None else 'recording'
+            "preferred_contract_type": obj.get("preferred_contract_type") if obj.get("preferred_contract_type") is not None else 'recording',
+            "primary_vertical": obj.get("primary_vertical"),
+            "tvfilm_role": obj.get("tvfilm_role"),
+            "organization_type": obj.get("organization_type"),
+            "enterprise_mode_enabled": obj.get("enterprise_mode_enabled") if obj.get("enterprise_mode_enabled") is not None else False
         })
         return _obj
 

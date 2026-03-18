@@ -147,6 +147,12 @@ docs/SupportMessageView.md
 docs/SupportSuggestionResponse.md
 docs/SyncJobCreateRequest.md
 docs/SyncJobSchema.md
+docs/TVFilmBulkClaimDraftRequest.md
+docs/TVFilmBulkExportRequest.md
+docs/TVFilmClaimDraftRequest.md
+docs/TVFilmForecastRequest.md
+docs/TVFilmPortfolioAnalysisRequest.md
+docs/TVFilmTrustExplainRequest.md
 docs/TaxOptimizerRequest.md
 docs/TeamApi.md
 docs/TeamMemberCreate.md
@@ -162,6 +168,7 @@ docs/TrolleyTransactionSchema.md
 docs/TrolleyTxnStatus.md
 docs/TrolleyTxnType.md
 docs/TrustApi.md
+docs/TvfilmApi.md
 docs/UGCSignalIngestRequest.md
 docs/UtilityRankRequest.md
 docs/ValidationError.md
@@ -225,6 +232,7 @@ src/apis/TermsApi.ts
 src/apis/TransparencyApi.ts
 src/apis/TrolleyApi.ts
 src/apis/TrustApi.ts
+src/apis/TvfilmApi.ts
 src/apis/WidgetApi.ts
 src/apis/WorkflowApi.ts
 src/apis/WorkspaceApi.ts
@@ -345,6 +353,12 @@ src/models/SupportMessageView.ts
 src/models/SupportSuggestionResponse.ts
 src/models/SyncJobCreateRequest.ts
 src/models/SyncJobSchema.ts
+src/models/TVFilmBulkClaimDraftRequest.ts
+src/models/TVFilmBulkExportRequest.ts
+src/models/TVFilmClaimDraftRequest.ts
+src/models/TVFilmForecastRequest.ts
+src/models/TVFilmPortfolioAnalysisRequest.ts
+src/models/TVFilmTrustExplainRequest.ts
 src/models/TaxOptimizerRequest.ts
 src/models/TeamMemberCreate.ts
 src/models/TeamMemberSchema.ts

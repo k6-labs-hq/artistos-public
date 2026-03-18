@@ -16523,6 +16523,700 @@
         }
       }
     },
+    "/tvfilm/roles/options": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Role Options",
+        "operationId": "tvfilm_role_options_tvfilm_roles_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/ingestion/formats": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Ingestion Formats",
+        "operationId": "tvfilm_ingestion_formats_tvfilm_ingestion_formats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/ingestion/preview": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Ingestion Preview",
+        "operationId": "tvfilm_ingestion_preview_tvfilm_ingestion_preview_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_tvfilm_ingestion_preview_tvfilm_ingestion_preview_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/ingestion/commit": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Ingestion Commit",
+        "operationId": "tvfilm_ingestion_commit_tvfilm_artists__artist_id__ingestion_commit_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_tvfilm_ingestion_commit_tvfilm_artists__artist_id__ingestion_commit_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/calculation-audit": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Calculation Audit",
+        "operationId": "tvfilm_calculation_audit_tvfilm_artists__artist_id__calculation_audit_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/anomalies/scan": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Scan Anomalies",
+        "operationId": "tvfilm_scan_anomalies_tvfilm_artists__artist_id__anomalies_scan_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/claims/draft": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Draft Claims",
+        "operationId": "tvfilm_draft_claims_tvfilm_artists__artist_id__claims_draft_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TVFilmClaimDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/claims/bulk-draft": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Bulk Draft Claims",
+        "operationId": "tvfilm_bulk_draft_claims_tvfilm_artists__artist_id__claims_bulk_draft_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TVFilmBulkClaimDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/forecast": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Forecast",
+        "operationId": "tvfilm_forecast_tvfilm_artists__artist_id__forecast_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TVFilmForecastRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/enterprise/portfolio/analyze": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Enterprise Portfolio Analyze",
+        "operationId": "tvfilm_enterprise_portfolio_analyze_tvfilm_enterprise_portfolio_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TVFilmPortfolioAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/enterprise/portfolio/{job_id}": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Enterprise Portfolio Job",
+        "operationId": "tvfilm_enterprise_portfolio_job_tvfilm_enterprise_portfolio__job_id__get",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/dashboard": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Dashboard",
+        "operationId": "tvfilm_dashboard_tvfilm_artists__artist_id__dashboard_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/trust/explain": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Trust Explain",
+        "operationId": "tvfilm_trust_explain_tvfilm_trust_explain_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TVFilmTrustExplainRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/agents/run": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Run Tvfilm Agents",
+        "operationId": "run_tvfilm_agents_tvfilm_artists__artist_id__agents_run_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/claims/{claim_id}/evidence/export": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Export Evidence Packet",
+        "operationId": "tvfilm_export_evidence_packet_tvfilm_claims__claim_id__evidence_export_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "pattern": "^(zip|pdf|json)$",
+              "default": "zip",
+              "title": "Format"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/artists/{artist_id}/claims/bulk-export": {
+      "post": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Bulk Export Claims",
+        "operationId": "tvfilm_bulk_export_claims_tvfilm_artists__artist_id__claims_bulk_export_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TVFilmBulkExportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/catalogs/anomaly-rules": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Anomaly Rule Catalog",
+        "operationId": "tvfilm_anomaly_rule_catalog_tvfilm_catalogs_anomaly_rules_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tvfilm/catalogs/evidence-templates": {
+      "get": {
+        "tags": [
+          "tvfilm"
+        ],
+        "summary": "Tvfilm Evidence Templates",
+        "operationId": "tvfilm_evidence_templates_tvfilm_catalogs_evidence_templates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -17079,6 +17773,45 @@
             "type": "string",
             "title": "Preferred Contract Type",
             "default": "recording"
+          },
+          "primary_vertical": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Vertical",
+            "default": "MUSIC"
+          },
+          "tvfilm_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tvfilm Role"
+          },
+          "organization_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Type"
+          },
+          "enterprise_mode_enabled": {
+            "type": "boolean",
+            "title": "Enterprise Mode Enabled",
+            "default": false
           }
         },
         "type": "object",
@@ -17461,6 +18194,44 @@
               }
             ],
             "title": "Contingency Fee Percent"
+          },
+          "primary_vertical": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Vertical"
+          },
+          "tvfilm_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tvfilm Role"
+          },
+          "organization_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Organization Type"
+          },
+          "enterprise_mode_enabled": {
+            "type": "boolean",
+            "title": "Enterprise Mode Enabled",
+            "default": false
           }
         },
         "type": "object",
@@ -17738,6 +18509,34 @@
           "file"
         ],
         "title": "Body_run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post"
+      },
+      "Body_tvfilm_ingestion_commit_tvfilm_artists__artist_id__ingestion_commit_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_tvfilm_ingestion_commit_tvfilm_artists__artist_id__ingestion_commit_post"
+      },
+      "Body_tvfilm_ingestion_preview_tvfilm_ingestion_preview_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_tvfilm_ingestion_preview_tvfilm_ingestion_preview_post"
       },
       "Body_upload_any_statement_artists__artist_id__ingestion_upload_any_post": {
         "properties": {
@@ -21922,6 +22721,135 @@
           "updated_at"
         ],
         "title": "SyncJobSchema"
+      },
+      "TVFilmBulkClaimDraftRequest": {
+        "properties": {
+          "anomaly_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Anomaly Ids"
+          },
+          "group_by_template": {
+            "type": "boolean",
+            "title": "Group By Template",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "TVFilmBulkClaimDraftRequest"
+      },
+      "TVFilmBulkExportRequest": {
+        "properties": {
+          "claim_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Claim Ids"
+          }
+        },
+        "type": "object",
+        "title": "TVFilmBulkExportRequest"
+      },
+      "TVFilmClaimDraftRequest": {
+        "properties": {
+          "anomaly_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Anomaly Ids"
+          },
+          "union_template": {
+            "type": "string",
+            "title": "Union Template",
+            "default": "SAG-AFTRA"
+          }
+        },
+        "type": "object",
+        "title": "TVFilmClaimDraftRequest"
+      },
+      "TVFilmForecastRequest": {
+        "properties": {
+          "anomaly_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Anomaly Ids"
+          },
+          "confidence_override": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Override"
+          }
+        },
+        "type": "object",
+        "title": "TVFilmForecastRequest"
+      },
+      "TVFilmPortfolioAnalysisRequest": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type"
+          },
+          "records": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Records"
+          },
+          "uploaded_filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploaded Filename"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "entity_type",
+          "records"
+        ],
+        "title": "TVFilmPortfolioAnalysisRequest"
+      },
+      "TVFilmTrustExplainRequest": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "agency_mode": {
+            "type": "boolean",
+            "title": "Agency Mode",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "role"
+        ],
+        "title": "TVFilmTrustExplainRequest"
       },
       "TaxOptimizerRequest": {
         "properties": {

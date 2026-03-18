@@ -149,6 +149,12 @@ docs/SupportMessageView.md
 docs/SupportSuggestionResponse.md
 docs/SyncJobCreateRequest.md
 docs/SyncJobSchema.md
+docs/TVFilmBulkClaimDraftRequest.md
+docs/TVFilmBulkExportRequest.md
+docs/TVFilmClaimDraftRequest.md
+docs/TVFilmForecastRequest.md
+docs/TVFilmPortfolioAnalysisRequest.md
+docs/TVFilmTrustExplainRequest.md
 docs/TaxOptimizerRequest.md
 docs/TeamApi.md
 docs/TeamMemberCreate.md
@@ -164,6 +170,7 @@ docs/TrolleyTransactionSchema.md
 docs/TrolleyTxnStatus.md
 docs/TrolleyTxnType.md
 docs/TrustApi.md
+docs/TvfilmApi.md
 docs/UGCSignalIngestRequest.md
 docs/UtilityRankRequest.md
 docs/ValidationError.md
@@ -193,7 +200,8 @@ setup.cfg
 setup.py
 test-requirements.txt
 test/__init__.py
-test/test_packet_sign_request.py
+test/test_tv_film_bulk_claim_draft_request.py
+test/test_tv_film_bulk_export_request.py
 tox.ini
 xr7_sdk/__init__.py
 xr7_sdk/api/__init__.py
@@ -237,6 +245,7 @@ xr7_sdk/api/terms_api.py
 xr7_sdk/api/transparency_api.py
 xr7_sdk/api/trolley_api.py
 xr7_sdk/api/trust_api.py
+xr7_sdk/api/tvfilm_api.py
 xr7_sdk/api/widget_api.py
 xr7_sdk/api/workflow_api.py
 xr7_sdk/api/workspace_api.py
@@ -370,6 +379,12 @@ xr7_sdk/models/token_response.py
 xr7_sdk/models/trolley_transaction_schema.py
 xr7_sdk/models/trolley_txn_status.py
 xr7_sdk/models/trolley_txn_type.py
+xr7_sdk/models/tv_film_bulk_claim_draft_request.py
+xr7_sdk/models/tv_film_bulk_export_request.py
+xr7_sdk/models/tv_film_claim_draft_request.py
+xr7_sdk/models/tv_film_forecast_request.py
+xr7_sdk/models/tv_film_portfolio_analysis_request.py
+xr7_sdk/models/tv_film_trust_explain_request.py
 xr7_sdk/models/ugc_signal_ingest_request.py
 xr7_sdk/models/utility_rank_request.py
 xr7_sdk/models/validation_error.py

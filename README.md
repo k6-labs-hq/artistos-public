@@ -2,6 +2,48 @@
 
 XR7 Engine 2 is a comprehensive platform designed to detect, recover, and prevent earning discrepancies for artists across all revenue streams — streaming royalties, touring settlements, merchandise royalties, sync licensing, brand partnerships, and platform payments.
 
+## Multi-Vertical Expansion: Music + TV/Film
+
+XR7 now supports production-grade TV/Film recovery workflows in parity with the music stack, including role-specific onboarding, ingestion normalization, anomaly detection, claim drafting, forecasting, agent orchestration, enterprise portfolio analysis, and trust-layer explainability.
+
+The TV/Film stack now includes:
+- union and studio compensation calculation rules for SAG-AFTRA, WGA, DGA, IATSE, AFM/AFTRA, and major studio/streaming platforms
+- rule-driven calculation audits per imported statement row
+- document-grade TV/Film evidence packet rendering to JSON, PDF, and ZIP
+- bulk TV/Film claim drafting and bulk export workflows
+- frontend onboarding and enterprise workspace surfaces for role selection, agency roster intake, and live trust-layer status
+
+Supported TV/Film role taxonomy includes:
+- Writer (TV/Film), Screenwriter, Showrunner
+- Director, Producer, Actor, Voice Actor
+- Stunt Performer, Editor, Cinematographer
+- Composer, VFX Artist, Animator
+- Crew (Grip/Gaffer/PA), Reality TV Participant, Documentary Creator
+- Talent Agency, Management Company, Law Firm, Production Company
+
+New TV/Film API surface:
+
+```
+GET  /tvfilm/roles/options
+GET  /tvfilm/ingestion/formats
+POST /tvfilm/ingestion/preview
+POST /tvfilm/artists/{artist_id}/ingestion/commit
+GET  /tvfilm/artists/{artist_id}/calculation-audit
+POST /tvfilm/artists/{artist_id}/anomalies/scan
+POST /tvfilm/artists/{artist_id}/claims/draft
+POST /tvfilm/artists/{artist_id}/claims/bulk-draft
+POST /tvfilm/artists/{artist_id}/claims/bulk-export
+POST /tvfilm/artists/{artist_id}/forecast
+GET  /tvfilm/artists/{artist_id}/dashboard
+POST /tvfilm/artists/{artist_id}/agents/run
+GET  /tvfilm/claims/{claim_id}/evidence/export
+POST /tvfilm/enterprise/portfolio/analyze
+GET  /tvfilm/enterprise/portfolio/{job_id}
+GET  /tvfilm/catalogs/anomaly-rules
+GET  /tvfilm/catalogs/evidence-templates
+POST /tvfilm/trust/explain
+```
+
 ## Market Readiness
 
 | Component | Status | Notes |

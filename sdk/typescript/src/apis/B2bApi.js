@@ -377,6 +377,53 @@ export class B2bApi extends runtime.BaseAPI {
         return await response.value();
     }
     /**
+     * Creates request options for managementDashboardV2ManagementOrgIdDashboardV2Get without sending the request
+     */
+    async managementDashboardV2ManagementOrgIdDashboardV2GetRequestOpts(requestParameters) {
+        if (requestParameters['orgId'] == null) {
+            throw new runtime.RequiredError('orgId', 'Required parameter "orgId" was null or undefined when calling managementDashboardV2ManagementOrgIdDashboardV2Get().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        if (requestParameters['xOrgKey'] != null) {
+            headerParameters['X-Org-Key'] = String(requestParameters['xOrgKey']);
+        }
+        if (requestParameters['xOrgRole'] != null) {
+            headerParameters['X-Org-Role'] = String(requestParameters['xOrgRole']);
+        }
+        if (requestParameters['xOrgActor'] != null) {
+            headerParameters['X-Org-Actor'] = String(requestParameters['xOrgActor']);
+        }
+        let urlPath = `/management/{org_id}/dashboard/v2`;
+        urlPath = urlPath.replace(`{${"org_id"}}`, encodeURIComponent(String(requestParameters['orgId'])));
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Management Dashboard V2
+     */
+    async managementDashboardV2ManagementOrgIdDashboardV2GetRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.managementDashboardV2ManagementOrgIdDashboardV2GetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Management Dashboard V2
+     */
+    async managementDashboardV2ManagementOrgIdDashboardV2Get(requestParameters, initOverrides) {
+        const response = await this.managementDashboardV2ManagementOrgIdDashboardV2GetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
      * Creates request options for managementForecastManagementOrgIdForecastGet without sending the request
      */
     async managementForecastManagementOrgIdForecastGetRequestOpts(requestParameters) {

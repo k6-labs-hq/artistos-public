@@ -32,6 +32,10 @@ Name | Type
 `founderSlotNumber` | number
 `founderLockedAt` | Date
 `contingencyFeePercent` | number
+`primaryVertical` | string
+`tvfilmRole` | string
+`organizationType` | string
+`enterpriseModeEnabled` | boolean
 
 ## Example
 
@@ -66,6 +70,10 @@ const example = {
   "founderSlotNumber": null,
   "founderLockedAt": null,
   "contingencyFeePercent": null,
+  "primaryVertical": null,
+  "tvfilmRole": null,
+  "organizationType": null,
+  "enterpriseModeEnabled": null,
 } satisfies ArtistSchema
 
 console.log(example)
