@@ -144,7 +144,7 @@ No authorization required
 
 ## authMeAuthMeGet
 
-> { [key: string]: any; } authMeAuthMeGet(authorization)
+> { [key: string]: any; } authMeAuthMeGet()
 
 Auth Me
 
@@ -159,15 +159,14 @@ import type { AuthMeAuthMeGetRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new AuthApi();
-
-  const body = {
-    // string (optional)
-    authorization: authorization_example,
-  } satisfies AuthMeAuthMeGetRequest;
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new AuthApi(config);
 
   try {
-    const data = await api.authMeAuthMeGet(body);
+    const data = await api.authMeAuthMeGet();
     console.log(data);
   } catch (error) {
     console.error(error);
@@ -180,10 +179,7 @@ example().catch(console.error);
 
 ### Parameters
 
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -191,7 +187,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -203,7 +199,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful Response |  -  |
-| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

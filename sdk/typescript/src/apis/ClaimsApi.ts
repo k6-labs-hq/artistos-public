@@ -77,7 +77,6 @@ export interface ClaimStrengthExplainerClaimsClaimIdStrengthExplainerGetRequest 
 export interface CreateClaimForArtistArtistsArtistIdClaimsPostRequest {
     artistId: string;
     claimCreateRequest: ClaimCreateRequest;
-    authorization?: string | null;
 }
 
 export interface EscalateLegalClaimsClaimIdEscalateLegalPostRequest {
@@ -115,7 +114,6 @@ export interface GetClaimClaimsClaimIdGetRequest {
 
 export interface GetEvidenceClaimsClaimIdEvidenceGetRequest {
     claimId: string;
-    authorization?: string | null;
 }
 
 export interface ListClaimsArtistsArtistIdClaimsGetRequest {
@@ -647,10 +645,14 @@ export class ClaimsApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/artists/{artist_id}/claims`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
@@ -1070,10 +1072,14 @@ export class ClaimsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/claims/{claim_id}/evidence`;
         urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
@@ -1123,6 +1129,14 @@ export class ClaimsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/artists/{artist_id}/claims`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));

@@ -20,7 +20,7 @@ class Artist(Base):
     __tablename__ = "artists"
     __table_args__ = (
         CheckConstraint(
-            "is_founder = 0 OR contingency_fee_percent <= 10",
+            "is_founder = 0 OR contingency_fee_percent <= 12",
             name="ck_artists_founder_fee_max",
         ),
     )

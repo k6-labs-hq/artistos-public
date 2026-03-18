@@ -13,7 +13,7 @@ Name | Type | Description | Notes
 **recovered_amount** | **float** |  | [optional] 
 **currency** | **str** |  | 
 **contingency_fee** | **float** |  | [optional] 
-**platform_fee_percent** | **float** |  | [optional] [default to 10.0]
+**platform_fee_percent** | **float** |  | [optional] [default to 12.0]
 **platform_fee_amount** | **float** |  | [optional] 
 **artist_net_amount** | **float** |  | [optional] 
 **remittance_method** | **str** |  | [optional] 

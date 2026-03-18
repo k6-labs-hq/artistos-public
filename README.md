@@ -11,7 +11,7 @@ XR7 Engine 2 is a comprehensive platform designed to detect, recover, and preven
 | **Earnings Engine** | ✅ Ready | Full historical reconstruction and real-time calculation |
 | **Anomaly Detection** | ✅ Ready | 5-category rule engine; runs automatically after statement upload |
 | **Claims Orchestration** | ✅ Ready | Full IDENTIFIED → PAID lifecycle with evidence packets |
-| **Billing Engine** | ✅ Ready | 10% contingency fee, invoice generation, wired to Trolley |
+| **Billing Engine** | ✅ Ready | 12% contingency fee, invoice generation, wired to Trolley |
 | **Recovery Tools** | ✅ Ready | SOL tracker, audit eligibility, rate benchmark, recoupment, priority queue |
 | **ML Suite** | ✅ Ready | Isolation Forest anomaly detector, earnings forecaster, catalog scorer, rate benchmarker |
 | **Statement Upload** | ✅ Ready | CSV/TSV/XLSX ingestion for 15 explicit formats (major distributors + PROs + Spotify + SoundCloud) plus generic fallback |
@@ -1045,7 +1045,7 @@ Trolley acts as the **Merchant of Record** for all XR7 payments:
 1. Claim recovered → status = PAID
        ↓
 2. POST /artists/{id}/trolley/charge
-   (charges 10% contingency fee via artist's vaulted payment method)
+   (charges 12% contingency fee via artist's vaulted payment method)
        ↓
 3. Trolley webhook: transaction.approved
    → Claim status → CLOSED
@@ -2102,18 +2102,18 @@ Track who changed flag, when, prior/new values, and observed downstream effects.
 
 Reference: `docs/billing_contingency_fee_model.md`
 
-Contingency fee is **10%** of gross recovered amount.
+Contingency fee is **12%** of gross recovered amount.
 
 ### Calculation
 
 ```text
-fee = gross_recovered * 0.10
+fee = gross_recovered * 0.12
 net_disbursed = gross_recovered - fee
 ```
 
 ### Worked Example
 
-| Gross | Fee (10%) | Net |
+| Gross | Fee (12%) | Net |
 |---:|---:|---:|
 | 45,000.00 | 4,500.00 | 40,500.00 |
 
@@ -2803,6 +2803,23 @@ Step-to-module mapping (implemented baseline):
 `POST /artists/{id}/privacy/erase`
 - Admin audit stream viewer:
 `GET /admin/audit/events`
+
+### Analyst-Gated Recovery Advances
+
+- Nightly internal ensemble scoring task now creates analyst queue opportunities from high-confidence open anomaly signals.
+- Two-step approval workflow:
+`GET /admin/advances/queue/analyst`,
+`POST /admin/advances/opportunities/{opportunity_id}/analyst-decision`,
+`GET /admin/advances/queue/executive`,
+`POST /admin/advances/opportunities/{opportunity_id}/executive-decision`
+- Offer publication and failed-advance legal packet routes:
+`POST /admin/advances/opportunities/{opportunity_id}/publish-offer`,
+`POST /admin/advances/offers/{offer_id}/failed-recovery-packet`
+- Artist-visible offer routes (only final-approved offers are visible):
+`GET /artists/{artist_id}/advance/offers`,
+`POST /artists/{artist_id}/advance/offers/{offer_id}/accept`
+
+Contingency fee baseline is now 12%, with additional hard-cap controls for advance fee composition.
 
 ### Frontend Sovereignty Components
 

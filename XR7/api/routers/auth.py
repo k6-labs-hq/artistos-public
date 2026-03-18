@@ -61,6 +61,20 @@ def require_admin(payload: dict[str, Any] = Depends(get_auth_payload)) -> dict[s
     return payload
 
 
+def require_analyst(payload: dict[str, Any] = Depends(get_auth_payload)) -> dict[str, Any]:
+    role = str(payload.get("role") or "").strip().lower()
+    if role in {"analyst", "admin", "exec", "executive"}:
+        return payload
+    raise HTTPException(status_code=403, detail="Analyst role required")
+
+
+def require_executive(payload: dict[str, Any] = Depends(get_auth_payload)) -> dict[str, Any]:
+    role = str(payload.get("role") or "").strip().lower()
+    if role in {"exec", "executive", "admin", "ceo", "cfo"}:
+        return payload
+    raise HTTPException(status_code=403, detail="Executive role required")
+
+
 def require_artist_access(
     artist_id: str,
     payload: dict[str, Any] = Depends(get_auth_payload),

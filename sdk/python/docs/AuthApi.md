@@ -146,12 +146,13 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **auth_me_auth_me_get**
-> Dict[str, object] auth_me_auth_me_get(authorization=authorization)
+> Dict[str, object] auth_me_auth_me_get()
 
 Auth Me
 
 ### Example
 
+* Bearer Authentication (HTTPBearer):
 
 ```python
 import xr7_sdk
@@ -164,16 +165,24 @@ configuration = xr7_sdk.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
 
 # Enter a context with an instance of the API client
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AuthApi(api_client)
-    authorization = 'authorization_example' # str |  (optional)
 
     try:
         # Auth Me
-        api_response = api_instance.auth_me_auth_me_get(authorization=authorization)
+        api_response = api_instance.auth_me_auth_me_get()
         print("The response of AuthApi->auth_me_auth_me_get:\n")
         pprint(api_response)
     except Exception as e:
@@ -184,10 +193,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 ### Parameters
 
-
-Name | Type | Description  | Notes
-------------- | ------------- | ------------- | -------------
- **authorization** | **str**|  | [optional] 
+This endpoint does not need any parameter.
 
 ### Return type
 
@@ -195,7 +201,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -207,7 +213,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful Response |  -  |
-**422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

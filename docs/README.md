@@ -25,6 +25,7 @@ This directory contains production-facing technical documentation for XR7 Engine
 ## Data + ML
 - ingestion_format_catalog.md
 - ml_calibration_methodology.md
+- analyst_gated_recovery_advance_system.md
 
 ## Engineering
 - developer_onboarding.md

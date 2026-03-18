@@ -15998,6 +15998,423 @@
         }
       }
     },
+    "/admin/advances/run-nightly-eval": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Run Nightly Eval",
+        "operationId": "run_nightly_eval_admin_advances_run_nightly_eval_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Run Nightly Eval Admin Advances Run Nightly Eval Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/advances/queue/analyst": {
+      "get": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Analyst Queue",
+        "operationId": "analyst_queue_admin_advances_queue_analyst_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Analyst Queue Admin Advances Queue Analyst Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/advances/opportunities/{opportunity_id}/analyst-decision": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Approve Analyst",
+        "operationId": "approve_analyst_admin_advances_opportunities__opportunity_id__analyst_decision_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "opportunity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Opportunity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Approve Analyst Admin Advances Opportunities  Opportunity Id  Analyst Decision Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/advances/queue/executive": {
+      "get": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Executive Queue",
+        "operationId": "executive_queue_admin_advances_queue_executive_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Executive Queue Admin Advances Queue Executive Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/advances/opportunities/{opportunity_id}/executive-decision": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Approve Executive",
+        "operationId": "approve_executive_admin_advances_opportunities__opportunity_id__executive_decision_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "opportunity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Opportunity Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Approve Executive Admin Advances Opportunities  Opportunity Id  Executive Decision Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/advances/opportunities/{opportunity_id}/publish-offer": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Publish Offer",
+        "operationId": "publish_offer_admin_advances_opportunities__opportunity_id__publish_offer_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "opportunity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Opportunity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Publish Offer Admin Advances Opportunities  Opportunity Id  Publish Offer Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/advances/offers/{offer_id}/failed-recovery-packet": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Create Failed Packet",
+        "operationId": "create_failed_packet_admin_advances_offers__offer_id__failed_recovery_packet_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Offer Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FailedPacketRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Failed Packet Admin Advances Offers  Offer Id  Failed Recovery Packet Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/advance/offers": {
+      "get": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "List Artist Offers",
+        "operationId": "list_artist_offers_artists__artist_id__advance_offers_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Artist Offers Artists  Artist Id  Advance Offers Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/advance/offers/{offer_id}/accept": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Accept Artist Offer",
+        "operationId": "accept_artist_offer_artists__artist_id__advance_offers__offer_id__accept_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "offer_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Offer Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Accept Artist Offer Artists  Artist Id  Advance Offers  Offer Id  Accept Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -16435,6 +16852,30 @@
           "CLOSED"
         ],
         "title": "AnomalyStatus"
+      },
+      "ApprovalRequest": {
+        "properties": {
+          "approved": {
+            "type": "boolean",
+            "title": "Approved"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approved"
+        ],
+        "title": "ApprovalRequest"
       },
       "ArtistCreate": {
         "properties": {
@@ -17620,7 +18061,7 @@
           "platform_fee_percent": {
             "type": "number",
             "title": "Platform Fee Percent",
-            "default": 10.0
+            "default": 12.0
           },
           "platform_fee_amount": {
             "anyOf": [
@@ -18371,6 +18812,19 @@
           "created_at"
         ],
         "title": "EvidenceAnchorSchema"
+      },
+      "FailedPacketRequest": {
+        "properties": {
+          "failure_reason": {
+            "type": "string",
+            "title": "Failure Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "failure_reason"
+        ],
+        "title": "FailedPacketRequest"
       },
       "FeedbackOutcome": {
         "type": "string",

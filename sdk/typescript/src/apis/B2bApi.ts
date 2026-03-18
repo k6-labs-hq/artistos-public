@@ -83,6 +83,13 @@ export interface ManagementDashboardManagementOrgIdDashboardGetRequest {
     xOrgActor?: string;
 }
 
+export interface ManagementDashboardV2ManagementOrgIdDashboardV2GetRequest {
+    orgId: string;
+    xOrgKey?: string;
+    xOrgRole?: string;
+    xOrgActor?: string;
+}
+
 export interface ManagementForecastManagementOrgIdForecastGetRequest {
     orgId: string;
     xOrgKey?: string;
@@ -579,6 +586,67 @@ export class B2bApi extends runtime.BaseAPI {
      */
     async managementDashboardManagementOrgIdDashboardGet(requestParameters: ManagementDashboardManagementOrgIdDashboardGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.managementDashboardManagementOrgIdDashboardGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for managementDashboardV2ManagementOrgIdDashboardV2Get without sending the request
+     */
+    async managementDashboardV2ManagementOrgIdDashboardV2GetRequestOpts(requestParameters: ManagementDashboardV2ManagementOrgIdDashboardV2GetRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['orgId'] == null) {
+            throw new runtime.RequiredError(
+                'orgId',
+                'Required parameter "orgId" was null or undefined when calling managementDashboardV2ManagementOrgIdDashboardV2Get().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xOrgKey'] != null) {
+            headerParameters['X-Org-Key'] = String(requestParameters['xOrgKey']);
+        }
+
+        if (requestParameters['xOrgRole'] != null) {
+            headerParameters['X-Org-Role'] = String(requestParameters['xOrgRole']);
+        }
+
+        if (requestParameters['xOrgActor'] != null) {
+            headerParameters['X-Org-Actor'] = String(requestParameters['xOrgActor']);
+        }
+
+
+        let urlPath = `/management/{org_id}/dashboard/v2`;
+        urlPath = urlPath.replace(`{${"org_id"}}`, encodeURIComponent(String(requestParameters['orgId'])));
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Management Dashboard V2
+     */
+    async managementDashboardV2ManagementOrgIdDashboardV2GetRaw(requestParameters: ManagementDashboardV2ManagementOrgIdDashboardV2GetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.managementDashboardV2ManagementOrgIdDashboardV2GetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Management Dashboard V2
+     */
+    async managementDashboardV2ManagementOrgIdDashboardV2Get(requestParameters: ManagementDashboardV2ManagementOrgIdDashboardV2GetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.managementDashboardV2ManagementOrgIdDashboardV2GetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

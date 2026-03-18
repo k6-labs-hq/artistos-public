@@ -24,6 +24,7 @@ Method | HTTP request | Description
 [**recovery_funnel_artists_artist_id_recovery_funnel_get**](RecoveryApi.md#recovery_funnel_artists_artist_id_recovery_funnel_get) | **GET** /artists/{artist_id}/recovery/funnel | Recovery Funnel
 [**recovery_playbook_artists_artist_id_recovery_playbook_get**](RecoveryApi.md#recovery_playbook_artists_artist_id_recovery_playbook_get) | **GET** /artists/{artist_id}/recovery/playbook | Recovery Playbook
 [**recovery_roi_artists_artist_id_recovery_roi_get**](RecoveryApi.md#recovery_roi_artists_artist_id_recovery_roi_get) | **GET** /artists/{artist_id}/recovery/roi | Recovery Roi
+[**run_recovery_autopilot_artists_artist_id_recovery_auto_post**](RecoveryApi.md#run_recovery_autopilot_artists_artist_id_recovery_auto_post) | **POST** /artists/{artist_id}/recovery/auto | Run Recovery Autopilot
 [**sla_status_artists_artist_id_sla_status_get**](RecoveryApi.md#sla_status_artists_artist_id_sla_status_get) | **GET** /artists/{artist_id}/sla/status | Sla Status
 [**sol_status_artists_artist_id_recovery_sol_status_get**](RecoveryApi.md#sol_status_artists_artist_id_recovery_sol_status_get) | **GET** /artists/{artist_id}/recovery/sol-status | Sol Status
 [**split_conflicts_artists_artist_id_splits_conflicts_get**](RecoveryApi.md#split_conflicts_artists_artist_id_splits_conflicts_get) | **GET** /artists/{artist_id}/splits/conflicts | Split Conflicts
@@ -1375,6 +1376,90 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **run_recovery_autopilot_artists_artist_id_recovery_auto_post**
+> object run_recovery_autopilot_artists_artist_id_recovery_auto_post(artist_id, recovery_auto_request)
+
+Run Recovery Autopilot
+
+Run autonomous recovery-management agents for this artist.
+
+Executes payer chasing, evidence packet generation, SOL monitoring,
+settlement tracking, and optionally rights registration planning.
+
+### Example
+
+* Bearer Authentication (HTTPBearer):
+
+```python
+import xr7_sdk
+from xr7_sdk.models.recovery_auto_request import RecoveryAutoRequest
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.RecoveryApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+    recovery_auto_request = xr7_sdk.RecoveryAutoRequest() # RecoveryAutoRequest | 
+
+    try:
+        # Run Recovery Autopilot
+        api_response = api_instance.run_recovery_autopilot_artists_artist_id_recovery_auto_post(artist_id, recovery_auto_request)
+        print("The response of RecoveryApi->run_recovery_autopilot_artists_artist_id_recovery_auto_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling RecoveryApi->run_recovery_autopilot_artists_artist_id_recovery_auto_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+ **recovery_auto_request** | [**RecoveryAutoRequest**](RecoveryAutoRequest.md)|  | 
+
+### Return type
+
+**object**
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 ### HTTP response details

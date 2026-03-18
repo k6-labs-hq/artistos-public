@@ -11,6 +11,7 @@ Method | HTTP request | Description
 [**management_catalog_drilldown_management_org_id_catalog_get**](B2bApi.md#management_catalog_drilldown_management_org_id_catalog_get) | **GET** /management/{org_id}/catalog | Management Catalog Drilldown
 [**management_claims_drilldown_management_org_id_claims_get**](B2bApi.md#management_claims_drilldown_management_org_id_claims_get) | **GET** /management/{org_id}/claims | Management Claims Drilldown
 [**management_dashboard_management_org_id_dashboard_get**](B2bApi.md#management_dashboard_management_org_id_dashboard_get) | **GET** /management/{org_id}/dashboard | Management Dashboard
+[**management_dashboard_v2_management_org_id_dashboard_v2_get**](B2bApi.md#management_dashboard_v2_management_org_id_dashboard_v2_get) | **GET** /management/{org_id}/dashboard/v2 | Management Dashboard V2
 [**management_forecast_management_org_id_forecast_get**](B2bApi.md#management_forecast_management_org_id_forecast_get) | **GET** /management/{org_id}/forecast | Management Forecast
 [**org_portfolio_org_org_id_portfolio_get**](B2bApi.md#org_portfolio_org_org_id_portfolio_get) | **GET** /org/{org_id}/portfolio | Org Portfolio
 [**xr7_operator_dashboard_xr7_operator_dashboard_get**](B2bApi.md#xr7_operator_dashboard_xr7_operator_dashboard_get) | **GET** /xr7/operator/dashboard | Xr7 Operator Dashboard
@@ -503,6 +504,78 @@ with xr7_sdk.ApiClient(configuration) as api_client:
         pprint(api_response)
     except Exception as e:
         print("Exception when calling B2bApi->management_dashboard_management_org_id_dashboard_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **org_id** | **str**|  | 
+ **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **management_dashboard_v2_management_org_id_dashboard_v2_get**
+> object management_dashboard_v2_management_org_id_dashboard_v2_get(org_id, x_org_key=x_org_key, x_org_role=x_org_role, x_org_actor=x_org_actor)
+
+Management Dashboard V2
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.B2bApi(api_client)
+    org_id = 'org_id_example' # str | 
+    x_org_key = '' # str |  (optional) (default to '')
+    x_org_role = '' # str |  (optional) (default to '')
+    x_org_actor = '' # str |  (optional) (default to '')
+
+    try:
+        # Management Dashboard V2
+        api_response = api_instance.management_dashboard_v2_management_org_id_dashboard_v2_get(org_id, x_org_key=x_org_key, x_org_role=x_org_role, x_org_actor=x_org_actor)
+        print("The response of B2bApi->management_dashboard_v2_management_org_id_dashboard_v2_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling B2bApi->management_dashboard_v2_management_org_id_dashboard_v2_get: %s\n" % e)
 ```
 
 

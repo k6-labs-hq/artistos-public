@@ -13,7 +13,7 @@ All URIs are relative to *http://localhost*
 
 ## autoMatchIdentityArtistsArtistIdIdentityAutoMatchPost
 
-> ArtistIdentityMatchSchema autoMatchIdentityArtistsArtistIdIdentityAutoMatchPost(artistId, identityMatchRequest, authorization)
+> ArtistIdentityMatchSchema autoMatchIdentityArtistsArtistIdIdentityAutoMatchPost(artistId, identityMatchRequest)
 
 Auto Match Identity
 
@@ -28,15 +28,17 @@ import type { AutoMatchIdentityArtistsArtistIdIdentityAutoMatchPostRequest } fro
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new IdentityApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new IdentityApi(config);
 
   const body = {
     // string
     artistId: artistId_example,
     // IdentityMatchRequest
     identityMatchRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies AutoMatchIdentityArtistsArtistIdIdentityAutoMatchPostRequest;
 
   try {
@@ -58,7 +60,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **identityMatchRequest** | [IdentityMatchRequest](IdentityMatchRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -66,7 +67,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -85,7 +86,7 @@ No authorization required
 
 ## decideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPost
 
-> ArtistIdentityMatchSchema decideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPost(artistId, matchId, identityDecisionRequest, authorization)
+> ArtistIdentityMatchSchema decideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPost(artistId, matchId, identityDecisionRequest)
 
 Decide Identity Match
 
@@ -100,7 +101,11 @@ import type { DecideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPo
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new IdentityApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new IdentityApi(config);
 
   const body = {
     // string
@@ -109,8 +114,6 @@ async function example() {
     matchId: matchId_example,
     // IdentityDecisionRequest
     identityDecisionRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies DecideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPostRequest;
 
   try {
@@ -133,7 +136,6 @@ example().catch(console.error);
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **matchId** | `string` |  | [Defaults to `undefined`] |
 | **identityDecisionRequest** | [IdentityDecisionRequest](IdentityDecisionRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -141,7 +143,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -160,7 +162,7 @@ No authorization required
 
 ## getIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet
 
-> { [key: string]: any; } getIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet(artistId, matchId, authorization)
+> { [key: string]: any; } getIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet(artistId, matchId)
 
 Get Identity Match Audit
 
@@ -175,15 +177,17 @@ import type { GetIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new IdentityApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new IdentityApi(config);
 
   const body = {
     // string
     artistId: artistId_example,
     // string
     matchId: matchId_example,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies GetIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGetRequest;
 
   try {
@@ -205,7 +209,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **matchId** | `string` |  | [Defaults to `undefined`] |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -213,7 +216,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -232,7 +235,7 @@ No authorization required
 
 ## listIdentityMatchesArtistsArtistIdIdentityMatchesGet
 
-> { [key: string]: any; } listIdentityMatchesArtistsArtistIdIdentityMatchesGet(artistId, authorization)
+> { [key: string]: any; } listIdentityMatchesArtistsArtistIdIdentityMatchesGet(artistId)
 
 List Identity Matches
 
@@ -247,13 +250,15 @@ import type { ListIdentityMatchesArtistsArtistIdIdentityMatchesGetRequest } from
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new IdentityApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new IdentityApi(config);
 
   const body = {
     // string
     artistId: artistId_example,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies ListIdentityMatchesArtistsArtistIdIdentityMatchesGetRequest;
 
   try {
@@ -274,7 +279,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -282,7 +286,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

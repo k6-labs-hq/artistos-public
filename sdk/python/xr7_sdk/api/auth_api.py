@@ -15,8 +15,7 @@ from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from xr7_sdk.models.admin_login_request import AdminLoginRequest
 from xr7_sdk.models.artist_login_request import ArtistLoginRequest
 from xr7_sdk.models.token_response import TokenResponse
@@ -588,7 +587,6 @@ class AuthApi:
     @validate_call
     def auth_me_auth_me_get(
         self,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -605,8 +603,6 @@ class AuthApi:
         """Auth Me
 
 
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -630,7 +626,6 @@ class AuthApi:
         """ # noqa: E501
 
         _param = self._auth_me_auth_me_get_serialize(
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -639,7 +634,6 @@ class AuthApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, object]",
-            '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -655,7 +649,6 @@ class AuthApi:
     @validate_call
     def auth_me_auth_me_get_with_http_info(
         self,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -672,8 +665,6 @@ class AuthApi:
         """Auth Me
 
 
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -697,7 +688,6 @@ class AuthApi:
         """ # noqa: E501
 
         _param = self._auth_me_auth_me_get_serialize(
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -706,7 +696,6 @@ class AuthApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, object]",
-            '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -722,7 +711,6 @@ class AuthApi:
     @validate_call
     def auth_me_auth_me_get_without_preload_content(
         self,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -739,8 +727,6 @@ class AuthApi:
         """Auth Me
 
 
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -764,7 +750,6 @@ class AuthApi:
         """ # noqa: E501
 
         _param = self._auth_me_auth_me_get_serialize(
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -773,7 +758,6 @@ class AuthApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, object]",
-            '422': "HTTPValidationError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -784,7 +768,6 @@ class AuthApi:
 
     def _auth_me_auth_me_get_serialize(
         self,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -808,8 +791,6 @@ class AuthApi:
         # process the path parameters
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
 
@@ -825,6 +806,7 @@ class AuthApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(

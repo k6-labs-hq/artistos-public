@@ -691,7 +691,7 @@ No authorization required
 
 ## createClaimForArtistArtistsArtistIdClaimsPost
 
-> ClaimSchema createClaimForArtistArtistsArtistIdClaimsPost(artistId, claimCreateRequest, authorization)
+> ClaimSchema createClaimForArtistArtistsArtistIdClaimsPost(artistId, claimCreateRequest)
 
 Create Claim For Artist
 
@@ -706,15 +706,17 @@ import type { CreateClaimForArtistArtistsArtistIdClaimsPostRequest } from '@xr7/
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new ClaimsApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ClaimsApi(config);
 
   const body = {
     // string
     artistId: artistId_example,
     // ClaimCreateRequest
     claimCreateRequest: ...,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies CreateClaimForArtistArtistsArtistIdClaimsPostRequest;
 
   try {
@@ -736,7 +738,6 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **claimCreateRequest** | [ClaimCreateRequest](ClaimCreateRequest.md) |  | |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -744,7 +745,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -1242,7 +1243,7 @@ No authorization required
 
 ## getEvidenceClaimsClaimIdEvidenceGet
 
-> any getEvidenceClaimsClaimIdEvidenceGet(claimId, authorization)
+> any getEvidenceClaimsClaimIdEvidenceGet(claimId)
 
 Get Evidence
 
@@ -1257,13 +1258,15 @@ import type { GetEvidenceClaimsClaimIdEvidenceGetRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new ClaimsApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ClaimsApi(config);
 
   const body = {
     // string
     claimId: claimId_example,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies GetEvidenceClaimsClaimIdEvidenceGetRequest;
 
   try {
@@ -1284,7 +1287,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **claimId** | `string` |  | [Defaults to `undefined`] |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -1292,7 +1294,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -1326,7 +1328,11 @@ import type { ListClaimsArtistsArtistIdClaimsGetRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new ClaimsApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new ClaimsApi(config);
 
   const body = {
     // string
@@ -1358,7 +1364,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

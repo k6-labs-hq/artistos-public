@@ -34,25 +34,21 @@ import {
 export interface AutoMatchIdentityArtistsArtistIdIdentityAutoMatchPostRequest {
     artistId: string;
     identityMatchRequest: IdentityMatchRequest;
-    authorization?: string | null;
 }
 
 export interface DecideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPostRequest {
     artistId: string;
     matchId: string;
     identityDecisionRequest: IdentityDecisionRequest;
-    authorization?: string | null;
 }
 
 export interface GetIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGetRequest {
     artistId: string;
     matchId: string;
-    authorization?: string | null;
 }
 
 export interface ListIdentityMatchesArtistsArtistIdIdentityMatchesGetRequest {
     artistId: string;
-    authorization?: string | null;
 }
 
 /**
@@ -84,10 +80,14 @@ export class IdentityApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/artists/{artist_id}/identity/auto-match`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
@@ -150,10 +150,14 @@ export class IdentityApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/artists/{artist_id}/identity/matches/{match_id}/decision`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
@@ -208,10 +212,14 @@ export class IdentityApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/artists/{artist_id}/identity/matches/{match_id}/audit`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
@@ -258,10 +266,14 @@ export class IdentityApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/artists/{artist_id}/identity/matches`;
         urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));

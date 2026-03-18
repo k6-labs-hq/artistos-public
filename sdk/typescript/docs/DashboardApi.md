@@ -423,7 +423,7 @@ No authorization required
 
 ## getAgentsStatusArtistsArtistIdAgentsStatusGet
 
-> any getAgentsStatusArtistsArtistIdAgentsStatusGet(artistId, authorization)
+> any getAgentsStatusArtistsArtistIdAgentsStatusGet(artistId)
 
 Get Agents Status
 
@@ -438,13 +438,15 @@ import type { GetAgentsStatusArtistsArtistIdAgentsStatusGetRequest } from '@xr7/
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new DashboardApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new DashboardApi(config);
 
   const body = {
     // string
     artistId: artistId_example,
-    // string (optional)
-    authorization: authorization_example,
   } satisfies GetAgentsStatusArtistsArtistIdAgentsStatusGetRequest;
 
   try {
@@ -465,7 +467,6 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
-| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 
@@ -473,7 +474,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

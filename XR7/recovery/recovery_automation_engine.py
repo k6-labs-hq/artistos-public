@@ -31,5 +31,5 @@ def automate_recovery(artist_id: str, findings: list[dict[str, Any]]) -> dict[st
         "packets": packets,
         "submission_queue": submissions,
         "remittance_tracking": {"status": "ACTIVE", "tracked_items": len(findings)},
-        "recovery_triggered_billing": {"status": "ENABLED", "policy": "contingency_10pct"},
+        "recovery_triggered_billing": {"status": "ENABLED", "policy": "contingency_12pct"},
     }

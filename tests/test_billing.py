@@ -22,14 +22,14 @@ def db_session():
     Base.metadata.drop_all(engine)
 
 
-def test_contingency_rate_is_10_percent():
-    assert BillingEngine.CONTINGENCY_RATE == 0.10
+def test_contingency_rate_is_12_percent():
+    assert BillingEngine.CONTINGENCY_RATE == 0.12
 
 
 def test_calculate_contingency_fee(db_session):
     engine = BillingEngine(db_session)
     fee = engine.calculate_contingency_fee(1000.0)
-    assert fee == pytest.approx(100.0)
+    assert fee == pytest.approx(120.0)
 
 
 def test_create_invoice(db_session):
@@ -37,7 +37,7 @@ def test_create_invoice(db_session):
     invoice = engine.create_invoice("claim-1", 500.0, "USD")
     assert invoice["claim_id"] == "claim-1"
     assert invoice["recovered_amount"] == 500.0
-    assert invoice["contingency_fee"] == pytest.approx(50.0)
+    assert invoice["contingency_fee"] == pytest.approx(60.0)
     assert invoice["currency"] == "USD"
     assert invoice["status"] == "PENDING"
     assert "invoice_id" in invoice

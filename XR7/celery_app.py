@@ -38,6 +38,10 @@ celery_app.conf.update(
             "task": "xr7.pipeline.weekly_artist_digest",
             "schedule": 604800,
         },
+        "xr7-nightly-advance-ensemble": {
+            "task": "xr7.pipeline.nightly_advance_ensemble",
+            "schedule": 86400,
+        },
         "xr7-workflow-incomplete-onboarding": {
             "task": "xr7.workflow.run_onboarding_for_incomplete_artists",
             "schedule": 21600,

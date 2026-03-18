@@ -100,7 +100,7 @@ class TestGetTerms:
 
     def test_text_contains_contingency_fee_language(self):
         data = client.get("/terms").json()
-        assert "10%" in data["text"] or "ten percent" in data["text"].lower()
+        assert "12%" in data["text"] or "twelve percent" in data["text"].lower()
 
     def test_text_contains_trolley_reference(self):
         data = client.get("/terms").json()
@@ -379,7 +379,7 @@ class TestTermsLegalContent:
         assert "limitation of liability" in text_lower
 
     def test_contains_contingency_fee_percentage(self):
-        assert "10%" in self._text()
+        assert "12%" in self._text()
 
     def test_contains_net_recovery_percentage(self):
         assert "90%" in self._text()

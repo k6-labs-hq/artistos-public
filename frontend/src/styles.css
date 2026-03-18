@@ -28,7 +28,7 @@
   --border-color: #e2e8f0;
   --hero-backdrop:
     radial-gradient(circle at 25% 3%, rgba(168, 85, 247, 0.14), transparent 34%),
-    radial-gradient(circle at 82% 10%, rgba(34, 211, 238, 0.16), transparent 34%),
+    radial-gradient(circle at 82% 12%, rgba(34, 211, 238, 0.16), transparent 34%),
     linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
 }
 
@@ -383,7 +383,7 @@ section {
   align-items: center;
   border-radius: 999px;
   border: 1px solid color-mix(in srgb, var(--accent) 38%, var(--border-color));
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   padding: 0.16rem 0.52rem;
   font-size: 0.78rem;
   color: var(--text-main);

@@ -219,8 +219,8 @@ def handle_founder_notifications(db: Session, artist: Artist, result: FounderAss
         _notify_non_activated_artists(
             db,
             "founder_slots_closing",
-            "500 founder slots remaining - upload your first statement to lock in 10% for life",
-            "500 founder slots remain. Upload your first statement to lock in 10% for life.",
+            "500 founder slots remaining - upload your first statement to lock in 12% for life",
+            "500 founder slots remain. Upload your first statement to lock in 12% for life.",
         )
     elif result.milestone == "last_100":
         _notify_non_activated_artists(

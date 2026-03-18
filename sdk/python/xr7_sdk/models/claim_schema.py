@@ -37,7 +37,7 @@ class ClaimSchema(BaseModel):
     recovered_amount: Optional[Union[StrictFloat, StrictInt]] = None
     currency: StrictStr
     contingency_fee: Optional[Union[StrictFloat, StrictInt]] = None
-    platform_fee_percent: Optional[Union[StrictFloat, StrictInt]] = 10.0
+    platform_fee_percent: Optional[Union[StrictFloat, StrictInt]] = 12.0
     platform_fee_amount: Optional[Union[StrictFloat, StrictInt]] = None
     artist_net_amount: Optional[Union[StrictFloat, StrictInt]] = None
     remittance_method: Optional[StrictStr] = None
@@ -266,7 +266,7 @@ class ClaimSchema(BaseModel):
             "recovered_amount": obj.get("recovered_amount"),
             "currency": obj.get("currency"),
             "contingency_fee": obj.get("contingency_fee"),
-            "platform_fee_percent": obj.get("platform_fee_percent") if obj.get("platform_fee_percent") is not None else 10.0,
+            "platform_fee_percent": obj.get("platform_fee_percent") if obj.get("platform_fee_percent") is not None else 12.0,
             "platform_fee_amount": obj.get("platform_fee_amount"),
             "artist_net_amount": obj.get("artist_net_amount"),
             "remittance_method": obj.get("remittance_method"),

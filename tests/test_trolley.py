@@ -53,9 +53,9 @@ def _mk_claim(db, artist_id: str, *, status: ClaimStatus = ClaimStatus.FUNDS_REC
         status=status,
         recovered_amount=1000.0,
         currency="USD",
-        platform_fee_percent=10.0,
-        platform_fee_amount=100.0,
-        contingency_fee=100.0,
+        platform_fee_percent=12.0,
+        platform_fee_amount=120.0,
+        contingency_fee=120.0,
         artist_net_amount=net,
         created_at=now,
         updated_at=now,
@@ -83,8 +83,8 @@ def test_manual_remittance_endpoint_updates_claim_and_creates_transaction(db):
 
     db.refresh(claim)
     assert claim.status == ClaimStatus.FUNDS_RECEIVED
-    assert claim.platform_fee_amount == pytest.approx(120.0)
-    assert claim.artist_net_amount == pytest.approx(1080.0)
+    assert claim.platform_fee_amount == pytest.approx(144.0)
+    assert claim.artist_net_amount == pytest.approx(1056.0)
 
     txn = (
         db.query(TrolleyTransaction)

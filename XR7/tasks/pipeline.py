@@ -16,6 +16,7 @@ from XR7.models.statement import Statement
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
+from XR7.services.analyst_gated_advance import run_nightly_advance_opportunity_scan
 from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService
 from XR7.services.ml_feedback import aggregate_feedback_and_update_calibration
 from XR7.llm.claim_drafter import claim_drafter
@@ -315,5 +316,18 @@ def weekly_artist_digest(self) -> dict:  # noqa: ANN001
             _ledger_event(db, artist.id, "weekly_artist_digest", {"delivery": delivered, "digest": digest})
             sent += 1
         return {"artists_processed": len(artists), "digests_sent": sent}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="xr7.pipeline.nightly_advance_ensemble", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+def nightly_advance_ensemble(self) -> dict:  # noqa: ANN001
+    db = SessionLocal()
+    try:
+        result = run_nightly_advance_opportunity_scan(db)
+        return {
+            "status": "ok",
+            **result,
+        }
     finally:
         db.close()

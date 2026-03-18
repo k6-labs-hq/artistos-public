@@ -418,12 +418,13 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_agents_status_artists_artist_id_agents_status_get**
-> object get_agents_status_artists_artist_id_agents_status_get(artist_id, authorization=authorization)
+> object get_agents_status_artists_artist_id_agents_status_get(artist_id)
 
 Get Agents Status
 
 ### Example
 
+* Bearer Authentication (HTTPBearer):
 
 ```python
 import xr7_sdk
@@ -436,17 +437,25 @@ configuration = xr7_sdk.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
 
 # Enter a context with an instance of the API client
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.DashboardApi(api_client)
     artist_id = 'artist_id_example' # str | 
-    authorization = 'authorization_example' # str |  (optional)
 
     try:
         # Get Agents Status
-        api_response = api_instance.get_agents_status_artists_artist_id_agents_status_get(artist_id, authorization=authorization)
+        api_response = api_instance.get_agents_status_artists_artist_id_agents_status_get(artist_id)
         print("The response of DashboardApi->get_agents_status_artists_artist_id_agents_status_get:\n")
         pprint(api_response)
     except Exception as e:
@@ -461,7 +470,6 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **artist_id** | **str**|  | 
- **authorization** | **str**|  | [optional] 
 
 ### Return type
 
@@ -469,7 +477,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

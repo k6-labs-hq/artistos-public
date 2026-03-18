@@ -11,6 +11,7 @@ All URIs are relative to *http://localhost*
 | [**managementCatalogDrilldownManagementOrgIdCatalogGet**](B2bApi.md#managementcatalogdrilldownmanagementorgidcatalogget) | **GET** /management/{org_id}/catalog | Management Catalog Drilldown |
 | [**managementClaimsDrilldownManagementOrgIdClaimsGet**](B2bApi.md#managementclaimsdrilldownmanagementorgidclaimsget) | **GET** /management/{org_id}/claims | Management Claims Drilldown |
 | [**managementDashboardManagementOrgIdDashboardGet**](B2bApi.md#managementdashboardmanagementorgiddashboardget) | **GET** /management/{org_id}/dashboard | Management Dashboard |
+| [**managementDashboardV2ManagementOrgIdDashboardV2Get**](B2bApi.md#managementdashboardv2managementorgiddashboardv2get) | **GET** /management/{org_id}/dashboard/v2 | Management Dashboard V2 |
 | [**managementForecastManagementOrgIdForecastGet**](B2bApi.md#managementforecastmanagementorgidforecastget) | **GET** /management/{org_id}/forecast | Management Forecast |
 | [**orgPortfolioOrgOrgIdPortfolioGet**](B2bApi.md#orgportfolioorgorgidportfolioget) | **GET** /org/{org_id}/portfolio | Org Portfolio |
 | [**xr7OperatorDashboardXr7OperatorDashboardGet**](B2bApi.md#xr7operatordashboardxr7operatordashboardget) | **GET** /xr7/operator/dashboard | Xr7 Operator Dashboard |
@@ -526,6 +527,81 @@ async function example() {
 
   try {
     const data = await api.managementDashboardManagementOrgIdDashboardGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **orgId** | `string` |  | [Defaults to `undefined`] |
+| **xOrgKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xOrgRole** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xOrgActor** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## managementDashboardV2ManagementOrgIdDashboardV2Get
+
+> any managementDashboardV2ManagementOrgIdDashboardV2Get(orgId, xOrgKey, xOrgRole, xOrgActor)
+
+Management Dashboard V2
+
+### Example
+
+```ts
+import {
+  Configuration,
+  B2bApi,
+} from '@xr7/sdk';
+import type { ManagementDashboardV2ManagementOrgIdDashboardV2GetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new B2bApi();
+
+  const body = {
+    // string
+    orgId: orgId_example,
+    // string (optional)
+    xOrgKey: xOrgKey_example,
+    // string (optional)
+    xOrgRole: xOrgRole_example,
+    // string (optional)
+    xOrgActor: xOrgActor_example,
+  } satisfies ManagementDashboardV2ManagementOrgIdDashboardV2GetRequest;
+
+  try {
+    const data = await api.managementDashboardV2ManagementOrgIdDashboardV2Get(body);
     console.log(data);
   } catch (error) {
     console.error(error);

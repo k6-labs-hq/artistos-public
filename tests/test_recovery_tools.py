@@ -235,7 +235,7 @@ class TestRateBenchmarker:
         assert results[0]["rate_tier"] == RateTier.AT_MARKET
 
     def test_above_market_tier(self):
-        events = [_make_event(unit_value=0.006)]  # > 110% of median
+        events = [_make_event(unit_value=0.006)]  # > 112% of median
         results = compare_event_rates("artist-1", events)
         assert results[0]["rate_tier"] == RateTier.ABOVE_MARKET
 

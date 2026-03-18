@@ -183,17 +183,17 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
       "is_founder": bool(artist.is_founder),
       "founder_slot_number": artist.founder_slot_number,
       "founder_badge": (
-        f"Founder #{int(artist.founder_slot_number)} - 10% for life"
+        f"Founder #{int(artist.founder_slot_number)} - 12% for life"
         if artist.is_founder and artist.founder_slot_number is not None
         else None
       ),
       "payout_copy": (
-        "Your founder rate: 10% - Locked permanently"
+        "Your founder rate: 12% - Locked permanently"
         if artist.is_founder
         else f"Platform fee: {fee_percent:.2f}%"
       ),
       "settings_copy": (
-        "Contingency fee: 10% (Founder rate - permanent)"
+        "Contingency fee: 12% (Founder rate - permanent)"
         if artist.is_founder
         else f"Contingency fee: {fee_percent:.2f}%"
       ),

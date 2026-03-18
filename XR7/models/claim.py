@@ -34,7 +34,7 @@ class Claim(Base):
     recovered_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     currency: Mapped[str] = mapped_column(String, default="USD")
     contingency_fee: Mapped[float | None] = mapped_column(Float, nullable=True)
-    platform_fee_percent: Mapped[float] = mapped_column(Float, nullable=False, default=10.0)
+    platform_fee_percent: Mapped[float] = mapped_column(Float, nullable=False, default=12.0)
     platform_fee_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     artist_net_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     remittance_method: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -80,7 +80,7 @@ class ClaimSchema(BaseModel):
     recovered_amount: float | None = None
     currency: str
     contingency_fee: float | None = None
-    platform_fee_percent: float = 10.0
+    platform_fee_percent: float = 12.0
     platform_fee_amount: float | None = None
     artist_net_amount: float | None = None
     remittance_method: str | None = None

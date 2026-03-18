@@ -24,6 +24,7 @@ All URIs are relative to *http://localhost*
 | [**recoveryFunnelArtistsArtistIdRecoveryFunnelGet**](RecoveryApi.md#recoveryfunnelartistsartistidrecoveryfunnelget) | **GET** /artists/{artist_id}/recovery/funnel | Recovery Funnel |
 | [**recoveryPlaybookArtistsArtistIdRecoveryPlaybookGet**](RecoveryApi.md#recoveryplaybookartistsartistidrecoveryplaybookget) | **GET** /artists/{artist_id}/recovery/playbook | Recovery Playbook |
 | [**recoveryRoiArtistsArtistIdRecoveryRoiGet**](RecoveryApi.md#recoveryroiartistsartistidrecoveryroiget) | **GET** /artists/{artist_id}/recovery/roi | Recovery Roi |
+| [**runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost**](RecoveryApi.md#runrecoveryautopilotartistsartistidrecoveryautopost) | **POST** /artists/{artist_id}/recovery/auto | Run Recovery Autopilot |
 | [**slaStatusArtistsArtistIdSlaStatusGet**](RecoveryApi.md#slastatusartistsartistidslastatusget) | **GET** /artists/{artist_id}/sla/status | Sla Status |
 | [**solStatusArtistsArtistIdRecoverySolStatusGet**](RecoveryApi.md#solstatusartistsartistidrecoverysolstatusget) | **GET** /artists/{artist_id}/recovery/sol-status | Sol Status |
 | [**splitConflictsArtistsArtistIdSplitsConflictsGet**](RecoveryApi.md#splitconflictsartistsartistidsplitsconflictsget) | **GET** /artists/{artist_id}/splits/conflicts | Split Conflicts |
@@ -1359,6 +1360,81 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost
+
+> any runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost(artistId, recoveryAutoRequest)
+
+Run Recovery Autopilot
+
+Run autonomous recovery-management agents for this artist.  Executes payer chasing, evidence packet generation, SOL monitoring, settlement tracking, and optionally rights registration planning.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  RecoveryApi,
+} from '@xr7/sdk';
+import type { RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new RecoveryApi(config);
+
+  const body = {
+    // string
+    artistId: artistId_example,
+    // RecoveryAutoRequest
+    recoveryAutoRequest: ...,
+  } satisfies RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest;
+
+  try {
+    const data = await api.runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+| **recoveryAutoRequest** | [RecoveryAutoRequest](RecoveryAutoRequest.md) |  | |
+
+### Return type
+
+**any**
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

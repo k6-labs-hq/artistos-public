@@ -2646,7 +2646,6 @@ class ClaimsApi:
         self,
         artist_id: StrictStr,
         claim_create_request: ClaimCreateRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2667,8 +2666,6 @@ class ClaimsApi:
         :type artist_id: str
         :param claim_create_request: (required)
         :type claim_create_request: ClaimCreateRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2694,7 +2691,6 @@ class ClaimsApi:
         _param = self._create_claim_for_artist_artists_artist_id_claims_post_serialize(
             artist_id=artist_id,
             claim_create_request=claim_create_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2721,7 +2717,6 @@ class ClaimsApi:
         self,
         artist_id: StrictStr,
         claim_create_request: ClaimCreateRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2742,8 +2737,6 @@ class ClaimsApi:
         :type artist_id: str
         :param claim_create_request: (required)
         :type claim_create_request: ClaimCreateRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2769,7 +2762,6 @@ class ClaimsApi:
         _param = self._create_claim_for_artist_artists_artist_id_claims_post_serialize(
             artist_id=artist_id,
             claim_create_request=claim_create_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2796,7 +2788,6 @@ class ClaimsApi:
         self,
         artist_id: StrictStr,
         claim_create_request: ClaimCreateRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2817,8 +2808,6 @@ class ClaimsApi:
         :type artist_id: str
         :param claim_create_request: (required)
         :type claim_create_request: ClaimCreateRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -2844,7 +2833,6 @@ class ClaimsApi:
         _param = self._create_claim_for_artist_artists_artist_id_claims_post_serialize(
             artist_id=artist_id,
             claim_create_request=claim_create_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -2866,7 +2854,6 @@ class ClaimsApi:
         self,
         artist_id,
         claim_create_request,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -2892,8 +2879,6 @@ class ClaimsApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
         if claim_create_request is not None:
@@ -2924,6 +2909,7 @@ class ClaimsApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(
@@ -4878,7 +4864,6 @@ class ClaimsApi:
     def get_evidence_claims_claim_id_evidence_get(
         self,
         claim_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -4897,8 +4882,6 @@ class ClaimsApi:
 
         :param claim_id: (required)
         :type claim_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4923,7 +4906,6 @@ class ClaimsApi:
 
         _param = self._get_evidence_claims_claim_id_evidence_get_serialize(
             claim_id=claim_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -4949,7 +4931,6 @@ class ClaimsApi:
     def get_evidence_claims_claim_id_evidence_get_with_http_info(
         self,
         claim_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -4968,8 +4949,6 @@ class ClaimsApi:
 
         :param claim_id: (required)
         :type claim_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -4994,7 +4973,6 @@ class ClaimsApi:
 
         _param = self._get_evidence_claims_claim_id_evidence_get_serialize(
             claim_id=claim_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -5020,7 +4998,6 @@ class ClaimsApi:
     def get_evidence_claims_claim_id_evidence_get_without_preload_content(
         self,
         claim_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -5039,8 +5016,6 @@ class ClaimsApi:
 
         :param claim_id: (required)
         :type claim_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -5065,7 +5040,6 @@ class ClaimsApi:
 
         _param = self._get_evidence_claims_claim_id_evidence_get_serialize(
             claim_id=claim_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -5086,7 +5060,6 @@ class ClaimsApi:
     def _get_evidence_claims_claim_id_evidence_get_serialize(
         self,
         claim_id,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -5112,8 +5085,6 @@ class ClaimsApi:
             _path_params['claim_id'] = claim_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
 
@@ -5129,6 +5100,7 @@ class ClaimsApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(
@@ -5389,6 +5361,7 @@ class ClaimsApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(

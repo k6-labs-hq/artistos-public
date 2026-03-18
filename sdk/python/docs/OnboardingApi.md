@@ -19,6 +19,7 @@ Method | HTTP request | Description
 [**list_parser_plugins_artists_artist_id_parsers_plugins_get**](OnboardingApi.md#list_parser_plugins_artists_artist_id_parsers_plugins_get) | **GET** /artists/{artist_id}/parsers/plugins | List Parser Plugins
 [**list_sync_jobs_artists_artist_id_sync_jobs_get**](OnboardingApi.md#list_sync_jobs_artists_artist_id_sync_jobs_get) | **GET** /artists/{artist_id}/sync/jobs | List Sync Jobs
 [**missing_data_status_artists_artist_id_ingestion_missing_data_get**](OnboardingApi.md#missing_data_status_artists_artist_id_ingestion_missing_data_get) | **GET** /artists/{artist_id}/ingestion/missing-data | Missing Data Status
+[**onboarding_auto_artists_artist_id_onboarding_auto_post**](OnboardingApi.md#onboarding_auto_artists_artist_id_onboarding_auto_post) | **POST** /artists/{artist_id}/onboarding/auto | Onboarding Auto
 [**onboarding_status_artists_artist_id_onboarding_status_get**](OnboardingApi.md#onboarding_status_artists_artist_id_onboarding_status_get) | **GET** /artists/{artist_id}/onboarding/status | Onboarding Status
 [**parse_statement_with_engine_artists_artist_id_parsers_parser_type_post**](OnboardingApi.md#parse_statement_with_engine_artists_artist_id_parsers_parser_type_post) | **POST** /artists/{artist_id}/parsers/{parser_type} | Parse Statement With Engine
 [**permissions_dashboard_artists_artist_id_connect_permissions_dashboard_get**](OnboardingApi.md#permissions_dashboard_artists_artist_id_connect_permissions_dashboard_get) | **GET** /artists/{artist_id}/connect/permissions-dashboard | Permissions Dashboard
@@ -1025,6 +1026,80 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **onboarding_auto_artists_artist_id_onboarding_auto_post**
+> object onboarding_auto_artists_artist_id_onboarding_auto_post(artist_id, onboarding_auto_request)
+
+Onboarding Auto
+
+Run one-call onboarding bootstrap for baseline activation.
+
+This endpoint marks the artist as onboarded (if still NEW), executes due
+sync jobs when requested, and returns an updated onboarding summary.
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.models.onboarding_auto_request import OnboardingAutoRequest
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.OnboardingApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+    onboarding_auto_request = xr7_sdk.OnboardingAutoRequest() # OnboardingAutoRequest | 
+
+    try:
+        # Onboarding Auto
+        api_response = api_instance.onboarding_auto_artists_artist_id_onboarding_auto_post(artist_id, onboarding_auto_request)
+        print("The response of OnboardingApi->onboarding_auto_artists_artist_id_onboarding_auto_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling OnboardingApi->onboarding_auto_artists_artist_id_onboarding_auto_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+ **onboarding_auto_request** | [**OnboardingAutoRequest**](OnboardingAutoRequest.md)|  | 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 ### HTTP response details

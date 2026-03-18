@@ -100,7 +100,11 @@ import type { GetEarningsHistoryArtistsArtistIdEarningsHistoryGetRequest } from 
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new EarningsApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new EarningsApi(config);
 
   const body = {
     // string
@@ -132,7 +136,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -166,7 +170,11 @@ import type { GetEarningsSummaryArtistsArtistIdEarningsGetRequest } from '@xr7/s
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new EarningsApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new EarningsApi(config);
 
   const body = {
     // string
@@ -198,7 +206,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

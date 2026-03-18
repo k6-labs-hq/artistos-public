@@ -39,10 +39,6 @@ export interface ArtistLoginAuthLoginArtistPostRequest {
     artistLoginRequest: ArtistLoginRequest;
 }
 
-export interface AuthMeAuthMeGetRequest {
-    authorization?: string | null;
-}
-
 /**
  * 
  */
@@ -145,15 +141,19 @@ export class AuthApi extends runtime.BaseAPI {
     /**
      * Creates request options for authMeAuthMeGet without sending the request
      */
-    async authMeAuthMeGetRequestOpts(requestParameters: AuthMeAuthMeGetRequest): Promise<runtime.RequestOpts> {
+    async authMeAuthMeGetRequestOpts(): Promise<runtime.RequestOpts> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        if (requestParameters['authorization'] != null) {
-            headerParameters['authorization'] = String(requestParameters['authorization']);
-        }
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
 
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
 
         let urlPath = `/auth/me`;
 
@@ -168,8 +168,8 @@ export class AuthApi extends runtime.BaseAPI {
     /**
      * Auth Me
      */
-    async authMeAuthMeGetRaw(requestParameters: AuthMeAuthMeGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
-        const requestOptions = await this.authMeAuthMeGetRequestOpts(requestParameters);
+    async authMeAuthMeGetRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        const requestOptions = await this.authMeAuthMeGetRequestOpts();
         const response = await this.request(requestOptions, initOverrides);
 
         return new runtime.JSONApiResponse<any>(response);
@@ -178,8 +178,8 @@ export class AuthApi extends runtime.BaseAPI {
     /**
      * Auth Me
      */
-    async authMeAuthMeGet(requestParameters: AuthMeAuthMeGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
-        const response = await this.authMeAuthMeGetRaw(requestParameters, initOverrides);
+    async authMeAuthMeGet(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.authMeAuthMeGetRaw(initOverrides);
         return await response.value();
     }
 

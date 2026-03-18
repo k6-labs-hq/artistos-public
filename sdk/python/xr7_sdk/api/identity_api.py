@@ -16,7 +16,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
 
 from pydantic import StrictStr
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from xr7_sdk.models.artist_identity_match_schema import ArtistIdentityMatchSchema
 from xr7_sdk.models.identity_decision_request import IdentityDecisionRequest
 from xr7_sdk.models.identity_match_request import IdentityMatchRequest
@@ -44,7 +44,6 @@ class IdentityApi:
         self,
         artist_id: StrictStr,
         identity_match_request: IdentityMatchRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -65,8 +64,6 @@ class IdentityApi:
         :type artist_id: str
         :param identity_match_request: (required)
         :type identity_match_request: IdentityMatchRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -92,7 +89,6 @@ class IdentityApi:
         _param = self._auto_match_identity_artists_artist_id_identity_auto_match_post_serialize(
             artist_id=artist_id,
             identity_match_request=identity_match_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -119,7 +115,6 @@ class IdentityApi:
         self,
         artist_id: StrictStr,
         identity_match_request: IdentityMatchRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -140,8 +135,6 @@ class IdentityApi:
         :type artist_id: str
         :param identity_match_request: (required)
         :type identity_match_request: IdentityMatchRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -167,7 +160,6 @@ class IdentityApi:
         _param = self._auto_match_identity_artists_artist_id_identity_auto_match_post_serialize(
             artist_id=artist_id,
             identity_match_request=identity_match_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -194,7 +186,6 @@ class IdentityApi:
         self,
         artist_id: StrictStr,
         identity_match_request: IdentityMatchRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -215,8 +206,6 @@ class IdentityApi:
         :type artist_id: str
         :param identity_match_request: (required)
         :type identity_match_request: IdentityMatchRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -242,7 +231,6 @@ class IdentityApi:
         _param = self._auto_match_identity_artists_artist_id_identity_auto_match_post_serialize(
             artist_id=artist_id,
             identity_match_request=identity_match_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -264,7 +252,6 @@ class IdentityApi:
         self,
         artist_id,
         identity_match_request,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -290,8 +277,6 @@ class IdentityApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
         if identity_match_request is not None:
@@ -322,6 +307,7 @@ class IdentityApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(
@@ -348,7 +334,6 @@ class IdentityApi:
         artist_id: StrictStr,
         match_id: StrictStr,
         identity_decision_request: IdentityDecisionRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -371,8 +356,6 @@ class IdentityApi:
         :type match_id: str
         :param identity_decision_request: (required)
         :type identity_decision_request: IdentityDecisionRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -399,7 +382,6 @@ class IdentityApi:
             artist_id=artist_id,
             match_id=match_id,
             identity_decision_request=identity_decision_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -427,7 +409,6 @@ class IdentityApi:
         artist_id: StrictStr,
         match_id: StrictStr,
         identity_decision_request: IdentityDecisionRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -450,8 +431,6 @@ class IdentityApi:
         :type match_id: str
         :param identity_decision_request: (required)
         :type identity_decision_request: IdentityDecisionRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -478,7 +457,6 @@ class IdentityApi:
             artist_id=artist_id,
             match_id=match_id,
             identity_decision_request=identity_decision_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -506,7 +484,6 @@ class IdentityApi:
         artist_id: StrictStr,
         match_id: StrictStr,
         identity_decision_request: IdentityDecisionRequest,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -529,8 +506,6 @@ class IdentityApi:
         :type match_id: str
         :param identity_decision_request: (required)
         :type identity_decision_request: IdentityDecisionRequest
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -557,7 +532,6 @@ class IdentityApi:
             artist_id=artist_id,
             match_id=match_id,
             identity_decision_request=identity_decision_request,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -580,7 +554,6 @@ class IdentityApi:
         artist_id,
         match_id,
         identity_decision_request,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -608,8 +581,6 @@ class IdentityApi:
             _path_params['match_id'] = match_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
         if identity_decision_request is not None:
@@ -640,6 +611,7 @@ class IdentityApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(
@@ -665,7 +637,6 @@ class IdentityApi:
         self,
         artist_id: StrictStr,
         match_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -686,8 +657,6 @@ class IdentityApi:
         :type artist_id: str
         :param match_id: (required)
         :type match_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -713,7 +682,6 @@ class IdentityApi:
         _param = self._get_identity_match_audit_artists_artist_id_identity_matches_match_id_audit_get_serialize(
             artist_id=artist_id,
             match_id=match_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -740,7 +708,6 @@ class IdentityApi:
         self,
         artist_id: StrictStr,
         match_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -761,8 +728,6 @@ class IdentityApi:
         :type artist_id: str
         :param match_id: (required)
         :type match_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -788,7 +753,6 @@ class IdentityApi:
         _param = self._get_identity_match_audit_artists_artist_id_identity_matches_match_id_audit_get_serialize(
             artist_id=artist_id,
             match_id=match_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -815,7 +779,6 @@ class IdentityApi:
         self,
         artist_id: StrictStr,
         match_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -836,8 +799,6 @@ class IdentityApi:
         :type artist_id: str
         :param match_id: (required)
         :type match_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -863,7 +824,6 @@ class IdentityApi:
         _param = self._get_identity_match_audit_artists_artist_id_identity_matches_match_id_audit_get_serialize(
             artist_id=artist_id,
             match_id=match_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -885,7 +845,6 @@ class IdentityApi:
         self,
         artist_id,
         match_id,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -913,8 +872,6 @@ class IdentityApi:
             _path_params['match_id'] = match_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
 
@@ -930,6 +887,7 @@ class IdentityApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(
@@ -954,7 +912,6 @@ class IdentityApi:
     def list_identity_matches_artists_artist_id_identity_matches_get(
         self,
         artist_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -973,8 +930,6 @@ class IdentityApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -999,7 +954,6 @@ class IdentityApi:
 
         _param = self._list_identity_matches_artists_artist_id_identity_matches_get_serialize(
             artist_id=artist_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1025,7 +979,6 @@ class IdentityApi:
     def list_identity_matches_artists_artist_id_identity_matches_get_with_http_info(
         self,
         artist_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1044,8 +997,6 @@ class IdentityApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1070,7 +1021,6 @@ class IdentityApi:
 
         _param = self._list_identity_matches_artists_artist_id_identity_matches_get_serialize(
             artist_id=artist_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1096,7 +1046,6 @@ class IdentityApi:
     def list_identity_matches_artists_artist_id_identity_matches_get_without_preload_content(
         self,
         artist_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1115,8 +1064,6 @@ class IdentityApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1141,7 +1088,6 @@ class IdentityApi:
 
         _param = self._list_identity_matches_artists_artist_id_identity_matches_get_serialize(
             artist_id=artist_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1162,7 +1108,6 @@ class IdentityApi:
     def _list_identity_matches_artists_artist_id_identity_matches_get_serialize(
         self,
         artist_id,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -1188,8 +1133,6 @@ class IdentityApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
 
@@ -1205,6 +1148,7 @@ class IdentityApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(

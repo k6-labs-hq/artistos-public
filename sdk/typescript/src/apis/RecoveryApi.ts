@@ -17,12 +17,15 @@ import * as runtime from '../runtime';
 import type {
   BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost,
   HTTPValidationError,
+  RecoveryAutoRequest,
 } from '../models/index';
 import {
     BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostFromJSON,
     BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPostToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    RecoveryAutoRequestFromJSON,
+    RecoveryAutoRequestToJSON,
 } from '../models/index';
 
 export interface ArtistBenchmarkingArtistsArtistIdBenchmarkingGetRequest {
@@ -105,6 +108,11 @@ export interface RecoveryPlaybookArtistsArtistIdRecoveryPlaybookGetRequest {
 
 export interface RecoveryRoiArtistsArtistIdRecoveryRoiGetRequest {
     artistId: string;
+}
+
+export interface RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest {
+    artistId: string;
+    recoveryAutoRequest: RecoveryAutoRequest;
 }
 
 export interface SlaStatusArtistsArtistIdSlaStatusGetRequest {
@@ -1156,6 +1164,75 @@ export class RecoveryApi extends runtime.BaseAPI {
      */
     async recoveryRoiArtistsArtistIdRecoveryRoiGet(requestParameters: RecoveryRoiArtistsArtistIdRecoveryRoiGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.recoveryRoiArtistsArtistIdRecoveryRoiGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost without sending the request
+     */
+    async runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequestOpts(requestParameters: RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost().'
+            );
+        }
+
+        if (requestParameters['recoveryAutoRequest'] == null) {
+            throw new runtime.RequiredError(
+                'recoveryAutoRequest',
+                'Required parameter "recoveryAutoRequest" was null or undefined when calling runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/artists/{artist_id}/recovery/auto`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: RecoveryAutoRequestToJSON(requestParameters['recoveryAutoRequest']),
+        };
+    }
+
+    /**
+     * Run autonomous recovery-management agents for this artist.  Executes payer chasing, evidence packet generation, SOL monitoring, settlement tracking, and optionally rights registration planning.
+     * Run Recovery Autopilot
+     */
+    async runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRaw(requestParameters: RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Run autonomous recovery-management agents for this artist.  Executes payer chasing, evidence packet generation, SOL monitoring, settlement tracking, and optionally rights registration planning.
+     * Run Recovery Autopilot
+     */
+    async runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost(requestParameters: RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.runRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

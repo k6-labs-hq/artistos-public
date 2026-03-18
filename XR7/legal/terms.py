@@ -25,9 +25,9 @@ TERMS_VERSION: str = "2026-03-17.1"
 # Full legal text of the Artist Recovery Services Agreement.
 #
 # Drafting notes:
-#  - Contingency fee: 10% of gross recovery (no upfront cost to artist).
+#  - Contingency fee: 12% of gross recovery (no upfront cost to artist).
 #  - Fund routing: all recoveries received by XR7 / Trolley
-#    (Merchant of Record) are held in a segregated client account, net 10%
+#    (Merchant of Record) are held in a segregated client account, net 12%
 #    fee, and disbursed to the artist's registered bank account as cleared.
 #  - Autonomous real-time monitoring: artist grants XR7 a limited, revocable
 #    power of attorney to file and pursue claims on their behalf.
@@ -157,14 +157,14 @@ to provide the Recovery Services described herein on a contingency basis.
 4.  FEES AND COMPENSATION
 
 4.1 Contingency Fee.  In consideration for the Recovery Services, XR7 shall
-    retain a contingency fee equal to ten percent (10%) of the Gross Recovery
+    retain a contingency fee equal to twelve percent (12%) of the Gross Recovery
     from each individual recovery event ("Contingency Fee").  No upfront
     retainer, setup fee, or monthly subscription is charged.  XR7 is
     compensated exclusively from Recovered Funds; if no funds are recovered,
     Artist owes XR7 nothing.
 
     EXAMPLE: If XR7 recovers USD $1,000.00 from a Responsible Party,
-    XR7 retains USD $100.00 (10%) and disburses USD $900.00 (90%) to Artist.
+    XR7 retains USD $100.00 (12%) and disburses USD $900.00 (90%) to Artist.
 
 4.2 Calculation Transparency.  XR7 shall provide Artist with an itemised
     recovery statement for each disbursement, showing Gross Recovery, the
@@ -333,7 +333,7 @@ to provide the Recovery Services described herein on a contingency basis.
 BY CLICKING "I AGREE AND SUBMIT" YOU CONFIRM THAT:
 
   ✓ You have read and understood this entire Agreement.
-  ✓ You agree that XR7 will retain 10% of every recovery as a Contingency
+  ✓ You agree that XR7 will retain 12% of every recovery as a Contingency
     Fee, with the remaining 90% (Net Recovery) disbursed to you.
     ✓ You authorise XR7 and Trolley to process remittances and disburse
         Net Recovery to your registered payout account.

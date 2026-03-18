@@ -103,6 +103,15 @@ Class | Method | HTTP request | Description
 *AdminApi* | [**list_transactions_admin_transactions_get**](docs/AdminApi.md#list_transactions_admin_transactions_get) | **GET** /admin/transactions | List Transactions
 *AdminApi* | [**sol_risk_report_admin_reports_sol_risk_get**](docs/AdminApi.md#sol_risk_report_admin_reports_sol_risk_get) | **GET** /admin/reports/sol-risk | Sol Risk Report
 *AdminApi* | [**update_founder_cohort_limit_admin_founder_cohort_limit_put**](docs/AdminApi.md#update_founder_cohort_limit_admin_founder_cohort_limit_put) | **PUT** /admin/founder/cohort-limit | Update Founder Cohort Limit
+*AdvanceGovernanceApi* | [**accept_artist_offer_artists_artist_id_advance_offers_offer_id_accept_post**](docs/AdvanceGovernanceApi.md#accept_artist_offer_artists_artist_id_advance_offers_offer_id_accept_post) | **POST** /artists/{artist_id}/advance/offers/{offer_id}/accept | Accept Artist Offer
+*AdvanceGovernanceApi* | [**analyst_queue_admin_advances_queue_analyst_get**](docs/AdvanceGovernanceApi.md#analyst_queue_admin_advances_queue_analyst_get) | **GET** /admin/advances/queue/analyst | Analyst Queue
+*AdvanceGovernanceApi* | [**approve_analyst_admin_advances_opportunities_opportunity_id_analyst_decision_post**](docs/AdvanceGovernanceApi.md#approve_analyst_admin_advances_opportunities_opportunity_id_analyst_decision_post) | **POST** /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst
+*AdvanceGovernanceApi* | [**approve_executive_admin_advances_opportunities_opportunity_id_executive_decision_post**](docs/AdvanceGovernanceApi.md#approve_executive_admin_advances_opportunities_opportunity_id_executive_decision_post) | **POST** /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive
+*AdvanceGovernanceApi* | [**create_failed_packet_admin_advances_offers_offer_id_failed_recovery_packet_post**](docs/AdvanceGovernanceApi.md#create_failed_packet_admin_advances_offers_offer_id_failed_recovery_packet_post) | **POST** /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet
+*AdvanceGovernanceApi* | [**executive_queue_admin_advances_queue_executive_get**](docs/AdvanceGovernanceApi.md#executive_queue_admin_advances_queue_executive_get) | **GET** /admin/advances/queue/executive | Executive Queue
+*AdvanceGovernanceApi* | [**list_artist_offers_artists_artist_id_advance_offers_get**](docs/AdvanceGovernanceApi.md#list_artist_offers_artists_artist_id_advance_offers_get) | **GET** /artists/{artist_id}/advance/offers | List Artist Offers
+*AdvanceGovernanceApi* | [**publish_offer_admin_advances_opportunities_opportunity_id_publish_offer_post**](docs/AdvanceGovernanceApi.md#publish_offer_admin_advances_opportunities_opportunity_id_publish_offer_post) | **POST** /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer
+*AdvanceGovernanceApi* | [**run_nightly_eval_admin_advances_run_nightly_eval_post**](docs/AdvanceGovernanceApi.md#run_nightly_eval_admin_advances_run_nightly_eval_post) | **POST** /admin/advances/run-nightly-eval | Run Nightly Eval
 *AnomaliesApi* | [**anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get**](docs/AnomaliesApi.md#anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detect_anomalies_artists_artist_id_anomalies_detect_post**](docs/AnomaliesApi.md#detect_anomalies_artists_artist_id_anomalies_detect_post) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
 *AnomaliesApi* | [**fraud_scan_artists_artist_id_anomalies_fraud_scan_post**](docs/AnomaliesApi.md#fraud_scan_artists_artist_id_anomalies_fraud_scan_post) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
@@ -129,6 +138,7 @@ Class | Method | HTTP request | Description
 *B2bApi* | [**management_catalog_drilldown_management_org_id_catalog_get**](docs/B2bApi.md#management_catalog_drilldown_management_org_id_catalog_get) | **GET** /management/{org_id}/catalog | Management Catalog Drilldown
 *B2bApi* | [**management_claims_drilldown_management_org_id_claims_get**](docs/B2bApi.md#management_claims_drilldown_management_org_id_claims_get) | **GET** /management/{org_id}/claims | Management Claims Drilldown
 *B2bApi* | [**management_dashboard_management_org_id_dashboard_get**](docs/B2bApi.md#management_dashboard_management_org_id_dashboard_get) | **GET** /management/{org_id}/dashboard | Management Dashboard
+*B2bApi* | [**management_dashboard_v2_management_org_id_dashboard_v2_get**](docs/B2bApi.md#management_dashboard_v2_management_org_id_dashboard_v2_get) | **GET** /management/{org_id}/dashboard/v2 | Management Dashboard V2
 *B2bApi* | [**management_forecast_management_org_id_forecast_get**](docs/B2bApi.md#management_forecast_management_org_id_forecast_get) | **GET** /management/{org_id}/forecast | Management Forecast
 *B2bApi* | [**org_portfolio_org_org_id_portfolio_get**](docs/B2bApi.md#org_portfolio_org_org_id_portfolio_get) | **GET** /org/{org_id}/portfolio | Org Portfolio
 *B2bApi* | [**xr7_operator_dashboard_xr7_operator_dashboard_get**](docs/B2bApi.md#xr7_operator_dashboard_xr7_operator_dashboard_get) | **GET** /xr7/operator/dashboard | Xr7 Operator Dashboard
@@ -163,11 +173,15 @@ Class | Method | HTTP request | Description
 *ClaimsApi* | [**list_claims_artists_artist_id_claims_get**](docs/ClaimsApi.md#list_claims_artists_artist_id_claims_get) | **GET** /artists/{artist_id}/claims | List Claims
 *ClaimsApi* | [**reconcile_claim_claims_claim_id_reconcile_post**](docs/ClaimsApi.md#reconcile_claim_claims_claim_id_reconcile_post) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 *ClaimsApi* | [**verify_evidence_packet_claims_claim_id_evidence_verify_get**](docs/ClaimsApi.md#verify_evidence_packet_claims_claim_id_evidence_verify_get) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
+*ClassActionApi* | [**list_class_action_signals_admin_class_action_signals_get**](docs/ClassActionApi.md#list_class_action_signals_admin_class_action_signals_get) | **GET** /admin/class-action/signals | List Class Action Signals
+*ClassActionApi* | [**run_class_action_aggregation_admin_class_action_aggregate_post**](docs/ClassActionApi.md#run_class_action_aggregation_admin_class_action_aggregate_post) | **POST** /admin/class-action/aggregate | Run Class Action Aggregation
 *ConfigApi* | [**get_founder_status_config_founder_status_get**](docs/ConfigApi.md#get_founder_status_config_founder_status_get) | **GET** /config/founder-status | Get Founder Status
 *ConnectApi* | [**connect_global_social_artists_artist_id_connect_global_social_post**](docs/ConnectApi.md#connect_global_social_artists_artist_id_connect_global_social_post) | **POST** /artists/{artist_id}/connect/global-social | Connect Global Social
 *ConnectApi* | [**connect_global_social_status_artists_artist_id_connect_global_social_status_get**](docs/ConnectApi.md#connect_global_social_status_artists_artist_id_connect_global_social_status_get) | **GET** /artists/{artist_id}/connect/global-social/status | Connect Global Social Status
 *ConnectApi* | [**connect_soundcloud_artists_artist_id_connect_soundcloud_post**](docs/ConnectApi.md#connect_soundcloud_artists_artist_id_connect_soundcloud_post) | **POST** /artists/{artist_id}/connect/soundcloud | Connect Soundcloud
 *ConnectApi* | [**connect_soundcloud_status_artists_artist_id_connect_soundcloud_status_get**](docs/ConnectApi.md#connect_soundcloud_status_artists_artist_id_connect_soundcloud_status_get) | **GET** /artists/{artist_id}/connect/soundcloud/status | Connect Soundcloud Status
+*CreatorEconomyApi* | [**ingest_creator_data_artists_artist_id_creator_ingest_post**](docs/CreatorEconomyApi.md#ingest_creator_data_artists_artist_id_creator_ingest_post) | **POST** /artists/{artist_id}/creator/ingest | Ingest Creator Data
+*CreatorEconomyApi* | [**list_creator_platforms_artists_artist_id_creator_platforms_get**](docs/CreatorEconomyApi.md#list_creator_platforms_artists_artist_id_creator_platforms_get) | **GET** /artists/{artist_id}/creator/platforms | List Creator Platforms
 *DashboardApi* | [**agent_trace_artists_artist_id_agent_trace_run_id_get**](docs/DashboardApi.md#agent_trace_artists_artist_id_agent_trace_run_id_get) | **GET** /artists/{artist_id}/agent-trace/{run_id} | Agent Trace
 *DashboardApi* | [**chat_royalties_artists_artist_id_chat_royalties_post**](docs/DashboardApi.md#chat_royalties_artists_artist_id_chat_royalties_post) | **POST** /artists/{artist_id}/chat/royalties | Chat Royalties
 *DashboardApi* | [**dashboard_benchmarks_artists_artist_id_benchmarks_get**](docs/DashboardApi.md#dashboard_benchmarks_artists_artist_id_benchmarks_get) | **GET** /artists/{artist_id}/benchmarks | Dashboard Benchmarks
@@ -221,6 +235,9 @@ Class | Method | HTTP request | Description
 *ForensicApiApi* | [**statements_status_statements_statement_id_status_get**](docs/ForensicApiApi.md#statements_status_statements_statement_id_status_get) | **GET** /statements/{statement_id}/status | Statements Status
 *ForensicApiApi* | [**statements_upload_statements_upload_post**](docs/ForensicApiApi.md#statements_upload_statements_upload_post) | **POST** /statements/upload | Statements Upload
 *ForensicApiApi* | [**variance_evidence_variance_variance_id_evidence_get**](docs/ForensicApiApi.md#variance_evidence_variance_variance_id_evidence_get) | **GET** /variance/{variance_id}/evidence | Variance Evidence
+*GovernanceApi* | [**erase_artist_data_artists_artist_id_privacy_erase_post**](docs/GovernanceApi.md#erase_artist_data_artists_artist_id_privacy_erase_post) | **POST** /artists/{artist_id}/privacy/erase | Erase Artist Data
+*GovernanceApi* | [**export_artist_data_artists_artist_id_privacy_export_post**](docs/GovernanceApi.md#export_artist_data_artists_artist_id_privacy_export_post) | **POST** /artists/{artist_id}/privacy/export | Export Artist Data
+*GovernanceApi* | [**list_admin_audit_events_admin_audit_events_get**](docs/GovernanceApi.md#list_admin_audit_events_admin_audit_events_get) | **GET** /admin/audit/events | List Admin Audit Events
 *IdentityApi* | [**auto_match_identity_artists_artist_id_identity_auto_match_post**](docs/IdentityApi.md#auto_match_identity_artists_artist_id_identity_auto_match_post) | **POST** /artists/{artist_id}/identity/auto-match | Auto Match Identity
 *IdentityApi* | [**decide_identity_match_artists_artist_id_identity_matches_match_id_decision_post**](docs/IdentityApi.md#decide_identity_match_artists_artist_id_identity_matches_match_id_decision_post) | **POST** /artists/{artist_id}/identity/matches/{match_id}/decision | Decide Identity Match
 *IdentityApi* | [**get_identity_match_audit_artists_artist_id_identity_matches_match_id_audit_get**](docs/IdentityApi.md#get_identity_match_audit_artists_artist_id_identity_matches_match_id_audit_get) | **GET** /artists/{artist_id}/identity/matches/{match_id}/audit | Get Identity Match Audit
@@ -250,6 +267,11 @@ Class | Method | HTTP request | Description
 *IntelligenceApi* | [**run_tax_optimizer_artists_artist_id_intelligence_tax_optimizer_post**](docs/IntelligenceApi.md#run_tax_optimizer_artists_artist_id_intelligence_tax_optimizer_post) | **POST** /artists/{artist_id}/intelligence/tax-optimizer | Run Tax Optimizer
 *IntelligenceApi* | [**simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post**](docs/IntelligenceApi.md#simulate_expected_payout_artists_artist_id_intelligence_simulate_expected_payout_post) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout
 *IntelligenceApi* | [**simulate_optimization_artists_artist_id_ml_simulate_optimization_post**](docs/IntelligenceApi.md#simulate_optimization_artists_artist_id_ml_simulate_optimization_post) | **POST** /artists/{artist_id}/ml/simulate-optimization | Simulate Optimization
+*MessagesApi* | [**business_manager_chat_artists_artist_id_messages_chat_post**](docs/MessagesApi.md#business_manager_chat_artists_artist_id_messages_chat_post) | **POST** /artists/{artist_id}/messages/chat | Business Manager Chat
+*MessagesApi* | [**create_weekly_story_artists_artist_id_messages_weekly_story_post**](docs/MessagesApi.md#create_weekly_story_artists_artist_id_messages_weekly_story_post) | **POST** /artists/{artist_id}/messages/weekly-story | Create Weekly Story
+*MessagesApi* | [**get_feed_artists_artist_id_messages_feed_get**](docs/MessagesApi.md#get_feed_artists_artist_id_messages_feed_get) | **GET** /artists/{artist_id}/messages/feed | Get Feed
+*MlSuiteApi* | [**ml_calibration_dashboard_artists_artist_id_ml_calibration_dashboard_get**](docs/MlSuiteApi.md#ml_calibration_dashboard_artists_artist_id_ml_calibration_dashboard_get) | **GET** /artists/{artist_id}/ml/calibration-dashboard | Ml Calibration Dashboard
+*MlSuiteApi* | [**ml_explain_artists_artist_id_ml_explain_get**](docs/MlSuiteApi.md#ml_explain_artists_artist_id_ml_explain_get) | **GET** /artists/{artist_id}/ml/explain | Ml Explain
 *NotificationsApi* | [**dispatch_notifications_artists_artist_id_notifications_dispatch_post**](docs/NotificationsApi.md#dispatch_notifications_artists_artist_id_notifications_dispatch_post) | **POST** /artists/{artist_id}/notifications/dispatch | Dispatch Notifications
 *NotificationsApi* | [**push_register_artists_artist_id_notifications_push_register_post**](docs/NotificationsApi.md#push_register_artists_artist_id_notifications_push_register_post) | **POST** /artists/{artist_id}/notifications/push-register | Push Register
 *NotificationsApi* | [**set_notification_preferences_artists_artist_id_notifications_preferences_post**](docs/NotificationsApi.md#set_notification_preferences_artists_artist_id_notifications_preferences_post) | **POST** /artists/{artist_id}/notifications/preferences | Set Notification Preferences
@@ -269,6 +291,7 @@ Class | Method | HTTP request | Description
 *OnboardingApi* | [**list_parser_plugins_artists_artist_id_parsers_plugins_get**](docs/OnboardingApi.md#list_parser_plugins_artists_artist_id_parsers_plugins_get) | **GET** /artists/{artist_id}/parsers/plugins | List Parser Plugins
 *OnboardingApi* | [**list_sync_jobs_artists_artist_id_sync_jobs_get**](docs/OnboardingApi.md#list_sync_jobs_artists_artist_id_sync_jobs_get) | **GET** /artists/{artist_id}/sync/jobs | List Sync Jobs
 *OnboardingApi* | [**missing_data_status_artists_artist_id_ingestion_missing_data_get**](docs/OnboardingApi.md#missing_data_status_artists_artist_id_ingestion_missing_data_get) | **GET** /artists/{artist_id}/ingestion/missing-data | Missing Data Status
+*OnboardingApi* | [**onboarding_auto_artists_artist_id_onboarding_auto_post**](docs/OnboardingApi.md#onboarding_auto_artists_artist_id_onboarding_auto_post) | **POST** /artists/{artist_id}/onboarding/auto | Onboarding Auto
 *OnboardingApi* | [**onboarding_status_artists_artist_id_onboarding_status_get**](docs/OnboardingApi.md#onboarding_status_artists_artist_id_onboarding_status_get) | **GET** /artists/{artist_id}/onboarding/status | Onboarding Status
 *OnboardingApi* | [**parse_statement_with_engine_artists_artist_id_parsers_parser_type_post**](docs/OnboardingApi.md#parse_statement_with_engine_artists_artist_id_parsers_parser_type_post) | **POST** /artists/{artist_id}/parsers/{parser_type} | Parse Statement With Engine
 *OnboardingApi* | [**permissions_dashboard_artists_artist_id_connect_permissions_dashboard_get**](docs/OnboardingApi.md#permissions_dashboard_artists_artist_id_connect_permissions_dashboard_get) | **GET** /artists/{artist_id}/connect/permissions-dashboard | Permissions Dashboard
@@ -307,6 +330,7 @@ Class | Method | HTTP request | Description
 *RecoveryApi* | [**recovery_funnel_artists_artist_id_recovery_funnel_get**](docs/RecoveryApi.md#recovery_funnel_artists_artist_id_recovery_funnel_get) | **GET** /artists/{artist_id}/recovery/funnel | Recovery Funnel
 *RecoveryApi* | [**recovery_playbook_artists_artist_id_recovery_playbook_get**](docs/RecoveryApi.md#recovery_playbook_artists_artist_id_recovery_playbook_get) | **GET** /artists/{artist_id}/recovery/playbook | Recovery Playbook
 *RecoveryApi* | [**recovery_roi_artists_artist_id_recovery_roi_get**](docs/RecoveryApi.md#recovery_roi_artists_artist_id_recovery_roi_get) | **GET** /artists/{artist_id}/recovery/roi | Recovery Roi
+*RecoveryApi* | [**run_recovery_autopilot_artists_artist_id_recovery_auto_post**](docs/RecoveryApi.md#run_recovery_autopilot_artists_artist_id_recovery_auto_post) | **POST** /artists/{artist_id}/recovery/auto | Run Recovery Autopilot
 *RecoveryApi* | [**sla_status_artists_artist_id_sla_status_get**](docs/RecoveryApi.md#sla_status_artists_artist_id_sla_status_get) | **GET** /artists/{artist_id}/sla/status | Sla Status
 *RecoveryApi* | [**sol_status_artists_artist_id_recovery_sol_status_get**](docs/RecoveryApi.md#sol_status_artists_artist_id_recovery_sol_status_get) | **GET** /artists/{artist_id}/recovery/sol-status | Sol Status
 *RecoveryApi* | [**split_conflicts_artists_artist_id_splits_conflicts_get**](docs/RecoveryApi.md#split_conflicts_artists_artist_id_splits_conflicts_get) | **GET** /artists/{artist_id}/splits/conflicts | Split Conflicts
@@ -317,6 +341,8 @@ Class | Method | HTTP request | Description
 *RecoveryApi* | [**ugc_global_scan_artists_artist_id_ugc_global_scan_post**](docs/RecoveryApi.md#ugc_global_scan_artists_artist_id_ugc_global_scan_post) | **POST** /artists/{artist_id}/ugc/global-scan | Ugc Global Scan
 *RecoveryApi* | [**ugc_monitor_artists_artist_id_ugc_monitor_get**](docs/RecoveryApi.md#ugc_monitor_artists_artist_id_ugc_monitor_get) | **GET** /artists/{artist_id}/ugc/monitor | Ugc Monitor
 *RecoveryApi* | [**underpayment_heatmap_artists_artist_id_recovery_heatmap_get**](docs/RecoveryApi.md#underpayment_heatmap_artists_artist_id_recovery_heatmap_get) | **GET** /artists/{artist_id}/recovery/heatmap | Underpayment Heatmap
+*ReferralsApi* | [**get_referrals_artists_artist_id_referrals_get**](docs/ReferralsApi.md#get_referrals_artists_artist_id_referrals_get) | **GET** /artists/{artist_id}/referrals | Get Referrals
+*ReferralsApi* | [**register_referral_artists_artist_id_referrals_post**](docs/ReferralsApi.md#register_referral_artists_artist_id_referrals_post) | **POST** /artists/{artist_id}/referrals | Register Referral
 *ReviewQueueApi* | [**assign_review_item_review_queue_items_item_id_assign_post**](docs/ReviewQueueApi.md#assign_review_item_review_queue_items_item_id_assign_post) | **POST** /review-queue/items/{item_id}/assign | Assign Review Item
 *ReviewQueueApi* | [**check_threshold_review_queue_threshold_check_post**](docs/ReviewQueueApi.md#check_threshold_review_queue_threshold_check_post) | **POST** /review-queue/threshold-check | Check Threshold
 *ReviewQueueApi* | [**create_review_item_review_queue_items_post**](docs/ReviewQueueApi.md#create_review_item_review_queue_items_post) | **POST** /review-queue/items | Create Review Item
@@ -324,6 +350,12 @@ Class | Method | HTTP request | Description
 *ReviewQueueApi* | [**list_decisions_review_queue_decisions_get**](docs/ReviewQueueApi.md#list_decisions_review_queue_decisions_get) | **GET** /review-queue/decisions | List Decisions
 *ReviewQueueApi* | [**list_review_items_review_queue_items_get**](docs/ReviewQueueApi.md#list_review_items_review_queue_items_get) | **GET** /review-queue/items | List Review Items
 *ReviewQueueApi* | [**review_queue_metrics_review_queue_metrics_get**](docs/ReviewQueueApi.md#review_queue_metrics_review_queue_metrics_get) | **GET** /review-queue/metrics | Review Queue Metrics
+*SovereigntyApi* | [**accept_advance_offer_artists_artist_id_advance_accept_post**](docs/SovereigntyApi.md#accept_advance_offer_artists_artist_id_advance_accept_post) | **POST** /artists/{artist_id}/advance/accept | Accept Advance Offer
+*SovereigntyApi* | [**create_advance_offer_artists_artist_id_advance_offer_post**](docs/SovereigntyApi.md#create_advance_offer_artists_artist_id_advance_offer_post) | **POST** /artists/{artist_id}/advance/offer | Create Advance Offer
+*SovereigntyApi* | [**list_advance_history_artists_artist_id_advance_history_get**](docs/SovereigntyApi.md#list_advance_history_artists_artist_id_advance_history_get) | **GET** /artists/{artist_id}/advance/history | List Advance History
+*SovereigntyApi* | [**list_rights_gaps_artists_artist_id_rights_gaps_get**](docs/SovereigntyApi.md#list_rights_gaps_artists_artist_id_rights_gaps_get) | **GET** /artists/{artist_id}/rights/gaps | List Rights Gaps
+*SovereigntyApi* | [**register_rights_packets_artists_artist_id_rights_register_post**](docs/SovereigntyApi.md#register_rights_packets_artists_artist_id_rights_register_post) | **POST** /artists/{artist_id}/rights/register | Register Rights Packets
+*SovereigntyApi* | [**scan_rights_artists_artist_id_rights_scan_get**](docs/SovereigntyApi.md#scan_rights_artists_artist_id_rights_scan_get) | **GET** /artists/{artist_id}/rights/scan | Scan Rights
 *SupportApi* | [**support_action_artists_artist_id_support_action_post**](docs/SupportApi.md#support_action_artists_artist_id_support_action_post) | **POST** /artists/{artist_id}/support/action | Support Action
 *SupportApi* | [**support_chat_artists_artist_id_support_chat_post**](docs/SupportApi.md#support_chat_artists_artist_id_support_chat_post) | **POST** /artists/{artist_id}/support/chat | Support Chat
 *SupportApi* | [**support_history_artists_artist_id_support_history_get**](docs/SupportApi.md#support_history_artists_artist_id_support_history_get) | **GET** /artists/{artist_id}/support/history | Support History
@@ -340,6 +372,7 @@ Class | Method | HTTP request | Description
 *TrolleyApi* | [**get_trolley_widget_url_artists_artist_id_trolley_widget_url_get**](docs/TrolleyApi.md#get_trolley_widget_url_artists_artist_id_trolley_widget_url_get) | **GET** /artists/{artist_id}/trolley/widget-url | Get Trolley Widget Url
 *TrolleyApi* | [**manual_remittance_artists_artist_id_claims_claim_id_manual_remittance_post**](docs/TrolleyApi.md#manual_remittance_artists_artist_id_claims_claim_id_manual_remittance_post) | **POST** /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance
 *TrolleyApi* | [**trolley_webhook_webhooks_trolley_post**](docs/TrolleyApi.md#trolley_webhook_webhooks_trolley_post) | **POST** /webhooks/trolley | Trolley Webhook
+*TrustApi* | [**get_trust_trace_artists_artist_id_trust_trace_get**](docs/TrustApi.md#get_trust_trace_artists_artist_id_trust_trace_get) | **GET** /artists/{artist_id}/trust/trace | Get Trust Trace
 *WidgetApi* | [**claim_widget_claim_post**](docs/WidgetApi.md#claim_widget_claim_post) | **POST** /widget/claim | Claim
 *WidgetApi* | [**estimate_widget_estimate_post**](docs/WidgetApi.md#estimate_widget_estimate_post) | **POST** /widget/estimate | Estimate
 *WidgetApi* | [**list_leads_widget_leads_get**](docs/WidgetApi.md#list_leads_widget_leads_get) | **GET** /widget/leads | List Leads
@@ -378,12 +411,15 @@ Class | Method | HTTP request | Description
  - [APIIngestionRequest](docs/APIIngestionRequest.md)
  - [AdminAuditLogSchema](docs/AdminAuditLogSchema.md)
  - [AdminLoginRequest](docs/AdminLoginRequest.md)
+ - [AdvanceAcceptRequest](docs/AdvanceAcceptRequest.md)
+ - [AdvanceOfferRequest](docs/AdvanceOfferRequest.md)
  - [AdviceRequest](docs/AdviceRequest.md)
  - [AdviceResponse](docs/AdviceResponse.md)
  - [AnomalyCategory](docs/AnomalyCategory.md)
  - [AnomalySchema](docs/AnomalySchema.md)
  - [AnomalySeverity](docs/AnomalySeverity.md)
  - [AnomalyStatus](docs/AnomalyStatus.md)
+ - [ApprovalRequest](docs/ApprovalRequest.md)
  - [ArtistCreate](docs/ArtistCreate.md)
  - [ArtistIdentityMatchSchema](docs/ArtistIdentityMatchSchema.md)
  - [ArtistLifecycleStatus](docs/ArtistLifecycleStatus.md)
@@ -399,6 +435,7 @@ Class | Method | HTTP request | Description
  - [BrandingProfileUpsertRequest](docs/BrandingProfileUpsertRequest.md)
  - [BulkOnboardRequest](docs/BulkOnboardRequest.md)
  - [CatalogConfirmationSchema](docs/CatalogConfirmationSchema.md)
+ - [ChatRequest](docs/ChatRequest.md)
  - [ClaimCreateRequest](docs/ClaimCreateRequest.md)
  - [ClaimRequest](docs/ClaimRequest.md)
  - [ClaimSchema](docs/ClaimSchema.md)
@@ -406,12 +443,14 @@ Class | Method | HTTP request | Description
  - [ClaimTemplateRequest](docs/ClaimTemplateRequest.md)
  - [ContractExtractRequest](docs/ContractExtractRequest.md)
  - [CreateReviewItemRequest](docs/CreateReviewItemRequest.md)
+ - [CreatorIngestRequest](docs/CreatorIngestRequest.md)
  - [CurrencyTaxEstimateRequest](docs/CurrencyTaxEstimateRequest.md)
  - [DecideReviewItemRequest](docs/DecideReviewItemRequest.md)
  - [DemandLetterRequest](docs/DemandLetterRequest.md)
  - [DemandLetterResponse](docs/DemandLetterResponse.md)
  - [EstimateRequest](docs/EstimateRequest.md)
  - [EvidenceAnchorSchema](docs/EvidenceAnchorSchema.md)
+ - [FailedPacketRequest](docs/FailedPacketRequest.md)
  - [FeedbackOutcome](docs/FeedbackOutcome.md)
  - [FingerprintingRequest](docs/FingerprintingRequest.md)
  - [ForensicUniversalRoyaltyEventCreate](docs/ForensicUniversalRoyaltyEventCreate.md)
@@ -443,6 +482,7 @@ Class | Method | HTTP request | Description
  - [OAuthSessionCreateRequest](docs/OAuthSessionCreateRequest.md)
  - [OAuthTokenExchangeRequest](docs/OAuthTokenExchangeRequest.md)
  - [OAuthTokenRefreshRequest](docs/OAuthTokenRefreshRequest.md)
+ - [OnboardingAutoRequest](docs/OnboardingAutoRequest.md)
  - [OptimizationSimulationRequest](docs/OptimizationSimulationRequest.md)
  - [ParserPluginSchema](docs/ParserPluginSchema.md)
  - [ParserPluginUpsertRequest](docs/ParserPluginUpsertRequest.md)
@@ -451,8 +491,10 @@ Class | Method | HTTP request | Description
  - [ReconcileRequest](docs/ReconcileRequest.md)
  - [ReconciliationRequest](docs/ReconciliationRequest.md)
  - [ReconstructRequest](docs/ReconstructRequest.md)
+ - [RecoveryAutoRequest](docs/RecoveryAutoRequest.md)
  - [RecoveryOutcomeFeedbackSchema](docs/RecoveryOutcomeFeedbackSchema.md)
  - [RecoverySubmitResponse](docs/RecoverySubmitResponse.md)
+ - [ReferralRequest](docs/ReferralRequest.md)
  - [RegisterRequest](docs/RegisterRequest.md)
  - [RegisterResponse](docs/RegisterResponse.md)
  - [ReviewAssignmentSchema](docs/ReviewAssignmentSchema.md)
@@ -492,6 +534,7 @@ Class | Method | HTTP request | Description
  - [VarianceScanRequest](docs/VarianceScanRequest.md)
  - [VerifyRequest](docs/VerifyRequest.md)
  - [VerifyResponse](docs/VerifyResponse.md)
+ - [WeeklyStoryRequest](docs/WeeklyStoryRequest.md)
  - [WidgetLeadSchema](docs/WidgetLeadSchema.md)
  - [WorkflowRunRequest](docs/WorkflowRunRequest.md)
  - [WorkflowRunResponse](docs/WorkflowRunResponse.md)
@@ -505,7 +548,12 @@ Class | Method | HTTP request | Description
 <a id="documentation-for-authorization"></a>
 ## Documentation For Authorization
 
-Endpoints do not require authorization.
+
+Authentication schemes defined for the API:
+<a id="HTTPBearer"></a>
+### HTTPBearer
+
+- **Type**: Bearer authentication
 
 
 ## Author

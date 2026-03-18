@@ -690,12 +690,13 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **create_claim_for_artist_artists_artist_id_claims_post**
-> ClaimSchema create_claim_for_artist_artists_artist_id_claims_post(artist_id, claim_create_request, authorization=authorization)
+> ClaimSchema create_claim_for_artist_artists_artist_id_claims_post(artist_id, claim_create_request)
 
 Create Claim For Artist
 
 ### Example
 
+* Bearer Authentication (HTTPBearer):
 
 ```python
 import xr7_sdk
@@ -710,6 +711,15 @@ configuration = xr7_sdk.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
 
 # Enter a context with an instance of the API client
 with xr7_sdk.ApiClient(configuration) as api_client:
@@ -717,11 +727,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
     api_instance = xr7_sdk.ClaimsApi(api_client)
     artist_id = 'artist_id_example' # str | 
     claim_create_request = xr7_sdk.ClaimCreateRequest() # ClaimCreateRequest | 
-    authorization = 'authorization_example' # str |  (optional)
 
     try:
         # Create Claim For Artist
-        api_response = api_instance.create_claim_for_artist_artists_artist_id_claims_post(artist_id, claim_create_request, authorization=authorization)
+        api_response = api_instance.create_claim_for_artist_artists_artist_id_claims_post(artist_id, claim_create_request)
         print("The response of ClaimsApi->create_claim_for_artist_artists_artist_id_claims_post:\n")
         pprint(api_response)
     except Exception as e:
@@ -737,7 +746,6 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **artist_id** | **str**|  | 
  **claim_create_request** | [**ClaimCreateRequest**](ClaimCreateRequest.md)|  | 
- **authorization** | **str**|  | [optional] 
 
 ### Return type
 
@@ -745,7 +753,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -1239,12 +1247,13 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_evidence_claims_claim_id_evidence_get**
-> object get_evidence_claims_claim_id_evidence_get(claim_id, authorization=authorization)
+> object get_evidence_claims_claim_id_evidence_get(claim_id)
 
 Get Evidence
 
 ### Example
 
+* Bearer Authentication (HTTPBearer):
 
 ```python
 import xr7_sdk
@@ -1257,17 +1266,25 @@ configuration = xr7_sdk.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
 
 # Enter a context with an instance of the API client
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
     claim_id = 'claim_id_example' # str | 
-    authorization = 'authorization_example' # str |  (optional)
 
     try:
         # Get Evidence
-        api_response = api_instance.get_evidence_claims_claim_id_evidence_get(claim_id, authorization=authorization)
+        api_response = api_instance.get_evidence_claims_claim_id_evidence_get(claim_id)
         print("The response of ClaimsApi->get_evidence_claims_claim_id_evidence_get:\n")
         pprint(api_response)
     except Exception as e:
@@ -1282,7 +1299,6 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **claim_id** | **str**|  | 
- **authorization** | **str**|  | [optional] 
 
 ### Return type
 
@@ -1290,7 +1306,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 
@@ -1313,6 +1329,7 @@ List Claims
 
 ### Example
 
+* Bearer Authentication (HTTPBearer):
 
 ```python
 import xr7_sdk
@@ -1325,6 +1342,15 @@ configuration = xr7_sdk.Configuration(
     host = "http://localhost"
 )
 
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
 
 # Enter a context with an instance of the API client
 with xr7_sdk.ApiClient(configuration) as api_client:
@@ -1356,7 +1382,7 @@ Name | Type | Description  | Notes
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

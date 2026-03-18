@@ -294,7 +294,11 @@ import type { ListAnomaliesArtistsArtistIdAnomaliesGetRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const api = new AnomaliesApi();
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new AnomaliesApi(config);
 
   const body = {
     // string
@@ -332,7 +336,7 @@ example().catch(console.error);
 
 ### Authorization
 
-No authorization required
+[HTTPBearer](../README.md#HTTPBearer)
 
 ### HTTP request headers
 

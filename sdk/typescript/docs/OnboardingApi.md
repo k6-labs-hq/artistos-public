@@ -19,6 +19,7 @@ All URIs are relative to *http://localhost*
 | [**listParserPluginsArtistsArtistIdParsersPluginsGet**](OnboardingApi.md#listparserpluginsartistsartistidparserspluginsget) | **GET** /artists/{artist_id}/parsers/plugins | List Parser Plugins |
 | [**listSyncJobsArtistsArtistIdSyncJobsGet**](OnboardingApi.md#listsyncjobsartistsartistidsyncjobsget) | **GET** /artists/{artist_id}/sync/jobs | List Sync Jobs |
 | [**missingDataStatusArtistsArtistIdIngestionMissingDataGet**](OnboardingApi.md#missingdatastatusartistsartistidingestionmissingdataget) | **GET** /artists/{artist_id}/ingestion/missing-data | Missing Data Status |
+| [**onboardingAutoArtistsArtistIdOnboardingAutoPost**](OnboardingApi.md#onboardingautoartistsartistidonboardingautopost) | **POST** /artists/{artist_id}/onboarding/auto | Onboarding Auto |
 | [**onboardingStatusArtistsArtistIdOnboardingStatusGet**](OnboardingApi.md#onboardingstatusartistsartistidonboardingstatusget) | **GET** /artists/{artist_id}/onboarding/status | Onboarding Status |
 | [**parseStatementWithEngineArtistsArtistIdParsersParserTypePost**](OnboardingApi.md#parsestatementwithengineartistsartistidparsersparsertypepost) | **POST** /artists/{artist_id}/parsers/{parser_type} | Parse Statement With Engine |
 | [**permissionsDashboardArtistsArtistIdConnectPermissionsDashboardGet**](OnboardingApi.md#permissionsdashboardartistsartistidconnectpermissionsdashboardget) | **GET** /artists/{artist_id}/connect/permissions-dashboard | Permissions Dashboard |
@@ -1015,6 +1016,77 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## onboardingAutoArtistsArtistIdOnboardingAutoPost
+
+> any onboardingAutoArtistsArtistIdOnboardingAutoPost(artistId, onboardingAutoRequest)
+
+Onboarding Auto
+
+Run one-call onboarding bootstrap for baseline activation.  This endpoint marks the artist as onboarded (if still NEW), executes due sync jobs when requested, and returns an updated onboarding summary.
+
+### Example
+
+```ts
+import {
+  Configuration,
+  OnboardingApi,
+} from '@xr7/sdk';
+import type { OnboardingAutoArtistsArtistIdOnboardingAutoPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new OnboardingApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+    // OnboardingAutoRequest
+    onboardingAutoRequest: ...,
+  } satisfies OnboardingAutoArtistsArtistIdOnboardingAutoPostRequest;
+
+  try {
+    const data = await api.onboardingAutoArtistsArtistIdOnboardingAutoPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+| **onboardingAutoRequest** | [OnboardingAutoRequest](OnboardingAutoRequest.md) |  | |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

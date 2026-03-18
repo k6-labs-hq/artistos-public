@@ -64,6 +64,15 @@ All URIs are relative to *http://localhost*
 *AdminApi* | [**listTransactionsAdminTransactionsGet**](docs/AdminApi.md#listtransactionsadmintransactionsget) | **GET** /admin/transactions | List Transactions
 *AdminApi* | [**solRiskReportAdminReportsSolRiskGet**](docs/AdminApi.md#solriskreportadminreportssolriskget) | **GET** /admin/reports/sol-risk | Sol Risk Report
 *AdminApi* | [**updateFounderCohortLimitAdminFounderCohortLimitPut**](docs/AdminApi.md#updatefoundercohortlimitadminfoundercohortlimitput) | **PUT** /admin/founder/cohort-limit | Update Founder Cohort Limit
+*AdvanceGovernanceApi* | [**acceptArtistOfferArtistsArtistIdAdvanceOffersOfferIdAcceptPost**](docs/AdvanceGovernanceApi.md#acceptartistofferartistsartistidadvanceoffersofferidacceptpost) | **POST** /artists/{artist_id}/advance/offers/{offer_id}/accept | Accept Artist Offer
+*AdvanceGovernanceApi* | [**analystQueueAdminAdvancesQueueAnalystGet**](docs/AdvanceGovernanceApi.md#analystqueueadminadvancesqueueanalystget) | **GET** /admin/advances/queue/analyst | Analyst Queue
+*AdvanceGovernanceApi* | [**approveAnalystAdminAdvancesOpportunitiesOpportunityIdAnalystDecisionPost**](docs/AdvanceGovernanceApi.md#approveanalystadminadvancesopportunitiesopportunityidanalystdecisionpost) | **POST** /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst
+*AdvanceGovernanceApi* | [**approveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDecisionPost**](docs/AdvanceGovernanceApi.md#approveexecutiveadminadvancesopportunitiesopportunityidexecutivedecisionpost) | **POST** /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive
+*AdvanceGovernanceApi* | [**createFailedPacketAdminAdvancesOffersOfferIdFailedRecoveryPacketPost**](docs/AdvanceGovernanceApi.md#createfailedpacketadminadvancesoffersofferidfailedrecoverypacketpost) | **POST** /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet
+*AdvanceGovernanceApi* | [**executiveQueueAdminAdvancesQueueExecutiveGet**](docs/AdvanceGovernanceApi.md#executivequeueadminadvancesqueueexecutiveget) | **GET** /admin/advances/queue/executive | Executive Queue
+*AdvanceGovernanceApi* | [**listArtistOffersArtistsArtistIdAdvanceOffersGet**](docs/AdvanceGovernanceApi.md#listartistoffersartistsartistidadvanceoffersget) | **GET** /artists/{artist_id}/advance/offers | List Artist Offers
+*AdvanceGovernanceApi* | [**publishOfferAdminAdvancesOpportunitiesOpportunityIdPublishOfferPost**](docs/AdvanceGovernanceApi.md#publishofferadminadvancesopportunitiesopportunityidpublishofferpost) | **POST** /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer
+*AdvanceGovernanceApi* | [**runNightlyEvalAdminAdvancesRunNightlyEvalPost**](docs/AdvanceGovernanceApi.md#runnightlyevaladminadvancesrunnightlyevalpost) | **POST** /admin/advances/run-nightly-eval | Run Nightly Eval
 *AnomaliesApi* | [**anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet**](docs/AnomaliesApi.md#anomalyrecoveryprobabilityendpointanomaliesanomalyidrecoveryprobabilityget) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detectAnomaliesArtistsArtistIdAnomaliesDetectPost**](docs/AnomaliesApi.md#detectanomaliesartistsartistidanomaliesdetectpost) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
 *AnomaliesApi* | [**fraudScanArtistsArtistIdAnomaliesFraudScanPost**](docs/AnomaliesApi.md#fraudscanartistsartistidanomaliesfraudscanpost) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
@@ -90,6 +99,7 @@ All URIs are relative to *http://localhost*
 *B2bApi* | [**managementCatalogDrilldownManagementOrgIdCatalogGet**](docs/B2bApi.md#managementcatalogdrilldownmanagementorgidcatalogget) | **GET** /management/{org_id}/catalog | Management Catalog Drilldown
 *B2bApi* | [**managementClaimsDrilldownManagementOrgIdClaimsGet**](docs/B2bApi.md#managementclaimsdrilldownmanagementorgidclaimsget) | **GET** /management/{org_id}/claims | Management Claims Drilldown
 *B2bApi* | [**managementDashboardManagementOrgIdDashboardGet**](docs/B2bApi.md#managementdashboardmanagementorgiddashboardget) | **GET** /management/{org_id}/dashboard | Management Dashboard
+*B2bApi* | [**managementDashboardV2ManagementOrgIdDashboardV2Get**](docs/B2bApi.md#managementdashboardv2managementorgiddashboardv2get) | **GET** /management/{org_id}/dashboard/v2 | Management Dashboard V2
 *B2bApi* | [**managementForecastManagementOrgIdForecastGet**](docs/B2bApi.md#managementforecastmanagementorgidforecastget) | **GET** /management/{org_id}/forecast | Management Forecast
 *B2bApi* | [**orgPortfolioOrgOrgIdPortfolioGet**](docs/B2bApi.md#orgportfolioorgorgidportfolioget) | **GET** /org/{org_id}/portfolio | Org Portfolio
 *B2bApi* | [**xr7OperatorDashboardXr7OperatorDashboardGet**](docs/B2bApi.md#xr7operatordashboardxr7operatordashboardget) | **GET** /xr7/operator/dashboard | Xr7 Operator Dashboard
@@ -124,11 +134,15 @@ All URIs are relative to *http://localhost*
 *ClaimsApi* | [**listClaimsArtistsArtistIdClaimsGet**](docs/ClaimsApi.md#listclaimsartistsartistidclaimsget) | **GET** /artists/{artist_id}/claims | List Claims
 *ClaimsApi* | [**reconcileClaimClaimsClaimIdReconcilePost**](docs/ClaimsApi.md#reconcileclaimclaimsclaimidreconcilepost) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 *ClaimsApi* | [**verifyEvidencePacketClaimsClaimIdEvidenceVerifyGet**](docs/ClaimsApi.md#verifyevidencepacketclaimsclaimidevidenceverifyget) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
+*ClassActionApi* | [**listClassActionSignalsAdminClassActionSignalsGet**](docs/ClassActionApi.md#listclassactionsignalsadminclassactionsignalsget) | **GET** /admin/class-action/signals | List Class Action Signals
+*ClassActionApi* | [**runClassActionAggregationAdminClassActionAggregatePost**](docs/ClassActionApi.md#runclassactionaggregationadminclassactionaggregatepost) | **POST** /admin/class-action/aggregate | Run Class Action Aggregation
 *ConfigApi* | [**getFounderStatusConfigFounderStatusGet**](docs/ConfigApi.md#getfounderstatusconfigfounderstatusget) | **GET** /config/founder-status | Get Founder Status
 *ConnectApi* | [**connectGlobalSocialArtistsArtistIdConnectGlobalSocialPost**](docs/ConnectApi.md#connectglobalsocialartistsartistidconnectglobalsocialpost) | **POST** /artists/{artist_id}/connect/global-social | Connect Global Social
 *ConnectApi* | [**connectGlobalSocialStatusArtistsArtistIdConnectGlobalSocialStatusGet**](docs/ConnectApi.md#connectglobalsocialstatusartistsartistidconnectglobalsocialstatusget) | **GET** /artists/{artist_id}/connect/global-social/status | Connect Global Social Status
 *ConnectApi* | [**connectSoundcloudArtistsArtistIdConnectSoundcloudPost**](docs/ConnectApi.md#connectsoundcloudartistsartistidconnectsoundcloudpost) | **POST** /artists/{artist_id}/connect/soundcloud | Connect Soundcloud
 *ConnectApi* | [**connectSoundcloudStatusArtistsArtistIdConnectSoundcloudStatusGet**](docs/ConnectApi.md#connectsoundcloudstatusartistsartistidconnectsoundcloudstatusget) | **GET** /artists/{artist_id}/connect/soundcloud/status | Connect Soundcloud Status
+*CreatorEconomyApi* | [**ingestCreatorDataArtistsArtistIdCreatorIngestPost**](docs/CreatorEconomyApi.md#ingestcreatordataartistsartistidcreatoringestpost) | **POST** /artists/{artist_id}/creator/ingest | Ingest Creator Data
+*CreatorEconomyApi* | [**listCreatorPlatformsArtistsArtistIdCreatorPlatformsGet**](docs/CreatorEconomyApi.md#listcreatorplatformsartistsartistidcreatorplatformsget) | **GET** /artists/{artist_id}/creator/platforms | List Creator Platforms
 *DashboardApi* | [**agentTraceArtistsArtistIdAgentTraceRunIdGet**](docs/DashboardApi.md#agenttraceartistsartistidagenttracerunidget) | **GET** /artists/{artist_id}/agent-trace/{run_id} | Agent Trace
 *DashboardApi* | [**chatRoyaltiesArtistsArtistIdChatRoyaltiesPost**](docs/DashboardApi.md#chatroyaltiesartistsartistidchatroyaltiespost) | **POST** /artists/{artist_id}/chat/royalties | Chat Royalties
 *DashboardApi* | [**dashboardBenchmarksArtistsArtistIdBenchmarksGet**](docs/DashboardApi.md#dashboardbenchmarksartistsartistidbenchmarksget) | **GET** /artists/{artist_id}/benchmarks | Dashboard Benchmarks
@@ -182,6 +196,9 @@ All URIs are relative to *http://localhost*
 *ForensicApiApi* | [**statementsStatusStatementsStatementIdStatusGet**](docs/ForensicApiApi.md#statementsstatusstatementsstatementidstatusget) | **GET** /statements/{statement_id}/status | Statements Status
 *ForensicApiApi* | [**statementsUploadStatementsUploadPost**](docs/ForensicApiApi.md#statementsuploadstatementsuploadpost) | **POST** /statements/upload | Statements Upload
 *ForensicApiApi* | [**varianceEvidenceVarianceVarianceIdEvidenceGet**](docs/ForensicApiApi.md#varianceevidencevariancevarianceidevidenceget) | **GET** /variance/{variance_id}/evidence | Variance Evidence
+*GovernanceApi* | [**eraseArtistDataArtistsArtistIdPrivacyErasePost**](docs/GovernanceApi.md#eraseartistdataartistsartistidprivacyerasepost) | **POST** /artists/{artist_id}/privacy/erase | Erase Artist Data
+*GovernanceApi* | [**exportArtistDataArtistsArtistIdPrivacyExportPost**](docs/GovernanceApi.md#exportartistdataartistsartistidprivacyexportpost) | **POST** /artists/{artist_id}/privacy/export | Export Artist Data
+*GovernanceApi* | [**listAdminAuditEventsAdminAuditEventsGet**](docs/GovernanceApi.md#listadminauditeventsadminauditeventsget) | **GET** /admin/audit/events | List Admin Audit Events
 *IdentityApi* | [**autoMatchIdentityArtistsArtistIdIdentityAutoMatchPost**](docs/IdentityApi.md#automatchidentityartistsartistididentityautomatchpost) | **POST** /artists/{artist_id}/identity/auto-match | Auto Match Identity
 *IdentityApi* | [**decideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPost**](docs/IdentityApi.md#decideidentitymatchartistsartistididentitymatchesmatchiddecisionpost) | **POST** /artists/{artist_id}/identity/matches/{match_id}/decision | Decide Identity Match
 *IdentityApi* | [**getIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet**](docs/IdentityApi.md#getidentitymatchauditartistsartistididentitymatchesmatchidauditget) | **GET** /artists/{artist_id}/identity/matches/{match_id}/audit | Get Identity Match Audit
@@ -211,6 +228,11 @@ All URIs are relative to *http://localhost*
 *IntelligenceApi* | [**runTaxOptimizerArtistsArtistIdIntelligenceTaxOptimizerPost**](docs/IntelligenceApi.md#runtaxoptimizerartistsartistidintelligencetaxoptimizerpost) | **POST** /artists/{artist_id}/intelligence/tax-optimizer | Run Tax Optimizer
 *IntelligenceApi* | [**simulateExpectedPayoutArtistsArtistIdIntelligenceSimulateExpectedPayoutPost**](docs/IntelligenceApi.md#simulateexpectedpayoutartistsartistidintelligencesimulateexpectedpayoutpost) | **POST** /artists/{artist_id}/intelligence/simulate-expected-payout | Simulate Expected Payout
 *IntelligenceApi* | [**simulateOptimizationArtistsArtistIdMlSimulateOptimizationPost**](docs/IntelligenceApi.md#simulateoptimizationartistsartistidmlsimulateoptimizationpost) | **POST** /artists/{artist_id}/ml/simulate-optimization | Simulate Optimization
+*MessagesApi* | [**businessManagerChatArtistsArtistIdMessagesChatPost**](docs/MessagesApi.md#businessmanagerchatartistsartistidmessageschatpost) | **POST** /artists/{artist_id}/messages/chat | Business Manager Chat
+*MessagesApi* | [**createWeeklyStoryArtistsArtistIdMessagesWeeklyStoryPost**](docs/MessagesApi.md#createweeklystoryartistsartistidmessagesweeklystorypost) | **POST** /artists/{artist_id}/messages/weekly-story | Create Weekly Story
+*MessagesApi* | [**getFeedArtistsArtistIdMessagesFeedGet**](docs/MessagesApi.md#getfeedartistsartistidmessagesfeedget) | **GET** /artists/{artist_id}/messages/feed | Get Feed
+*MlSuiteApi* | [**mlCalibrationDashboardArtistsArtistIdMlCalibrationDashboardGet**](docs/MlSuiteApi.md#mlcalibrationdashboardartistsartistidmlcalibrationdashboardget) | **GET** /artists/{artist_id}/ml/calibration-dashboard | Ml Calibration Dashboard
+*MlSuiteApi* | [**mlExplainArtistsArtistIdMlExplainGet**](docs/MlSuiteApi.md#mlexplainartistsartistidmlexplainget) | **GET** /artists/{artist_id}/ml/explain | Ml Explain
 *NotificationsApi* | [**dispatchNotificationsArtistsArtistIdNotificationsDispatchPost**](docs/NotificationsApi.md#dispatchnotificationsartistsartistidnotificationsdispatchpost) | **POST** /artists/{artist_id}/notifications/dispatch | Dispatch Notifications
 *NotificationsApi* | [**pushRegisterArtistsArtistIdNotificationsPushRegisterPost**](docs/NotificationsApi.md#pushregisterartistsartistidnotificationspushregisterpost) | **POST** /artists/{artist_id}/notifications/push-register | Push Register
 *NotificationsApi* | [**setNotificationPreferencesArtistsArtistIdNotificationsPreferencesPost**](docs/NotificationsApi.md#setnotificationpreferencesartistsartistidnotificationspreferencespost) | **POST** /artists/{artist_id}/notifications/preferences | Set Notification Preferences
@@ -230,6 +252,7 @@ All URIs are relative to *http://localhost*
 *OnboardingApi* | [**listParserPluginsArtistsArtistIdParsersPluginsGet**](docs/OnboardingApi.md#listparserpluginsartistsartistidparserspluginsget) | **GET** /artists/{artist_id}/parsers/plugins | List Parser Plugins
 *OnboardingApi* | [**listSyncJobsArtistsArtistIdSyncJobsGet**](docs/OnboardingApi.md#listsyncjobsartistsartistidsyncjobsget) | **GET** /artists/{artist_id}/sync/jobs | List Sync Jobs
 *OnboardingApi* | [**missingDataStatusArtistsArtistIdIngestionMissingDataGet**](docs/OnboardingApi.md#missingdatastatusartistsartistidingestionmissingdataget) | **GET** /artists/{artist_id}/ingestion/missing-data | Missing Data Status
+*OnboardingApi* | [**onboardingAutoArtistsArtistIdOnboardingAutoPost**](docs/OnboardingApi.md#onboardingautoartistsartistidonboardingautopost) | **POST** /artists/{artist_id}/onboarding/auto | Onboarding Auto
 *OnboardingApi* | [**onboardingStatusArtistsArtistIdOnboardingStatusGet**](docs/OnboardingApi.md#onboardingstatusartistsartistidonboardingstatusget) | **GET** /artists/{artist_id}/onboarding/status | Onboarding Status
 *OnboardingApi* | [**parseStatementWithEngineArtistsArtistIdParsersParserTypePost**](docs/OnboardingApi.md#parsestatementwithengineartistsartistidparsersparsertypepost) | **POST** /artists/{artist_id}/parsers/{parser_type} | Parse Statement With Engine
 *OnboardingApi* | [**permissionsDashboardArtistsArtistIdConnectPermissionsDashboardGet**](docs/OnboardingApi.md#permissionsdashboardartistsartistidconnectpermissionsdashboardget) | **GET** /artists/{artist_id}/connect/permissions-dashboard | Permissions Dashboard
@@ -268,6 +291,7 @@ All URIs are relative to *http://localhost*
 *RecoveryApi* | [**recoveryFunnelArtistsArtistIdRecoveryFunnelGet**](docs/RecoveryApi.md#recoveryfunnelartistsartistidrecoveryfunnelget) | **GET** /artists/{artist_id}/recovery/funnel | Recovery Funnel
 *RecoveryApi* | [**recoveryPlaybookArtistsArtistIdRecoveryPlaybookGet**](docs/RecoveryApi.md#recoveryplaybookartistsartistidrecoveryplaybookget) | **GET** /artists/{artist_id}/recovery/playbook | Recovery Playbook
 *RecoveryApi* | [**recoveryRoiArtistsArtistIdRecoveryRoiGet**](docs/RecoveryApi.md#recoveryroiartistsartistidrecoveryroiget) | **GET** /artists/{artist_id}/recovery/roi | Recovery Roi
+*RecoveryApi* | [**runRecoveryAutopilotArtistsArtistIdRecoveryAutoPost**](docs/RecoveryApi.md#runrecoveryautopilotartistsartistidrecoveryautopost) | **POST** /artists/{artist_id}/recovery/auto | Run Recovery Autopilot
 *RecoveryApi* | [**slaStatusArtistsArtistIdSlaStatusGet**](docs/RecoveryApi.md#slastatusartistsartistidslastatusget) | **GET** /artists/{artist_id}/sla/status | Sla Status
 *RecoveryApi* | [**solStatusArtistsArtistIdRecoverySolStatusGet**](docs/RecoveryApi.md#solstatusartistsartistidrecoverysolstatusget) | **GET** /artists/{artist_id}/recovery/sol-status | Sol Status
 *RecoveryApi* | [**splitConflictsArtistsArtistIdSplitsConflictsGet**](docs/RecoveryApi.md#splitconflictsartistsartistidsplitsconflictsget) | **GET** /artists/{artist_id}/splits/conflicts | Split Conflicts
@@ -281,6 +305,8 @@ All URIs are relative to *http://localhost*
 *RecoveryIntelligenceLLMApi* | [**llmDemandLetterArtistsArtistIdLlmDemandLetterPost**](docs/RecoveryIntelligenceLLMApi.md#llmdemandletterartistsartistidllmdemandletterpost) | **POST** /artists/{artist_id}/llm/demand-letter | Llm Demand Letter
 *RecoveryIntelligenceLLMApi* | [**llmNegotiationScriptArtistsArtistIdLlmNegotiationScriptPost**](docs/RecoveryIntelligenceLLMApi.md#llmnegotiationscriptartistsartistidllmnegotiationscriptpost) | **POST** /artists/{artist_id}/llm/negotiation-script | Llm Negotiation Script
 *RecoveryIntelligenceLLMApi* | [**llmPersonalizedAdviceArtistsArtistIdLlmAdvicePost**](docs/RecoveryIntelligenceLLMApi.md#llmpersonalizedadviceartistsartistidllmadvicepost) | **POST** /artists/{artist_id}/llm/advice | Llm Personalized Advice
+*ReferralsApi* | [**getReferralsArtistsArtistIdReferralsGet**](docs/ReferralsApi.md#getreferralsartistsartistidreferralsget) | **GET** /artists/{artist_id}/referrals | Get Referrals
+*ReferralsApi* | [**registerReferralArtistsArtistIdReferralsPost**](docs/ReferralsApi.md#registerreferralartistsartistidreferralspost) | **POST** /artists/{artist_id}/referrals | Register Referral
 *ReviewQueueApi* | [**assignReviewItemReviewQueueItemsItemIdAssignPost**](docs/ReviewQueueApi.md#assignreviewitemreviewqueueitemsitemidassignpost) | **POST** /review-queue/items/{item_id}/assign | Assign Review Item
 *ReviewQueueApi* | [**checkThresholdReviewQueueThresholdCheckPost**](docs/ReviewQueueApi.md#checkthresholdreviewqueuethresholdcheckpost) | **POST** /review-queue/threshold-check | Check Threshold
 *ReviewQueueApi* | [**createReviewItemReviewQueueItemsPost**](docs/ReviewQueueApi.md#createreviewitemreviewqueueitemspost) | **POST** /review-queue/items | Create Review Item
@@ -288,6 +314,12 @@ All URIs are relative to *http://localhost*
 *ReviewQueueApi* | [**listDecisionsReviewQueueDecisionsGet**](docs/ReviewQueueApi.md#listdecisionsreviewqueuedecisionsget) | **GET** /review-queue/decisions | List Decisions
 *ReviewQueueApi* | [**listReviewItemsReviewQueueItemsGet**](docs/ReviewQueueApi.md#listreviewitemsreviewqueueitemsget) | **GET** /review-queue/items | List Review Items
 *ReviewQueueApi* | [**reviewQueueMetricsReviewQueueMetricsGet**](docs/ReviewQueueApi.md#reviewqueuemetricsreviewqueuemetricsget) | **GET** /review-queue/metrics | Review Queue Metrics
+*SovereigntyApi* | [**acceptAdvanceOfferArtistsArtistIdAdvanceAcceptPost**](docs/SovereigntyApi.md#acceptadvanceofferartistsartistidadvanceacceptpost) | **POST** /artists/{artist_id}/advance/accept | Accept Advance Offer
+*SovereigntyApi* | [**createAdvanceOfferArtistsArtistIdAdvanceOfferPost**](docs/SovereigntyApi.md#createadvanceofferartistsartistidadvanceofferpost) | **POST** /artists/{artist_id}/advance/offer | Create Advance Offer
+*SovereigntyApi* | [**listAdvanceHistoryArtistsArtistIdAdvanceHistoryGet**](docs/SovereigntyApi.md#listadvancehistoryartistsartistidadvancehistoryget) | **GET** /artists/{artist_id}/advance/history | List Advance History
+*SovereigntyApi* | [**listRightsGapsArtistsArtistIdRightsGapsGet**](docs/SovereigntyApi.md#listrightsgapsartistsartistidrightsgapsget) | **GET** /artists/{artist_id}/rights/gaps | List Rights Gaps
+*SovereigntyApi* | [**registerRightsPacketsArtistsArtistIdRightsRegisterPost**](docs/SovereigntyApi.md#registerrightspacketsartistsartistidrightsregisterpost) | **POST** /artists/{artist_id}/rights/register | Register Rights Packets
+*SovereigntyApi* | [**scanRightsArtistsArtistIdRightsScanGet**](docs/SovereigntyApi.md#scanrightsartistsartistidrightsscanget) | **GET** /artists/{artist_id}/rights/scan | Scan Rights
 *SupportApi* | [**supportActionArtistsArtistIdSupportActionPost**](docs/SupportApi.md#supportactionartistsartistidsupportactionpost) | **POST** /artists/{artist_id}/support/action | Support Action
 *SupportApi* | [**supportChatArtistsArtistIdSupportChatPost**](docs/SupportApi.md#supportchatartistsartistidsupportchatpost) | **POST** /artists/{artist_id}/support/chat | Support Chat
 *SupportApi* | [**supportHistoryArtistsArtistIdSupportHistoryGet**](docs/SupportApi.md#supporthistoryartistsartistidsupporthistoryget) | **GET** /artists/{artist_id}/support/history | Support History
@@ -304,6 +336,7 @@ All URIs are relative to *http://localhost*
 *TrolleyApi* | [**getTrolleyWidgetUrlArtistsArtistIdTrolleyWidgetUrlGet**](docs/TrolleyApi.md#gettrolleywidgeturlartistsartistidtrolleywidgeturlget) | **GET** /artists/{artist_id}/trolley/widget-url | Get Trolley Widget Url
 *TrolleyApi* | [**manualRemittanceArtistsArtistIdClaimsClaimIdManualRemittancePost**](docs/TrolleyApi.md#manualremittanceartistsartistidclaimsclaimidmanualremittancepost) | **POST** /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance
 *TrolleyApi* | [**trolleyWebhookWebhooksTrolleyPost**](docs/TrolleyApi.md#trolleywebhookwebhookstrolleypost) | **POST** /webhooks/trolley | Trolley Webhook
+*TrustApi* | [**getTrustTraceArtistsArtistIdTrustTraceGet**](docs/TrustApi.md#gettrusttraceartistsartistidtrusttraceget) | **GET** /artists/{artist_id}/trust/trace | Get Trust Trace
 *WidgetApi* | [**claimWidgetClaimPost**](docs/WidgetApi.md#claimwidgetclaimpost) | **POST** /widget/claim | Claim
 *WidgetApi* | [**estimateWidgetEstimatePost**](docs/WidgetApi.md#estimatewidgetestimatepost) | **POST** /widget/estimate | Estimate
 *WidgetApi* | [**listLeadsWidgetLeadsGet**](docs/WidgetApi.md#listleadswidgetleadsget) | **GET** /widget/leads | List Leads
@@ -342,12 +375,15 @@ All URIs are relative to *http://localhost*
 - [APIIngestionRequest](docs/APIIngestionRequest.md)
 - [AdminAuditLogSchema](docs/AdminAuditLogSchema.md)
 - [AdminLoginRequest](docs/AdminLoginRequest.md)
+- [AdvanceAcceptRequest](docs/AdvanceAcceptRequest.md)
+- [AdvanceOfferRequest](docs/AdvanceOfferRequest.md)
 - [AdviceRequest](docs/AdviceRequest.md)
 - [AdviceResponse](docs/AdviceResponse.md)
 - [AnomalyCategory](docs/AnomalyCategory.md)
 - [AnomalySchema](docs/AnomalySchema.md)
 - [AnomalySeverity](docs/AnomalySeverity.md)
 - [AnomalyStatus](docs/AnomalyStatus.md)
+- [ApprovalRequest](docs/ApprovalRequest.md)
 - [ArtistCreate](docs/ArtistCreate.md)
 - [ArtistIdentityMatchSchema](docs/ArtistIdentityMatchSchema.md)
 - [ArtistLifecycleStatus](docs/ArtistLifecycleStatus.md)
@@ -363,6 +399,7 @@ All URIs are relative to *http://localhost*
 - [BrandingProfileUpsertRequest](docs/BrandingProfileUpsertRequest.md)
 - [BulkOnboardRequest](docs/BulkOnboardRequest.md)
 - [CatalogConfirmationSchema](docs/CatalogConfirmationSchema.md)
+- [ChatRequest](docs/ChatRequest.md)
 - [ClaimCreateRequest](docs/ClaimCreateRequest.md)
 - [ClaimRequest](docs/ClaimRequest.md)
 - [ClaimSchema](docs/ClaimSchema.md)
@@ -370,12 +407,14 @@ All URIs are relative to *http://localhost*
 - [ClaimTemplateRequest](docs/ClaimTemplateRequest.md)
 - [ContractExtractRequest](docs/ContractExtractRequest.md)
 - [CreateReviewItemRequest](docs/CreateReviewItemRequest.md)
+- [CreatorIngestRequest](docs/CreatorIngestRequest.md)
 - [CurrencyTaxEstimateRequest](docs/CurrencyTaxEstimateRequest.md)
 - [DecideReviewItemRequest](docs/DecideReviewItemRequest.md)
 - [DemandLetterRequest](docs/DemandLetterRequest.md)
 - [DemandLetterResponse](docs/DemandLetterResponse.md)
 - [EstimateRequest](docs/EstimateRequest.md)
 - [EvidenceAnchorSchema](docs/EvidenceAnchorSchema.md)
+- [FailedPacketRequest](docs/FailedPacketRequest.md)
 - [FeedbackOutcome](docs/FeedbackOutcome.md)
 - [FingerprintingRequest](docs/FingerprintingRequest.md)
 - [ForensicUniversalRoyaltyEventCreate](docs/ForensicUniversalRoyaltyEventCreate.md)
@@ -407,6 +446,7 @@ All URIs are relative to *http://localhost*
 - [OAuthSessionCreateRequest](docs/OAuthSessionCreateRequest.md)
 - [OAuthTokenExchangeRequest](docs/OAuthTokenExchangeRequest.md)
 - [OAuthTokenRefreshRequest](docs/OAuthTokenRefreshRequest.md)
+- [OnboardingAutoRequest](docs/OnboardingAutoRequest.md)
 - [OptimizationSimulationRequest](docs/OptimizationSimulationRequest.md)
 - [ParserPluginSchema](docs/ParserPluginSchema.md)
 - [ParserPluginUpsertRequest](docs/ParserPluginUpsertRequest.md)
@@ -415,8 +455,10 @@ All URIs are relative to *http://localhost*
 - [ReconcileRequest](docs/ReconcileRequest.md)
 - [ReconciliationRequest](docs/ReconciliationRequest.md)
 - [ReconstructRequest](docs/ReconstructRequest.md)
+- [RecoveryAutoRequest](docs/RecoveryAutoRequest.md)
 - [RecoveryOutcomeFeedbackSchema](docs/RecoveryOutcomeFeedbackSchema.md)
 - [RecoverySubmitResponse](docs/RecoverySubmitResponse.md)
+- [ReferralRequest](docs/ReferralRequest.md)
 - [RegisterRequest](docs/RegisterRequest.md)
 - [RegisterResponse](docs/RegisterResponse.md)
 - [ReviewAssignmentSchema](docs/ReviewAssignmentSchema.md)
@@ -456,6 +498,7 @@ All URIs are relative to *http://localhost*
 - [VarianceScanRequest](docs/VarianceScanRequest.md)
 - [VerifyRequest](docs/VerifyRequest.md)
 - [VerifyResponse](docs/VerifyResponse.md)
+- [WeeklyStoryRequest](docs/WeeklyStoryRequest.md)
 - [WidgetLeadSchema](docs/WidgetLeadSchema.md)
 - [WorkflowRunRequest](docs/WorkflowRunRequest.md)
 - [WorkflowRunResponse](docs/WorkflowRunResponse.md)
@@ -467,8 +510,13 @@ All URIs are relative to *http://localhost*
 
 ### Authorization
 
-Endpoints do not require authorization.
 
+Authentication schemes defined for the API:
+<a id="HTTPBearer"></a>
+#### HTTPBearer
+
+
+- **Type**: HTTP Bearer Token authentication
 
 ## About
 

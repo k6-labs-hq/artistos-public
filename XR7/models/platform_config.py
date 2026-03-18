@@ -13,7 +13,7 @@ class PlatformConfig(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, default=1)
     founder_cohort_limit: Mapped[int] = mapped_column(Integer, nullable=False, default=2500)
-    founder_fee_percent: Mapped[float] = mapped_column(Float, nullable=False, default=10.0)
+    founder_fee_percent: Mapped[float] = mapped_column(Float, nullable=False, default=12.0)
     founder_slots_filled: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     standard_contingency_fee_percent: Mapped[float | None] = mapped_column(Float, nullable=True)
     updated_at: Mapped[datetime] = mapped_column(

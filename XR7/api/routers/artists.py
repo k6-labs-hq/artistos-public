@@ -37,7 +37,7 @@ class ArtistPreferenceUpdateRequest(BaseModel):
 def _attorney_grace_period_settings_payload(artist: Artist) -> dict:
     fee_percent = float(artist.contingency_fee_percent or 0.0)
     if artist.is_founder:
-        fee_display = "Contingency fee: 10% (Founder rate - permanent)"
+        fee_display = "Contingency fee: 12% (Founder rate - permanent)"
     else:
         fee_display = f"Contingency fee: {fee_percent:.2f}%"
 

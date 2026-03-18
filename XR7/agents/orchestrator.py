@@ -53,6 +53,7 @@ from XR7.agents.onboarding_agents import (
     SmartUploadFixerAgent,
     WelcomeSummaryAgent,
 )
+from XR7.agents.advance_recovery_agents import AdvanceRecoveryPacketAgent
 from XR7.agents.state import XR7State, add_trace_event, initial_state
 from XR7.graph.nodes.support_agent import ArtistSupportAgent
 from xr7_common.logging import get_logger
@@ -127,6 +128,7 @@ AGENTS: dict[str, AgentFn] = {
     "legal_counsel_prep_agent": LegalCounselPrepAgent,
     "claim_escalation_agent": ClaimEscalationAgent,
     "attorney_export_agent": AttorneyExportAgent,
+    "advance_recovery_packet_agent": AdvanceRecoveryPacketAgent,
     "negotiation_agent": NegotiationAgent,
     "escalation_agent": EscalationAgent,
     "disbursement_agent": DisbursementAgent,
@@ -179,6 +181,7 @@ RECOVERY_ORDER: list[str] = [
     "legal_counsel_prep_agent",
     "claim_escalation_agent",
     "attorney_export_agent",
+    "advance_recovery_packet_agent",
     "negotiation_agent",
     "escalation_agent",
     "disbursement_agent",

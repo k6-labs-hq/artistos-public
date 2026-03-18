@@ -2,12 +2,19 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 307
+Total endpoints: 316
 
 ## Endpoint Table
 
 | Tag | Method | Path | Summary | Operation ID | Request | Response | Example |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| advance-governance | POST | /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet | create_failed_packet_admin_advances_offers__offer_id__failed_recovery_packet_post | FailedPacketRequest | object | curl -X POST http://localhost:8000/admin/advances/offers/{offer_id}/failed-recovery-packet -H 'Content-Type: application/json' -d '{}' |
+| advance-governance | POST | /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst | approve_analyst_admin_advances_opportunities__opportunity_id__analyst_decision_post | ApprovalRequest | object | curl -X POST http://localhost:8000/admin/advances/opportunities/{opportunity_id}/analyst-decision -H 'Content-Type: application/json' -d '{}' |
+| advance-governance | POST | /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive | approve_executive_admin_advances_opportunities__opportunity_id__executive_decision_post | ApprovalRequest | object | curl -X POST http://localhost:8000/admin/advances/opportunities/{opportunity_id}/executive-decision -H 'Content-Type: application/json' -d '{}' |
+| advance-governance | POST | /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer | publish_offer_admin_advances_opportunities__opportunity_id__publish_offer_post | - | object | curl -X POST http://localhost:8000/admin/advances/opportunities/{opportunity_id}/publish-offer |
+| advance-governance | GET | /admin/advances/queue/analyst | Analyst Queue | analyst_queue_admin_advances_queue_analyst_get | - | object | curl -X GET http://localhost:8000/admin/advances/queue/analyst |
+| advance-governance | GET | /admin/advances/queue/executive | Executive Queue | executive_queue_admin_advances_queue_executive_get | - | object | curl -X GET http://localhost:8000/admin/advances/queue/executive |
+| advance-governance | POST | /admin/advances/run-nightly-eval | Run Nightly Eval | run_nightly_eval_admin_advances_run_nightly_eval_post | - | object | curl -X POST http://localhost:8000/admin/advances/run-nightly-eval |
 | admin | GET | /admin/anomalies | List Anomalies | list_anomalies_admin_anomalies_get | - | - | curl -X GET http://localhost:8000/admin/anomalies |
 | admin | GET | /admin/artists | List Artists | list_artists_admin_artists_get | - | - | curl -X GET http://localhost:8000/admin/artists |
 | admin | POST | /admin/artists/{artist_id}/founder/assign | Assign Founder Manually | assign_founder_manually_admin_artists__artist_id__founder_assign_post | FounderAssignRequest | - | curl -X POST http://localhost:8000/admin/artists/<artist_id>/founder/assign -H 'Content-Type: application/json' -d '{}' |
@@ -31,6 +38,8 @@ Total endpoints: 307
 | sovereignty | POST | /artists/{artist_id}/advance/accept | Accept Advance Offer | accept_advance_offer_artists__artist_id__advance_accept_post | AdvanceAcceptRequest | object | curl -X POST http://localhost:8000/artists/<artist_id>/advance/accept -H 'Content-Type: application/json' -d '{}' |
 | sovereignty | GET | /artists/{artist_id}/advance/history | List Advance History | list_advance_history_artists__artist_id__advance_history_get | - | object | curl -X GET http://localhost:8000/artists/<artist_id>/advance/history |
 | sovereignty | POST | /artists/{artist_id}/advance/offer | Create Advance Offer | create_advance_offer_artists__artist_id__advance_offer_post | AdvanceOfferRequest | object | curl -X POST http://localhost:8000/artists/<artist_id>/advance/offer -H 'Content-Type: application/json' -d '{}' |
+| advance-governance | GET | /artists/{artist_id}/advance/offers | List Artist Offers | list_artist_offers_artists__artist_id__advance_offers_get | - | object | curl -X GET http://localhost:8000/artists/<artist_id>/advance/offers |
+| advance-governance | POST | /artists/{artist_id}/advance/offers/{offer_id}/accept | Accept Artist Offer | accept_artist_offer_artists__artist_id__advance_offers__offer_id__accept_post | - | object | curl -X POST http://localhost:8000/artists/<artist_id>/advance/offers/{offer_id}/accept |
 | public | POST | /artists/{artist_id}/advocacy/kit | Advocacy Kit | advocacy_kit_artists__artist_id__advocacy_kit_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/advocacy/kit |
 | dashboard | GET | /artists/{artist_id}/agent-trace/{run_id} | Agent Trace | agent_trace_artists__artist_id__agent_trace__run_id__get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/agent-trace/<run_id> |
 | dashboard | GET | /artists/{artist_id}/agents/status | Get Agents Status | get_agents_status_artists__artist_id__agents_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/agents/status |

@@ -20,7 +20,7 @@ def get_billing_summary(artist_id: str, db: Session = Depends(get_db)):
     fee_percent = float(artist.contingency_fee_percent or 0.0)
     summary["contingency_fee_percent"] = fee_percent
     summary["fee_display"] = (
-        "Contingency fee: 10% (Founder rate - permanent)"
+        "Contingency fee: 12% (Founder rate - permanent)"
         if artist.is_founder
         else f"Contingency fee: {fee_percent:.2f}%"
     )

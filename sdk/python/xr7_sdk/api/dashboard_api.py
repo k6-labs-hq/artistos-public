@@ -1649,7 +1649,6 @@ class DashboardApi:
     def get_agents_status_artists_artist_id_agents_status_get(
         self,
         artist_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1668,8 +1667,6 @@ class DashboardApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1694,7 +1691,6 @@ class DashboardApi:
 
         _param = self._get_agents_status_artists_artist_id_agents_status_get_serialize(
             artist_id=artist_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1720,7 +1716,6 @@ class DashboardApi:
     def get_agents_status_artists_artist_id_agents_status_get_with_http_info(
         self,
         artist_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1739,8 +1734,6 @@ class DashboardApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1765,7 +1758,6 @@ class DashboardApi:
 
         _param = self._get_agents_status_artists_artist_id_agents_status_get_serialize(
             artist_id=artist_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1791,7 +1783,6 @@ class DashboardApi:
     def get_agents_status_artists_artist_id_agents_status_get_without_preload_content(
         self,
         artist_id: StrictStr,
-        authorization: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1810,8 +1801,6 @@ class DashboardApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param authorization:
-        :type authorization: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1836,7 +1825,6 @@ class DashboardApi:
 
         _param = self._get_agents_status_artists_artist_id_agents_status_get_serialize(
             artist_id=artist_id,
-            authorization=authorization,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1857,7 +1845,6 @@ class DashboardApi:
     def _get_agents_status_artists_artist_id_agents_status_get_serialize(
         self,
         artist_id,
-        authorization,
         _request_auth,
         _content_type,
         _headers,
@@ -1883,8 +1870,6 @@ class DashboardApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         # process the header parameters
-        if authorization is not None:
-            _header_params['authorization'] = authorization
         # process the form parameters
         # process the body parameter
 
@@ -1900,6 +1885,7 @@ class DashboardApi:
 
         # authentication setting
         _auth_settings: List[str] = [
+            'HTTPBearer'
         ]
 
         return self.api_client.param_serialize(

@@ -13,7 +13,7 @@ from XR7.trolley.client import TrolleyClient, TrolleyException
 
 
 class BillingEngine:
-    CONTINGENCY_RATE = 0.10
+    CONTINGENCY_RATE = 0.12
 
     def __init__(self, db_session: Session):
         self.db_session = db_session
