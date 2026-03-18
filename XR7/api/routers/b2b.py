@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -147,6 +148,68 @@ def management_dashboard(
         }
         payload["legal_disclaimer"] = brand.get("legal_disclaimer")
         payload["help_articles"] = org_help_articles(db, org_id)
+    payload["branding"] = branding_metadata(brand)
+    return {
+        **payload,
+        "actor": x_org_actor or None,
+        "role": role,
+    }
+
+
+@router.get("/management/{org_id}/dashboard/v2")
+def management_dashboard_v2(
+    org_id: str,
+    x_org_key: str = Header(default="", alias="X-Org-Key"),
+    x_org_role: str = Header(default="", alias="X-Org-Role"),
+    x_org_actor: str = Header(default="", alias="X-Org-Actor"),
+    db: Session = Depends(get_db),
+):
+    role = _require_org_access(
+        x_org_key=x_org_key,
+        x_org_role=x_org_role,
+        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+    )
+
+    service = OrgDashboardService(db)
+    payload = service.management_dashboard(org_id)
+    artists = service.scoped_artists_for_org(org_id)
+    scoped = service._collect_artist_scoped_rows(artists)
+
+    anomalies = scoped["anomalies"]
+    claims = scoped["claims"]
+
+    critical_anomalies = [a for a in anomalies if str(a.severity) == "CRITICAL"]
+    now = datetime.now(timezone.utc)
+    sol_sensitive_claims = []
+    for c in claims:
+        if c.sol_deadline is None:
+            continue
+        deadline = c.sol_deadline
+        if deadline.tzinfo is None:
+            deadline = deadline.replace(tzinfo=timezone.utc)
+        if (deadline - now).days <= 60:
+            sol_sensitive_claims.append(c)
+
+    payload["v2"] = {
+        "portfolio_cohorts": {
+            "artists_total": len(artists),
+            "critical_anomaly_artists": len({str(a.artist_id) for a in critical_anomalies}),
+            "sol_sensitive_claim_artists": len({str(c.artist_id) for c in sol_sensitive_claims}),
+        },
+        "execution": {
+            "critical_anomalies": len(critical_anomalies),
+            "sol_sensitive_claims": len(sol_sensitive_claims),
+            "claims_in_review": sum(1 for c in claims if str(c.status) == "IN_REVIEW"),
+            "claims_paid": sum(1 for c in claims if str(c.status) == "PAID"),
+        },
+        "operator_actions": [
+            "Escalate critical anomaly clusters to legal review.",
+            "Resolve SOL-sensitive claims this sprint.",
+            "Prioritize unresolved metadata backlog for top-value catalogs.",
+        ],
+    }
+
+    brand = get_branding_profile(db, org_id)
     payload["branding"] = branding_metadata(brand)
     return {
         **payload,

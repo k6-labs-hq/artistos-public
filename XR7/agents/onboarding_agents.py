@@ -32,6 +32,7 @@ from XR7.services.post_repair_forecast_pipeline import (
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.ugc_repair_engine import UGCRepairEngine
 from XR7.services.hubspot_client import HubSpotClient
+from XR7.services.rights_scanner import scan_rights_gaps
 from XR7.ugc.global_scanner import GlobalUGCScanner
 from XR7.ugc.usage_monitor import UGCUsageMonitor
 from xr7_common.logging import get_logger
@@ -1511,3 +1512,179 @@ async def CalibrationAgent(state: XR7State) -> XR7State:
         "updated_at": _now(),
     }
     return _finalize(state, agent_name="calibration_agent", score=0.93, updates={"expected_earnings": {**(state.get('expected_earnings') or {}), "calibration_health": calibration}}, decision="calibration updated")
+
+
+async def AutoPayerChaserAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
+    db = state.get("_db_session") if isinstance(state.get("_db_session"), Session) else None
+    owns_session = db is None
+    if db is None:
+        db = SessionLocal()
+    try:
+        claims = (
+            db.query(Claim)
+            .filter(Claim.artist_id == artist_id)
+            .order_by(Claim.created_at.desc())
+            .all()
+        )
+    finally:
+        if owns_session:
+            db.close()
+
+    chase_actions = [
+        {
+            "claim_id": c.id,
+            "status": str(c.status),
+            "action": "send_follow_up" if str(c.status) not in {"PAID", "CLOSED"} else "monitor_only",
+            "priority": "high" if str(c.status) in {"DRAFTED", "SENT", "PREPARED"} else "normal",
+        }
+        for c in claims
+    ]
+    score = 0.9 if chase_actions else 0.84
+    return _finalize(
+        state,
+        agent_name="auto_payer_chaser",
+        score=score,
+        updates={"payer_chase_actions": chase_actions},
+        decision=f"prepared chase actions={len(chase_actions)}",
+    )
+
+
+async def AutoEvidenceBuilderAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
+    db = state.get("_db_session") if isinstance(state.get("_db_session"), Session) else None
+    owns_session = db is None
+    if db is None:
+        db = SessionLocal()
+    try:
+        anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+        statements = db.query(Statement).filter(Statement.artist_id == artist_id).all()
+    finally:
+        if owns_session:
+            db.close()
+
+    packet = {
+        "artist_id": artist_id,
+        "generated_at": _now(),
+        "anomaly_count": len(anomalies),
+        "statement_count": len(statements),
+        "anomalies": [
+            {
+                "id": a.id,
+                "category": str(a.category),
+                "subtype": a.subtype,
+                "estimated_recoverable": float(a.estimated_recoverable or 0.0),
+                "confidence": float(a.confidence_score or 0.0),
+            }
+            for a in anomalies[:25]
+        ],
+        "source_files": [
+            {"statement_id": s.id, "filename": s.filename, "rows": int(s.row_count or 0)}
+            for s in statements[:25]
+        ],
+    }
+    return _finalize(
+        state,
+        agent_name="auto_evidence_builder",
+        score=0.91,
+        updates={"recovery_evidence_packet": packet},
+        decision="evidence packet prepared",
+    )
+
+
+async def AutoSOLGuardianAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
+    db = state.get("_db_session") if isinstance(state.get("_db_session"), Session) else None
+    owns_session = db is None
+    if db is None:
+        db = SessionLocal()
+    try:
+        anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    finally:
+        if owns_session:
+            db.close()
+
+    urgent = []
+    for a in anomalies:
+        if not a.time_window_end:
+            continue
+        try:
+            now_dt = datetime.now(a.time_window_end.tzinfo) if a.time_window_end.tzinfo else datetime.now()
+            days_left = int((a.time_window_end - now_dt).days)
+        except Exception:  # noqa: BLE001
+            continue
+        if days_left <= 180:
+            urgent.append(
+                {
+                    "anomaly_id": a.id,
+                    "subtype": a.subtype,
+                    "days_to_sol": days_left,
+                    "urgency": "critical" if days_left <= 90 else "high",
+                }
+            )
+
+    score = 0.92 if not urgent else 0.83
+    return _finalize(
+        state,
+        agent_name="auto_sol_guardian",
+        score=score,
+        updates={"sol_guardian_alerts": urgent},
+        decision=f"sol alerts={len(urgent)}",
+    )
+
+
+async def AutoSettlementTrackerAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
+    db = state.get("_db_session") if isinstance(state.get("_db_session"), Session) else None
+    owns_session = db is None
+    if db is None:
+        db = SessionLocal()
+    try:
+        claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
+    finally:
+        if owns_session:
+            db.close()
+
+    by_status: dict[str, int] = {}
+    for claim in claims:
+        key = str(claim.status)
+        by_status[key] = by_status.get(key, 0) + 1
+
+    return _finalize(
+        state,
+        agent_name="auto_settlement_tracker",
+        score=0.9,
+        updates={
+            "settlement_tracker": {
+                "total_claims": len(claims),
+                "status_breakdown": by_status,
+            }
+        },
+        decision="settlement tracker updated",
+    )
+
+
+async def RightsRegistrationAgent(state: XR7State) -> XR7State:
+    artist_id = str(state.get("artist_id") or "")
+    db = state.get("_db_session") if isinstance(state.get("_db_session"), Session) else None
+    owns_session = db is None
+    if db is None:
+        db = SessionLocal()
+    try:
+        gaps = scan_rights_gaps(db, artist_id)
+    finally:
+        if owns_session:
+            db.close()
+
+    return _finalize(
+        state,
+        agent_name="rights_registration",
+        score=0.9 if gaps else 0.86,
+        updates={
+            "rights_registration_plan": {
+                "gaps_found": len(gaps),
+                "gaps": gaps[:50],
+            }
+        },
+        decision=f"rights gaps={len(gaps)}",
+    )

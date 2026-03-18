@@ -1618,6 +1618,62 @@
         }
       }
     },
+    "/artists/{artist_id}/recovery/auto": {
+      "post": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Run Recovery Autopilot",
+        "description": "Run autonomous recovery-management agents for this artist.\n\nExecutes payer chasing, evidence packet generation, SOL monitoring,\nsettlement tracking, and optionally rights registration planning.",
+        "operationId": "run_recovery_autopilot_artists__artist_id__recovery_auto_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryAutoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/recovery/sol-status": {
       "get": {
         "tags": [
@@ -7461,6 +7517,57 @@
         }
       }
     },
+    "/artists/{artist_id}/onboarding/auto": {
+      "post": {
+        "tags": [
+          "onboarding"
+        ],
+        "summary": "Onboarding Auto",
+        "description": "Run one-call onboarding bootstrap for baseline activation.\n\nThis endpoint marks the artist as onboarded (if still NEW), executes due\nsync jobs when requested, and returns an updated onboarding summary.",
+        "operationId": "onboarding_auto_artists__artist_id__onboarding_auto_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingAutoRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/permissions/ui": {
       "get": {
         "tags": [
@@ -11931,6 +12038,76 @@
         }
       }
     },
+    "/management/{org_id}/dashboard/v2": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Management Dashboard V2",
+        "operationId": "management_dashboard_v2_management__org_id__dashboard_v2_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/management/{org_id}/artists/{artist_id}": {
       "get": {
         "tags": [
@@ -14738,6 +14915,1089 @@
         }
       }
     },
+    "/artists/{artist_id}/trust/trace": {
+      "get": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "Get Trust Trace",
+        "description": "Return the real-time pipeline trace feed for this artist.\n\nEach entry contains stage, sub_stage, confidence (0-1), eta_seconds,\nand a plain-English explanation of what XR7 is doing right now.",
+        "operationId": "get_trust_trace_artists__artist_id__trust_trace_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Trust Trace Artists  Artist Id  Trust Trace Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/referrals": {
+      "post": {
+        "tags": [
+          "referrals"
+        ],
+        "summary": "Register Referral",
+        "description": "Register a new artist referral link.\n\nThe referrer earns a percentage of the referred artist's net recoveries.",
+        "operationId": "register_referral_artists__artist_id__referrals_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReferralRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Register Referral Artists  Artist Id  Referrals Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "referrals"
+        ],
+        "summary": "Get Referrals",
+        "description": "Return the referral tree and lifetime earnings for this artist.",
+        "operationId": "get_referrals_artists__artist_id__referrals_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Referrals Artists  Artist Id  Referrals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/creator/ingest": {
+      "post": {
+        "tags": [
+          "creator_economy"
+        ],
+        "summary": "Ingest Creator Data",
+        "description": "Parse and anomaly-scan creator-economy platform data.\n\nAccepts raw export rows from YouTube Studio, TikTok, Instagram Reels,\nTwitch, Patreon, or Shopify. Returns parsed events and detected anomalies.",
+        "operationId": "ingest_creator_data_artists__artist_id__creator_ingest_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatorIngestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Ingest Creator Data Artists  Artist Id  Creator Ingest Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/creator/platforms": {
+      "get": {
+        "tags": [
+          "creator_economy"
+        ],
+        "summary": "List Creator Platforms",
+        "description": "List all supported creator-economy platforms.",
+        "operationId": "list_creator_platforms_artists__artist_id__creator_platforms_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Creator Platforms Artists  Artist Id  Creator Platforms Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/rights/scan": {
+      "get": {
+        "tags": [
+          "sovereignty"
+        ],
+        "summary": "Scan Rights",
+        "description": "Scan catalog for missing ISRC/ISWC/UPC/PRO/foreign registrations.",
+        "operationId": "scan_rights_artists__artist_id__rights_scan_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Scan Rights Artists  Artist Id  Rights Scan Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/rights/register": {
+      "post": {
+        "tags": [
+          "sovereignty"
+        ],
+        "summary": "Register Rights Packets",
+        "description": "Generate and persist auto-registration packets for all detected gaps.",
+        "operationId": "register_rights_packets_artists__artist_id__rights_register_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Register Rights Packets Artists  Artist Id  Rights Register Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/rights/gaps": {
+      "get": {
+        "tags": [
+          "sovereignty"
+        ],
+        "summary": "List Rights Gaps",
+        "description": "List all persisted rights scan results for this artist.",
+        "operationId": "list_rights_gaps_artists__artist_id__rights_gaps_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Rights Gaps Artists  Artist Id  Rights Gaps Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/advance/offer": {
+      "post": {
+        "tags": [
+          "sovereignty"
+        ],
+        "summary": "Create Advance Offer",
+        "description": "Compute and return a cash advance offer backed by predicted recovery.\n\nSafe advance = 60% of the predicted-low earnings forecast; repaid\nautomatically when the recovery arrives.",
+        "operationId": "create_advance_offer_artists__artist_id__advance_offer_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceOfferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Advance Offer Artists  Artist Id  Advance Offer Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/advance/accept": {
+      "post": {
+        "tags": [
+          "sovereignty"
+        ],
+        "summary": "Accept Advance Offer",
+        "description": "Accept a pending advance offer. Triggers Trolley disbursement queue.",
+        "operationId": "accept_advance_offer_artists__artist_id__advance_accept_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdvanceAcceptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Accept Advance Offer Artists  Artist Id  Advance Accept Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/advance/history": {
+      "get": {
+        "tags": [
+          "sovereignty"
+        ],
+        "summary": "List Advance History",
+        "operationId": "list_advance_history_artists__artist_id__advance_history_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Advance History Artists  Artist Id  Advance History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/messages/feed": {
+      "get": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Get Feed",
+        "description": "Return the artist's message feed (onboarding, comfort, claim, SOL, deposit, weekly story).",
+        "operationId": "get_feed_artists__artist_id__messages_feed_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "unread_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Unread Only"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Feed Artists  Artist Id  Messages Feed Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/messages/chat": {
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Business Manager Chat",
+        "description": "Natural-language business manager.\n\nAccepts a question like \"Why was my YouTube lower?\" and returns a\nplain-English answer grounded in this artist's anomaly + earnings data.",
+        "operationId": "business_manager_chat_artists__artist_id__messages_chat_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Business Manager Chat Artists  Artist Id  Messages Chat Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/messages/weekly-story": {
+      "post": {
+        "tags": [
+          "messages"
+        ],
+        "summary": "Create Weekly Story",
+        "description": "Generate and persist a weekly earnings story for the artist.",
+        "operationId": "create_weekly_story_artists__artist_id__messages_weekly_story_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WeeklyStoryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Create Weekly Story Artists  Artist Id  Messages Weekly Story Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/class-action/aggregate": {
+      "post": {
+        "tags": [
+          "class_action"
+        ],
+        "summary": "Run Class Action Aggregation",
+        "description": "Re-run the class-action signal aggregator across all open anomalies.\n\nRequires admin role. Returns created/updated signal records.",
+        "operationId": "run_class_action_aggregation_admin_class_action_aggregate_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Run Class Action Aggregation Admin Class Action Aggregate Post"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/admin/class-action/signals": {
+      "get": {
+        "tags": [
+          "class_action"
+        ],
+        "summary": "List Class Action Signals",
+        "description": "Return all active class-action evidence signals.",
+        "operationId": "list_class_action_signals_admin_class_action_signals_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response List Class Action Signals Admin Class Action Signals Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/artists/{artist_id}/ml/explain": {
+      "get": {
+        "tags": [
+          "ml_suite"
+        ],
+        "summary": "Ml Explain",
+        "operationId": "ml_explain_artists__artist_id__ml_explain_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Ml Explain Artists  Artist Id  Ml Explain Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/ml/calibration-dashboard": {
+      "get": {
+        "tags": [
+          "ml_suite"
+        ],
+        "summary": "Ml Calibration Dashboard",
+        "operationId": "ml_calibration_dashboard_artists__artist_id__ml_calibration_dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Ml Calibration Dashboard Artists  Artist Id  Ml Calibration Dashboard Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/privacy/export": {
+      "post": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Export Artist Data",
+        "operationId": "export_artist_data_artists__artist_id__privacy_export_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Export Artist Data Artists  Artist Id  Privacy Export Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/privacy/erase": {
+      "post": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Erase Artist Data",
+        "operationId": "erase_artist_data_artists__artist_id__privacy_erase_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Erase Artist Data Artists  Artist Id  Privacy Erase Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/audit/events": {
+      "get": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "List Admin Audit Events",
+        "operationId": "list_admin_audit_events_admin_audit_events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Admin Audit Events Admin Audit Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -14895,6 +16155,45 @@
           "password"
         ],
         "title": "AdminLoginRequest"
+      },
+      "AdvanceAcceptRequest": {
+        "properties": {
+          "advance_id": {
+            "type": "string",
+            "title": "Advance Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "advance_id"
+        ],
+        "title": "AdvanceAcceptRequest"
+      },
+      "AdvanceOfferRequest": {
+        "properties": {
+          "predicted_low_forecast": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Predicted Low Forecast"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "USD"
+          },
+          "advance_fee_pct": {
+            "type": "number",
+            "maximum": 20.0,
+            "minimum": 0.0,
+            "title": "Advance Fee Pct",
+            "default": 3.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "predicted_low_forecast"
+        ],
+        "title": "AdvanceOfferRequest"
       },
       "AdviceRequest": {
         "properties": {
@@ -16227,6 +17526,19 @@
         ],
         "title": "CatalogConfirmationSchema"
       },
+      "ChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "ChatRequest"
+      },
       "ClaimCreateRequest": {
         "properties": {
           "anomaly_id": {
@@ -16810,6 +18122,28 @@
           "reason"
         ],
         "title": "CreateReviewItemRequest"
+      },
+      "CreatorIngestRequest": {
+        "properties": {
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "rows": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform",
+          "rows"
+        ],
+        "title": "CreatorIngestRequest"
       },
       "CurrencyTaxEstimateRequest": {
         "properties": {
@@ -18406,6 +19740,17 @@
         "type": "object",
         "title": "OAuthTokenRefreshRequest"
       },
+      "OnboardingAutoRequest": {
+        "properties": {
+          "run_due_sync_jobs_now": {
+            "type": "boolean",
+            "title": "Run Due Sync Jobs Now",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "OnboardingAutoRequest"
+      },
       "OptimizationSimulationRequest": {
         "properties": {
           "changes": {
@@ -18621,6 +19966,17 @@
         ],
         "title": "ReconstructRequest"
       },
+      "RecoveryAutoRequest": {
+        "properties": {
+          "include_rights_registration": {
+            "type": "boolean",
+            "title": "Include Rights Registration",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "RecoveryAutoRequest"
+      },
       "RecoveryOutcomeFeedbackSchema": {
         "properties": {
           "id": {
@@ -18742,6 +20098,19 @@
           "queued"
         ],
         "title": "RecoverySubmitResponse"
+      },
+      "ReferralRequest": {
+        "properties": {
+          "referred_artist_id": {
+            "type": "string",
+            "title": "Referred Artist Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "referred_artist_id"
+        ],
+        "title": "ReferralRequest"
       },
       "RegisterRequest": {
         "properties": {
@@ -20515,6 +21884,46 @@
           "expires_in_seconds"
         ],
         "title": "VerifyResponse"
+      },
+      "WeeklyStoryRequest": {
+        "properties": {
+          "total_recovered": {
+            "type": "number",
+            "title": "Total Recovered",
+            "default": 0.0
+          },
+          "total_recoverable": {
+            "type": "number",
+            "title": "Total Recoverable",
+            "default": 0.0
+          },
+          "new_anomalies": {
+            "type": "integer",
+            "title": "New Anomalies",
+            "default": 0
+          },
+          "claims_progressed": {
+            "type": "integer",
+            "title": "Claims Progressed",
+            "default": 0
+          },
+          "deposits": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Deposits",
+            "default": []
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "USD"
+          }
+        },
+        "type": "object",
+        "title": "WeeklyStoryRequest"
       },
       "WidgetLeadSchema": {
         "properties": {

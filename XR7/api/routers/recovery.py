@@ -11,9 +11,11 @@ Provides artist-centric money-recovery tools:
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.models.anomaly import Anomaly
@@ -64,8 +66,31 @@ from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
+from XR7.api.routers.auth import require_artist_access
+from XR7.agents.onboarding_agents import (
+    AutoPayerChaserAgent,
+    AutoEvidenceBuilderAgent,
+    AutoSOLGuardianAgent,
+    AutoSettlementTrackerAgent,
+    RightsRegistrationAgent,
+)
 
 router = APIRouter(prefix="/artists", tags=["recovery"])
+
+
+class RecoveryAutoRequest(BaseModel):
+    include_rights_registration: bool = True
+
+
+def _merge_agent_state(base: dict, update: dict) -> dict:
+    merged = dict(base)
+    append_keys = {"agent_activity", "evidence_hashes", "error_log"}
+    for key, value in update.items():
+        if key in append_keys:
+            merged[key] = [*(merged.get(key) or []), *(value or [])]
+        else:
+            merged[key] = value
+    return merged
 
 
 def _anomaly_to_dict(a: Anomaly) -> dict:
@@ -155,6 +180,54 @@ def _claim_payer(c: Claim) -> str:
             if counterparty:
                 return counterparty
     return "generic"
+
+
+@router.post("/{artist_id}/recovery/auto")
+def run_recovery_autopilot(
+    artist_id: str,
+    payload: RecoveryAutoRequest,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_artist_access),
+):
+    """Run autonomous recovery-management agents for this artist.
+
+    Executes payer chasing, evidence packet generation, SOL monitoring,
+    settlement tracking, and optionally rights registration planning.
+    """
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    state: dict = {
+        "artist_id": artist_id,
+        "confidence_scores": {},
+        "agent_activity": [],
+        "_db_session": db,
+    }
+
+    for node in [
+        AutoPayerChaserAgent,
+        AutoEvidenceBuilderAgent,
+        AutoSOLGuardianAgent,
+        AutoSettlementTrackerAgent,
+    ]:
+        state = _merge_agent_state(state, asyncio.run(node(state)))
+
+    if payload.include_rights_registration:
+        state = _merge_agent_state(state, asyncio.run(RightsRegistrationAgent(state)))
+
+    return inject_branding_metadata(db, {
+        "artist_id": artist_id,
+        "autopilot": {
+            "executed_agents": [a.get("step") for a in state.get("agent_activity") or []],
+            "confidence_scores": state.get("confidence_scores") or {},
+            "payer_chase_actions": state.get("payer_chase_actions") or [],
+            "sol_guardian_alerts": state.get("sol_guardian_alerts") or [],
+            "settlement_tracker": state.get("settlement_tracker") or {},
+            "rights_registration_plan": state.get("rights_registration_plan") if payload.include_rights_registration else None,
+            "evidence_packet": state.get("recovery_evidence_packet") or {},
+        },
+    })
 
 
 @router.get("/{artist_id}/recovery/sol-status")

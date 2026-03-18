@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
@@ -78,6 +79,10 @@ class WorkflowRunRequest(BaseModel):
     async_run: bool = False
 
 
+class OnboardingAutoRequest(BaseModel):
+    run_due_sync_jobs_now: bool = True
+
+
 class SplitRepairRequest(BaseModel):
     rights_rows: list[dict[str, Any]]
     payout_rows: list[dict[str, Any]]
@@ -143,6 +148,57 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
         },
         "expected_status_flow": ["NEW", "ONBOARDED", "ACTIVE"],
     }
+
+
+@router.post("/artists/{artist_id}/onboarding/auto")
+def onboarding_auto(
+    artist_id: str,
+    payload: OnboardingAutoRequest,
+    db: Session = Depends(get_db),
+):
+    """Run one-call onboarding bootstrap for baseline activation.
+
+    This endpoint marks the artist as onboarded (if still NEW), executes due
+    sync jobs when requested, and returns an updated onboarding summary.
+    """
+    artist = _artist_or_404(artist_id, db)
+
+    if str(artist.status) == "NEW":
+        artist.status = "ONBOARDED"
+        if not artist.onboarded_at:
+            artist.onboarded_at = datetime.now(timezone.utc)
+        db.commit()
+        db.refresh(artist)
+
+    enqueued_jobs = run_due_sync_jobs(db=db) if payload.run_due_sync_jobs_now else []
+
+    statement_count = db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    anomaly_count = db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    claim_count = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
+    connector_count = (
+        db.query(func.count(ConnectorAccountLink.id))
+        .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True))
+        .scalar()
+        or 0
+    )
+
+    return inject_branding_metadata(db, {
+        "artist_id": artist_id,
+        "status": artist.status,
+        "onboarded_at": artist.onboarded_at.isoformat() if artist.onboarded_at else None,
+        "enqueued_sync_jobs": enqueued_jobs,
+        "progress": {
+            "statements_uploaded": int(statement_count),
+            "anomalies_detected": int(anomaly_count),
+            "claims_drafted": int(claim_count),
+            "active_connectors": int(connector_count),
+        },
+        "next_recommended_actions": [
+            "Upload latest statements",
+            "Connect distributor and PRO accounts",
+            "Review top-priority recovery queue",
+        ],
+    })
 
 
 @router.get("/permissions/ui")

@@ -36,6 +36,14 @@ from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
 from XR7.api.routers import auth as auth_router
 from XR7.api.routers import identity as identity_router
+from XR7.api.routers import trust as trust_router
+from XR7.api.routers import referrals as referrals_router
+from XR7.api.routers import creator_economy as creator_economy_router
+from XR7.api.routers import sovereignty as sovereignty_router
+from XR7.api.routers import messages as messages_router
+from XR7.api.routers import class_action as class_action_router
+from XR7.api.routers import ml_suite as ml_suite_router
+from XR7.api.routers import governance as governance_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -69,6 +77,12 @@ async def lifespan(app: FastAPI):
     import XR7.models.platform_config  # noqa: F401
     import XR7.models.xr7_royalty  # noqa: F401
     import XR7.models.identity_match  # noqa: F401
+    import XR7.models.trust_trace  # noqa: F401
+    import XR7.models.artist_referral  # noqa: F401
+    import XR7.models.liquidity_advance  # noqa: F401
+    import XR7.models.rights_scan  # noqa: F401
+    import XR7.models.artist_message  # noqa: F401
+    import XR7.models.class_action_signal  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -198,6 +212,14 @@ app.include_router(xr7_ugc_router.router)
 app.include_router(xr7_valuation_router.router)
 app.include_router(auth_router.router)
 app.include_router(identity_router.router)
+app.include_router(trust_router.router)
+app.include_router(referrals_router.router)
+app.include_router(creator_economy_router.router)
+app.include_router(sovereignty_router.router)
+app.include_router(messages_router.router)
+app.include_router(class_action_router.router)
+app.include_router(ml_suite_router.router)
+app.include_router(governance_router.router)
 
 
 @app.get("/health")

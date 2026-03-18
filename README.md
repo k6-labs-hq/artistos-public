@@ -2780,6 +2780,41 @@ Step-to-module mapping (implemented baseline):
 - **Partnership pipeline visibility**:
 `GET /partnerships/targets`
 
+## Financial Sovereignty v2 Additions
+
+### Management and Operator Layer
+
+- Portfolio management v2 endpoint:
+`GET /management/{org_id}/dashboard/v2`
+- Existing drilldowns remain available for artists, anomalies, claims, and forecast.
+
+### ML Suite v2 Endpoints
+
+- Explainability and forecast rationale:
+`GET /artists/{id}/ml/explain`
+- Calibration dashboard view:
+`GET /artists/{id}/ml/calibration-dashboard`
+
+### Governance and Privacy Endpoints
+
+- Artist data export scaffold:
+`POST /artists/{id}/privacy/export`
+- Artist erasure/anonymization scaffold:
+`POST /artists/{id}/privacy/erase`
+- Admin audit stream viewer:
+`GET /admin/audit/events`
+
+### Frontend Sovereignty Components
+
+Added reusable dashboard components in frontend:
+- `frontend/src/components/ConfidenceMeter.tsx`
+- `frontend/src/components/SolUrgencyHeatmap.tsx`
+- `frontend/src/components/RecoverableWaterfallChart.tsx`
+- `frontend/src/components/PayerScorecard.tsx`
+- `frontend/src/components/SovereigntyInsightsPanel.tsx`
+
+These are wired into `DashboardView.tsx` and styled in `styles.css` for responsive desktop/mobile rendering.
+
 ## License
 
 Proprietary — XR7 Engine 2

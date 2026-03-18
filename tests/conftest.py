@@ -29,6 +29,12 @@ import XR7.models.trolley_transaction  # noqa: F401
 import XR7.models.platform_config  # noqa: F401
 import XR7.models.xr7_royalty  # noqa: F401
 import XR7.models.identity_match  # noqa: F401
+import XR7.models.trust_trace  # noqa: F401
+import XR7.models.artist_referral  # noqa: F401
+import XR7.models.liquidity_advance  # noqa: F401
+import XR7.models.rights_scan  # noqa: F401
+import XR7.models.artist_message  # noqa: F401
+import XR7.models.class_action_signal  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"

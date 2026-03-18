@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api } from "@/api";
+import { SovereigntyInsightsPanel } from "./SovereigntyInsightsPanel";
 
 type DashboardViewProps = {
   artistId: string;
@@ -56,6 +57,27 @@ export function DashboardView({ artistId }: DashboardViewProps) {
   const deadlines = (dashboard.deadlines || {}) as Record<string, unknown>;
   const catalogHealth = (dashboard.catalog_health || {}) as Record<string, unknown>;
   const trend = (dashboard.earnings_trend || {}) as Record<string, unknown>;
+
+  const confidence = Number(
+    agentStatus.agent_orchestra_status?.confidence ??
+      ((dashboard as Record<string, unknown>).forecast_confidence as number | undefined) ??
+      0,
+  );
+  const solCells = [
+    { label: "Urgent", value: Number(deadlines.urgent_count || 0) },
+    { label: "Soon", value: Number(deadlines.upcoming_count || 0) },
+    { label: "Missed", value: Number(deadlines.overdue_count || 0) },
+    { label: "Safe", value: Math.max(0, 10 - Number(deadlines.urgent_count || 0) - Number(deadlines.overdue_count || 0)) },
+  ];
+  const waterfall = [
+    { label: "Leakage", amount: Number(leakage.total_estimated_recoverable || 0) },
+    { label: "In Pursuit", amount: -Number(pursuit.total_amount_in_pursuit || 0) },
+    { label: "Recovered", amount: Number(recovered.total_deposited || 0) },
+  ];
+  const payerRows = [
+    { payer: "Primary", responsiveness: Math.max(0, Math.min(1, confidence)), resistance: Math.max(0, Math.min(1, 1 - confidence)) },
+    { payer: "Secondary", responsiveness: Math.max(0, Math.min(1, confidence * 0.8)), resistance: Math.max(0, Math.min(1, 1 - confidence * 0.8)) },
+  ];
 
   return (
     <section className="panel dashboard-panel">
@@ -115,6 +137,13 @@ export function DashboardView({ artistId }: DashboardViewProps) {
           <p>Expected 90-day total: ${Number(trend.predicted_total || 0).toFixed(2)}</p>
         </article>
       </div>
+
+      <SovereigntyInsightsPanel
+        confidence={confidence}
+        solCells={solCells}
+        waterfall={waterfall}
+        payerRows={payerRows}
+      />
     </section>
   );
 }
