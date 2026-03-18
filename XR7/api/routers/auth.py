@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from XR7.auth.jwt_service import JWTValidationError, jwt_service
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["auth"])
 
@@ -133,13 +134,13 @@ def admin_login(payload: AdminLoginRequest) -> TokenResponse:
 
 
 @router.get("/auth/me")
-def auth_me(payload: dict[str, Any] = Depends(get_auth_payload)) -> dict:
+def auth_me(payload: dict[str, Any] = Depends(get_auth_payload), db: Session = Depends(get_db)) -> dict:
 
-    return {
+    return inject_branding_metadata(db, {
         "subject": payload.get("sub"),
         "role": payload.get("role"),
         "artist_id": payload.get("artist_id"),
         "artist_email": payload.get("artist_email"),
         "issued_at": payload.get("iat"),
         "expires_at": payload.get("exp"),
-    }
+    })

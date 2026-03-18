@@ -285,7 +285,7 @@ def get_agents_status(
   current_step = str(state.get("current_step") or "")
   confidence_scores = state.get("confidence_scores") or {}
 
-  return {
+  return inject_branding_metadata(db, {
     "artist_id": artist_id,
     "agent_orchestra_status": {
       "current_step": current_step or None,
@@ -305,7 +305,7 @@ def get_agents_status(
     "split_conflicts": state.get("split_conflicts") or [],
     "registration_actions": state.get("registration_actions") or [],
     "follow_up_actions": state.get("follow_up_actions") or [],
-  }
+  })
 
 
 @router.get("/artists/{artist_id}/agent-trace/{run_id}")

@@ -15,6 +15,7 @@ from XR7.models.identity_match import (
     IdentityDecisionStatus,
 )
 from XR7.models.statement import Statement
+from XR7.services.branding import inject_branding_metadata
 from XR7.services.identity_matching import apply_identity_decision, persist_identity_match
 
 router = APIRouter(tags=["identity"])
@@ -74,11 +75,11 @@ def list_identity_matches(
         .order_by(ArtistIdentityMatch.created_at.desc())
         .all()
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "count": len(rows),
         "matches": [ArtistIdentityMatchSchema.model_validate(r).model_dump(mode="json") for r in rows],
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/identity/matches/{match_id}/audit")
@@ -103,12 +104,12 @@ def get_identity_match_audit(
         .order_by(ArtistIdentityMatchAudit.created_at.asc())
         .all()
     )
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "match_id": match_id,
         "chain_head": match.chain_hash,
         "audit": [ArtistIdentityMatchAuditSchema.model_validate(a).model_dump(mode="json") for a in audits],
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/identity/matches/{match_id}/decision", response_model=ArtistIdentityMatchSchema)
