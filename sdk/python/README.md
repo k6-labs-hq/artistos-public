@@ -107,11 +107,13 @@ Class | Method | HTTP request | Description
 *AdvanceGovernanceApi* | [**analyst_queue_admin_advances_queue_analyst_get**](docs/AdvanceGovernanceApi.md#analyst_queue_admin_advances_queue_analyst_get) | **GET** /admin/advances/queue/analyst | Analyst Queue
 *AdvanceGovernanceApi* | [**approve_analyst_admin_advances_opportunities_opportunity_id_analyst_decision_post**](docs/AdvanceGovernanceApi.md#approve_analyst_admin_advances_opportunities_opportunity_id_analyst_decision_post) | **POST** /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst
 *AdvanceGovernanceApi* | [**approve_executive_admin_advances_opportunities_opportunity_id_executive_decision_post**](docs/AdvanceGovernanceApi.md#approve_executive_admin_advances_opportunities_opportunity_id_executive_decision_post) | **POST** /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive
+*AdvanceGovernanceApi* | [**complete_packet_admin_advances_packets_packet_id_complete_post**](docs/AdvanceGovernanceApi.md#complete_packet_admin_advances_packets_packet_id_complete_post) | **POST** /admin/advances/packets/{packet_id}/complete | Complete Packet
 *AdvanceGovernanceApi* | [**create_failed_packet_admin_advances_offers_offer_id_failed_recovery_packet_post**](docs/AdvanceGovernanceApi.md#create_failed_packet_admin_advances_offers_offer_id_failed_recovery_packet_post) | **POST** /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet
 *AdvanceGovernanceApi* | [**executive_queue_admin_advances_queue_executive_get**](docs/AdvanceGovernanceApi.md#executive_queue_admin_advances_queue_executive_get) | **GET** /admin/advances/queue/executive | Executive Queue
 *AdvanceGovernanceApi* | [**list_artist_offers_artists_artist_id_advance_offers_get**](docs/AdvanceGovernanceApi.md#list_artist_offers_artists_artist_id_advance_offers_get) | **GET** /artists/{artist_id}/advance/offers | List Artist Offers
 *AdvanceGovernanceApi* | [**publish_offer_admin_advances_opportunities_opportunity_id_publish_offer_post**](docs/AdvanceGovernanceApi.md#publish_offer_admin_advances_opportunities_opportunity_id_publish_offer_post) | **POST** /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer
 *AdvanceGovernanceApi* | [**run_nightly_eval_admin_advances_run_nightly_eval_post**](docs/AdvanceGovernanceApi.md#run_nightly_eval_admin_advances_run_nightly_eval_post) | **POST** /admin/advances/run-nightly-eval | Run Nightly Eval
+*AdvanceGovernanceApi* | [**sign_failed_packet_admin_advances_packets_packet_id_sign_post**](docs/AdvanceGovernanceApi.md#sign_failed_packet_admin_advances_packets_packet_id_sign_post) | **POST** /admin/advances/packets/{packet_id}/sign | Sign Failed Packet
 *AnomaliesApi* | [**anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get**](docs/AnomaliesApi.md#anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detect_anomalies_artists_artist_id_anomalies_detect_post**](docs/AnomaliesApi.md#detect_anomalies_artists_artist_id_anomalies_detect_post) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
 *AnomaliesApi* | [**fraud_scan_artists_artist_id_anomalies_fraud_scan_post**](docs/AnomaliesApi.md#fraud_scan_artists_artist_id_anomalies_fraud_scan_post) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
@@ -484,6 +486,7 @@ Class | Method | HTTP request | Description
  - [OAuthTokenRefreshRequest](docs/OAuthTokenRefreshRequest.md)
  - [OnboardingAutoRequest](docs/OnboardingAutoRequest.md)
  - [OptimizationSimulationRequest](docs/OptimizationSimulationRequest.md)
+ - [PacketSignRequest](docs/PacketSignRequest.md)
  - [ParserPluginSchema](docs/ParserPluginSchema.md)
  - [ParserPluginUpsertRequest](docs/ParserPluginUpsertRequest.md)
  - [PreSignatureContractReviewRequest](docs/PreSignatureContractReviewRequest.md)

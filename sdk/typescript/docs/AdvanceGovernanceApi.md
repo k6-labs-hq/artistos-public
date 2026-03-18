@@ -8,11 +8,13 @@ All URIs are relative to *http://localhost*
 | [**analystQueueAdminAdvancesQueueAnalystGet**](AdvanceGovernanceApi.md#analystqueueadminadvancesqueueanalystget) | **GET** /admin/advances/queue/analyst | Analyst Queue |
 | [**approveAnalystAdminAdvancesOpportunitiesOpportunityIdAnalystDecisionPost**](AdvanceGovernanceApi.md#approveanalystadminadvancesopportunitiesopportunityidanalystdecisionpost) | **POST** /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst |
 | [**approveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDecisionPost**](AdvanceGovernanceApi.md#approveexecutiveadminadvancesopportunitiesopportunityidexecutivedecisionpost) | **POST** /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive |
+| [**completePacketAdminAdvancesPacketsPacketIdCompletePost**](AdvanceGovernanceApi.md#completepacketadminadvancespacketspacketidcompletepost) | **POST** /admin/advances/packets/{packet_id}/complete | Complete Packet |
 | [**createFailedPacketAdminAdvancesOffersOfferIdFailedRecoveryPacketPost**](AdvanceGovernanceApi.md#createfailedpacketadminadvancesoffersofferidfailedrecoverypacketpost) | **POST** /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet |
 | [**executiveQueueAdminAdvancesQueueExecutiveGet**](AdvanceGovernanceApi.md#executivequeueadminadvancesqueueexecutiveget) | **GET** /admin/advances/queue/executive | Executive Queue |
 | [**listArtistOffersArtistsArtistIdAdvanceOffersGet**](AdvanceGovernanceApi.md#listartistoffersartistsartistidadvanceoffersget) | **GET** /artists/{artist_id}/advance/offers | List Artist Offers |
 | [**publishOfferAdminAdvancesOpportunitiesOpportunityIdPublishOfferPost**](AdvanceGovernanceApi.md#publishofferadminadvancesopportunitiesopportunityidpublishofferpost) | **POST** /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer |
 | [**runNightlyEvalAdminAdvancesRunNightlyEvalPost**](AdvanceGovernanceApi.md#runnightlyevaladminadvancesrunnightlyevalpost) | **POST** /admin/advances/run-nightly-eval | Run Nightly Eval |
+| [**signFailedPacketAdminAdvancesPacketsPacketIdSignPost**](AdvanceGovernanceApi.md#signfailedpacketadminadvancespacketspacketidsignpost) | **POST** /admin/advances/packets/{packet_id}/sign | Sign Failed Packet |
 
 
 
@@ -284,6 +286,76 @@ example().catch(console.error);
 ### HTTP request headers
 
 - **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## completePacketAdminAdvancesPacketsPacketIdCompletePost
+
+> { [key: string]: any; } completePacketAdminAdvancesPacketsPacketIdCompletePost(packetId)
+
+Complete Packet
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdvanceGovernanceApi,
+} from '@xr7/sdk';
+import type { CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new AdvanceGovernanceApi(config);
+
+  const body = {
+    // string
+    packetId: packetId_example,
+  } satisfies CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest;
+
+  try {
+    const data = await api.completePacketAdminAdvancesPacketsPacketIdCompletePost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **packetId** | `string` |  | [Defaults to `undefined`] |
+
+### Return type
+
+**{ [key: string]: any; }**
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
 - **Accept**: `application/json`
 
 
@@ -627,6 +699,79 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## signFailedPacketAdminAdvancesPacketsPacketIdSignPost
+
+> { [key: string]: any; } signFailedPacketAdminAdvancesPacketsPacketIdSignPost(packetId, packetSignRequest)
+
+Sign Failed Packet
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdvanceGovernanceApi,
+} from '@xr7/sdk';
+import type { SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const config = new Configuration({ 
+    // Configure HTTP bearer authorization: HTTPBearer
+    accessToken: "YOUR BEARER TOKEN",
+  });
+  const api = new AdvanceGovernanceApi(config);
+
+  const body = {
+    // string
+    packetId: packetId_example,
+    // PacketSignRequest
+    packetSignRequest: ...,
+  } satisfies SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest;
+
+  try {
+    const data = await api.signFailedPacketAdminAdvancesPacketsPacketIdSignPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **packetId** | `string` |  | [Defaults to `undefined`] |
+| **packetSignRequest** | [PacketSignRequest](PacketSignRequest.md) |  | |
+
+### Return type
+
+**{ [key: string]: any; }**
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 

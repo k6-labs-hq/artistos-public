@@ -144,3 +144,90 @@ def test_dual_approval_publish_and_artist_accept_flow():
     )
     assert accept.status_code == 200
     assert accept.json()["status"] == "ACCEPTED"
+
+
+def test_failed_packet_multisign_and_legal_completion():
+    artist_id = _create_artist("Advance Gate Packet Flow")
+
+    db = _TestSession()
+    try:
+        db.add(
+            Anomaly(
+                artist_id=artist_id,
+                category=AnomalyCategory.ROYALTY,
+                subtype="DUPLICATE_RECOUPMENT",
+                severity=AnomalySeverity.HIGH,
+                status=AnomalyStatus.OPEN,
+                confidence_score=0.97,
+                estimated_recoverable=30_000.0,
+                created_at=datetime.now(timezone.utc),
+            )
+        )
+        db.commit()
+        summary = run_nightly_advance_opportunity_scan(db)
+        assert int(summary["created"]) >= 1
+    finally:
+        db.close()
+
+    analyst_queue = client.get(
+        "/admin/advances/queue/analyst",
+        headers=_role_headers("analyst@xr7", "analyst"),
+    )
+    items = [i for i in analyst_queue.json()["items"] if i["artist_id"] == artist_id]
+    assert items
+    opportunity_id = str(items[0]["opportunity_id"])
+
+    assert client.post(
+        f"/admin/advances/opportunities/{opportunity_id}/analyst-decision",
+        json={"approved": True, "notes": "analyst ok"},
+        headers=_role_headers("analyst@xr7", "analyst"),
+    ).status_code == 200
+
+    assert client.post(
+        f"/admin/advances/opportunities/{opportunity_id}/executive-decision",
+        json={"approved": True, "notes": "exec ok"},
+        headers=_role_headers("exec@xr7", "exec"),
+    ).status_code == 200
+
+    publish = client.post(
+        f"/admin/advances/opportunities/{opportunity_id}/publish-offer",
+        headers=_role_headers("exec@xr7", "exec"),
+    )
+    assert publish.status_code == 200
+    offer_id = str(publish.json()["offer_id"])
+
+    failed_packet = client.post(
+        f"/admin/advances/offers/{offer_id}/failed-recovery-packet",
+        json={"failure_reason": "payer rejected recoupment terms"},
+        headers=_role_headers("exec@xr7", "exec"),
+    )
+    assert failed_packet.status_code == 200
+    packet_id = str(failed_packet.json()["packet_id"])
+
+    analyst_sign = client.post(
+        f"/admin/advances/packets/{packet_id}/sign",
+        json={"note": "analyst signature"},
+        headers=_role_headers("analyst@xr7", "analyst"),
+    )
+    assert analyst_sign.status_code == 200
+
+    legal_sign = client.post(
+        f"/admin/advances/packets/{packet_id}/sign",
+        json={"note": "legal signature"},
+        headers=_role_headers("legal@xr7", "legal"),
+    )
+    assert legal_sign.status_code == 200
+
+    unauthorized_complete = client.post(
+        f"/admin/advances/packets/{packet_id}/complete",
+        headers=_role_headers("analyst@xr7", "analyst"),
+    )
+    assert unauthorized_complete.status_code == 403
+
+    complete = client.post(
+        f"/admin/advances/packets/{packet_id}/complete",
+        headers=_role_headers("legal@xr7", "legal"),
+    )
+    assert complete.status_code == 200
+    assert complete.json()["status"] == "COMPLETE"
+    assert complete.json()["immutable_ledger_hash"]

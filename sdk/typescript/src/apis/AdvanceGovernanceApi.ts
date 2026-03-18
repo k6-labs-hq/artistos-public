@@ -18,6 +18,7 @@ import type {
   ApprovalRequest,
   FailedPacketRequest,
   HTTPValidationError,
+  PacketSignRequest,
 } from '../models/index';
 import {
     ApprovalRequestFromJSON,
@@ -26,6 +27,8 @@ import {
     FailedPacketRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
+    PacketSignRequestFromJSON,
+    PacketSignRequestToJSON,
 } from '../models/index';
 
 export interface AcceptArtistOfferArtistsArtistIdAdvanceOffersOfferIdAcceptPostRequest {
@@ -43,6 +46,10 @@ export interface ApproveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiv
     approvalRequest: ApprovalRequest;
 }
 
+export interface CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest {
+    packetId: string;
+}
+
 export interface CreateFailedPacketAdminAdvancesOffersOfferIdFailedRecoveryPacketPostRequest {
     offerId: string;
     failedPacketRequest: FailedPacketRequest;
@@ -54,6 +61,11 @@ export interface ListArtistOffersArtistsArtistIdAdvanceOffersGetRequest {
 
 export interface PublishOfferAdminAdvancesOpportunitiesOpportunityIdPublishOfferPostRequest {
     opportunityId: string;
+}
+
+export interface SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest {
+    packetId: string;
+    packetSignRequest: PacketSignRequest;
 }
 
 /**
@@ -290,6 +302,59 @@ export class AdvanceGovernanceApi extends runtime.BaseAPI {
      */
     async approveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDecisionPost(requestParameters: ApproveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDecisionPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.approveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDecisionPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for completePacketAdminAdvancesPacketsPacketIdCompletePost without sending the request
+     */
+    async completePacketAdminAdvancesPacketsPacketIdCompletePostRequestOpts(requestParameters: CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['packetId'] == null) {
+            throw new runtime.RequiredError(
+                'packetId',
+                'Required parameter "packetId" was null or undefined when calling completePacketAdminAdvancesPacketsPacketIdCompletePost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/admin/advances/packets/{packet_id}/complete`;
+        urlPath = urlPath.replace(`{${"packet_id"}}`, encodeURIComponent(String(requestParameters['packetId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Complete Packet
+     */
+    async completePacketAdminAdvancesPacketsPacketIdCompletePostRaw(requestParameters: CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        const requestOptions = await this.completePacketAdminAdvancesPacketsPacketIdCompletePostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Complete Packet
+     */
+    async completePacketAdminAdvancesPacketsPacketIdCompletePost(requestParameters: CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.completePacketAdminAdvancesPacketsPacketIdCompletePostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -549,6 +614,69 @@ export class AdvanceGovernanceApi extends runtime.BaseAPI {
      */
     async runNightlyEvalAdminAdvancesRunNightlyEvalPost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
         const response = await this.runNightlyEvalAdminAdvancesRunNightlyEvalPostRaw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for signFailedPacketAdminAdvancesPacketsPacketIdSignPost without sending the request
+     */
+    async signFailedPacketAdminAdvancesPacketsPacketIdSignPostRequestOpts(requestParameters: SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['packetId'] == null) {
+            throw new runtime.RequiredError(
+                'packetId',
+                'Required parameter "packetId" was null or undefined when calling signFailedPacketAdminAdvancesPacketsPacketIdSignPost().'
+            );
+        }
+
+        if (requestParameters['packetSignRequest'] == null) {
+            throw new runtime.RequiredError(
+                'packetSignRequest',
+                'Required parameter "packetSignRequest" was null or undefined when calling signFailedPacketAdminAdvancesPacketsPacketIdSignPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("HTTPBearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/admin/advances/packets/{packet_id}/sign`;
+        urlPath = urlPath.replace(`{${"packet_id"}}`, encodeURIComponent(String(requestParameters['packetId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: PacketSignRequestToJSON(requestParameters['packetSignRequest']),
+        };
+    }
+
+    /**
+     * Sign Failed Packet
+     */
+    async signFailedPacketAdminAdvancesPacketsPacketIdSignPostRaw(requestParameters: SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<{ [key: string]: any; }>> {
+        const requestOptions = await this.signFailedPacketAdminAdvancesPacketsPacketIdSignPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        return new runtime.JSONApiResponse<any>(response);
+    }
+
+    /**
+     * Sign Failed Packet
+     */
+    async signFailedPacketAdminAdvancesPacketsPacketIdSignPost(requestParameters: SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<{ [key: string]: any; }> {
+        const response = await this.signFailedPacketAdminAdvancesPacketsPacketIdSignPostRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

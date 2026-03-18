@@ -21,6 +21,17 @@ MAX_EFFECTIVE_FEE_CAP_PERCENT = 24.0
 ADVANCE_EXPIRY_DAYS = 7
 
 
+def _normalize_signer_role(role: str) -> str:
+    value = str(role or "").strip().lower()
+    if value in {"exec", "executive", "ceo", "cfo"}:
+        return "executive"
+    if value in {"legal", "counsel", "general_counsel"}:
+        return "legal"
+    if value == "analyst":
+        return "analyst"
+    return value
+
+
 def _fee_band_for_score(score: float) -> float:
     if score >= 0.92:
         return 2.5
@@ -379,7 +390,7 @@ def generate_failed_advance_recovery_packet(
         collected_signatures=[
             {
                 "subject": actor_subject,
-                "role": actor_role,
+                "role": _normalize_signer_role(actor_role),
                 "signed_at": datetime.now(timezone.utc).isoformat(),
             }
         ],
@@ -393,6 +404,111 @@ def generate_failed_advance_recovery_packet(
     )
     offer.status = AdvanceOfferStatus.FAILED
     db.add(packet)
+    db.commit()
+    db.refresh(packet)
+    return packet
+
+
+def add_failed_packet_signature(
+    db: Session,
+    *,
+    packet_id: str,
+    actor_subject: str,
+    actor_role: str,
+    note: str | None,
+) -> AdvanceRecoveryPacket:
+    packet = db.query(AdvanceRecoveryPacket).filter(AdvanceRecoveryPacket.id == packet_id).first()
+    if not packet:
+        raise ValueError("Packet not found")
+    if str(packet.status or "").upper() == "COMPLETE":
+        raise ValueError("Packet already completed")
+
+    normalized_role = _normalize_signer_role(actor_role)
+    required_roles = {
+        _normalize_signer_role(str(row.get("role") or ""))
+        for row in list(packet.required_signers or [])
+        if bool(row.get("required", True))
+    }
+    if normalized_role not in required_roles:
+        raise ValueError("Actor role is not an allowed signer for this packet")
+
+    signatures = list(packet.collected_signatures or [])
+    if any(_normalize_signer_role(str(sig.get("role") or "")) == normalized_role for sig in signatures):
+        raise ValueError(f"{normalized_role} signature already recorded")
+
+    signatures.append(
+        {
+            "subject": actor_subject,
+            "role": normalized_role,
+            "signed_at": datetime.now(timezone.utc).isoformat(),
+            "note": note,
+        }
+    )
+    packet.collected_signatures = signatures
+
+    custody = list(packet.chain_of_custody or [])
+    custody.append(
+        {
+            "event": "packet_signed",
+            "at": datetime.now(timezone.utc).isoformat(),
+            "actor_subject": actor_subject,
+            "actor_role": normalized_role,
+            "note": note,
+        }
+    )
+    packet.chain_of_custody = custody
+    db.commit()
+    db.refresh(packet)
+    return packet
+
+
+def complete_failed_packet(
+    db: Session,
+    *,
+    packet_id: str,
+    actor_subject: str,
+    actor_role: str,
+) -> AdvanceRecoveryPacket:
+    packet = db.query(AdvanceRecoveryPacket).filter(AdvanceRecoveryPacket.id == packet_id).first()
+    if not packet:
+        raise ValueError("Packet not found")
+
+    required_roles = {
+        _normalize_signer_role(str(row.get("role") or ""))
+        for row in list(packet.required_signers or [])
+        if bool(row.get("required", True))
+    }
+    signed_roles = {
+        _normalize_signer_role(str(row.get("role") or ""))
+        for row in list(packet.collected_signatures or [])
+    }
+    missing = sorted([r for r in required_roles if r not in signed_roles])
+    if missing:
+        raise ValueError(f"Missing required signatures: {', '.join(missing)}")
+
+    packet.status = "COMPLETE"
+    custody = list(packet.chain_of_custody or [])
+    custody.append(
+        {
+            "event": "packet_completed",
+            "at": datetime.now(timezone.utc).isoformat(),
+            "actor_subject": actor_subject,
+            "actor_role": _normalize_signer_role(actor_role),
+            "signed_roles": sorted(signed_roles),
+        }
+    )
+    packet.chain_of_custody = custody
+
+    ledger_row = ImmutableLedgerService(db).append(
+        packet.artist_id,
+        "advance_failed_packet_completed",
+        {
+            "packet_id": packet.id,
+            "offer_id": packet.offer_id,
+            "signed_roles": sorted(signed_roles),
+        },
+    )
+    packet.immutable_ledger_hash = ledger_row.entry_hash
     db.commit()
     db.refresh(packet)
     return packet

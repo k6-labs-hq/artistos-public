@@ -104,6 +104,7 @@ docs/OAuthTokenRefreshRequest.md
 docs/OnboardingApi.md
 docs/OnboardingAutoRequest.md
 docs/OptimizationSimulationRequest.md
+docs/PacketSignRequest.md
 docs/ParserPluginSchema.md
 docs/ParserPluginUpsertRequest.md
 docs/PayersApi.md
@@ -309,6 +310,7 @@ src/models/OAuthTokenExchangeRequest.ts
 src/models/OAuthTokenRefreshRequest.ts
 src/models/OnboardingAutoRequest.ts
 src/models/OptimizationSimulationRequest.ts
+src/models/PacketSignRequest.ts
 src/models/ParserPluginSchema.ts
 src/models/ParserPluginUpsertRequest.ts
 src/models/PreSignatureContractReviewRequest.ts

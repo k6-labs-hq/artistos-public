@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 316
+Total endpoints: 318
 
 ## Endpoint Table
 
@@ -12,6 +12,8 @@ Total endpoints: 316
 | advance-governance | POST | /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst | approve_analyst_admin_advances_opportunities__opportunity_id__analyst_decision_post | ApprovalRequest | object | curl -X POST http://localhost:8000/admin/advances/opportunities/{opportunity_id}/analyst-decision -H 'Content-Type: application/json' -d '{}' |
 | advance-governance | POST | /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive | approve_executive_admin_advances_opportunities__opportunity_id__executive_decision_post | ApprovalRequest | object | curl -X POST http://localhost:8000/admin/advances/opportunities/{opportunity_id}/executive-decision -H 'Content-Type: application/json' -d '{}' |
 | advance-governance | POST | /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer | publish_offer_admin_advances_opportunities__opportunity_id__publish_offer_post | - | object | curl -X POST http://localhost:8000/admin/advances/opportunities/{opportunity_id}/publish-offer |
+| advance-governance | POST | /admin/advances/packets/{packet_id}/complete | Complete Packet | complete_packet_admin_advances_packets__packet_id__complete_post | - | object | curl -X POST http://localhost:8000/admin/advances/packets/{packet_id}/complete |
+| advance-governance | POST | /admin/advances/packets/{packet_id}/sign | Sign Failed Packet | sign_failed_packet_admin_advances_packets__packet_id__sign_post | PacketSignRequest | object | curl -X POST http://localhost:8000/admin/advances/packets/{packet_id}/sign -H 'Content-Type: application/json' -d '{}' |
 | advance-governance | GET | /admin/advances/queue/analyst | Analyst Queue | analyst_queue_admin_advances_queue_analyst_get | - | object | curl -X GET http://localhost:8000/admin/advances/queue/analyst |
 | advance-governance | GET | /admin/advances/queue/executive | Executive Queue | executive_queue_admin_advances_queue_executive_get | - | object | curl -X GET http://localhost:8000/admin/advances/queue/executive |
 | advance-governance | POST | /admin/advances/run-nightly-eval | Run Nightly Eval | run_nightly_eval_admin_advances_run_nightly_eval_post | - | object | curl -X POST http://localhost:8000/admin/advances/run-nightly-eval |

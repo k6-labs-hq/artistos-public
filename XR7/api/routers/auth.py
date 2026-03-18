@@ -75,6 +75,13 @@ def require_executive(payload: dict[str, Any] = Depends(get_auth_payload)) -> di
     raise HTTPException(status_code=403, detail="Executive role required")
 
 
+def require_legal(payload: dict[str, Any] = Depends(get_auth_payload)) -> dict[str, Any]:
+    role = str(payload.get("role") or "").strip().lower()
+    if role in {"legal", "counsel", "general_counsel", "admin"}:
+        return payload
+    raise HTTPException(status_code=403, detail="Legal role required")
+
+
 def require_artist_access(
     artist_id: str,
     payload: dict[str, Any] = Depends(get_auth_payload),

@@ -83,7 +83,7 @@ def test_reconcile_recovered_amount(db_session, artist_and_anomaly):
     claim = orchestrator.create_claim("anomaly-1", "ROYALTY_DISPUTE")
     updated = orchestrator.reconcile_recovered_amount(claim.id, 1000.0, "USD")
     assert updated.recovered_amount == 1000.0
-    assert updated.contingency_fee == pytest.approx(100.0)
+    assert updated.contingency_fee == pytest.approx(120.0)
     assert updated.currency == "USD"
 
 

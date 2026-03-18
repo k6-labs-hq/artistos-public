@@ -68,11 +68,13 @@ All URIs are relative to *http://localhost*
 *AdvanceGovernanceApi* | [**analystQueueAdminAdvancesQueueAnalystGet**](docs/AdvanceGovernanceApi.md#analystqueueadminadvancesqueueanalystget) | **GET** /admin/advances/queue/analyst | Analyst Queue
 *AdvanceGovernanceApi* | [**approveAnalystAdminAdvancesOpportunitiesOpportunityIdAnalystDecisionPost**](docs/AdvanceGovernanceApi.md#approveanalystadminadvancesopportunitiesopportunityidanalystdecisionpost) | **POST** /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst
 *AdvanceGovernanceApi* | [**approveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDecisionPost**](docs/AdvanceGovernanceApi.md#approveexecutiveadminadvancesopportunitiesopportunityidexecutivedecisionpost) | **POST** /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive
+*AdvanceGovernanceApi* | [**completePacketAdminAdvancesPacketsPacketIdCompletePost**](docs/AdvanceGovernanceApi.md#completepacketadminadvancespacketspacketidcompletepost) | **POST** /admin/advances/packets/{packet_id}/complete | Complete Packet
 *AdvanceGovernanceApi* | [**createFailedPacketAdminAdvancesOffersOfferIdFailedRecoveryPacketPost**](docs/AdvanceGovernanceApi.md#createfailedpacketadminadvancesoffersofferidfailedrecoverypacketpost) | **POST** /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet
 *AdvanceGovernanceApi* | [**executiveQueueAdminAdvancesQueueExecutiveGet**](docs/AdvanceGovernanceApi.md#executivequeueadminadvancesqueueexecutiveget) | **GET** /admin/advances/queue/executive | Executive Queue
 *AdvanceGovernanceApi* | [**listArtistOffersArtistsArtistIdAdvanceOffersGet**](docs/AdvanceGovernanceApi.md#listartistoffersartistsartistidadvanceoffersget) | **GET** /artists/{artist_id}/advance/offers | List Artist Offers
 *AdvanceGovernanceApi* | [**publishOfferAdminAdvancesOpportunitiesOpportunityIdPublishOfferPost**](docs/AdvanceGovernanceApi.md#publishofferadminadvancesopportunitiesopportunityidpublishofferpost) | **POST** /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer
 *AdvanceGovernanceApi* | [**runNightlyEvalAdminAdvancesRunNightlyEvalPost**](docs/AdvanceGovernanceApi.md#runnightlyevaladminadvancesrunnightlyevalpost) | **POST** /admin/advances/run-nightly-eval | Run Nightly Eval
+*AdvanceGovernanceApi* | [**signFailedPacketAdminAdvancesPacketsPacketIdSignPost**](docs/AdvanceGovernanceApi.md#signfailedpacketadminadvancespacketspacketidsignpost) | **POST** /admin/advances/packets/{packet_id}/sign | Sign Failed Packet
 *AnomaliesApi* | [**anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet**](docs/AnomaliesApi.md#anomalyrecoveryprobabilityendpointanomaliesanomalyidrecoveryprobabilityget) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detectAnomaliesArtistsArtistIdAnomaliesDetectPost**](docs/AnomaliesApi.md#detectanomaliesartistsartistidanomaliesdetectpost) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
 *AnomaliesApi* | [**fraudScanArtistsArtistIdAnomaliesFraudScanPost**](docs/AnomaliesApi.md#fraudscanartistsartistidanomaliesfraudscanpost) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
@@ -448,6 +450,7 @@ All URIs are relative to *http://localhost*
 - [OAuthTokenRefreshRequest](docs/OAuthTokenRefreshRequest.md)
 - [OnboardingAutoRequest](docs/OnboardingAutoRequest.md)
 - [OptimizationSimulationRequest](docs/OptimizationSimulationRequest.md)
+- [PacketSignRequest](docs/PacketSignRequest.md)
 - [ParserPluginSchema](docs/ParserPluginSchema.md)
 - [ParserPluginUpsertRequest](docs/ParserPluginUpsertRequest.md)
 - [PreSignatureContractReviewRequest](docs/PreSignatureContractReviewRequest.md)

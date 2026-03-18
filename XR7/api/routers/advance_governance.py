@@ -4,12 +4,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import require_analyst, require_artist_access, require_executive
+from XR7.api.routers.auth import get_auth_payload, require_analyst, require_artist_access, require_executive, require_legal
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.services.analyst_gated_advance import (
+    add_failed_packet_signature,
     analyst_decision,
     artist_accept_offer,
+    complete_failed_packet,
     executive_decision,
     generate_failed_advance_recovery_packet,
     list_analyst_queue,
@@ -30,6 +32,10 @@ class ApprovalRequest(BaseModel):
 
 class FailedPacketRequest(BaseModel):
     failure_reason: str
+
+
+class PacketSignRequest(BaseModel):
+    note: str | None = None
 
 
 @router.post("/admin/advances/run-nightly-eval")
@@ -200,6 +206,60 @@ def create_failed_packet(
         "immutable_ledger_hash": packet.immutable_ledger_hash,
         "required_signers": packet.required_signers,
         "collected_signatures": packet.collected_signatures,
+    }
+
+
+@router.post("/admin/advances/packets/{packet_id}/sign")
+def sign_failed_packet(
+    packet_id: str,
+    payload: PacketSignRequest,
+    db: Session = Depends(get_db),
+    auth: dict = Depends(get_auth_payload),
+) -> dict:
+    role = str(auth.get("role") or "").strip().lower()
+    if role not in {"analyst", "exec", "executive", "legal", "counsel", "general_counsel", "admin"}:
+        raise HTTPException(status_code=403, detail="Internal signer role required")
+    try:
+        packet = add_failed_packet_signature(
+            db,
+            packet_id=packet_id,
+            actor_subject=str(auth.get("sub") or "unknown"),
+            actor_role=str(auth.get("role") or "unknown"),
+            note=payload.note,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return {
+        "packet_id": packet.id,
+        "status": packet.status,
+        "collected_signatures": packet.collected_signatures,
+        "required_signers": packet.required_signers,
+    }
+
+
+@router.post("/admin/advances/packets/{packet_id}/complete")
+def complete_packet(
+    packet_id: str,
+    db: Session = Depends(get_db),
+    auth: dict = Depends(require_legal),
+) -> dict:
+    try:
+        packet = complete_failed_packet(
+            db,
+            packet_id=packet_id,
+            actor_subject=str(auth.get("sub") or "unknown"),
+            actor_role=str(auth.get("role") or "legal"),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    return {
+        "packet_id": packet.id,
+        "status": packet.status,
+        "immutable_ledger_hash": packet.immutable_ledger_hash,
+        "collected_signatures": packet.collected_signatures,
+        "required_signers": packet.required_signers,
     }
 
 

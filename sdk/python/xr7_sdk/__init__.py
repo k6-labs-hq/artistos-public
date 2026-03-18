@@ -150,6 +150,7 @@ __all__ = [
     "OAuthTokenRefreshRequest",
     "OnboardingAutoRequest",
     "OptimizationSimulationRequest",
+    "PacketSignRequest",
     "ParserPluginSchema",
     "ParserPluginUpsertRequest",
     "PreSignatureContractReviewRequest",
@@ -348,6 +349,7 @@ from xr7_sdk.models.o_auth_token_exchange_request import OAuthTokenExchangeReque
 from xr7_sdk.models.o_auth_token_refresh_request import OAuthTokenRefreshRequest as OAuthTokenRefreshRequest
 from xr7_sdk.models.onboarding_auto_request import OnboardingAutoRequest as OnboardingAutoRequest
 from xr7_sdk.models.optimization_simulation_request import OptimizationSimulationRequest as OptimizationSimulationRequest
+from xr7_sdk.models.packet_sign_request import PacketSignRequest as PacketSignRequest
 from xr7_sdk.models.parser_plugin_schema import ParserPluginSchema as ParserPluginSchema
 from xr7_sdk.models.parser_plugin_upsert_request import ParserPluginUpsertRequest as ParserPluginUpsertRequest
 from xr7_sdk.models.pre_signature_contract_review_request import PreSignatureContractReviewRequest as PreSignatureContractReviewRequest

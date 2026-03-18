@@ -76,6 +76,7 @@ export * from './OAuthTokenExchangeRequest';
 export * from './OAuthTokenRefreshRequest';
 export * from './OnboardingAutoRequest';
 export * from './OptimizationSimulationRequest';
+export * from './PacketSignRequest';
 export * from './ParserPluginSchema';
 export * from './ParserPluginUpsertRequest';
 export * from './PreSignatureContractReviewRequest';

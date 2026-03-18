@@ -8,11 +8,13 @@ Method | HTTP request | Description
 [**analyst_queue_admin_advances_queue_analyst_get**](AdvanceGovernanceApi.md#analyst_queue_admin_advances_queue_analyst_get) | **GET** /admin/advances/queue/analyst | Analyst Queue
 [**approve_analyst_admin_advances_opportunities_opportunity_id_analyst_decision_post**](AdvanceGovernanceApi.md#approve_analyst_admin_advances_opportunities_opportunity_id_analyst_decision_post) | **POST** /admin/advances/opportunities/{opportunity_id}/analyst-decision | Approve Analyst
 [**approve_executive_admin_advances_opportunities_opportunity_id_executive_decision_post**](AdvanceGovernanceApi.md#approve_executive_admin_advances_opportunities_opportunity_id_executive_decision_post) | **POST** /admin/advances/opportunities/{opportunity_id}/executive-decision | Approve Executive
+[**complete_packet_admin_advances_packets_packet_id_complete_post**](AdvanceGovernanceApi.md#complete_packet_admin_advances_packets_packet_id_complete_post) | **POST** /admin/advances/packets/{packet_id}/complete | Complete Packet
 [**create_failed_packet_admin_advances_offers_offer_id_failed_recovery_packet_post**](AdvanceGovernanceApi.md#create_failed_packet_admin_advances_offers_offer_id_failed_recovery_packet_post) | **POST** /admin/advances/offers/{offer_id}/failed-recovery-packet | Create Failed Packet
 [**executive_queue_admin_advances_queue_executive_get**](AdvanceGovernanceApi.md#executive_queue_admin_advances_queue_executive_get) | **GET** /admin/advances/queue/executive | Executive Queue
 [**list_artist_offers_artists_artist_id_advance_offers_get**](AdvanceGovernanceApi.md#list_artist_offers_artists_artist_id_advance_offers_get) | **GET** /artists/{artist_id}/advance/offers | List Artist Offers
 [**publish_offer_admin_advances_opportunities_opportunity_id_publish_offer_post**](AdvanceGovernanceApi.md#publish_offer_admin_advances_opportunities_opportunity_id_publish_offer_post) | **POST** /admin/advances/opportunities/{opportunity_id}/publish-offer | Publish Offer
 [**run_nightly_eval_admin_advances_run_nightly_eval_post**](AdvanceGovernanceApi.md#run_nightly_eval_admin_advances_run_nightly_eval_post) | **POST** /admin/advances/run-nightly-eval | Run Nightly Eval
+[**sign_failed_packet_admin_advances_packets_packet_id_sign_post**](AdvanceGovernanceApi.md#sign_failed_packet_admin_advances_packets_packet_id_sign_post) | **POST** /admin/advances/packets/{packet_id}/sign | Sign Failed Packet
 
 
 # **accept_artist_offer_artists_artist_id_advance_offers_offer_id_accept_post**
@@ -311,6 +313,82 @@ Name | Type | Description  | Notes
 ### HTTP request headers
 
  - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **complete_packet_admin_advances_packets_packet_id_complete_post**
+> Dict[str, object] complete_packet_admin_advances_packets_packet_id_complete_post(packet_id)
+
+Complete Packet
+
+### Example
+
+* Bearer Authentication (HTTPBearer):
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
+    packet_id = 'packet_id_example' # str | 
+
+    try:
+        # Complete Packet
+        api_response = api_instance.complete_packet_admin_advances_packets_packet_id_complete_post(packet_id)
+        print("The response of AdvanceGovernanceApi->complete_packet_admin_advances_packets_packet_id_complete_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdvanceGovernanceApi->complete_packet_admin_advances_packets_packet_id_complete_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **packet_id** | **str**|  | 
+
+### Return type
+
+**Dict[str, object]**
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
  - **Accept**: application/json
 
 ### HTTP response details
@@ -692,6 +770,85 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful Response |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **sign_failed_packet_admin_advances_packets_packet_id_sign_post**
+> Dict[str, object] sign_failed_packet_admin_advances_packets_packet_id_sign_post(packet_id, packet_sign_request)
+
+Sign Failed Packet
+
+### Example
+
+* Bearer Authentication (HTTPBearer):
+
+```python
+import xr7_sdk
+from xr7_sdk.models.packet_sign_request import PacketSignRequest
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Configure Bearer authorization: HTTPBearer
+configuration = xr7_sdk.Configuration(
+    access_token = os.environ["BEARER_TOKEN"]
+)
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
+    packet_id = 'packet_id_example' # str | 
+    packet_sign_request = xr7_sdk.PacketSignRequest() # PacketSignRequest | 
+
+    try:
+        # Sign Failed Packet
+        api_response = api_instance.sign_failed_packet_admin_advances_packets_packet_id_sign_post(packet_id, packet_sign_request)
+        print("The response of AdvanceGovernanceApi->sign_failed_packet_admin_advances_packets_packet_id_sign_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdvanceGovernanceApi->sign_failed_packet_admin_advances_packets_packet_id_sign_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **packet_id** | **str**|  | 
+ **packet_sign_request** | [**PacketSignRequest**](PacketSignRequest.md)|  | 
+
+### Return type
+
+**Dict[str, object]**
+
+### Authorization
+
+[HTTPBearer](../README.md#HTTPBearer)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

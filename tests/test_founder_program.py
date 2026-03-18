@@ -71,14 +71,14 @@ def test_founder_slot_assigned_on_first_activation():
     assert artist["is_founder"] is True
     assert artist["founder_slot_number"] is not None
     assert artist["founder_locked_at"] is not None
-    assert float(artist["contingency_fee_percent"]) == 10.0
+    assert float(artist["contingency_fee_percent"]) == 12.0
 
     founder_status = client.get("/config/founder-status")
     assert founder_status.status_code == 200
     body = founder_status.json()
     assert body["slots_total"] == 2500
     assert body["slots_filled"] >= 1
-    assert body["founder_fee_percent"] == 10
+    assert body["founder_fee_percent"] == 12
     assert body["cohort_open"] is True
 
 

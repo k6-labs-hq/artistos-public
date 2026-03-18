@@ -16308,6 +16308,114 @@
         }
       }
     },
+    "/admin/advances/packets/{packet_id}/sign": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Sign Failed Packet",
+        "operationId": "sign_failed_packet_admin_advances_packets__packet_id__sign_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "packet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Packet Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PacketSignRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Sign Failed Packet Admin Advances Packets  Packet Id  Sign Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/advances/packets/{packet_id}/complete": {
+      "post": {
+        "tags": [
+          "advance-governance"
+        ],
+        "summary": "Complete Packet",
+        "operationId": "complete_packet_admin_advances_packets__packet_id__complete_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "packet_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Packet Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Complete Packet Admin Advances Packets  Packet Id  Complete Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/advance/offers": {
       "get": {
         "tags": [
@@ -20218,6 +20326,23 @@
           "changes"
         ],
         "title": "OptimizationSimulationRequest"
+      },
+      "PacketSignRequest": {
+        "properties": {
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "title": "PacketSignRequest"
       },
       "ParserPluginSchema": {
         "properties": {
