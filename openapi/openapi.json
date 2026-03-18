@@ -13,6 +13,11 @@
         ],
         "summary": "Get Earnings Summary",
         "operationId": "get_earnings_summary_artists__artist_id__earnings_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -53,6 +58,11 @@
         ],
         "summary": "Get Earnings History",
         "operationId": "get_earnings_history_artists__artist_id__earnings_history_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -234,6 +244,11 @@
         ],
         "summary": "List Anomalies",
         "operationId": "list_anomalies_artists__artist_id__anomalies_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -502,6 +517,11 @@
         ],
         "summary": "List Claims",
         "operationId": "list_claims_artists__artist_id__claims_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -540,6 +560,11 @@
         ],
         "summary": "Create Claim For Artist",
         "operationId": "create_claim_for_artist_artists__artist_id__claims_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -548,22 +573,6 @@
             "schema": {
               "type": "string",
               "title": "Artist Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -730,6 +739,11 @@
         ],
         "summary": "Get Evidence",
         "operationId": "get_evidence_claims__claim_id__evidence_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "claim_id",
@@ -738,22 +752,6 @@
             "schema": {
               "type": "string",
               "title": "Claim Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -3873,6 +3871,11 @@
         ],
         "summary": "Get Agents Status",
         "operationId": "get_agents_status_artists__artist_id__agents_status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -3881,22 +3884,6 @@
             "schema": {
               "type": "string",
               "title": "Artist Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -14500,48 +14487,25 @@
         ],
         "summary": "Auth Me",
         "operationId": "auth_me_auth_me_get",
-        "parameters": [
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
-            }
-          }
-        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
                   "additionalProperties": true,
+                  "type": "object",
                   "title": "Response Auth Me Auth Me Get"
                 }
               }
             }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
           }
-        }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/artists/{artist_id}/identity/auto-match": {
@@ -14551,6 +14515,11 @@
         ],
         "summary": "Auto Match Identity",
         "operationId": "auto_match_identity_artists__artist_id__identity_auto_match_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -14559,22 +14528,6 @@
             "schema": {
               "type": "string",
               "title": "Artist Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -14619,6 +14572,11 @@
         ],
         "summary": "List Identity Matches",
         "operationId": "list_identity_matches_artists__artist_id__identity_matches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -14627,22 +14585,6 @@
             "schema": {
               "type": "string",
               "title": "Artist Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -14679,6 +14621,11 @@
         ],
         "summary": "Get Identity Match Audit",
         "operationId": "get_identity_match_audit_artists__artist_id__identity_matches__match_id__audit_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -14696,22 +14643,6 @@
             "schema": {
               "type": "string",
               "title": "Match Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -14748,6 +14679,11 @@
         ],
         "summary": "Decide Identity Match",
         "operationId": "decide_identity_match_artists__artist_id__identity_matches__match_id__decision_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -14765,22 +14701,6 @@
             "schema": {
               "type": "string",
               "title": "Match Id"
-            }
-          },
-          {
-            "name": "authorization",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Authorization"
             }
           }
         ],
@@ -20903,6 +20823,12 @@
         },
         "type": "object",
         "title": "ForecastRequest"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   }
