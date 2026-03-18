@@ -18,6 +18,7 @@ from XR7.ingestion.missing_data_detector import detect_missing_data
 from XR7.ingestion.parser_engine import get_statement_parser
 from XR7.ingestion.sync_jobs import enqueue_sync_job, run_due_sync_jobs, run_sync_job, run_sync_job_with_session
 from XR7.ml.auto_inference_engine import infer_catalog_relationships
+from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.catalog_confirmation import CatalogConfirmation, CatalogConfirmationSchema
@@ -100,6 +101,8 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
         is not None
     )
     statement_count = db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    anomaly_count = db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    claim_count = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
     connector_count = (
         db.query(func.count(ConnectorAccountLink.id))
         .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True))
@@ -123,10 +126,14 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
         "gates": {
             "terms_accepted": bool(terms_accepted),
             "statement_uploaded": int(statement_count) > 0,
+            "first_anomaly_detected": int(anomaly_count) > 0,
+            "first_claim_drafted": int(claim_count) > 0,
             "connector_linked": int(connector_count) > 0,
         },
         "progress": {
             "statements_uploaded": int(statement_count),
+            "anomalies_detected": int(anomaly_count),
+            "claims_drafted": int(claim_count),
             "active_connectors": int(connector_count),
         },
         "timestamps": {

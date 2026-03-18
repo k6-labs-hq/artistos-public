@@ -35,6 +35,7 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
 
 from XR7.earnings.dashboard import DashboardEngine
+from XR7.api.routers.auth import require_artist_access
 from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace
 from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.artist import Artist
@@ -267,6 +268,44 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
       "narrative_highlights": state.get("narrative_highlights") or [],
     }
     return dashboard
+
+
+@router.get("/artists/{artist_id}/agents/status")
+def get_agents_status(
+  artist_id: str,
+  db: Session = Depends(get_db),
+  _: dict = Depends(require_artist_access),
+):
+  artist = db.query(Artist).filter(Artist.id == artist_id).first()
+  if not artist:
+    raise HTTPException(status_code=404, detail="Artist not found")
+
+  state = get_latest_artist_state(artist_id) or {}
+  run_id = str(state.get("run_id") or "")
+  current_step = str(state.get("current_step") or "")
+  confidence_scores = state.get("confidence_scores") or {}
+
+  return {
+    "artist_id": artist_id,
+    "agent_orchestra_status": {
+      "current_step": current_step or None,
+      "confidence": confidence_scores.get(current_step) if current_step else None,
+      "trace_url": f"/artists/{artist_id}/agent-trace/{run_id}" if run_id else None,
+      "run_id": run_id or None,
+    },
+    "onboarding_progress": state.get("onboarding_progress") or {"steps_total": 0, "steps_completed": 0, "missing": []},
+    "comfort_messages": state.get("comfort_messages") or [],
+    "portal_guidance": state.get("portal_guidance") or [],
+    "fast_track_claim": state.get("fast_track_claim"),
+    "expected_earnings": state.get("expected_earnings") or {},
+    "public_profile": state.get("public_profile") or {},
+    "readiness_score": state.get("readiness_score"),
+    "ugc_opportunities": state.get("ugc_opportunities") or [],
+    "catalog_profile": state.get("catalog_profile") or {},
+    "split_conflicts": state.get("split_conflicts") or [],
+    "registration_actions": state.get("registration_actions") or [],
+    "follow_up_actions": state.get("follow_up_actions") or [],
+  }
 
 
 @router.get("/artists/{artist_id}/agent-trace/{run_id}")

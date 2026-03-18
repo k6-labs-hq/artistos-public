@@ -10,6 +10,7 @@ Method | HTTP request | Description
 [**dashboard_flow_artists_artist_id_dashboard_flow_get**](DashboardApi.md#dashboard_flow_artists_artist_id_dashboard_flow_get) | **GET** /artists/{artist_id}/dashboard/flow | Dashboard Flow
 [**export_full_transparency_artists_artist_id_export_full_transparency_get**](DashboardApi.md#export_full_transparency_artists_artist_id_export_full_transparency_get) | **GET** /artists/{artist_id}/export/full-transparency | Export Full Transparency
 [**export_guidance_artists_artist_id_dashboard_export_guidance_get**](DashboardApi.md#export_guidance_artists_artist_id_dashboard_export_guidance_get) | **GET** /artists/{artist_id}/dashboard/export-guidance | Export Guidance
+[**get_agents_status_artists_artist_id_agents_status_get**](DashboardApi.md#get_agents_status_artists_artist_id_agents_status_get) | **GET** /artists/{artist_id}/agents/status | Get Agents Status
 [**get_artist_dashboard_artists_artist_id_dashboard_get**](DashboardApi.md#get_artist_dashboard_artists_artist_id_dashboard_get) | **GET** /artists/{artist_id}/dashboard | Get Artist Dashboard
 [**get_dashboard_ui_dashboard_ui_get**](DashboardApi.md#get_dashboard_ui_dashboard_ui_get) | **GET** /dashboard/ui | Get Dashboard Ui
 
@@ -393,6 +394,74 @@ Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **artist_id** | **str**|  | 
  **platform** | **str**|  | [optional] [default to &#39;youtube&#39;]
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_agents_status_artists_artist_id_agents_status_get**
+> object get_agents_status_artists_artist_id_agents_status_get(artist_id, authorization=authorization)
+
+Get Agents Status
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.DashboardApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+    authorization = 'authorization_example' # str |  (optional)
+
+    try:
+        # Get Agents Status
+        api_response = api_instance.get_agents_status_artists_artist_id_agents_status_get(artist_id, authorization=authorization)
+        print("The response of DashboardApi->get_agents_status_artists_artist_id_agents_status_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling DashboardApi->get_agents_status_artists_artist_id_agents_status_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+ **authorization** | **str**|  | [optional] 
 
 ### Return type
 

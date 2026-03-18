@@ -14,6 +14,7 @@ Method | HTTP request | Description
 [**claim_playbook_claims_claim_id_playbook_get**](ClaimsApi.md#claim_playbook_claims_claim_id_playbook_get) | **GET** /claims/{claim_id}/playbook | Claim Playbook
 [**claim_sla_prediction_claims_claim_id_sla_prediction_get**](ClaimsApi.md#claim_sla_prediction_claims_claim_id_sla_prediction_get) | **GET** /claims/{claim_id}/sla-prediction | Claim Sla Prediction
 [**claim_strength_explainer_claims_claim_id_strength_explainer_get**](ClaimsApi.md#claim_strength_explainer_claims_claim_id_strength_explainer_get) | **GET** /claims/{claim_id}/strength-explainer | Claim Strength Explainer
+[**create_claim_for_artist_artists_artist_id_claims_post**](ClaimsApi.md#create_claim_for_artist_artists_artist_id_claims_post) | **POST** /artists/{artist_id}/claims | Create Claim For Artist
 [**escalate_legal_claims_claim_id_escalate_legal_post**](ClaimsApi.md#escalate_legal_claims_claim_id_escalate_legal_post) | **POST** /claims/{claim_id}/escalate-legal | Escalate Legal
 [**export_evidence_packet_claims_claim_id_evidence_export_get**](ClaimsApi.md#export_evidence_packet_claims_claim_id_evidence_export_get) | **GET** /claims/{claim_id}/evidence/export | Export Evidence Packet
 [**export_evidence_packet_expert_mode_claims_claim_id_evidence_export_post**](ClaimsApi.md#export_evidence_packet_expert_mode_claims_claim_id_evidence_export_post) | **POST** /claims/{claim_id}/evidence/export | Export Evidence Packet Expert Mode
@@ -21,6 +22,7 @@ Method | HTTP request | Description
 [**generate_attorney_evidence_file_claims_claim_id_attorney_evidence_post**](ClaimsApi.md#generate_attorney_evidence_file_claims_claim_id_attorney_evidence_post) | **POST** /claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File
 [**generate_evidence_claims_claim_id_evidence_post**](ClaimsApi.md#generate_evidence_claims_claim_id_evidence_post) | **POST** /claims/{claim_id}/evidence | Generate Evidence
 [**get_claim_claims_claim_id_get**](ClaimsApi.md#get_claim_claims_claim_id_get) | **GET** /claims/{claim_id} | Get Claim
+[**get_evidence_claims_claim_id_evidence_get**](ClaimsApi.md#get_evidence_claims_claim_id_evidence_get) | **GET** /claims/{claim_id}/evidence | Get Evidence
 [**list_claims_artists_artist_id_claims_get**](ClaimsApi.md#list_claims_artists_artist_id_claims_get) | **GET** /artists/{artist_id}/claims | List Claims
 [**reconcile_claim_claims_claim_id_reconcile_post**](ClaimsApi.md#reconcile_claim_claims_claim_id_reconcile_post) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 [**verify_evidence_packet_claims_claim_id_evidence_verify_get**](ClaimsApi.md#verify_evidence_packet_claims_claim_id_evidence_verify_get) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
@@ -687,6 +689,78 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **create_claim_for_artist_artists_artist_id_claims_post**
+> ClaimSchema create_claim_for_artist_artists_artist_id_claims_post(artist_id, claim_create_request, authorization=authorization)
+
+Create Claim For Artist
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.models.claim_create_request import ClaimCreateRequest
+from xr7_sdk.models.claim_schema import ClaimSchema
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.ClaimsApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+    claim_create_request = xr7_sdk.ClaimCreateRequest() # ClaimCreateRequest | 
+    authorization = 'authorization_example' # str |  (optional)
+
+    try:
+        # Create Claim For Artist
+        api_response = api_instance.create_claim_for_artist_artists_artist_id_claims_post(artist_id, claim_create_request, authorization=authorization)
+        print("The response of ClaimsApi->create_claim_for_artist_artists_artist_id_claims_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling ClaimsApi->create_claim_for_artist_artists_artist_id_claims_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+ **claim_create_request** | [**ClaimCreateRequest**](ClaimCreateRequest.md)|  | 
+ **authorization** | **str**|  | [optional] 
+
+### Return type
+
+[**ClaimSchema**](ClaimSchema.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**201** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **escalate_legal_claims_claim_id_escalate_legal_post**
 > object escalate_legal_claims_claim_id_escalate_legal_post(claim_id)
 
@@ -1145,6 +1219,74 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**ClaimSchema**](ClaimSchema.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_evidence_claims_claim_id_evidence_get**
+> object get_evidence_claims_claim_id_evidence_get(claim_id, authorization=authorization)
+
+Get Evidence
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.ClaimsApi(api_client)
+    claim_id = 'claim_id_example' # str | 
+    authorization = 'authorization_example' # str |  (optional)
+
+    try:
+        # Get Evidence
+        api_response = api_instance.get_evidence_claims_claim_id_evidence_get(claim_id, authorization=authorization)
+        print("The response of ClaimsApi->get_evidence_claims_claim_id_evidence_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling ClaimsApi->get_evidence_claims_claim_id_evidence_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **claim_id** | **str**|  | 
+ **authorization** | **str**|  | [optional] 
+
+### Return type
+
+**object**
 
 ### Authorization
 

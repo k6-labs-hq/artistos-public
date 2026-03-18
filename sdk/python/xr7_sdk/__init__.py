@@ -22,6 +22,7 @@ __all__ = [
     "AdminApi",
     "AnomaliesApi",
     "ArtistsApi",
+    "AuthApi",
     "B2bApi",
     "BillingApi",
     "BrandingApi",
@@ -34,6 +35,7 @@ __all__ = [
     "ExpansionApi",
     "FetchersApi",
     "ForensicApiApi",
+    "IdentityApi",
     "IngestionApi",
     "IntelligenceApi",
     "NotificationsApi",
@@ -65,6 +67,7 @@ __all__ = [
     "ApiException",
     "APIIngestionRequest",
     "AdminAuditLogSchema",
+    "AdminLoginRequest",
     "AdviceRequest",
     "AdviceResponse",
     "AnomalyCategory",
@@ -72,7 +75,9 @@ __all__ = [
     "AnomalySeverity",
     "AnomalyStatus",
     "ArtistCreate",
+    "ArtistIdentityMatchSchema",
     "ArtistLifecycleStatus",
+    "ArtistLoginRequest",
     "ArtistPreferenceUpdateRequest",
     "ArtistSchema",
     "AssignReviewItemRequest",
@@ -84,6 +89,7 @@ __all__ = [
     "BrandingProfileUpsertRequest",
     "BulkOnboardRequest",
     "CatalogConfirmationSchema",
+    "ClaimCreateRequest",
     "ClaimRequest",
     "ClaimSchema",
     "ClaimStatus",
@@ -104,6 +110,10 @@ __all__ = [
     "FounderCohortLimitUpdateRequest",
     "HTTPValidationError",
     "HelpArticleCreateRequest",
+    "IdentityConfidenceBand",
+    "IdentityDecisionRequest",
+    "IdentityDecisionStatus",
+    "IdentityMatchRequest",
     "ImmutableLedgerEntrySchema",
     "InviteRequest",
     "LedgerIngestRequest",
@@ -162,6 +172,7 @@ __all__ = [
     "TeamRole",
     "TermsAcceptRequest",
     "TermsAcceptanceSchema",
+    "TokenResponse",
     "TrolleyTransactionSchema",
     "TrolleyTxnStatus",
     "TrolleyTxnType",
@@ -186,6 +197,7 @@ from xr7_sdk.api.recovery_intelligence_llm_api import RecoveryIntelligenceLLMApi
 from xr7_sdk.api.admin_api import AdminApi as AdminApi
 from xr7_sdk.api.anomalies_api import AnomaliesApi as AnomaliesApi
 from xr7_sdk.api.artists_api import ArtistsApi as ArtistsApi
+from xr7_sdk.api.auth_api import AuthApi as AuthApi
 from xr7_sdk.api.b2b_api import B2bApi as B2bApi
 from xr7_sdk.api.billing_api import BillingApi as BillingApi
 from xr7_sdk.api.branding_api import BrandingApi as BrandingApi
@@ -198,6 +210,7 @@ from xr7_sdk.api.earnings_api import EarningsApi as EarningsApi
 from xr7_sdk.api.expansion_api import ExpansionApi as ExpansionApi
 from xr7_sdk.api.fetchers_api import FetchersApi as FetchersApi
 from xr7_sdk.api.forensic_api_api import ForensicApiApi as ForensicApiApi
+from xr7_sdk.api.identity_api import IdentityApi as IdentityApi
 from xr7_sdk.api.ingestion_api import IngestionApi as IngestionApi
 from xr7_sdk.api.intelligence_api import IntelligenceApi as IntelligenceApi
 from xr7_sdk.api.notifications_api import NotificationsApi as NotificationsApi
@@ -233,6 +246,7 @@ from xr7_sdk.exceptions import ApiException as ApiException
 # import models into sdk package
 from xr7_sdk.models.api_ingestion_request import APIIngestionRequest as APIIngestionRequest
 from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema as AdminAuditLogSchema
+from xr7_sdk.models.admin_login_request import AdminLoginRequest as AdminLoginRequest
 from xr7_sdk.models.advice_request import AdviceRequest as AdviceRequest
 from xr7_sdk.models.advice_response import AdviceResponse as AdviceResponse
 from xr7_sdk.models.anomaly_category import AnomalyCategory as AnomalyCategory
@@ -240,7 +254,9 @@ from xr7_sdk.models.anomaly_schema import AnomalySchema as AnomalySchema
 from xr7_sdk.models.anomaly_severity import AnomalySeverity as AnomalySeverity
 from xr7_sdk.models.anomaly_status import AnomalyStatus as AnomalyStatus
 from xr7_sdk.models.artist_create import ArtistCreate as ArtistCreate
+from xr7_sdk.models.artist_identity_match_schema import ArtistIdentityMatchSchema as ArtistIdentityMatchSchema
 from xr7_sdk.models.artist_lifecycle_status import ArtistLifecycleStatus as ArtistLifecycleStatus
+from xr7_sdk.models.artist_login_request import ArtistLoginRequest as ArtistLoginRequest
 from xr7_sdk.models.artist_preference_update_request import ArtistPreferenceUpdateRequest as ArtistPreferenceUpdateRequest
 from xr7_sdk.models.artist_schema import ArtistSchema as ArtistSchema
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest as AssignReviewItemRequest
@@ -252,6 +268,7 @@ from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRe
 from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest as BrandingProfileUpsertRequest
 from xr7_sdk.models.bulk_onboard_request import BulkOnboardRequest as BulkOnboardRequest
 from xr7_sdk.models.catalog_confirmation_schema import CatalogConfirmationSchema as CatalogConfirmationSchema
+from xr7_sdk.models.claim_create_request import ClaimCreateRequest as ClaimCreateRequest
 from xr7_sdk.models.claim_request import ClaimRequest as ClaimRequest
 from xr7_sdk.models.claim_schema import ClaimSchema as ClaimSchema
 from xr7_sdk.models.claim_status import ClaimStatus as ClaimStatus
@@ -272,6 +289,10 @@ from xr7_sdk.models.founder_assign_request import FounderAssignRequest as Founde
 from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest as FounderCohortLimitUpdateRequest
 from xr7_sdk.models.http_validation_error import HTTPValidationError as HTTPValidationError
 from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest as HelpArticleCreateRequest
+from xr7_sdk.models.identity_confidence_band import IdentityConfidenceBand as IdentityConfidenceBand
+from xr7_sdk.models.identity_decision_request import IdentityDecisionRequest as IdentityDecisionRequest
+from xr7_sdk.models.identity_decision_status import IdentityDecisionStatus as IdentityDecisionStatus
+from xr7_sdk.models.identity_match_request import IdentityMatchRequest as IdentityMatchRequest
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema as ImmutableLedgerEntrySchema
 from xr7_sdk.models.invite_request import InviteRequest as InviteRequest
 from xr7_sdk.models.ledger_ingest_request import LedgerIngestRequest as LedgerIngestRequest
@@ -330,6 +351,7 @@ from xr7_sdk.models.team_member_schema import TeamMemberSchema as TeamMemberSche
 from xr7_sdk.models.team_role import TeamRole as TeamRole
 from xr7_sdk.models.terms_accept_request import TermsAcceptRequest as TermsAcceptRequest
 from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema as TermsAcceptanceSchema
+from xr7_sdk.models.token_response import TokenResponse as TokenResponse
 from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema as TrolleyTransactionSchema
 from xr7_sdk.models.trolley_txn_status import TrolleyTxnStatus as TrolleyTxnStatus
 from xr7_sdk.models.trolley_txn_type import TrolleyTxnType as TrolleyTxnType

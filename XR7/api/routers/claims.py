@@ -11,6 +11,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
+from XR7.api.routers.auth import enforce_claim_access, get_auth_payload, require_artist_access
 from XR7.agents.orchestrator import run_export_prep_pipeline_sync
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
@@ -220,6 +221,11 @@ class AttorneyEvidenceRequest(BaseModel):
     attorney_engagement_deadline: datetime | None = None
 
 
+class ClaimCreateRequest(BaseModel):
+    anomaly_id: str
+    claim_type: str = "RECOVERY"
+
+
 def _evidence_summary_lines(packet: dict, brand: dict | None = None) -> list[str]:
     brand_payload = brand or {}
     anomaly = packet.get("anomaly", {})
@@ -320,6 +326,36 @@ def get_claim(claim_id: str, db: Session = Depends(get_db)):
     return claim
 
 
+@router.post("/artists/{artist_id}/claims", response_model=ClaimSchema, status_code=201)
+def create_claim_for_artist(
+    artist_id: str,
+    payload: ClaimCreateRequest,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_artist_access),
+):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    anomaly = (
+        db.query(Anomaly)
+        .filter(Anomaly.id == payload.anomaly_id, Anomaly.artist_id == artist_id)
+        .first()
+    )
+    if not anomaly:
+        raise HTTPException(status_code=404, detail="Anomaly not found for artist")
+
+    existing = db.query(Claim).filter(Claim.anomaly_id == anomaly.id).first()
+    if existing:
+        raise HTTPException(status_code=409, detail="Claim already exists for anomaly")
+
+    claim = ClaimsOrchestrator(db).create_claim(
+        anomaly_id=anomaly.id,
+        claim_type=payload.claim_type.strip() or "RECOVERY",
+    )
+    return claim
+
+
 @router.post("/claims/{claim_id}/advance", response_model=ClaimSchema)
 def advance_claim(claim_id: str, db: Session = Depends(get_db)):
     orchestrator = ClaimsOrchestrator(db)
@@ -327,7 +363,6 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
         existing = db.query(Claim).filter(Claim.id == claim_id).first()
         if not existing:
             raise HTTPException(status_code=404, detail="Claim not found")
-
         # Only enforce stronger evidence quality checks when packet exists.
         if isinstance(existing.evidence, dict) and existing.evidence:
             anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
@@ -428,6 +463,21 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
         return packet
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/claims/{claim_id}/evidence")
+def get_evidence(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    auth_payload: dict = Depends(get_auth_payload),
+):
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    enforce_claim_access(claim.artist_id, auth_payload)
+    if isinstance(claim.evidence, dict) and claim.evidence:
+        return claim.evidence
+    return ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
 
 
 def _coalesce_supporting_documents(claim: Claim) -> list[dict]:

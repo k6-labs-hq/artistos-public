@@ -5,6 +5,7 @@ from xr7_sdk.api.recovery_intelligence_llm_api import RecoveryIntelligenceLLMApi
 from xr7_sdk.api.admin_api import AdminApi
 from xr7_sdk.api.anomalies_api import AnomaliesApi
 from xr7_sdk.api.artists_api import ArtistsApi
+from xr7_sdk.api.auth_api import AuthApi
 from xr7_sdk.api.b2b_api import B2bApi
 from xr7_sdk.api.billing_api import BillingApi
 from xr7_sdk.api.branding_api import BrandingApi
@@ -17,6 +18,7 @@ from xr7_sdk.api.earnings_api import EarningsApi
 from xr7_sdk.api.expansion_api import ExpansionApi
 from xr7_sdk.api.fetchers_api import FetchersApi
 from xr7_sdk.api.forensic_api_api import ForensicApiApi
+from xr7_sdk.api.identity_api import IdentityApi
 from xr7_sdk.api.ingestion_api import IngestionApi
 from xr7_sdk.api.intelligence_api import IntelligenceApi
 from xr7_sdk.api.notifications_api import NotificationsApi

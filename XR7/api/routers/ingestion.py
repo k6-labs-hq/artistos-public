@@ -40,14 +40,17 @@ from XR7.ingestion.statement_parser import parse_csv, parse_statement_file, SUPP
 from XR7.models.artist import Artist
 from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
+from XR7.models.claim import Claim
 from XR7.models.event import Event, EventType
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.recovery.statute_tracker import classify_anomalies
+from XR7.recovery.orchestrator import ClaimsOrchestrator
 from XR7.services.artist_lifecycle import promote_to_active
 from XR7.services.founder_program import handle_founder_notifications
+from XR7.services.identity_matching import persist_identity_match
 from XR7.services.statement_signal_extractor import extract_statement_signals, merge_statement_signals, to_json
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
@@ -388,7 +391,13 @@ async def upload_statement(
         except Exception:  # noqa: BLE001
             logger.exception("Failed to enqueue HubSpot first statement sync", extra={"artist_id": artist_id})
 
+    identity_match = None
     if status != "FAILED":
+        try:
+            identity_match = persist_identity_match(db, artist, statement, statement_signals)
+        except Exception:  # noqa: BLE001
+            logger.exception("Identity auto-match failed (non-blocking)", extra={"artist_id": artist_id, "statement_id": statement.id})
+
         try:
             hubspot_sync_statement_ingestion.delay(
                 artist_id,
@@ -419,7 +428,32 @@ async def upload_statement(
             },
         )
 
-    return statement
+    if status != "FAILED" and new_anomalies > 0:
+        existing_claims = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
+        if int(existing_claims) == 0:
+            first_anomaly = (
+                db.query(Anomaly)
+                .filter(Anomaly.artist_id == artist_id)
+                .order_by(Anomaly.created_at.desc())
+                .first()
+            )
+            if first_anomaly:
+                try:
+                    ClaimsOrchestrator(db).create_claim(first_anomaly.id, claim_type="AUTO_DRAFT")
+                except Exception:  # noqa: BLE001
+                    logger.exception(
+                        "Failed to auto-draft first claim after statement upload",
+                        extra={"artist_id": artist_id, "anomaly_id": first_anomaly.id},
+                    )
+    statement_payload = StatementSchema.model_validate(statement).model_dump(mode="json")
+    if identity_match is not None:
+        statement_payload["identity_match"] = {
+            "match_id": identity_match.id,
+            "confidence_score": identity_match.confidence_score,
+            "confidence_band": str(identity_match.confidence_band),
+            "decision_status": str(identity_match.decision_status),
+        }
+    return statement_payload
 
 
 @router.post("/artists/{artist_id}/statements/upload-batch")

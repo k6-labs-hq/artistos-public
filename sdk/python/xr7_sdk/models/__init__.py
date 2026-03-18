@@ -15,6 +15,7 @@
 # import models into model package
 from xr7_sdk.models.api_ingestion_request import APIIngestionRequest
 from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema
+from xr7_sdk.models.admin_login_request import AdminLoginRequest
 from xr7_sdk.models.advice_request import AdviceRequest
 from xr7_sdk.models.advice_response import AdviceResponse
 from xr7_sdk.models.anomaly_category import AnomalyCategory
@@ -22,7 +23,9 @@ from xr7_sdk.models.anomaly_schema import AnomalySchema
 from xr7_sdk.models.anomaly_severity import AnomalySeverity
 from xr7_sdk.models.anomaly_status import AnomalyStatus
 from xr7_sdk.models.artist_create import ArtistCreate
+from xr7_sdk.models.artist_identity_match_schema import ArtistIdentityMatchSchema
 from xr7_sdk.models.artist_lifecycle_status import ArtistLifecycleStatus
+from xr7_sdk.models.artist_login_request import ArtistLoginRequest
 from xr7_sdk.models.artist_preference_update_request import ArtistPreferenceUpdateRequest
 from xr7_sdk.models.artist_schema import ArtistSchema
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest
@@ -34,6 +37,7 @@ from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRe
 from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest
 from xr7_sdk.models.bulk_onboard_request import BulkOnboardRequest
 from xr7_sdk.models.catalog_confirmation_schema import CatalogConfirmationSchema
+from xr7_sdk.models.claim_create_request import ClaimCreateRequest
 from xr7_sdk.models.claim_request import ClaimRequest
 from xr7_sdk.models.claim_schema import ClaimSchema
 from xr7_sdk.models.claim_status import ClaimStatus
@@ -54,6 +58,10 @@ from xr7_sdk.models.founder_assign_request import FounderAssignRequest
 from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest
 from xr7_sdk.models.http_validation_error import HTTPValidationError
 from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest
+from xr7_sdk.models.identity_confidence_band import IdentityConfidenceBand
+from xr7_sdk.models.identity_decision_request import IdentityDecisionRequest
+from xr7_sdk.models.identity_decision_status import IdentityDecisionStatus
+from xr7_sdk.models.identity_match_request import IdentityMatchRequest
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
 from xr7_sdk.models.invite_request import InviteRequest
 from xr7_sdk.models.ledger_ingest_request import LedgerIngestRequest
@@ -112,6 +120,7 @@ from xr7_sdk.models.team_member_schema import TeamMemberSchema
 from xr7_sdk.models.team_role import TeamRole
 from xr7_sdk.models.terms_accept_request import TermsAcceptRequest
 from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema
+from xr7_sdk.models.token_response import TokenResponse
 from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema
 from xr7_sdk.models.trolley_txn_status import TrolleyTxnStatus
 from xr7_sdk.models.trolley_txn_type import TrolleyTxnType

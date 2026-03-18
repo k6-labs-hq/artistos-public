@@ -80,6 +80,9 @@ All URIs are relative to *http://localhost*
 *ArtistsApi* | [**providerConnectionStatusArtistsArtistIdConnectProviderStatusGet**](docs/ArtistsApi.md#providerconnectionstatusartistsartistidconnectproviderstatusget) | **GET** /artists/{artist_id}/connect/{provider}/status | Provider Connection Status
 *ArtistsApi* | [**updateArtistPreferencesArtistsArtistIdPreferencesPut**](docs/ArtistsApi.md#updateartistpreferencesartistsartistidpreferencesput) | **PUT** /artists/{artist_id}/preferences | Update Artist Preferences
 *ArtistsApi* | [**weeklyDigestArtistsArtistIdDigestWeeklyGet**](docs/ArtistsApi.md#weeklydigestartistsartistiddigestweeklyget) | **GET** /artists/{artist_id}/digest/weekly | Weekly Digest
+*AuthApi* | [**adminLoginAuthLoginAdminPost**](docs/AuthApi.md#adminloginauthloginadminpost) | **POST** /auth/login/admin | Admin Login
+*AuthApi* | [**artistLoginAuthLoginArtistPost**](docs/AuthApi.md#artistloginauthloginartistpost) | **POST** /auth/login/artist | Artist Login
+*AuthApi* | [**authMeAuthMeGet**](docs/AuthApi.md#authmeauthmeget) | **GET** /auth/me | Auth Me
 *B2bApi* | [**b2bDashboardB2bOrgOrgIdDashboardGet**](docs/B2bApi.md#b2bdashboardb2borgorgiddashboardget) | **GET** /b2b/org/{org_id}/dashboard | B2B Dashboard
 *B2bApi* | [**bulkOnboardB2bOrgOrgIdArtistsBulkOnboardPost**](docs/B2bApi.md#bulkonboardb2borgorgidartistsbulkonboardpost) | **POST** /b2b/org/{org_id}/artists/bulk-onboard | Bulk Onboard
 *B2bApi* | [**managementAnomaliesDrilldownManagementOrgIdAnomaliesGet**](docs/B2bApi.md#managementanomaliesdrilldownmanagementorgidanomaliesget) | **GET** /management/{org_id}/anomalies | Management Anomalies Drilldown
@@ -109,6 +112,7 @@ All URIs are relative to *http://localhost*
 *ClaimsApi* | [**claimPlaybookClaimsClaimIdPlaybookGet**](docs/ClaimsApi.md#claimplaybookclaimsclaimidplaybookget) | **GET** /claims/{claim_id}/playbook | Claim Playbook
 *ClaimsApi* | [**claimSlaPredictionClaimsClaimIdSlaPredictionGet**](docs/ClaimsApi.md#claimslapredictionclaimsclaimidslapredictionget) | **GET** /claims/{claim_id}/sla-prediction | Claim Sla Prediction
 *ClaimsApi* | [**claimStrengthExplainerClaimsClaimIdStrengthExplainerGet**](docs/ClaimsApi.md#claimstrengthexplainerclaimsclaimidstrengthexplainerget) | **GET** /claims/{claim_id}/strength-explainer | Claim Strength Explainer
+*ClaimsApi* | [**createClaimForArtistArtistsArtistIdClaimsPost**](docs/ClaimsApi.md#createclaimforartistartistsartistidclaimspost) | **POST** /artists/{artist_id}/claims | Create Claim For Artist
 *ClaimsApi* | [**escalateLegalClaimsClaimIdEscalateLegalPost**](docs/ClaimsApi.md#escalatelegalclaimsclaimidescalatelegalpost) | **POST** /claims/{claim_id}/escalate-legal | Escalate Legal
 *ClaimsApi* | [**exportEvidencePacketClaimsClaimIdEvidenceExportGet**](docs/ClaimsApi.md#exportevidencepacketclaimsclaimidevidenceexportget) | **GET** /claims/{claim_id}/evidence/export | Export Evidence Packet
 *ClaimsApi* | [**exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPost**](docs/ClaimsApi.md#exportevidencepacketexpertmodeclaimsclaimidevidenceexportpost) | **POST** /claims/{claim_id}/evidence/export | Export Evidence Packet Expert Mode
@@ -116,6 +120,7 @@ All URIs are relative to *http://localhost*
 *ClaimsApi* | [**generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost**](docs/ClaimsApi.md#generateattorneyevidencefileclaimsclaimidattorneyevidencepost) | **POST** /claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File
 *ClaimsApi* | [**generateEvidenceClaimsClaimIdEvidencePost**](docs/ClaimsApi.md#generateevidenceclaimsclaimidevidencepost) | **POST** /claims/{claim_id}/evidence | Generate Evidence
 *ClaimsApi* | [**getClaimClaimsClaimIdGet**](docs/ClaimsApi.md#getclaimclaimsclaimidget) | **GET** /claims/{claim_id} | Get Claim
+*ClaimsApi* | [**getEvidenceClaimsClaimIdEvidenceGet**](docs/ClaimsApi.md#getevidenceclaimsclaimidevidenceget) | **GET** /claims/{claim_id}/evidence | Get Evidence
 *ClaimsApi* | [**listClaimsArtistsArtistIdClaimsGet**](docs/ClaimsApi.md#listclaimsartistsartistidclaimsget) | **GET** /artists/{artist_id}/claims | List Claims
 *ClaimsApi* | [**reconcileClaimClaimsClaimIdReconcilePost**](docs/ClaimsApi.md#reconcileclaimclaimsclaimidreconcilepost) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 *ClaimsApi* | [**verifyEvidencePacketClaimsClaimIdEvidenceVerifyGet**](docs/ClaimsApi.md#verifyevidencepacketclaimsclaimidevidenceverifyget) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
@@ -130,6 +135,7 @@ All URIs are relative to *http://localhost*
 *DashboardApi* | [**dashboardFlowArtistsArtistIdDashboardFlowGet**](docs/DashboardApi.md#dashboardflowartistsartistiddashboardflowget) | **GET** /artists/{artist_id}/dashboard/flow | Dashboard Flow
 *DashboardApi* | [**exportFullTransparencyArtistsArtistIdExportFullTransparencyGet**](docs/DashboardApi.md#exportfulltransparencyartistsartistidexportfulltransparencyget) | **GET** /artists/{artist_id}/export/full-transparency | Export Full Transparency
 *DashboardApi* | [**exportGuidanceArtistsArtistIdDashboardExportGuidanceGet**](docs/DashboardApi.md#exportguidanceartistsartistiddashboardexportguidanceget) | **GET** /artists/{artist_id}/dashboard/export-guidance | Export Guidance
+*DashboardApi* | [**getAgentsStatusArtistsArtistIdAgentsStatusGet**](docs/DashboardApi.md#getagentsstatusartistsartistidagentsstatusget) | **GET** /artists/{artist_id}/agents/status | Get Agents Status
 *DashboardApi* | [**getArtistDashboardArtistsArtistIdDashboardGet**](docs/DashboardApi.md#getartistdashboardartistsartistiddashboardget) | **GET** /artists/{artist_id}/dashboard | Get Artist Dashboard
 *DashboardApi* | [**getDashboardUiDashboardUiGet**](docs/DashboardApi.md#getdashboarduidashboarduiget) | **GET** /dashboard/ui | Get Dashboard Ui
 *DefaultApi* | [**healthHealthGet**](docs/DefaultApi.md#healthhealthget) | **GET** /health | Health
@@ -176,6 +182,10 @@ All URIs are relative to *http://localhost*
 *ForensicApiApi* | [**statementsStatusStatementsStatementIdStatusGet**](docs/ForensicApiApi.md#statementsstatusstatementsstatementidstatusget) | **GET** /statements/{statement_id}/status | Statements Status
 *ForensicApiApi* | [**statementsUploadStatementsUploadPost**](docs/ForensicApiApi.md#statementsuploadstatementsuploadpost) | **POST** /statements/upload | Statements Upload
 *ForensicApiApi* | [**varianceEvidenceVarianceVarianceIdEvidenceGet**](docs/ForensicApiApi.md#varianceevidencevariancevarianceidevidenceget) | **GET** /variance/{variance_id}/evidence | Variance Evidence
+*IdentityApi* | [**autoMatchIdentityArtistsArtistIdIdentityAutoMatchPost**](docs/IdentityApi.md#automatchidentityartistsartistididentityautomatchpost) | **POST** /artists/{artist_id}/identity/auto-match | Auto Match Identity
+*IdentityApi* | [**decideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPost**](docs/IdentityApi.md#decideidentitymatchartistsartistididentitymatchesmatchiddecisionpost) | **POST** /artists/{artist_id}/identity/matches/{match_id}/decision | Decide Identity Match
+*IdentityApi* | [**getIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet**](docs/IdentityApi.md#getidentitymatchauditartistsartistididentitymatchesmatchidauditget) | **GET** /artists/{artist_id}/identity/matches/{match_id}/audit | Get Identity Match Audit
+*IdentityApi* | [**listIdentityMatchesArtistsArtistIdIdentityMatchesGet**](docs/IdentityApi.md#listidentitymatchesartistsartistididentitymatchesget) | **GET** /artists/{artist_id}/identity/matches | List Identity Matches
 *IngestionApi* | [**connectRegionalGlobalArtistsArtistIdConnectRegionalGlobalPost**](docs/IngestionApi.md#connectregionalglobalartistsartistidconnectregionalglobalpost) | **POST** /artists/{artist_id}/connect/regional-global | Connect Regional Global
 *IngestionApi* | [**connectSoundexchangeMlcArtistsArtistIdConnectSoundexchangeMlcPost**](docs/IngestionApi.md#connectsoundexchangemlcartistsartistidconnectsoundexchangemlcpost) | **POST** /artists/{artist_id}/connect/soundexchange-mlc | Connect Soundexchange Mlc
 *IngestionApi* | [**getStatementArtistsArtistIdStatementsStatementIdGet**](docs/IngestionApi.md#getstatementartistsartistidstatementsstatementidget) | **GET** /artists/{artist_id}/statements/{statement_id} | Get Statement
@@ -331,6 +341,7 @@ All URIs are relative to *http://localhost*
 
 - [APIIngestionRequest](docs/APIIngestionRequest.md)
 - [AdminAuditLogSchema](docs/AdminAuditLogSchema.md)
+- [AdminLoginRequest](docs/AdminLoginRequest.md)
 - [AdviceRequest](docs/AdviceRequest.md)
 - [AdviceResponse](docs/AdviceResponse.md)
 - [AnomalyCategory](docs/AnomalyCategory.md)
@@ -338,7 +349,9 @@ All URIs are relative to *http://localhost*
 - [AnomalySeverity](docs/AnomalySeverity.md)
 - [AnomalyStatus](docs/AnomalyStatus.md)
 - [ArtistCreate](docs/ArtistCreate.md)
+- [ArtistIdentityMatchSchema](docs/ArtistIdentityMatchSchema.md)
 - [ArtistLifecycleStatus](docs/ArtistLifecycleStatus.md)
+- [ArtistLoginRequest](docs/ArtistLoginRequest.md)
 - [ArtistPreferenceUpdateRequest](docs/ArtistPreferenceUpdateRequest.md)
 - [ArtistSchema](docs/ArtistSchema.md)
 - [AssignReviewItemRequest](docs/AssignReviewItemRequest.md)
@@ -350,6 +363,7 @@ All URIs are relative to *http://localhost*
 - [BrandingProfileUpsertRequest](docs/BrandingProfileUpsertRequest.md)
 - [BulkOnboardRequest](docs/BulkOnboardRequest.md)
 - [CatalogConfirmationSchema](docs/CatalogConfirmationSchema.md)
+- [ClaimCreateRequest](docs/ClaimCreateRequest.md)
 - [ClaimRequest](docs/ClaimRequest.md)
 - [ClaimSchema](docs/ClaimSchema.md)
 - [ClaimStatus](docs/ClaimStatus.md)
@@ -370,6 +384,10 @@ All URIs are relative to *http://localhost*
 - [FounderCohortLimitUpdateRequest](docs/FounderCohortLimitUpdateRequest.md)
 - [HTTPValidationError](docs/HTTPValidationError.md)
 - [HelpArticleCreateRequest](docs/HelpArticleCreateRequest.md)
+- [IdentityConfidenceBand](docs/IdentityConfidenceBand.md)
+- [IdentityDecisionRequest](docs/IdentityDecisionRequest.md)
+- [IdentityDecisionStatus](docs/IdentityDecisionStatus.md)
+- [IdentityMatchRequest](docs/IdentityMatchRequest.md)
 - [ImmutableLedgerEntrySchema](docs/ImmutableLedgerEntrySchema.md)
 - [InviteRequest](docs/InviteRequest.md)
 - [LedgerIngestRequest](docs/LedgerIngestRequest.md)
@@ -428,6 +446,7 @@ All URIs are relative to *http://localhost*
 - [TeamRole](docs/TeamRole.md)
 - [TermsAcceptRequest](docs/TermsAcceptRequest.md)
 - [TermsAcceptanceSchema](docs/TermsAcceptanceSchema.md)
+- [TokenResponse](docs/TokenResponse.md)
 - [TrolleyTransactionSchema](docs/TrolleyTransactionSchema.md)
 - [TrolleyTxnStatus](docs/TrolleyTxnStatus.md)
 - [TrolleyTxnType](docs/TrolleyTxnType.md)

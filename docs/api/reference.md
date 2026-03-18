@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 273
+Total endpoints: 283
 
 ## Endpoint Table
 
@@ -27,6 +27,7 @@ Total endpoints: 273
 | artists | GET | /artists/{artist_id} | Get Artist | get_artist_artists__artist_id__get | - | ArtistSchema | curl -X GET http://localhost:8000/artists/<artist_id> |
 | public | POST | /artists/{artist_id}/advocacy/kit | Advocacy Kit | advocacy_kit_artists__artist_id__advocacy_kit_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/advocacy/kit |
 | dashboard | GET | /artists/{artist_id}/agent-trace/{run_id} | Agent Trace | agent_trace_artists__artist_id__agent_trace__run_id__get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/agent-trace/<run_id> |
+| dashboard | GET | /artists/{artist_id}/agents/status | Get Agents Status | get_agents_status_artists__artist_id__agents_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/agents/status |
 | anomalies | POST | /artists/{artist_id}/ai-music/scan-influence | Scan Ai Influence | scan_ai_influence_artists__artist_id__ai_music_scan_influence_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/ai-music/scan-influence |
 | anomalies | GET | /artists/{artist_id}/anomalies | List Anomalies | list_anomalies_artists__artist_id__anomalies_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/anomalies |
 | anomalies | POST | /artists/{artist_id}/anomalies/detect | Detect Anomalies | detect_anomalies_artists__artist_id__anomalies_detect_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/anomalies/detect |
@@ -44,6 +45,7 @@ Total endpoints: 273
 | onboarding | GET | /artists/{artist_id}/catalog/repairs | Catalog Repairs | catalog_repairs_artists__artist_id__catalog_repairs_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/catalog/repairs |
 | dashboard | POST | /artists/{artist_id}/chat/royalties | Chat Royalties | chat_royalties_artists__artist_id__chat_royalties_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/chat/royalties |
 | claims | GET | /artists/{artist_id}/claims | List Claims | list_claims_artists__artist_id__claims_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/claims |
+| claims | POST | /artists/{artist_id}/claims | Create Claim For Artist | create_claim_for_artist_artists__artist_id__claims_post | ClaimCreateRequest | ClaimSchema | curl -X POST http://localhost:8000/artists/<artist_id>/claims -H 'Content-Type: application/json' -d '{}' |
 | expansion | POST | /artists/{artist_id}/claims/templates | Generate Claim Template | generate_claim_template_artists__artist_id__claims_templates_post | ClaimTemplateRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/claims/templates -H 'Content-Type: application/json' -d '{}' |
 | trolley | POST | /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance | manual_remittance_artists__artist_id__claims__claim_id__manual_remittance_post | ManualRemittanceRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/claims/<claim_id>/manual-remittance -H 'Content-Type: application/json' -d '{}' |
 | artists | POST | /artists/{artist_id}/connect | Connect Artist | connect_artist_artists__artist_id__connect_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect |
@@ -77,6 +79,10 @@ Total endpoints: 273
 | fetchers | POST | /artists/{artist_id}/fetchers/global-social | Fetch Global Social | fetch_global_social_artists__artist_id__fetchers_global_social_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/fetchers/global-social |
 | onboarding | POST | /artists/{artist_id}/fetchers/{integration} | Run Data Fetcher | run_data_fetcher_artists__artist_id__fetchers__integration__post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/fetchers/<integration> |
 | recovery | POST | /artists/{artist_id}/fraud-scan | Fraud Scan | fraud_scan_artists__artist_id__fraud_scan_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/fraud-scan |
+| identity | POST | /artists/{artist_id}/identity/auto-match | Auto Match Identity | auto_match_identity_artists__artist_id__identity_auto_match_post | IdentityMatchRequest | ArtistIdentityMatchSchema | curl -X POST http://localhost:8000/artists/<artist_id>/identity/auto-match -H 'Content-Type: application/json' -d '{}' |
+| identity | GET | /artists/{artist_id}/identity/matches | List Identity Matches | list_identity_matches_artists__artist_id__identity_matches_get | - | object | curl -X GET http://localhost:8000/artists/<artist_id>/identity/matches |
+| identity | GET | /artists/{artist_id}/identity/matches/{match_id}/audit | Get Identity Match Audit | get_identity_match_audit_artists__artist_id__identity_matches__match_id__audit_get | - | object | curl -X GET http://localhost:8000/artists/<artist_id>/identity/matches/{match_id}/audit |
+| identity | POST | /artists/{artist_id}/identity/matches/{match_id}/decision | Decide Identity Match | decide_identity_match_artists__artist_id__identity_matches__match_id__decision_post | IdentityDecisionRequest | ArtistIdentityMatchSchema | curl -X POST http://localhost:8000/artists/<artist_id>/identity/matches/{match_id}/decision -H 'Content-Type: application/json' -d '{}' |
 | onboarding | GET | /artists/{artist_id}/ingestion/missing-data | Missing Data Status | missing_data_status_artists__artist_id__ingestion_missing_data_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/ingestion/missing-data |
 | onboarding | POST | /artists/{artist_id}/ingestion/upload-any | Upload Any Statement | upload_any_statement_artists__artist_id__ingestion_upload_any_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/ingestion/upload-any |
 | intelligence | GET | /artists/{artist_id}/intelligence/calibration | Get Calibration Health | get_calibration_health_artists__artist_id__intelligence_calibration_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/intelligence/calibration |
@@ -199,6 +205,9 @@ Total endpoints: 273
 | xr7-ugc | POST | /artists/{artist_id}/xr7/ugc/signals/ingest | Ingest Signals | ingest_signals_artists__artist_id__xr7_ugc_signals_ingest_post | UGCSignalIngestRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/xr7/ugc/signals/ingest -H 'Content-Type: application/json' -d '{}' |
 | xr7-valuation | GET | /artists/{artist_id}/xr7/valuation/snapshot | Valuation Snapshot | valuation_snapshot_artists__artist_id__xr7_valuation_snapshot_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/xr7/valuation/snapshot |
 | forensic-api | POST | /auth/connect/{provider} | Auth Connect | auth_connect_auth_connect__provider__post | - | AuthConnectResponse | curl -X POST http://localhost:8000/auth/connect/<provider> |
+| auth | POST | /auth/login/admin | Admin Login | admin_login_auth_login_admin_post | AdminLoginRequest | TokenResponse | curl -X POST http://localhost:8000/auth/login/admin -H 'Content-Type: application/json' -d '{}' |
+| auth | POST | /auth/login/artist | Artist Login | artist_login_auth_login_artist_post | ArtistLoginRequest | TokenResponse | curl -X POST http://localhost:8000/auth/login/artist -H 'Content-Type: application/json' -d '{}' |
+| auth | GET | /auth/me | Auth Me | auth_me_auth_me_get | - | object | curl -X GET http://localhost:8000/auth/me |
 | forensic-api | GET | /auth/providers | Auth Providers | auth_providers_auth_providers_get | - | object | curl -X GET http://localhost:8000/auth/providers |
 | b2b | POST | /b2b/org/{org_id}/artists/bulk-onboard | Bulk Onboard | bulk_onboard_b2b_org__org_id__artists_bulk_onboard_post | BulkOnboardRequest | - | curl -X POST http://localhost:8000/b2b/org/{org_id}/artists/bulk-onboard -H 'Content-Type: application/json' -d '{}' |
 | b2b | GET | /b2b/org/{org_id}/dashboard | B2B Dashboard | b2b_dashboard_b2b_org__org_id__dashboard_get | - | - | curl -X GET http://localhost:8000/b2b/org/{org_id}/dashboard |
@@ -218,6 +227,7 @@ Total endpoints: 273
 | claims | GET | /claims/{claim_id}/automation-plan | Claim Automation Plan | claim_automation_plan_claims__claim_id__automation_plan_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/automation-plan |
 | trolley | POST | /claims/{claim_id}/disburse | Disburse Claim | disburse_claim_claims__claim_id__disburse_post | - | TrolleyTransactionSchema | curl -X POST http://localhost:8000/claims/<claim_id>/disburse |
 | claims | POST | /claims/{claim_id}/escalate-legal | Escalate Legal | escalate_legal_claims__claim_id__escalate_legal_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/escalate-legal |
+| claims | GET | /claims/{claim_id}/evidence | Get Evidence | get_evidence_claims__claim_id__evidence_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/evidence |
 | claims | POST | /claims/{claim_id}/evidence | Generate Evidence | generate_evidence_claims__claim_id__evidence_post | - | - | curl -X POST http://localhost:8000/claims/<claim_id>/evidence |
 | expansion | POST | /claims/{claim_id}/evidence/anchor | Anchor Evidence Packet | anchor_evidence_packet_internal_immutable_log | - | EvidenceAnchorSchema | curl -X POST http://localhost:8000/claims/<claim_id>/evidence/anchor |
 | claims | GET | /claims/{claim_id}/evidence/export | Export Evidence Packet | export_evidence_packet_claims__claim_id__evidence_export_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/evidence/export |

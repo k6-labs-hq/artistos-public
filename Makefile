@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking
 
 BASE_REF ?= origin/main
 
@@ -10,6 +10,15 @@ install:
 
 run:
 	$(UVICORN) XR7.api.app:app --reload
+
+dev:
+	docker compose up --build api worker postgres redis
+
+frontend-dev:
+	cd frontend && npm install && npm run dev
+
+frontend-build:
+	cd frontend && npm install && npm run build
 
 test:
 	$(PYTHON) -m pytest tests -v

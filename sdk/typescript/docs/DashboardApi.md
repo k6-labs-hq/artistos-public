@@ -10,6 +10,7 @@ All URIs are relative to *http://localhost*
 | [**dashboardFlowArtistsArtistIdDashboardFlowGet**](DashboardApi.md#dashboardflowartistsartistiddashboardflowget) | **GET** /artists/{artist_id}/dashboard/flow | Dashboard Flow |
 | [**exportFullTransparencyArtistsArtistIdExportFullTransparencyGet**](DashboardApi.md#exportfulltransparencyartistsartistidexportfulltransparencyget) | **GET** /artists/{artist_id}/export/full-transparency | Export Full Transparency |
 | [**exportGuidanceArtistsArtistIdDashboardExportGuidanceGet**](DashboardApi.md#exportguidanceartistsartistiddashboardexportguidanceget) | **GET** /artists/{artist_id}/dashboard/export-guidance | Export Guidance |
+| [**getAgentsStatusArtistsArtistIdAgentsStatusGet**](DashboardApi.md#getagentsstatusartistsartistidagentsstatusget) | **GET** /artists/{artist_id}/agents/status | Get Agents Status |
 | [**getArtistDashboardArtistsArtistIdDashboardGet**](DashboardApi.md#getartistdashboardartistsartistiddashboardget) | **GET** /artists/{artist_id}/dashboard | Get Artist Dashboard |
 | [**getDashboardUiDashboardUiGet**](DashboardApi.md#getdashboarduidashboarduiget) | **GET** /dashboard/ui | Get Dashboard Ui |
 
@@ -396,6 +397,75 @@ example().catch(console.error);
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
 | **platform** | `string` |  | [Optional] [Defaults to `&#39;youtube&#39;`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getAgentsStatusArtistsArtistIdAgentsStatusGet
+
+> any getAgentsStatusArtistsArtistIdAgentsStatusGet(artistId, authorization)
+
+Get Agents Status
+
+### Example
+
+```ts
+import {
+  Configuration,
+  DashboardApi,
+} from '@xr7/sdk';
+import type { GetAgentsStatusArtistsArtistIdAgentsStatusGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new DashboardApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetAgentsStatusArtistsArtistIdAgentsStatusGetRequest;
+
+  try {
+    const data = await api.getAgentsStatusArtistsArtistIdAgentsStatusGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
 
 ### Return type
 

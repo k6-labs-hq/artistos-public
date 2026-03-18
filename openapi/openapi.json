@@ -533,6 +533,72 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Create Claim For Artist",
+        "operationId": "create_claim_for_artist_artists__artist_id__claims_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimCreateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/claims/{claim_id}": {
@@ -634,6 +700,60 @@
             "schema": {
               "type": "string",
               "title": "Claim Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "claims"
+        ],
+        "summary": "Get Evidence",
+        "operationId": "get_evidence_claims__claim_id__evidence_get",
+        "parameters": [
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
             }
           }
         ],
@@ -3721,6 +3841,62 @@
             "schema": {
               "type": "string",
               "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/agents/status": {
+      "get": {
+        "tags": [
+          "dashboard"
+        ],
+        "summary": "Get Agents Status",
+        "operationId": "get_agents_status_artists__artist_id__agents_status_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
             }
           }
         ],
@@ -14235,6 +14411,413 @@
         }
       }
     },
+    "/auth/login/artist": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Artist Login",
+        "operationId": "artist_login_auth_login_artist_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ArtistLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/admin": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Admin Login",
+        "operationId": "admin_login_auth_login_admin_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminLoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Auth Me",
+        "operationId": "auth_me_auth_me_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Auth Me Auth Me Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/identity/auto-match": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Auto Match Identity",
+        "operationId": "auto_match_identity_artists__artist_id__identity_auto_match_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityMatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistIdentityMatchSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/identity/matches": {
+      "get": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "List Identity Matches",
+        "operationId": "list_identity_matches_artists__artist_id__identity_matches_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Identity Matches Artists  Artist Id  Identity Matches Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/identity/matches/{match_id}/audit": {
+      "get": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Get Identity Match Audit",
+        "operationId": "get_identity_match_audit_artists__artist_id__identity_matches__match_id__audit_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Match Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Identity Match Audit Artists  Artist Id  Identity Matches  Match Id  Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/identity/matches/{match_id}/decision": {
+      "post": {
+        "tags": [
+          "identity"
+        ],
+        "summary": "Decide Identity Match",
+        "operationId": "decide_identity_match_artists__artist_id__identity_matches__match_id__decision_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Match Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IdentityDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtistIdentityMatchSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -14374,6 +14957,24 @@
           "created_at"
         ],
         "title": "AdminAuditLogSchema"
+      },
+      "AdminLoginRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "email",
+          "password"
+        ],
+        "title": "AdminLoginRequest"
       },
       "AdviceRequest": {
         "properties": {
@@ -14718,6 +15319,105 @@
         ],
         "title": "ArtistCreate"
       },
+      "ArtistIdentityMatchSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "statement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Id"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          },
+          "confidence_band": {
+            "$ref": "#/components/schemas/IdentityConfidenceBand"
+          },
+          "decision_status": {
+            "$ref": "#/components/schemas/IdentityDecisionStatus"
+          },
+          "decision_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Reason"
+          },
+          "decision_actor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Actor"
+          },
+          "decision_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision At"
+          },
+          "matched_profile": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Matched Profile"
+          },
+          "score_breakdown": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Score Breakdown"
+          },
+          "chain_hash": {
+            "type": "string",
+            "title": "Chain Hash"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "confidence_score",
+          "confidence_band",
+          "decision_status",
+          "matched_profile",
+          "score_breakdown",
+          "chain_hash",
+          "created_at"
+        ],
+        "title": "ArtistIdentityMatchSchema"
+      },
       "ArtistLifecycleStatus": {
         "type": "string",
         "enum": [
@@ -14726,6 +15426,30 @@
           "ACTIVE"
         ],
         "title": "ArtistLifecycleStatus"
+      },
+      "ArtistLoginRequest": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id"
+        ],
+        "title": "ArtistLoginRequest"
       },
       "ArtistPreferenceUpdateRequest": {
         "properties": {
@@ -15582,6 +16306,24 @@
           "confirmed_at"
         ],
         "title": "CatalogConfirmationSchema"
+      },
+      "ClaimCreateRequest": {
+        "properties": {
+          "anomaly_id": {
+            "type": "string",
+            "title": "Anomaly Id"
+          },
+          "claim_type": {
+            "type": "string",
+            "title": "Claim Type",
+            "default": "RECOVERY"
+          }
+        },
+        "type": "object",
+        "required": [
+          "anomaly_id"
+        ],
+        "title": "ClaimCreateRequest"
       },
       "ClaimRequest": {
         "properties": {
@@ -16869,6 +17611,77 @@
           "body"
         ],
         "title": "HelpArticleCreateRequest"
+      },
+      "IdentityConfidenceBand": {
+        "type": "string",
+        "enum": [
+          "AUTO_ACCEPT",
+          "SOFT_CONFIRM",
+          "REQUIRE_CONFIRMATION"
+        ],
+        "title": "IdentityConfidenceBand"
+      },
+      "IdentityDecisionRequest": {
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/IdentityDecisionStatus"
+          },
+          "actor": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 3,
+            "title": "Actor"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 400,
+            "minLength": 3,
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "actor",
+          "reason"
+        ],
+        "title": "IdentityDecisionRequest"
+      },
+      "IdentityDecisionStatus": {
+        "type": "string",
+        "enum": [
+          "AUTO_ACCEPTED",
+          "PENDING_SOFT_CONFIRM",
+          "PENDING_EXPLICIT_CONFIRM",
+          "CONFIRMED",
+          "REJECTED"
+        ],
+        "title": "IdentityDecisionStatus"
+      },
+      "IdentityMatchRequest": {
+        "properties": {
+          "statement_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Statement Id"
+          },
+          "statement_signals": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Statement Signals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "statement_signals"
+        ],
+        "title": "IdentityMatchRequest"
       },
       "ImmutableLedgerEntrySchema": {
         "properties": {
@@ -19403,6 +20216,29 @@
           "accepted_at"
         ],
         "title": "TermsAcceptanceSchema"
+      },
+      "TokenResponse": {
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "token_type": {
+            "type": "string",
+            "title": "Token Type",
+            "default": "bearer"
+          },
+          "expires_in_seconds": {
+            "type": "integer",
+            "title": "Expires In Seconds"
+          }
+        },
+        "type": "object",
+        "required": [
+          "access_token",
+          "expires_in_seconds"
+        ],
+        "title": "TokenResponse"
       },
       "TrolleyTransactionSchema": {
         "properties": {

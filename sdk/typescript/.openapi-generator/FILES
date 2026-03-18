@@ -4,6 +4,7 @@ README.md
 docs/APIIngestionRequest.md
 docs/AdminApi.md
 docs/AdminAuditLogSchema.md
+docs/AdminLoginRequest.md
 docs/AdviceRequest.md
 docs/AdviceResponse.md
 docs/AnomaliesApi.md
@@ -12,12 +13,15 @@ docs/AnomalySchema.md
 docs/AnomalySeverity.md
 docs/AnomalyStatus.md
 docs/ArtistCreate.md
+docs/ArtistIdentityMatchSchema.md
 docs/ArtistLifecycleStatus.md
+docs/ArtistLoginRequest.md
 docs/ArtistPreferenceUpdateRequest.md
 docs/ArtistSchema.md
 docs/ArtistsApi.md
 docs/AssignReviewItemRequest.md
 docs/AttorneyEvidenceRequest.md
+docs/AuthApi.md
 docs/AuthConnectResponse.md
 docs/B2bApi.md
 docs/BillingApi.md
@@ -28,6 +32,7 @@ docs/BrandingProfilePatchRequest.md
 docs/BrandingProfileUpsertRequest.md
 docs/BulkOnboardRequest.md
 docs/CatalogConfirmationSchema.md
+docs/ClaimCreateRequest.md
 docs/ClaimRequest.md
 docs/ClaimSchema.md
 docs/ClaimStatus.md
@@ -57,6 +62,11 @@ docs/FounderAssignRequest.md
 docs/FounderCohortLimitUpdateRequest.md
 docs/HTTPValidationError.md
 docs/HelpArticleCreateRequest.md
+docs/IdentityApi.md
+docs/IdentityConfidenceBand.md
+docs/IdentityDecisionRequest.md
+docs/IdentityDecisionStatus.md
+docs/IdentityMatchRequest.md
 docs/ImmutableLedgerEntrySchema.md
 docs/IngestionApi.md
 docs/IntelligenceApi.md
@@ -127,6 +137,7 @@ docs/TeamRole.md
 docs/TermsAcceptRequest.md
 docs/TermsAcceptanceSchema.md
 docs/TermsApi.md
+docs/TokenResponse.md
 docs/TransparencyApi.md
 docs/TrolleyApi.md
 docs/TrolleyTransactionSchema.md
@@ -157,6 +168,7 @@ package.json
 src/apis/AdminApi.ts
 src/apis/AnomaliesApi.ts
 src/apis/ArtistsApi.ts
+src/apis/AuthApi.ts
 src/apis/B2bApi.ts
 src/apis/BillingApi.ts
 src/apis/BrandingApi.ts
@@ -169,6 +181,7 @@ src/apis/EarningsApi.ts
 src/apis/ExpansionApi.ts
 src/apis/FetchersApi.ts
 src/apis/ForensicApiApi.ts
+src/apis/IdentityApi.ts
 src/apis/IngestionApi.ts
 src/apis/IntelligenceApi.ts
 src/apis/NotificationsApi.ts
@@ -194,6 +207,7 @@ src/apis/index.ts
 src/index.ts
 src/models/APIIngestionRequest.ts
 src/models/AdminAuditLogSchema.ts
+src/models/AdminLoginRequest.ts
 src/models/AdviceRequest.ts
 src/models/AdviceResponse.ts
 src/models/AnomalyCategory.ts
@@ -201,7 +215,9 @@ src/models/AnomalySchema.ts
 src/models/AnomalySeverity.ts
 src/models/AnomalyStatus.ts
 src/models/ArtistCreate.ts
+src/models/ArtistIdentityMatchSchema.ts
 src/models/ArtistLifecycleStatus.ts
+src/models/ArtistLoginRequest.ts
 src/models/ArtistPreferenceUpdateRequest.ts
 src/models/ArtistSchema.ts
 src/models/AssignReviewItemRequest.ts
@@ -213,6 +229,7 @@ src/models/BrandingProfilePatchRequest.ts
 src/models/BrandingProfileUpsertRequest.ts
 src/models/BulkOnboardRequest.ts
 src/models/CatalogConfirmationSchema.ts
+src/models/ClaimCreateRequest.ts
 src/models/ClaimRequest.ts
 src/models/ClaimSchema.ts
 src/models/ClaimStatus.ts
@@ -233,6 +250,10 @@ src/models/FounderAssignRequest.ts
 src/models/FounderCohortLimitUpdateRequest.ts
 src/models/HTTPValidationError.ts
 src/models/HelpArticleCreateRequest.ts
+src/models/IdentityConfidenceBand.ts
+src/models/IdentityDecisionRequest.ts
+src/models/IdentityDecisionStatus.ts
+src/models/IdentityMatchRequest.ts
 src/models/ImmutableLedgerEntrySchema.ts
 src/models/InviteRequest.ts
 src/models/LedgerIngestRequest.ts
@@ -291,6 +312,7 @@ src/models/TeamMemberSchema.ts
 src/models/TeamRole.ts
 src/models/TermsAcceptRequest.ts
 src/models/TermsAcceptanceSchema.ts
+src/models/TokenResponse.ts
 src/models/TrolleyTransactionSchema.ts
 src/models/TrolleyTxnStatus.ts
 src/models/TrolleyTxnType.ts

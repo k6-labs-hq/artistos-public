@@ -14,6 +14,7 @@ All URIs are relative to *http://localhost*
 | [**claimPlaybookClaimsClaimIdPlaybookGet**](ClaimsApi.md#claimplaybookclaimsclaimidplaybookget) | **GET** /claims/{claim_id}/playbook | Claim Playbook |
 | [**claimSlaPredictionClaimsClaimIdSlaPredictionGet**](ClaimsApi.md#claimslapredictionclaimsclaimidslapredictionget) | **GET** /claims/{claim_id}/sla-prediction | Claim Sla Prediction |
 | [**claimStrengthExplainerClaimsClaimIdStrengthExplainerGet**](ClaimsApi.md#claimstrengthexplainerclaimsclaimidstrengthexplainerget) | **GET** /claims/{claim_id}/strength-explainer | Claim Strength Explainer |
+| [**createClaimForArtistArtistsArtistIdClaimsPost**](ClaimsApi.md#createclaimforartistartistsartistidclaimspost) | **POST** /artists/{artist_id}/claims | Create Claim For Artist |
 | [**escalateLegalClaimsClaimIdEscalateLegalPost**](ClaimsApi.md#escalatelegalclaimsclaimidescalatelegalpost) | **POST** /claims/{claim_id}/escalate-legal | Escalate Legal |
 | [**exportEvidencePacketClaimsClaimIdEvidenceExportGet**](ClaimsApi.md#exportevidencepacketclaimsclaimidevidenceexportget) | **GET** /claims/{claim_id}/evidence/export | Export Evidence Packet |
 | [**exportEvidencePacketExpertModeClaimsClaimIdEvidenceExportPost**](ClaimsApi.md#exportevidencepacketexpertmodeclaimsclaimidevidenceexportpost) | **POST** /claims/{claim_id}/evidence/export | Export Evidence Packet Expert Mode |
@@ -21,6 +22,7 @@ All URIs are relative to *http://localhost*
 | [**generateAttorneyEvidenceFileClaimsClaimIdAttorneyEvidencePost**](ClaimsApi.md#generateattorneyevidencefileclaimsclaimidattorneyevidencepost) | **POST** /claims/{claim_id}/attorney-evidence | Generate Attorney Evidence File |
 | [**generateEvidenceClaimsClaimIdEvidencePost**](ClaimsApi.md#generateevidenceclaimsclaimidevidencepost) | **POST** /claims/{claim_id}/evidence | Generate Evidence |
 | [**getClaimClaimsClaimIdGet**](ClaimsApi.md#getclaimclaimsclaimidget) | **GET** /claims/{claim_id} | Get Claim |
+| [**getEvidenceClaimsClaimIdEvidenceGet**](ClaimsApi.md#getevidenceclaimsclaimidevidenceget) | **GET** /claims/{claim_id}/evidence | Get Evidence |
 | [**listClaimsArtistsArtistIdClaimsGet**](ClaimsApi.md#listclaimsartistsartistidclaimsget) | **GET** /artists/{artist_id}/claims | List Claims |
 | [**reconcileClaimClaimsClaimIdReconcilePost**](ClaimsApi.md#reconcileclaimclaimsclaimidreconcilepost) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim |
 | [**verifyEvidencePacketClaimsClaimIdEvidenceVerifyGet**](ClaimsApi.md#verifyevidencepacketclaimsclaimidevidenceverifyget) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet |
@@ -687,6 +689,78 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
 
 
+## createClaimForArtistArtistsArtistIdClaimsPost
+
+> ClaimSchema createClaimForArtistArtistsArtistIdClaimsPost(artistId, claimCreateRequest, authorization)
+
+Create Claim For Artist
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ClaimsApi,
+} from '@xr7/sdk';
+import type { CreateClaimForArtistArtistsArtistIdClaimsPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new ClaimsApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+    // ClaimCreateRequest
+    claimCreateRequest: ...,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies CreateClaimForArtistArtistsArtistIdClaimsPostRequest;
+
+  try {
+    const data = await api.createClaimForArtistArtistsArtistIdClaimsPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+| **claimCreateRequest** | [ClaimCreateRequest](ClaimCreateRequest.md) |  | |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+[**ClaimSchema**](ClaimSchema.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
 ## escalateLegalClaimsClaimIdEscalateLegalPost
 
 > any escalateLegalClaimsClaimIdEscalateLegalPost(claimId)
@@ -1146,6 +1220,75 @@ example().catch(console.error);
 ### Return type
 
 [**ClaimSchema**](ClaimSchema.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## getEvidenceClaimsClaimIdEvidenceGet
+
+> any getEvidenceClaimsClaimIdEvidenceGet(claimId, authorization)
+
+Get Evidence
+
+### Example
+
+```ts
+import {
+  Configuration,
+  ClaimsApi,
+} from '@xr7/sdk';
+import type { GetEvidenceClaimsClaimIdEvidenceGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new ClaimsApi();
+
+  const body = {
+    // string
+    claimId: claimId_example,
+    // string (optional)
+    authorization: authorization_example,
+  } satisfies GetEvidenceClaimsClaimIdEvidenceGetRequest;
+
+  try {
+    const data = await api.getEvidenceClaimsClaimIdEvidenceGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **claimId** | `string` |  | [Defaults to `undefined`] |
+| **authorization** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
 
 ### Authorization
 
