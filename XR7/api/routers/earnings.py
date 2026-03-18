@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.forecaster import EarningsForecaster
@@ -31,7 +32,11 @@ def get_engine():
 
 
 @router.get("/artists/{artist_id}/earnings")
-def get_earnings_summary(artist_id: str, db: Session = Depends(get_db)):
+def get_earnings_summary(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    _auth: dict | None = Depends(get_optional_auth_payload),
+):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
@@ -47,7 +52,11 @@ def get_earnings_summary(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/artists/{artist_id}/earnings/history")
-def get_earnings_history(artist_id: str, db: Session = Depends(get_db)):
+def get_earnings_history(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    _auth: dict | None = Depends(get_optional_auth_payload),
+):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")

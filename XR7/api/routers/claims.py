@@ -11,7 +11,12 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
-from XR7.api.routers.auth import enforce_claim_access, get_auth_payload, require_artist_access
+from XR7.api.routers.auth import (
+    enforce_claim_access,
+    get_auth_payload,
+    get_optional_auth_payload,
+    require_artist_access,
+)
 from XR7.agents.orchestrator import run_export_prep_pipeline_sync
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
@@ -280,7 +285,11 @@ def _resolve_source_file(source_file: str | None) -> Path | None:
 
 
 @router.get("/artists/{artist_id}/claims")
-def list_claims(artist_id: str, db: Session = Depends(get_db)):
+def list_claims(
+    artist_id: str,
+    db: Session = Depends(get_db),
+    _auth: dict | None = Depends(get_optional_auth_payload),
+):
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     default_grace_days = int((artist.default_attorney_grace_period_days if artist else 60) or 60)

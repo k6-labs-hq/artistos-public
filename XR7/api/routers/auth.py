@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -13,17 +14,42 @@ from XR7.models.base import get_db
 
 router = APIRouter(tags=["auth"])
 
+# Shared HTTPBearer scheme — auto-injects BearerAuth securityScheme into the OpenAPI spec
+# for every endpoint that depends on get_auth_payload or get_optional_auth_payload.
+_bearer_scheme = HTTPBearer(auto_error=False)
 
-def _extract_bearer_token(authorization: str | None) -> str:
-    if not authorization or not authorization.lower().startswith("bearer "):
+# When XR7_ENFORCE_AUTH_GLOBALLY=1, soft-guarded endpoints reject unauthenticated requests.
+_ENFORCE_AUTH_GLOBALLY = os.environ.get("XR7_ENFORCE_AUTH_GLOBALLY", "0").strip() == "1"
+
+
+def get_auth_payload(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> dict[str, Any]:
+    """Strict bearer-auth dependency. Raises 401 if the token is absent or invalid."""
+    if credentials is None:
         raise HTTPException(status_code=401, detail="Missing bearer token")
-    return authorization.split(" ", 1)[1].strip()
-
-
-def get_auth_payload(authorization: str | None = Header(default=None)) -> dict[str, Any]:
-    token = _extract_bearer_token(authorization)
     try:
-        return jwt_service.verify_token(token)
+        return jwt_service.verify_token(credentials.credentials)
+    except JWTValidationError as exc:
+        raise HTTPException(status_code=401, detail=str(exc)) from exc
+
+
+def get_optional_auth_payload(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> dict[str, Any] | None:
+    """Soft bearer-auth dependency for staged rollout.
+
+    - Returns the JWT payload when a valid token is present.
+    - Returns ``None`` when no token is supplied (backwards-compatible).
+    - Raises 401 on an *invalid* token regardless of enforcement flag.
+    - When ``XR7_ENFORCE_AUTH_GLOBALLY=1`` is set, a missing token also raises 401.
+    """
+    if credentials is None:
+        if _ENFORCE_AUTH_GLOBALLY:
+            raise HTTPException(status_code=401, detail="Missing bearer token")
+        return None
+    try:
+        return jwt_service.verify_token(credentials.credentials)
     except JWTValidationError as exc:
         raise HTTPException(status_code=401, detail=str(exc)) from exc
 

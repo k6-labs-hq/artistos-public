@@ -258,6 +258,47 @@ export class DashboardApi extends runtime.BaseAPI {
         return await response.value();
     }
     /**
+     * Creates request options for getAgentsStatusArtistsArtistIdAgentsStatusGet without sending the request
+     */
+    async getAgentsStatusArtistsArtistIdAgentsStatusGetRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling getAgentsStatusArtistsArtistIdAgentsStatusGet().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+        let urlPath = `/artists/{artist_id}/agents/status`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Get Agents Status
+     */
+    async getAgentsStatusArtistsArtistIdAgentsStatusGetRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.getAgentsStatusArtistsArtistIdAgentsStatusGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Get Agents Status
+     */
+    async getAgentsStatusArtistsArtistIdAgentsStatusGet(requestParameters, initOverrides) {
+        const response = await this.getAgentsStatusArtistsArtistIdAgentsStatusGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
      * Creates request options for getArtistDashboardArtistsArtistIdDashboardGet without sending the request
      */
     async getArtistDashboardArtistsArtistIdDashboardGetRequestOpts(requestParameters) {

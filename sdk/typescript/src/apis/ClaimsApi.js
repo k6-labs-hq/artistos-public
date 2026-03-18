@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 import * as runtime from '../runtime';
-import { AttorneyEvidenceRequestToJSON, ClaimSchemaFromJSON, ReconcileRequestToJSON, } from '../models/index';
+import { AttorneyEvidenceRequestToJSON, ClaimCreateRequestToJSON, ClaimSchemaFromJSON, ReconcileRequestToJSON, } from '../models/index';
 /**
  *
  */
@@ -393,6 +393,47 @@ export class ClaimsApi extends runtime.BaseAPI {
         return await response.value();
     }
     /**
+     * Creates request options for createClaimForArtistArtistsArtistIdClaimsPost without sending the request
+     */
+    async createClaimForArtistArtistsArtistIdClaimsPostRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling createClaimForArtistArtistsArtistIdClaimsPost().');
+        }
+        if (requestParameters['claimCreateRequest'] == null) {
+            throw new runtime.RequiredError('claimCreateRequest', 'Required parameter "claimCreateRequest" was null or undefined when calling createClaimForArtistArtistsArtistIdClaimsPost().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+        let urlPath = `/artists/{artist_id}/claims`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ClaimCreateRequestToJSON(requestParameters['claimCreateRequest']),
+        };
+    }
+    /**
+     * Create Claim For Artist
+     */
+    async createClaimForArtistArtistsArtistIdClaimsPostRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.createClaimForArtistArtistsArtistIdClaimsPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        return new runtime.JSONApiResponse(response, (jsonValue) => ClaimSchemaFromJSON(jsonValue));
+    }
+    /**
+     * Create Claim For Artist
+     */
+    async createClaimForArtistArtistsArtistIdClaimsPost(requestParameters, initOverrides) {
+        const response = await this.createClaimForArtistArtistsArtistIdClaimsPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
      * Creates request options for escalateLegalClaimsClaimIdEscalateLegalPost without sending the request
      */
     async escalateLegalClaimsClaimIdEscalateLegalPostRequestOpts(requestParameters) {
@@ -672,6 +713,47 @@ export class ClaimsApi extends runtime.BaseAPI {
      */
     async getClaimClaimsClaimIdGet(requestParameters, initOverrides) {
         const response = await this.getClaimClaimsClaimIdGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for getEvidenceClaimsClaimIdEvidenceGet without sending the request
+     */
+    async getEvidenceClaimsClaimIdEvidenceGetRequestOpts(requestParameters) {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError('claimId', 'Required parameter "claimId" was null or undefined when calling getEvidenceClaimsClaimIdEvidenceGet().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        if (requestParameters['authorization'] != null) {
+            headerParameters['authorization'] = String(requestParameters['authorization']);
+        }
+        let urlPath = `/claims/{claim_id}/evidence`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Get Evidence
+     */
+    async getEvidenceClaimsClaimIdEvidenceGetRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.getEvidenceClaimsClaimIdEvidenceGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Get Evidence
+     */
+    async getEvidenceClaimsClaimIdEvidenceGet(requestParameters, initOverrides) {
+        const response = await this.getEvidenceClaimsClaimIdEvidenceGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**

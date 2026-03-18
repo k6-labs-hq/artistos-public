@@ -3,6 +3,7 @@
 export * from './AdminApi';
 export * from './AnomaliesApi';
 export * from './ArtistsApi';
+export * from './AuthApi';
 export * from './B2bApi';
 export * from './BillingApi';
 export * from './BrandingApi';
@@ -15,6 +16,7 @@ export * from './EarningsApi';
 export * from './ExpansionApi';
 export * from './FetchersApi';
 export * from './ForensicApiApi';
+export * from './IdentityApi';
 export * from './IngestionApi';
 export * from './IntelligenceApi';
 export * from './NotificationsApi';

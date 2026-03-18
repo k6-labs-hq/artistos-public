@@ -1210,6 +1210,7 @@ source .env
 
 Key variables:
 - `XR7_ENV` — set to `production` to enable real Twilio/SMTP and enforce CORS allowlist
+- `XR7_ENFORCE_AUTH_GLOBALLY` — set to `1` to require bearer auth on staged soft-guard endpoints (`/artists/{id}/earnings`, `/artists/{id}/earnings/history`, `/artists/{id}/anomalies`, `/artists/{id}/claims`)
 - `WIDGET_ADMIN_KEY` — secret key for `GET /widget/leads` admin endpoint
 - `WIDGET_ALLOWED_ORIGINS` — comma-separated CORS origins (required in production)
 - `TWILIO_*` — SMS delivery for OTP

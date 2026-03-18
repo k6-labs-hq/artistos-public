@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.ai_music.influence_detector import InfluenceDetector
 from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.anomaly.engine import AnomalyEngine
@@ -27,6 +28,7 @@ def list_anomalies(
     status: str | None = None,
     debug: bool = False,
     db: Session = Depends(get_db),
+    _auth: dict | None = Depends(get_optional_auth_payload),
 ):
     query = db.query(Anomaly).filter(Anomaly.artist_id == artist_id)
     if status:
