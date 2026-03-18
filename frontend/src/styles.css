@@ -586,6 +586,20 @@ section {
   font-size: 0.84rem;
 }
 
+/* TV/Film Dashboard Visualizations layout */
+.tvfilm-visualizations {
+  padding: 4rem 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.viz-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
 .tvfilm-grid {
   margin-top: 1rem;
   display: grid;
@@ -891,6 +905,10 @@ input:focus-visible {
   }
 
   .tvfilm-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .viz-two-col {
     grid-template-columns: 1fr;
   }
 

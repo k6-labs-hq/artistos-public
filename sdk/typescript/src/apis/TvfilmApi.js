@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 import * as runtime from '../runtime';
-import { TVFilmClaimDraftRequestToJSON, TVFilmForecastRequestToJSON, TVFilmPortfolioAnalysisRequestToJSON, TVFilmTrustExplainRequestToJSON, } from '../models/index';
+import { TVFilmBulkClaimDraftRequestToJSON, TVFilmBulkExportRequestToJSON, TVFilmClaimDraftRequestToJSON, TVFilmForecastRequestToJSON, TVFilmPortfolioAnalysisRequestToJSON, TVFilmTrustExplainRequestToJSON, } from '../models/index';
 /**
  *
  */
@@ -87,6 +87,130 @@ export class TvfilmApi extends runtime.BaseAPI {
      */
     async tvfilmAnomalyRuleCatalogTvfilmCatalogsAnomalyRulesGet(initOverrides) {
         const response = await this.tvfilmAnomalyRuleCatalogTvfilmCatalogsAnomalyRulesGetRaw(initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPost without sending the request
+     */
+    async tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPostRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPost().');
+        }
+        if (requestParameters['tVFilmBulkClaimDraftRequest'] == null) {
+            throw new runtime.RequiredError('tVFilmBulkClaimDraftRequest', 'Required parameter "tVFilmBulkClaimDraftRequest" was null or undefined when calling tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPost().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
+        let urlPath = `/tvfilm/artists/{artist_id}/claims/bulk-draft`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TVFilmBulkClaimDraftRequestToJSON(requestParameters['tVFilmBulkClaimDraftRequest']),
+        };
+    }
+    /**
+     * Tvfilm Bulk Draft Claims
+     */
+    async tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPostRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Tvfilm Bulk Draft Claims
+     */
+    async tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPost(requestParameters, initOverrides) {
+        const response = await this.tvfilmBulkDraftClaimsTvfilmArtistsArtistIdClaimsBulkDraftPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPost without sending the request
+     */
+    async tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPostRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPost().');
+        }
+        if (requestParameters['tVFilmBulkExportRequest'] == null) {
+            throw new runtime.RequiredError('tVFilmBulkExportRequest', 'Required parameter "tVFilmBulkExportRequest" was null or undefined when calling tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPost().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        headerParameters['Content-Type'] = 'application/json';
+        let urlPath = `/tvfilm/artists/{artist_id}/claims/bulk-export`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: TVFilmBulkExportRequestToJSON(requestParameters['tVFilmBulkExportRequest']),
+        };
+    }
+    /**
+     * Tvfilm Bulk Export Claims
+     */
+    async tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPostRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Tvfilm Bulk Export Claims
+     */
+    async tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPost(requestParameters, initOverrides) {
+        const response = await this.tvfilmBulkExportClaimsTvfilmArtistsArtistIdClaimsBulkExportPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGet without sending the request
+     */
+    async tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGetRequestOpts(requestParameters) {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError('artistId', 'Required parameter "artistId" was null or undefined when calling tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGet().');
+        }
+        const queryParameters = {};
+        const headerParameters = {};
+        let urlPath = `/tvfilm/artists/{artist_id}/calculation-audit`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Tvfilm Calculation Audit
+     */
+    async tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGetRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Tvfilm Calculation Audit
+     */
+    async tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGet(requestParameters, initOverrides) {
+        const response = await this.tvfilmCalculationAuditTvfilmArtistsArtistIdCalculationAuditGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**
@@ -279,6 +403,47 @@ export class TvfilmApi extends runtime.BaseAPI {
      */
     async tvfilmEvidenceTemplatesTvfilmCatalogsEvidenceTemplatesGet(initOverrides) {
         const response = await this.tvfilmEvidenceTemplatesTvfilmCatalogsEvidenceTemplatesGetRaw(initOverrides);
+        return await response.value();
+    }
+    /**
+     * Creates request options for tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGet without sending the request
+     */
+    async tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGetRequestOpts(requestParameters) {
+        if (requestParameters['claimId'] == null) {
+            throw new runtime.RequiredError('claimId', 'Required parameter "claimId" was null or undefined when calling tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGet().');
+        }
+        const queryParameters = {};
+        if (requestParameters['format'] != null) {
+            queryParameters['format'] = requestParameters['format'];
+        }
+        const headerParameters = {};
+        let urlPath = `/tvfilm/claims/{claim_id}/evidence/export`;
+        urlPath = urlPath.replace(`{${"claim_id"}}`, encodeURIComponent(String(requestParameters['claimId'])));
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+    /**
+     * Tvfilm Export Evidence Packet
+     */
+    async tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGetRaw(requestParameters, initOverrides) {
+        const requestOptions = await this.tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse(response);
+        }
+        else {
+            return new runtime.TextApiResponse(response);
+        }
+    }
+    /**
+     * Tvfilm Export Evidence Packet
+     */
+    async tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGet(requestParameters, initOverrides) {
+        const response = await this.tvfilmExportEvidencePacketTvfilmClaimsClaimIdEvidenceExportGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
     /**

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { TVFilmDashboardVisualizations } from "./components/TVFilmDashboardVisualizations";
 import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
 import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
 
@@ -305,6 +306,8 @@ export function App() {
         <TVFilmWorkspace />
 
         <TVFilmEnterprisePanels />
+
+        <TVFilmDashboardVisualizations />
 
         <section className="dashboard-preview" data-reveal="true">
           <div className="section-head">

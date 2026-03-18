@@ -111,6 +111,8 @@ export * from './SupportMessageView';
 export * from './SupportSuggestionResponse';
 export * from './SyncJobCreateRequest';
 export * from './SyncJobSchema';
+export * from './TVFilmBulkClaimDraftRequest';
+export * from './TVFilmBulkExportRequest';
 export * from './TVFilmClaimDraftRequest';
 export * from './TVFilmForecastRequest';
 export * from './TVFilmPortfolioAnalysisRequest';
