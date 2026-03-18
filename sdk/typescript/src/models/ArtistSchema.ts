@@ -159,6 +159,30 @@ export interface ArtistSchema {
      * @memberof ArtistSchema
      */
     xr7FutureLeakagePrevented?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof ArtistSchema
+     */
+    isFounder?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof ArtistSchema
+     */
+    founderSlotNumber?: number | null;
+    /**
+     * 
+     * @type {Date}
+     * @memberof ArtistSchema
+     */
+    founderLockedAt?: Date | null;
+    /**
+     * 
+     * @type {number}
+     * @memberof ArtistSchema
+     */
+    contingencyFeePercent?: number | null;
 }
 
 
@@ -206,6 +230,10 @@ export function ArtistSchemaFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'primaryJurisdiction': json['primary_jurisdiction'] == null ? undefined : json['primary_jurisdiction'],
         'preferredContractType': json['preferred_contract_type'] == null ? undefined : json['preferred_contract_type'],
         'xr7FutureLeakagePrevented': json['xr7_future_leakage_prevented'] == null ? undefined : json['xr7_future_leakage_prevented'],
+        'isFounder': json['is_founder'] == null ? undefined : json['is_founder'],
+        'founderSlotNumber': json['founder_slot_number'] == null ? undefined : json['founder_slot_number'],
+        'founderLockedAt': json['founder_locked_at'] == null ? undefined : (new Date(json['founder_locked_at'])),
+        'contingencyFeePercent': json['contingency_fee_percent'] == null ? undefined : json['contingency_fee_percent'],
     };
 }
 
@@ -242,6 +270,10 @@ export function ArtistSchemaToJSONTyped(value?: ArtistSchema | null, ignoreDiscr
         'primary_jurisdiction': value['primaryJurisdiction'],
         'preferred_contract_type': value['preferredContractType'],
         'xr7_future_leakage_prevented': value['xr7FutureLeakagePrevented'],
+        'is_founder': value['isFounder'],
+        'founder_slot_number': value['founderSlotNumber'],
+        'founder_locked_at': value['founderLockedAt'] == null ? value['founderLockedAt'] : value['founderLockedAt'].toISOString(),
+        'contingency_fee_percent': value['contingencyFeePercent'],
     };
 }
 

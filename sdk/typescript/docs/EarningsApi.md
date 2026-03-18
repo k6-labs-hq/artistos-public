@@ -14,7 +14,7 @@ All URIs are relative to *http://localhost*
 
 ## forecastEarningsArtistsArtistIdMlForecastPost
 
-> any forecastEarningsArtistsArtistIdMlForecastPost(artistId, forecastRequest)
+> any forecastEarningsArtistsArtistIdMlForecastPost(artistId, xR7ApiRoutersEarningsForecastRequest)
 
 Forecast Earnings
 
@@ -36,8 +36,8 @@ async function example() {
   const body = {
     // string
     artistId: artistId_example,
-    // ForecastRequest
-    forecastRequest: ...,
+    // XR7ApiRoutersEarningsForecastRequest
+    xR7ApiRoutersEarningsForecastRequest: ...,
   } satisfies ForecastEarningsArtistsArtistIdMlForecastPostRequest;
 
   try {
@@ -58,7 +58,7 @@ example().catch(console.error);
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
 | **artistId** | `string` |  | [Defaults to `undefined`] |
-| **forecastRequest** | [ForecastRequest](ForecastRequest.md) |  | |
+| **xR7ApiRoutersEarningsForecastRequest** | [XR7ApiRoutersEarningsForecastRequest](XR7ApiRoutersEarningsForecastRequest.md) |  | |
 
 ### Return type
 

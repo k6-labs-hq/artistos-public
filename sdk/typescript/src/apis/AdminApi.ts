@@ -16,16 +16,41 @@
 import * as runtime from '../runtime';
 import type {
   AdminAuditLogSchema,
+  FounderAssignRequest,
+  FounderCohortLimitUpdateRequest,
   HTTPValidationError,
 } from '../models/index';
 import {
     AdminAuditLogSchemaFromJSON,
     AdminAuditLogSchemaToJSON,
+    FounderAssignRequestFromJSON,
+    FounderAssignRequestToJSON,
+    FounderCohortLimitUpdateRequestFromJSON,
+    FounderCohortLimitUpdateRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
 } from '../models/index';
 
 export interface AdminOverviewAdminOverviewGetRequest {
+    xAdminKey?: string;
+    xAdminActor?: string | null;
+}
+
+export interface AssignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequest {
+    artistId: string;
+    founderAssignRequest: FounderAssignRequest;
+    xAdminKey?: string;
+    xAdminActor?: string | null;
+}
+
+export interface FounderCohortReportAdminReportsFounderCohortGetRequest {
+    xAdminKey?: string;
+    xAdminActor?: string | null;
+}
+
+export interface FounderRosterAdminFoundersGetRequest {
+    limit?: number;
+    offset?: number;
     xAdminKey?: string;
     xAdminActor?: string | null;
 }
@@ -96,6 +121,12 @@ export interface SolRiskReportAdminReportsSolRiskGetRequest {
     xAdminActor?: string | null;
 }
 
+export interface UpdateFounderCohortLimitAdminFounderCohortLimitPutRequest {
+    founderCohortLimitUpdateRequest: FounderCohortLimitUpdateRequest;
+    xAdminKey?: string;
+    xAdminActor?: string | null;
+}
+
 /**
  * 
  */
@@ -147,6 +178,179 @@ export class AdminApi extends runtime.BaseAPI {
      */
     async adminOverviewAdminOverviewGet(requestParameters: AdminOverviewAdminOverviewGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.adminOverviewAdminOverviewGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for assignFounderManuallyAdminArtistsArtistIdFounderAssignPost without sending the request
+     */
+    async assignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequestOpts(requestParameters: AssignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['artistId'] == null) {
+            throw new runtime.RequiredError(
+                'artistId',
+                'Required parameter "artistId" was null or undefined when calling assignFounderManuallyAdminArtistsArtistIdFounderAssignPost().'
+            );
+        }
+
+        if (requestParameters['founderAssignRequest'] == null) {
+            throw new runtime.RequiredError(
+                'founderAssignRequest',
+                'Required parameter "founderAssignRequest" was null or undefined when calling assignFounderManuallyAdminArtistsArtistIdFounderAssignPost().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xAdminKey'] != null) {
+            headerParameters['X-Admin-Key'] = String(requestParameters['xAdminKey']);
+        }
+
+        if (requestParameters['xAdminActor'] != null) {
+            headerParameters['X-Admin-Actor'] = String(requestParameters['xAdminActor']);
+        }
+
+
+        let urlPath = `/admin/artists/{artist_id}/founder/assign`;
+        urlPath = urlPath.replace(`{${"artist_id"}}`, encodeURIComponent(String(requestParameters['artistId'])));
+
+        return {
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: FounderAssignRequestToJSON(requestParameters['founderAssignRequest']),
+        };
+    }
+
+    /**
+     * Assign Founder Manually
+     */
+    async assignFounderManuallyAdminArtistsArtistIdFounderAssignPostRaw(requestParameters: AssignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.assignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Assign Founder Manually
+     */
+    async assignFounderManuallyAdminArtistsArtistIdFounderAssignPost(requestParameters: AssignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.assignFounderManuallyAdminArtistsArtistIdFounderAssignPostRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for founderCohortReportAdminReportsFounderCohortGet without sending the request
+     */
+    async founderCohortReportAdminReportsFounderCohortGetRequestOpts(requestParameters: FounderCohortReportAdminReportsFounderCohortGetRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xAdminKey'] != null) {
+            headerParameters['X-Admin-Key'] = String(requestParameters['xAdminKey']);
+        }
+
+        if (requestParameters['xAdminActor'] != null) {
+            headerParameters['X-Admin-Actor'] = String(requestParameters['xAdminActor']);
+        }
+
+
+        let urlPath = `/admin/reports/founder-cohort`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Founder Cohort Report
+     */
+    async founderCohortReportAdminReportsFounderCohortGetRaw(requestParameters: FounderCohortReportAdminReportsFounderCohortGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.founderCohortReportAdminReportsFounderCohortGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Founder Cohort Report
+     */
+    async founderCohortReportAdminReportsFounderCohortGet(requestParameters: FounderCohortReportAdminReportsFounderCohortGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.founderCohortReportAdminReportsFounderCohortGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for founderRosterAdminFoundersGet without sending the request
+     */
+    async founderRosterAdminFoundersGetRequestOpts(requestParameters: FounderRosterAdminFoundersGetRequest): Promise<runtime.RequestOpts> {
+        const queryParameters: any = {};
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (requestParameters['xAdminKey'] != null) {
+            headerParameters['X-Admin-Key'] = String(requestParameters['xAdminKey']);
+        }
+
+        if (requestParameters['xAdminActor'] != null) {
+            headerParameters['X-Admin-Actor'] = String(requestParameters['xAdminActor']);
+        }
+
+
+        let urlPath = `/admin/founders`;
+
+        return {
+            path: urlPath,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        };
+    }
+
+    /**
+     * Founder Roster
+     */
+    async founderRosterAdminFoundersGetRaw(requestParameters: FounderRosterAdminFoundersGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.founderRosterAdminFoundersGetRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Founder Roster
+     */
+    async founderRosterAdminFoundersGet(requestParameters: FounderRosterAdminFoundersGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.founderRosterAdminFoundersGetRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -610,6 +814,65 @@ export class AdminApi extends runtime.BaseAPI {
      */
     async solRiskReportAdminReportsSolRiskGet(requestParameters: SolRiskReportAdminReportsSolRiskGetRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.solRiskReportAdminReportsSolRiskGetRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Creates request options for updateFounderCohortLimitAdminFounderCohortLimitPut without sending the request
+     */
+    async updateFounderCohortLimitAdminFounderCohortLimitPutRequestOpts(requestParameters: UpdateFounderCohortLimitAdminFounderCohortLimitPutRequest): Promise<runtime.RequestOpts> {
+        if (requestParameters['founderCohortLimitUpdateRequest'] == null) {
+            throw new runtime.RequiredError(
+                'founderCohortLimitUpdateRequest',
+                'Required parameter "founderCohortLimitUpdateRequest" was null or undefined when calling updateFounderCohortLimitAdminFounderCohortLimitPut().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters['xAdminKey'] != null) {
+            headerParameters['X-Admin-Key'] = String(requestParameters['xAdminKey']);
+        }
+
+        if (requestParameters['xAdminActor'] != null) {
+            headerParameters['X-Admin-Actor'] = String(requestParameters['xAdminActor']);
+        }
+
+
+        let urlPath = `/admin/founder/cohort-limit`;
+
+        return {
+            path: urlPath,
+            method: 'PUT',
+            headers: headerParameters,
+            query: queryParameters,
+            body: FounderCohortLimitUpdateRequestToJSON(requestParameters['founderCohortLimitUpdateRequest']),
+        };
+    }
+
+    /**
+     * Update Founder Cohort Limit
+     */
+    async updateFounderCohortLimitAdminFounderCohortLimitPutRaw(requestParameters: UpdateFounderCohortLimitAdminFounderCohortLimitPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<any>> {
+        const requestOptions = await this.updateFounderCohortLimitAdminFounderCohortLimitPutRequestOpts(requestParameters);
+        const response = await this.request(requestOptions, initOverrides);
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<any>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     * Update Founder Cohort Limit
+     */
+    async updateFounderCohortLimitAdminFounderCohortLimitPut(requestParameters: UpdateFounderCohortLimitAdminFounderCohortLimitPutRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
+        const response = await this.updateFounderCohortLimitAdminFounderCohortLimitPutRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

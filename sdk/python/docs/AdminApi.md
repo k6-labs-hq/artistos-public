@@ -5,6 +5,9 @@ All URIs are relative to *http://localhost*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**admin_overview_admin_overview_get**](AdminApi.md#admin_overview_admin_overview_get) | **GET** /admin/overview | Admin Overview
+[**assign_founder_manually_admin_artists_artist_id_founder_assign_post**](AdminApi.md#assign_founder_manually_admin_artists_artist_id_founder_assign_post) | **POST** /admin/artists/{artist_id}/founder/assign | Assign Founder Manually
+[**founder_cohort_report_admin_reports_founder_cohort_get**](AdminApi.md#founder_cohort_report_admin_reports_founder_cohort_get) | **GET** /admin/reports/founder-cohort | Founder Cohort Report
+[**founder_roster_admin_founders_get**](AdminApi.md#founder_roster_admin_founders_get) | **GET** /admin/founders | Founder Roster
 [**list_anomalies_admin_anomalies_get**](AdminApi.md#list_anomalies_admin_anomalies_get) | **GET** /admin/anomalies | List Anomalies
 [**list_artists_admin_artists_get**](AdminApi.md#list_artists_admin_artists_get) | **GET** /admin/artists | List Artists
 [**list_audit_logs_admin_audit_logs_get**](AdminApi.md#list_audit_logs_admin_audit_logs_get) | **GET** /admin/audit-logs | List Audit Logs
@@ -12,6 +15,7 @@ Method | HTTP request | Description
 [**list_review_queue_admin_review_queue_get**](AdminApi.md#list_review_queue_admin_review_queue_get) | **GET** /admin/review-queue | List Review Queue
 [**list_transactions_admin_transactions_get**](AdminApi.md#list_transactions_admin_transactions_get) | **GET** /admin/transactions | List Transactions
 [**sol_risk_report_admin_reports_sol_risk_get**](AdminApi.md#sol_risk_report_admin_reports_sol_risk_get) | **GET** /admin/reports/sol-risk | Sol Risk Report
+[**update_founder_cohort_limit_admin_founder_cohort_limit_put**](AdminApi.md#update_founder_cohort_limit_admin_founder_cohort_limit_put) | **PUT** /admin/founder/cohort-limit | Update Founder Cohort Limit
 
 
 # **admin_overview_admin_overview_get**
@@ -57,6 +61,219 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
+ **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_admin_actor** | **str**|  | [optional] 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **assign_founder_manually_admin_artists_artist_id_founder_assign_post**
+> object assign_founder_manually_admin_artists_artist_id_founder_assign_post(artist_id, founder_assign_request, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+
+Assign Founder Manually
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.models.founder_assign_request import FounderAssignRequest
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdminApi(api_client)
+    artist_id = 'artist_id_example' # str | 
+    founder_assign_request = xr7_sdk.FounderAssignRequest() # FounderAssignRequest | 
+    x_admin_key = '' # str |  (optional) (default to '')
+    x_admin_actor = 'x_admin_actor_example' # str |  (optional)
+
+    try:
+        # Assign Founder Manually
+        api_response = api_instance.assign_founder_manually_admin_artists_artist_id_founder_assign_post(artist_id, founder_assign_request, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+        print("The response of AdminApi->assign_founder_manually_admin_artists_artist_id_founder_assign_post:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdminApi->assign_founder_manually_admin_artists_artist_id_founder_assign_post: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **artist_id** | **str**|  | 
+ **founder_assign_request** | [**FounderAssignRequest**](FounderAssignRequest.md)|  | 
+ **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_admin_actor** | **str**|  | [optional] 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **founder_cohort_report_admin_reports_founder_cohort_get**
+> object founder_cohort_report_admin_reports_founder_cohort_get(x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+
+Founder Cohort Report
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdminApi(api_client)
+    x_admin_key = '' # str |  (optional) (default to '')
+    x_admin_actor = 'x_admin_actor_example' # str |  (optional)
+
+    try:
+        # Founder Cohort Report
+        api_response = api_instance.founder_cohort_report_admin_reports_founder_cohort_get(x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+        print("The response of AdminApi->founder_cohort_report_admin_reports_founder_cohort_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdminApi->founder_cohort_report_admin_reports_founder_cohort_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_admin_actor** | **str**|  | [optional] 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **founder_roster_admin_founders_get**
+> object founder_roster_admin_founders_get(limit=limit, offset=offset, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+
+Founder Roster
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdminApi(api_client)
+    limit = 200 # int |  (optional) (default to 200)
+    offset = 0 # int |  (optional) (default to 0)
+    x_admin_key = '' # str |  (optional) (default to '')
+    x_admin_actor = 'x_admin_actor_example' # str |  (optional)
+
+    try:
+        # Founder Roster
+        api_response = api_instance.founder_roster_admin_founders_get(limit=limit, offset=offset, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+        print("The response of AdminApi->founder_roster_admin_founders_get:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdminApi->founder_roster_admin_founders_get: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **limit** | **int**|  | [optional] [default to 200]
+ **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_admin_actor** | **str**|  | [optional] 
 
@@ -610,6 +827,77 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | Successful Response |  -  |
+**422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **update_founder_cohort_limit_admin_founder_cohort_limit_put**
+> object update_founder_cohort_limit_admin_founder_cohort_limit_put(founder_cohort_limit_update_request, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+
+Update Founder Cohort Limit
+
+### Example
+
+
+```python
+import xr7_sdk
+from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest
+from xr7_sdk.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to http://localhost
+# See configuration.py for a list of all supported configuration parameters.
+configuration = xr7_sdk.Configuration(
+    host = "http://localhost"
+)
+
+
+# Enter a context with an instance of the API client
+with xr7_sdk.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = xr7_sdk.AdminApi(api_client)
+    founder_cohort_limit_update_request = xr7_sdk.FounderCohortLimitUpdateRequest() # FounderCohortLimitUpdateRequest | 
+    x_admin_key = '' # str |  (optional) (default to '')
+    x_admin_actor = 'x_admin_actor_example' # str |  (optional)
+
+    try:
+        # Update Founder Cohort Limit
+        api_response = api_instance.update_founder_cohort_limit_admin_founder_cohort_limit_put(founder_cohort_limit_update_request, x_admin_key=x_admin_key, x_admin_actor=x_admin_actor)
+        print("The response of AdminApi->update_founder_cohort_limit_admin_founder_cohort_limit_put:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling AdminApi->update_founder_cohort_limit_admin_founder_cohort_limit_put: %s\n" % e)
+```
+
+
+
+### Parameters
+
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **founder_cohort_limit_update_request** | [**FounderCohortLimitUpdateRequest**](FounderCohortLimitUpdateRequest.md)|  | 
+ **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
+ **x_admin_actor** | **str**|  | [optional] 
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 ### HTTP response details

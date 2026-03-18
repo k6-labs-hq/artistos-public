@@ -18,7 +18,7 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt, StrictStr
+from pydantic import BaseModel, ConfigDict, StrictBool, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from xr7_sdk.models.artist_lifecycle_status import ArtistLifecycleStatus
 from typing import Optional, Set
@@ -51,7 +51,11 @@ class ArtistSchema(BaseModel):
     primary_jurisdiction: Optional[StrictStr] = 'USA'
     preferred_contract_type: Optional[StrictStr] = 'recording'
     xr7_future_leakage_prevented: Optional[Union[StrictFloat, StrictInt]] = 0.0
-    __properties: ClassVar[List[str]] = ["id", "name", "email", "role", "ipi_number", "stage_names", "created_at", "status", "onboarded_at", "activated_at", "first_name", "last_name", "country_code", "trolley_recipient_id", "payout_account_status", "payout_method_type", "payout_last4", "tax_form_status", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type", "xr7_future_leakage_prevented"]
+    is_founder: Optional[StrictBool] = False
+    founder_slot_number: Optional[StrictInt] = None
+    founder_locked_at: Optional[datetime] = None
+    contingency_fee_percent: Optional[Union[StrictFloat, StrictInt]] = None
+    __properties: ClassVar[List[str]] = ["id", "name", "email", "role", "ipi_number", "stage_names", "created_at", "status", "onboarded_at", "activated_at", "first_name", "last_name", "country_code", "trolley_recipient_id", "payout_account_status", "payout_method_type", "payout_last4", "tax_form_status", "default_attorney_grace_period_days", "primary_jurisdiction", "preferred_contract_type", "xr7_future_leakage_prevented", "is_founder", "founder_slot_number", "founder_locked_at", "contingency_fee_percent"]
 
     model_config = ConfigDict(
         validate_by_name=True,
@@ -147,6 +151,21 @@ class ArtistSchema(BaseModel):
         if self.payout_last4 is None and "payout_last4" in self.model_fields_set:
             _dict['payout_last4'] = None
 
+        # set to None if founder_slot_number (nullable) is None
+        # and model_fields_set contains the field
+        if self.founder_slot_number is None and "founder_slot_number" in self.model_fields_set:
+            _dict['founder_slot_number'] = None
+
+        # set to None if founder_locked_at (nullable) is None
+        # and model_fields_set contains the field
+        if self.founder_locked_at is None and "founder_locked_at" in self.model_fields_set:
+            _dict['founder_locked_at'] = None
+
+        # set to None if contingency_fee_percent (nullable) is None
+        # and model_fields_set contains the field
+        if self.contingency_fee_percent is None and "contingency_fee_percent" in self.model_fields_set:
+            _dict['contingency_fee_percent'] = None
+
         return _dict
 
     @classmethod
@@ -180,7 +199,11 @@ class ArtistSchema(BaseModel):
             "default_attorney_grace_period_days": obj.get("default_attorney_grace_period_days") if obj.get("default_attorney_grace_period_days") is not None else 60,
             "primary_jurisdiction": obj.get("primary_jurisdiction") if obj.get("primary_jurisdiction") is not None else 'USA',
             "preferred_contract_type": obj.get("preferred_contract_type") if obj.get("preferred_contract_type") is not None else 'recording',
-            "xr7_future_leakage_prevented": obj.get("xr7_future_leakage_prevented") if obj.get("xr7_future_leakage_prevented") is not None else 0.0
+            "xr7_future_leakage_prevented": obj.get("xr7_future_leakage_prevented") if obj.get("xr7_future_leakage_prevented") is not None else 0.0,
+            "is_founder": obj.get("is_founder") if obj.get("is_founder") is not None else False,
+            "founder_slot_number": obj.get("founder_slot_number"),
+            "founder_locked_at": obj.get("founder_locked_at"),
+            "contingency_fee_percent": obj.get("contingency_fee_percent")
         })
         return _obj
 

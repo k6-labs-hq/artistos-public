@@ -15,22 +15,22 @@
 
 import * as runtime from '../runtime';
 import type {
-  ForecastRequest,
   HTTPValidationError,
   ReconstructRequest,
+  XR7ApiRoutersEarningsForecastRequest,
 } from '../models/index';
 import {
-    ForecastRequestFromJSON,
-    ForecastRequestToJSON,
     HTTPValidationErrorFromJSON,
     HTTPValidationErrorToJSON,
     ReconstructRequestFromJSON,
     ReconstructRequestToJSON,
+    XR7ApiRoutersEarningsForecastRequestFromJSON,
+    XR7ApiRoutersEarningsForecastRequestToJSON,
 } from '../models/index';
 
 export interface ForecastEarningsArtistsArtistIdMlForecastPostRequest {
     artistId: string;
-    forecastRequest: ForecastRequest;
+    xR7ApiRoutersEarningsForecastRequest: XR7ApiRoutersEarningsForecastRequest;
 }
 
 export interface GetEarningsHistoryArtistsArtistIdEarningsHistoryGetRequest {
@@ -66,10 +66,10 @@ export class EarningsApi extends runtime.BaseAPI {
             );
         }
 
-        if (requestParameters['forecastRequest'] == null) {
+        if (requestParameters['xR7ApiRoutersEarningsForecastRequest'] == null) {
             throw new runtime.RequiredError(
-                'forecastRequest',
-                'Required parameter "forecastRequest" was null or undefined when calling forecastEarningsArtistsArtistIdMlForecastPost().'
+                'xR7ApiRoutersEarningsForecastRequest',
+                'Required parameter "xR7ApiRoutersEarningsForecastRequest" was null or undefined when calling forecastEarningsArtistsArtistIdMlForecastPost().'
             );
         }
 
@@ -88,7 +88,7 @@ export class EarningsApi extends runtime.BaseAPI {
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
-            body: ForecastRequestToJSON(requestParameters['forecastRequest']),
+            body: XR7ApiRoutersEarningsForecastRequestToJSON(requestParameters['xR7ApiRoutersEarningsForecastRequest']),
         };
     }
 

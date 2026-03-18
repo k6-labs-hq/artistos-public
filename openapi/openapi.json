@@ -200,7 +200,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ForecastRequest"
+                "$ref": "#/components/schemas/XR7__api__routers__earnings__ForecastRequest"
               }
             }
           }
@@ -13182,6 +13182,1059 @@
         }
       }
     },
+    "/artists/{artist_id}/xr7/credentials": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Upsert Xr7 Credentials",
+        "operationId": "upsert_xr7_credentials_artists__artist_id__xr7_credentials_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XR7ConnectorCredentialUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/pipelines/api-ingestion": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Run Api Ingestion",
+        "operationId": "run_api_ingestion_artists__artist_id__xr7_pipelines_api_ingestion_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIIngestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/pipelines/file-ingestion": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Run File Ingestion",
+        "operationId": "run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/pipelines/fingerprinting": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Run Fingerprinting",
+        "operationId": "run_fingerprinting_artists__artist_id__xr7_pipelines_fingerprinting_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FingerprintingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/pipelines/reconciliation": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Run Reconciliation",
+        "operationId": "run_reconciliation_artists__artist_id__xr7_pipelines_reconciliation_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconciliationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/pipelines/black-box-detection": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Run Black Box",
+        "operationId": "run_black_box_artists__artist_id__xr7_pipelines_black_box_detection_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlackBoxRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/reconciliation/gaps": {
+      "get": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Get Gap Report",
+        "operationId": "get_gap_report_artists__artist_id__xr7_reconciliation_gaps_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "default",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/queue/api-ingestion": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Queue Api Ingestion",
+        "operationId": "queue_api_ingestion_artists__artist_id__xr7_queue_api_ingestion_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/APIIngestionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/queue/file-ingestion": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Queue File Ingestion",
+        "operationId": "queue_file_ingestion_artists__artist_id__xr7_queue_file_ingestion_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_queue_file_ingestion_artists__artist_id__xr7_queue_file_ingestion_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/queue/fingerprinting": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Queue Fingerprinting",
+        "operationId": "queue_fingerprinting_artists__artist_id__xr7_queue_fingerprinting_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FingerprintingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/queue/reconciliation": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Queue Reconciliation",
+        "operationId": "queue_reconciliation_artists__artist_id__xr7_queue_reconciliation_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconciliationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/queue/black-box-detection": {
+      "post": {
+        "tags": [
+          "xr7-forensics"
+        ],
+        "summary": "Queue Black Box",
+        "operationId": "queue_black_box_artists__artist_id__xr7_queue_black_box_detection_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlackBoxRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/metadata/repair/suggest": {
+      "post": {
+        "tags": [
+          "xr7-metadata"
+        ],
+        "summary": "Suggest Repairs",
+        "operationId": "suggest_repairs_artists__artist_id__xr7_metadata_repair_suggest_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataRepairSuggestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/metadata/repair/apply": {
+      "post": {
+        "tags": [
+          "xr7-metadata"
+        ],
+        "summary": "Apply Repairs",
+        "operationId": "apply_repairs_artists__artist_id__xr7_metadata_repair_apply_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetadataRepairApplyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/ugc/signals/ingest": {
+      "post": {
+        "tags": [
+          "xr7-ugc"
+        ],
+        "summary": "Ingest Signals",
+        "operationId": "ingest_signals_artists__artist_id__xr7_ugc_signals_ingest_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UGCSignalIngestRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/ugc/opportunities": {
+      "get": {
+        "tags": [
+          "xr7-ugc"
+        ],
+        "summary": "Ugc Opportunities",
+        "operationId": "ugc_opportunities_artists__artist_id__xr7_ugc_opportunities_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "default",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "min_confidence",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 0.65,
+              "title": "Min Confidence"
+            }
+          },
+          {
+            "name": "min_estimated_value",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "default": 0.0,
+              "title": "Min Estimated Value"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/catalog/health": {
+      "get": {
+        "tags": [
+          "xr7-valuation"
+        ],
+        "summary": "Catalog Health",
+        "operationId": "catalog_health_artists__artist_id__xr7_catalog_health_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "default",
+              "title": "Tenant Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/valuation/snapshot": {
+      "get": {
+        "tags": [
+          "xr7-valuation"
+        ],
+        "summary": "Valuation Snapshot",
+        "operationId": "valuation_snapshot_artists__artist_id__xr7_valuation_snapshot_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "tenant_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "default",
+              "title": "Tenant Id"
+            }
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "As Of"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/forecast/recovery": {
+      "post": {
+        "tags": [
+          "xr7-valuation"
+        ],
+        "summary": "Recovery Forecast",
+        "operationId": "recovery_forecast_artists__artist_id__xr7_forecast_recovery_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/XR7__api__routers__xr7_valuation__ForecastRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/xr7/simulations/what-if": {
+      "post": {
+        "tags": [
+          "xr7-valuation"
+        ],
+        "summary": "Simulation",
+        "operationId": "simulation_artists__artist_id__xr7_simulations_what_if_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -13218,6 +14271,53 @@
   },
   "components": {
     "schemas": {
+      "APIIngestionRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Providers"
+          },
+          "since": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Since"
+          },
+          "until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Until"
+          },
+          "queue_backend": {
+            "type": "string",
+            "title": "Queue Backend",
+            "default": "celery"
+          }
+        },
+        "type": "object",
+        "title": "APIIngestionRequest"
+      },
       "AdminAuditLogSchema": {
         "properties": {
           "id": {
@@ -13950,6 +15050,27 @@
         ],
         "title": "AuthConnectResponse"
       },
+      "BlackBoxRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "min_confidence": {
+            "type": "number",
+            "title": "Min Confidence",
+            "default": 0.85
+          },
+          "queue_backend": {
+            "type": "string",
+            "title": "Queue Backend",
+            "default": "celery"
+          }
+        },
+        "type": "object",
+        "title": "BlackBoxRequest"
+      },
       "Body_edm_festival_audit_artists__artist_id__recovery_edm_festival_audit_post": {
         "properties": {
           "settlements": {
@@ -14072,6 +15193,59 @@
           "file"
         ],
         "title": "Body_parse_statement_with_engine_artists__artist_id__parsers__parser_type__post"
+      },
+      "Body_queue_file_ingestion_artists__artist_id__xr7_queue_file_ingestion_post": {
+        "properties": {
+          "source_system": {
+            "type": "string",
+            "title": "Source System"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "queue_backend": {
+            "type": "string",
+            "title": "Queue Backend",
+            "default": "celery"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_system",
+          "file"
+        ],
+        "title": "Body_queue_file_ingestion_artists__artist_id__xr7_queue_file_ingestion_post"
+      },
+      "Body_run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post": {
+        "properties": {
+          "source_system": {
+            "type": "string",
+            "title": "Source System"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_system",
+          "file"
+        ],
+        "title": "Body_run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post"
       },
       "Body_upload_any_statement_artists__artist_id__ingestion_upload_any_post": {
         "properties": {
@@ -15212,26 +16386,36 @@
         ],
         "title": "FeedbackOutcome"
       },
-      "ForecastRequest": {
+      "FingerprintingRequest": {
         "properties": {
-          "horizon_days": {
-            "type": "integer",
-            "title": "Horizon Days",
-            "default": 90
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
           },
-          "confidence": {
-            "type": "number",
-            "title": "Confidence",
-            "default": 0.95
+          "platform": {
+            "type": "string",
+            "title": "Platform"
           },
-          "by_category": {
-            "type": "boolean",
-            "title": "By Category",
-            "default": false
+          "detections": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Detections"
+          },
+          "queue_backend": {
+            "type": "string",
+            "title": "Queue Backend",
+            "default": "celery"
           }
         },
         "type": "object",
-        "title": "ForecastRequest"
+        "required": [
+          "platform"
+        ],
+        "title": "FingerprintingRequest"
       },
       "ForensicUniversalRoyaltyEventCreate": {
         "properties": {
@@ -15997,6 +17181,50 @@
         ],
         "title": "ManualRemittanceRequest"
       },
+      "MetadataRepairApplyRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "suggestion_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Suggestion Ids"
+          },
+          "dry_run": {
+            "type": "boolean",
+            "title": "Dry Run",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "MetadataRepairApplyRequest"
+      },
+      "MetadataRepairSuggestRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "scope": {
+            "type": "string",
+            "title": "Scope",
+            "default": "catalog"
+          },
+          "max_items": {
+            "type": "integer",
+            "title": "Max Items",
+            "default": 50
+          }
+        },
+        "type": "object",
+        "title": "MetadataRepairSuggestRequest"
+      },
       "NegotiationScriptRequest": {
         "properties": {
           "claim": {
@@ -16618,6 +17846,27 @@
           "currency"
         ],
         "title": "ReconcileRequest"
+      },
+      "ReconciliationRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "min_auto_match": {
+            "type": "number",
+            "title": "Min Auto Match",
+            "default": 0.92
+          },
+          "queue_backend": {
+            "type": "string",
+            "title": "Queue Backend",
+            "default": "celery"
+          }
+        },
+        "type": "object",
+        "title": "ReconciliationRequest"
       },
       "ReconstructRequest": {
         "properties": {
@@ -17241,6 +18490,25 @@
           "usage_rows"
         ],
         "title": "SimulatePayoutRequest"
+      },
+      "SimulationRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "scenarios": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "title": "SimulationRequest"
       },
       "SplitRepairRequest": {
         "properties": {
@@ -18336,6 +19604,32 @@
         ],
         "title": "TrolleyTxnType"
       },
+      "UGCSignalIngestRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "signals": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Signals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "platform"
+        ],
+        "title": "UGCSignalIngestRequest"
+      },
       "UtilityRankRequest": {
         "properties": {
           "items": {
@@ -18609,6 +19903,85 @@
         ],
         "title": "WorkflowRunResponse"
       },
+      "XR7ConnectorCredentialUpsert": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "external_account_id": {
+            "type": "string",
+            "title": "External Account Id"
+          },
+          "access_token": {
+            "type": "string",
+            "title": "Access Token"
+          },
+          "refresh_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Refresh Token"
+          },
+          "expires_in_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires In Seconds",
+            "default": 3600
+          },
+          "granted_scopes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Granted Scopes"
+          },
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "external_account_id",
+          "access_token"
+        ],
+        "title": "XR7ConnectorCredentialUpsert"
+      },
+      "XR7__api__routers__earnings__ForecastRequest": {
+        "properties": {
+          "horizon_days": {
+            "type": "integer",
+            "title": "Horizon Days",
+            "default": 90
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "default": 0.95
+          },
+          "by_category": {
+            "type": "boolean",
+            "title": "By Category",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "ForecastRequest"
+      },
       "XR7__api__routers__forensic__CatalogConfirmRequest": {
         "properties": {
           "artist_id": {
@@ -18673,6 +20046,27 @@
           "work_id"
         ],
         "title": "CatalogConfirmRequest"
+      },
+      "XR7__api__routers__xr7_valuation__ForecastRequest": {
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "title": "Tenant Id",
+            "default": "default"
+          },
+          "horizon_days": {
+            "type": "integer",
+            "title": "Horizon Days",
+            "default": 90
+          },
+          "scenario_overrides": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Scenario Overrides"
+          }
+        },
+        "type": "object",
+        "title": "ForecastRequest"
       }
     }
   }

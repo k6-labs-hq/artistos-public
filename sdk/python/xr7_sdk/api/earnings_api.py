@@ -17,8 +17,8 @@ from typing_extensions import Annotated
 
 from pydantic import StrictStr
 from typing import Any
-from xr7_sdk.models.forecast_request import ForecastRequest
 from xr7_sdk.models.reconstruct_request import ReconstructRequest
+from xr7_sdk.models.xr7_api_routers_earnings_forecast_request import XR7ApiRoutersEarningsForecastRequest
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
@@ -42,7 +42,7 @@ class EarningsApi:
     def forecast_earnings_artists_artist_id_ml_forecast_post(
         self,
         artist_id: StrictStr,
-        forecast_request: ForecastRequest,
+        xr7_api_routers_earnings_forecast_request: XR7ApiRoutersEarningsForecastRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -62,8 +62,8 @@ class EarningsApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param forecast_request: (required)
-        :type forecast_request: ForecastRequest
+        :param xr7_api_routers_earnings_forecast_request: (required)
+        :type xr7_api_routers_earnings_forecast_request: XR7ApiRoutersEarningsForecastRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -88,7 +88,7 @@ class EarningsApi:
 
         _param = self._forecast_earnings_artists_artist_id_ml_forecast_post_serialize(
             artist_id=artist_id,
-            forecast_request=forecast_request,
+            xr7_api_routers_earnings_forecast_request=xr7_api_routers_earnings_forecast_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -114,7 +114,7 @@ class EarningsApi:
     def forecast_earnings_artists_artist_id_ml_forecast_post_with_http_info(
         self,
         artist_id: StrictStr,
-        forecast_request: ForecastRequest,
+        xr7_api_routers_earnings_forecast_request: XR7ApiRoutersEarningsForecastRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -134,8 +134,8 @@ class EarningsApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param forecast_request: (required)
-        :type forecast_request: ForecastRequest
+        :param xr7_api_routers_earnings_forecast_request: (required)
+        :type xr7_api_routers_earnings_forecast_request: XR7ApiRoutersEarningsForecastRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -160,7 +160,7 @@ class EarningsApi:
 
         _param = self._forecast_earnings_artists_artist_id_ml_forecast_post_serialize(
             artist_id=artist_id,
-            forecast_request=forecast_request,
+            xr7_api_routers_earnings_forecast_request=xr7_api_routers_earnings_forecast_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -186,7 +186,7 @@ class EarningsApi:
     def forecast_earnings_artists_artist_id_ml_forecast_post_without_preload_content(
         self,
         artist_id: StrictStr,
-        forecast_request: ForecastRequest,
+        xr7_api_routers_earnings_forecast_request: XR7ApiRoutersEarningsForecastRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -206,8 +206,8 @@ class EarningsApi:
 
         :param artist_id: (required)
         :type artist_id: str
-        :param forecast_request: (required)
-        :type forecast_request: ForecastRequest
+        :param xr7_api_routers_earnings_forecast_request: (required)
+        :type xr7_api_routers_earnings_forecast_request: XR7ApiRoutersEarningsForecastRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -232,7 +232,7 @@ class EarningsApi:
 
         _param = self._forecast_earnings_artists_artist_id_ml_forecast_post_serialize(
             artist_id=artist_id,
-            forecast_request=forecast_request,
+            xr7_api_routers_earnings_forecast_request=xr7_api_routers_earnings_forecast_request,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -253,7 +253,7 @@ class EarningsApi:
     def _forecast_earnings_artists_artist_id_ml_forecast_post_serialize(
         self,
         artist_id,
-        forecast_request,
+        xr7_api_routers_earnings_forecast_request,
         _request_auth,
         _content_type,
         _headers,
@@ -281,8 +281,8 @@ class EarningsApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if forecast_request is not None:
-            _body_params = forecast_request
+        if xr7_api_routers_earnings_forecast_request is not None:
+            _body_params = xr7_api_routers_earnings_forecast_request
 
 
         # set the HTTP header `Accept`

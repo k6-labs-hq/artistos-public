@@ -12,7 +12,7 @@ Method | HTTP request | Description
 
 
 # **forecast_earnings_artists_artist_id_ml_forecast_post**
-> object forecast_earnings_artists_artist_id_ml_forecast_post(artist_id, forecast_request)
+> object forecast_earnings_artists_artist_id_ml_forecast_post(artist_id, xr7_api_routers_earnings_forecast_request)
 
 Forecast Earnings
 
@@ -26,7 +26,7 @@ Set ``by_category=true`` to receive a per-event-type breakdown.
 
 ```python
 import xr7_sdk
-from xr7_sdk.models.forecast_request import ForecastRequest
+from xr7_sdk.models.xr7_api_routers_earnings_forecast_request import XR7ApiRoutersEarningsForecastRequest
 from xr7_sdk.rest import ApiException
 from pprint import pprint
 
@@ -42,11 +42,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.EarningsApi(api_client)
     artist_id = 'artist_id_example' # str | 
-    forecast_request = xr7_sdk.ForecastRequest() # ForecastRequest | 
+    xr7_api_routers_earnings_forecast_request = xr7_sdk.XR7ApiRoutersEarningsForecastRequest() # XR7ApiRoutersEarningsForecastRequest | 
 
     try:
         # Forecast Earnings
-        api_response = api_instance.forecast_earnings_artists_artist_id_ml_forecast_post(artist_id, forecast_request)
+        api_response = api_instance.forecast_earnings_artists_artist_id_ml_forecast_post(artist_id, xr7_api_routers_earnings_forecast_request)
         print("The response of EarningsApi->forecast_earnings_artists_artist_id_ml_forecast_post:\n")
         pprint(api_response)
     except Exception as e:
@@ -61,7 +61,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **artist_id** | **str**|  | 
- **forecast_request** | [**ForecastRequest**](ForecastRequest.md)|  | 
+ **xr7_api_routers_earnings_forecast_request** | [**XR7ApiRoutersEarningsForecastRequest**](XR7ApiRoutersEarningsForecastRequest.md)|  | 
 
 ### Return type
 

@@ -53,6 +53,9 @@ All URIs are relative to *http://localhost*
 | Class | Method | HTTP request | Description
 | ----- | ------ | ------------ | -------------
 *AdminApi* | [**adminOverviewAdminOverviewGet**](docs/AdminApi.md#adminoverviewadminoverviewget) | **GET** /admin/overview | Admin Overview
+*AdminApi* | [**assignFounderManuallyAdminArtistsArtistIdFounderAssignPost**](docs/AdminApi.md#assignfoundermanuallyadminartistsartistidfounderassignpost) | **POST** /admin/artists/{artist_id}/founder/assign | Assign Founder Manually
+*AdminApi* | [**founderCohortReportAdminReportsFounderCohortGet**](docs/AdminApi.md#foundercohortreportadminreportsfoundercohortget) | **GET** /admin/reports/founder-cohort | Founder Cohort Report
+*AdminApi* | [**founderRosterAdminFoundersGet**](docs/AdminApi.md#founderrosteradminfoundersget) | **GET** /admin/founders | Founder Roster
 *AdminApi* | [**listAnomaliesAdminAnomaliesGet**](docs/AdminApi.md#listanomaliesadminanomaliesget) | **GET** /admin/anomalies | List Anomalies
 *AdminApi* | [**listArtistsAdminArtistsGet**](docs/AdminApi.md#listartistsadminartistsget) | **GET** /admin/artists | List Artists
 *AdminApi* | [**listAuditLogsAdminAuditLogsGet**](docs/AdminApi.md#listauditlogsadminauditlogsget) | **GET** /admin/audit-logs | List Audit Logs
@@ -60,6 +63,7 @@ All URIs are relative to *http://localhost*
 *AdminApi* | [**listReviewQueueAdminReviewQueueGet**](docs/AdminApi.md#listreviewqueueadminreviewqueueget) | **GET** /admin/review-queue | List Review Queue
 *AdminApi* | [**listTransactionsAdminTransactionsGet**](docs/AdminApi.md#listtransactionsadmintransactionsget) | **GET** /admin/transactions | List Transactions
 *AdminApi* | [**solRiskReportAdminReportsSolRiskGet**](docs/AdminApi.md#solriskreportadminreportssolriskget) | **GET** /admin/reports/sol-risk | Sol Risk Report
+*AdminApi* | [**updateFounderCohortLimitAdminFounderCohortLimitPut**](docs/AdminApi.md#updatefoundercohortlimitadminfoundercohortlimitput) | **PUT** /admin/founder/cohort-limit | Update Founder Cohort Limit
 *AnomaliesApi* | [**anomalyRecoveryProbabilityEndpointAnomaliesAnomalyIdRecoveryProbabilityGet**](docs/AnomaliesApi.md#anomalyrecoveryprobabilityendpointanomaliesanomalyidrecoveryprobabilityget) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detectAnomaliesArtistsArtistIdAnomaliesDetectPost**](docs/AnomaliesApi.md#detectanomaliesartistsartistidanomaliesdetectpost) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
 *AnomaliesApi* | [**fraudScanArtistsArtistIdAnomaliesFraudScanPost**](docs/AnomaliesApi.md#fraudscanartistsartistidanomaliesfraudscanpost) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
@@ -115,6 +119,7 @@ All URIs are relative to *http://localhost*
 *ClaimsApi* | [**listClaimsArtistsArtistIdClaimsGet**](docs/ClaimsApi.md#listclaimsartistsartistidclaimsget) | **GET** /artists/{artist_id}/claims | List Claims
 *ClaimsApi* | [**reconcileClaimClaimsClaimIdReconcilePost**](docs/ClaimsApi.md#reconcileclaimclaimsclaimidreconcilepost) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 *ClaimsApi* | [**verifyEvidencePacketClaimsClaimIdEvidenceVerifyGet**](docs/ClaimsApi.md#verifyevidencepacketclaimsclaimidevidenceverifyget) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
+*ConfigApi* | [**getFounderStatusConfigFounderStatusGet**](docs/ConfigApi.md#getfounderstatusconfigfounderstatusget) | **GET** /config/founder-status | Get Founder Status
 *ConnectApi* | [**connectGlobalSocialArtistsArtistIdConnectGlobalSocialPost**](docs/ConnectApi.md#connectglobalsocialartistsartistidconnectglobalsocialpost) | **POST** /artists/{artist_id}/connect/global-social | Connect Global Social
 *ConnectApi* | [**connectGlobalSocialStatusArtistsArtistIdConnectGlobalSocialStatusGet**](docs/ConnectApi.md#connectglobalsocialstatusartistsartistidconnectglobalsocialstatusget) | **GET** /artists/{artist_id}/connect/global-social/status | Connect Global Social Status
 *ConnectApi* | [**connectSoundcloudArtistsArtistIdConnectSoundcloudPost**](docs/ConnectApi.md#connectsoundcloudartistsartistidconnectsoundcloudpost) | **POST** /artists/{artist_id}/connect/soundcloud | Connect Soundcloud
@@ -300,10 +305,31 @@ All URIs are relative to *http://localhost*
 *WorkspaceApi* | [**workspaceClaimsWorkspaceClaimsGet**](docs/WorkspaceApi.md#workspaceclaimsworkspaceclaimsget) | **GET** /workspace/claims | Workspace Claims
 *WorkspaceApi* | [**workspaceDeadlinesWorkspaceDeadlinesGet**](docs/WorkspaceApi.md#workspacedeadlinesworkspacedeadlinesget) | **GET** /workspace/deadlines | Workspace Deadlines
 *WorkspaceApi* | [**workspaceOverviewWorkspaceOverviewGet**](docs/WorkspaceApi.md#workspaceoverviewworkspaceoverviewget) | **GET** /workspace/overview | Workspace Overview
+*Xr7ForensicsApi* | [**getGapReportArtistsArtistIdXr7ReconciliationGapsGet**](docs/Xr7ForensicsApi.md#getgapreportartistsartistidxr7reconciliationgapsget) | **GET** /artists/{artist_id}/xr7/reconciliation/gaps | Get Gap Report
+*Xr7ForensicsApi* | [**queueApiIngestionArtistsArtistIdXr7QueueApiIngestionPost**](docs/Xr7ForensicsApi.md#queueapiingestionartistsartistidxr7queueapiingestionpost) | **POST** /artists/{artist_id}/xr7/queue/api-ingestion | Queue Api Ingestion
+*Xr7ForensicsApi* | [**queueBlackBoxArtistsArtistIdXr7QueueBlackBoxDetectionPost**](docs/Xr7ForensicsApi.md#queueblackboxartistsartistidxr7queueblackboxdetectionpost) | **POST** /artists/{artist_id}/xr7/queue/black-box-detection | Queue Black Box
+*Xr7ForensicsApi* | [**queueFileIngestionArtistsArtistIdXr7QueueFileIngestionPost**](docs/Xr7ForensicsApi.md#queuefileingestionartistsartistidxr7queuefileingestionpost) | **POST** /artists/{artist_id}/xr7/queue/file-ingestion | Queue File Ingestion
+*Xr7ForensicsApi* | [**queueFingerprintingArtistsArtistIdXr7QueueFingerprintingPost**](docs/Xr7ForensicsApi.md#queuefingerprintingartistsartistidxr7queuefingerprintingpost) | **POST** /artists/{artist_id}/xr7/queue/fingerprinting | Queue Fingerprinting
+*Xr7ForensicsApi* | [**queueReconciliationArtistsArtistIdXr7QueueReconciliationPost**](docs/Xr7ForensicsApi.md#queuereconciliationartistsartistidxr7queuereconciliationpost) | **POST** /artists/{artist_id}/xr7/queue/reconciliation | Queue Reconciliation
+*Xr7ForensicsApi* | [**runApiIngestionArtistsArtistIdXr7PipelinesApiIngestionPost**](docs/Xr7ForensicsApi.md#runapiingestionartistsartistidxr7pipelinesapiingestionpost) | **POST** /artists/{artist_id}/xr7/pipelines/api-ingestion | Run Api Ingestion
+*Xr7ForensicsApi* | [**runBlackBoxArtistsArtistIdXr7PipelinesBlackBoxDetectionPost**](docs/Xr7ForensicsApi.md#runblackboxartistsartistidxr7pipelinesblackboxdetectionpost) | **POST** /artists/{artist_id}/xr7/pipelines/black-box-detection | Run Black Box
+*Xr7ForensicsApi* | [**runFileIngestionArtistsArtistIdXr7PipelinesFileIngestionPost**](docs/Xr7ForensicsApi.md#runfileingestionartistsartistidxr7pipelinesfileingestionpost) | **POST** /artists/{artist_id}/xr7/pipelines/file-ingestion | Run File Ingestion
+*Xr7ForensicsApi* | [**runFingerprintingArtistsArtistIdXr7PipelinesFingerprintingPost**](docs/Xr7ForensicsApi.md#runfingerprintingartistsartistidxr7pipelinesfingerprintingpost) | **POST** /artists/{artist_id}/xr7/pipelines/fingerprinting | Run Fingerprinting
+*Xr7ForensicsApi* | [**runReconciliationArtistsArtistIdXr7PipelinesReconciliationPost**](docs/Xr7ForensicsApi.md#runreconciliationartistsartistidxr7pipelinesreconciliationpost) | **POST** /artists/{artist_id}/xr7/pipelines/reconciliation | Run Reconciliation
+*Xr7ForensicsApi* | [**upsertXr7CredentialsArtistsArtistIdXr7CredentialsPost**](docs/Xr7ForensicsApi.md#upsertxr7credentialsartistsartistidxr7credentialspost) | **POST** /artists/{artist_id}/xr7/credentials | Upsert Xr7 Credentials
+*Xr7MetadataApi* | [**applyRepairsArtistsArtistIdXr7MetadataRepairApplyPost**](docs/Xr7MetadataApi.md#applyrepairsartistsartistidxr7metadatarepairapplypost) | **POST** /artists/{artist_id}/xr7/metadata/repair/apply | Apply Repairs
+*Xr7MetadataApi* | [**suggestRepairsArtistsArtistIdXr7MetadataRepairSuggestPost**](docs/Xr7MetadataApi.md#suggestrepairsartistsartistidxr7metadatarepairsuggestpost) | **POST** /artists/{artist_id}/xr7/metadata/repair/suggest | Suggest Repairs
+*Xr7UgcApi* | [**ingestSignalsArtistsArtistIdXr7UgcSignalsIngestPost**](docs/Xr7UgcApi.md#ingestsignalsartistsartistidxr7ugcsignalsingestpost) | **POST** /artists/{artist_id}/xr7/ugc/signals/ingest | Ingest Signals
+*Xr7UgcApi* | [**ugcOpportunitiesArtistsArtistIdXr7UgcOpportunitiesGet**](docs/Xr7UgcApi.md#ugcopportunitiesartistsartistidxr7ugcopportunitiesget) | **GET** /artists/{artist_id}/xr7/ugc/opportunities | Ugc Opportunities
+*Xr7ValuationApi* | [**catalogHealthArtistsArtistIdXr7CatalogHealthGet**](docs/Xr7ValuationApi.md#cataloghealthartistsartistidxr7cataloghealthget) | **GET** /artists/{artist_id}/xr7/catalog/health | Catalog Health
+*Xr7ValuationApi* | [**recoveryForecastArtistsArtistIdXr7ForecastRecoveryPost**](docs/Xr7ValuationApi.md#recoveryforecastartistsartistidxr7forecastrecoverypost) | **POST** /artists/{artist_id}/xr7/forecast/recovery | Recovery Forecast
+*Xr7ValuationApi* | [**simulationArtistsArtistIdXr7SimulationsWhatIfPost**](docs/Xr7ValuationApi.md#simulationartistsartistidxr7simulationswhatifpost) | **POST** /artists/{artist_id}/xr7/simulations/what-if | Simulation
+*Xr7ValuationApi* | [**valuationSnapshotArtistsArtistIdXr7ValuationSnapshotGet**](docs/Xr7ValuationApi.md#valuationsnapshotartistsartistidxr7valuationsnapshotget) | **GET** /artists/{artist_id}/xr7/valuation/snapshot | Valuation Snapshot
 
 
 ### Models
 
+- [APIIngestionRequest](docs/APIIngestionRequest.md)
 - [AdminAuditLogSchema](docs/AdminAuditLogSchema.md)
 - [AdviceRequest](docs/AdviceRequest.md)
 - [AdviceResponse](docs/AdviceResponse.md)
@@ -318,6 +344,7 @@ All URIs are relative to *http://localhost*
 - [AssignReviewItemRequest](docs/AssignReviewItemRequest.md)
 - [AttorneyEvidenceRequest](docs/AttorneyEvidenceRequest.md)
 - [AuthConnectResponse](docs/AuthConnectResponse.md)
+- [BlackBoxRequest](docs/BlackBoxRequest.md)
 - [BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost](docs/BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.md)
 - [BrandingProfilePatchRequest](docs/BrandingProfilePatchRequest.md)
 - [BrandingProfileUpsertRequest](docs/BrandingProfileUpsertRequest.md)
@@ -336,9 +363,11 @@ All URIs are relative to *http://localhost*
 - [EstimateRequest](docs/EstimateRequest.md)
 - [EvidenceAnchorSchema](docs/EvidenceAnchorSchema.md)
 - [FeedbackOutcome](docs/FeedbackOutcome.md)
-- [ForecastRequest](docs/ForecastRequest.md)
+- [FingerprintingRequest](docs/FingerprintingRequest.md)
 - [ForensicUniversalRoyaltyEventCreate](docs/ForensicUniversalRoyaltyEventCreate.md)
 - [ForensicUniversalRoyaltyEventSchema](docs/ForensicUniversalRoyaltyEventSchema.md)
+- [FounderAssignRequest](docs/FounderAssignRequest.md)
+- [FounderCohortLimitUpdateRequest](docs/FounderCohortLimitUpdateRequest.md)
 - [HTTPValidationError](docs/HTTPValidationError.md)
 - [HelpArticleCreateRequest](docs/HelpArticleCreateRequest.md)
 - [ImmutableLedgerEntrySchema](docs/ImmutableLedgerEntrySchema.md)
@@ -349,6 +378,8 @@ All URIs are relative to *http://localhost*
 - [MLFeedbackEventSchema](docs/MLFeedbackEventSchema.md)
 - [MLFeedbackType](docs/MLFeedbackType.md)
 - [ManualRemittanceRequest](docs/ManualRemittanceRequest.md)
+- [MetadataRepairApplyRequest](docs/MetadataRepairApplyRequest.md)
+- [MetadataRepairSuggestRequest](docs/MetadataRepairSuggestRequest.md)
 - [NegotiationScriptRequest](docs/NegotiationScriptRequest.md)
 - [NegotiationScriptResponse](docs/NegotiationScriptResponse.md)
 - [NotificationDispatchRequest](docs/NotificationDispatchRequest.md)
@@ -364,6 +395,7 @@ All URIs are relative to *http://localhost*
 - [PreSignatureContractReviewRequest](docs/PreSignatureContractReviewRequest.md)
 - [PredictRecoverableRequest](docs/PredictRecoverableRequest.md)
 - [ReconcileRequest](docs/ReconcileRequest.md)
+- [ReconciliationRequest](docs/ReconciliationRequest.md)
 - [ReconstructRequest](docs/ReconstructRequest.md)
 - [RecoveryOutcomeFeedbackSchema](docs/RecoveryOutcomeFeedbackSchema.md)
 - [RecoverySubmitResponse](docs/RecoverySubmitResponse.md)
@@ -377,6 +409,7 @@ All URIs are relative to *http://localhost*
 - [ReviewSourceType](docs/ReviewSourceType.md)
 - [RoyaltyLedgerEntryCreate](docs/RoyaltyLedgerEntryCreate.md)
 - [SimulatePayoutRequest](docs/SimulatePayoutRequest.md)
+- [SimulationRequest](docs/SimulationRequest.md)
 - [SplitRepairRequest](docs/SplitRepairRequest.md)
 - [StatementSchema](docs/StatementSchema.md)
 - [StructuredFeedbackRequest](docs/StructuredFeedbackRequest.md)
@@ -398,6 +431,7 @@ All URIs are relative to *http://localhost*
 - [TrolleyTransactionSchema](docs/TrolleyTransactionSchema.md)
 - [TrolleyTxnStatus](docs/TrolleyTxnStatus.md)
 - [TrolleyTxnType](docs/TrolleyTxnType.md)
+- [UGCSignalIngestRequest](docs/UGCSignalIngestRequest.md)
 - [UtilityRankRequest](docs/UtilityRankRequest.md)
 - [ValidationError](docs/ValidationError.md)
 - [VarianceScanRequest](docs/VarianceScanRequest.md)
@@ -406,8 +440,11 @@ All URIs are relative to *http://localhost*
 - [WidgetLeadSchema](docs/WidgetLeadSchema.md)
 - [WorkflowRunRequest](docs/WorkflowRunRequest.md)
 - [WorkflowRunResponse](docs/WorkflowRunResponse.md)
+- [XR7ApiRoutersEarningsForecastRequest](docs/XR7ApiRoutersEarningsForecastRequest.md)
 - [XR7ApiRoutersForensicCatalogConfirmRequest](docs/XR7ApiRoutersForensicCatalogConfirmRequest.md)
 - [XR7ApiRoutersOnboardingCatalogConfirmRequest](docs/XR7ApiRoutersOnboardingCatalogConfirmRequest.md)
+- [XR7ApiRoutersXr7ValuationForecastRequest](docs/XR7ApiRoutersXr7ValuationForecastRequest.md)
+- [XR7ConnectorCredentialUpsert](docs/XR7ConnectorCredentialUpsert.md)
 
 ### Authorization
 

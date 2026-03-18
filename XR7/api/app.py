@@ -30,6 +30,10 @@ from XR7.api.routers import workflow as workflow_router
 from XR7.api.routers import support as support_router
 from XR7.api.routers import branding as branding_router
 from XR7.api.routers import config as config_router
+from XR7.api.routers import xr7_forensics as xr7_forensics_router
+from XR7.api.routers import xr7_metadata as xr7_metadata_router
+from XR7.api.routers import xr7_ugc as xr7_ugc_router
+from XR7.api.routers import xr7_valuation as xr7_valuation_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -61,6 +65,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.branding_profile  # noqa: F401
     import XR7.models.trolley_transaction  # noqa: F401
     import XR7.models.platform_config  # noqa: F401
+    import XR7.models.xr7_royalty  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -184,6 +189,10 @@ app.include_router(workflow_router.router)
 app.include_router(support_router.router)
 app.include_router(branding_router.router)
 app.include_router(config_router.router)
+app.include_router(xr7_forensics_router.router)
+app.include_router(xr7_metadata_router.router)
+app.include_router(xr7_ugc_router.router)
+app.include_router(xr7_valuation_router.router)
 
 
 @app.get("/health")

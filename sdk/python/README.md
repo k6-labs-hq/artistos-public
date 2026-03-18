@@ -92,6 +92,9 @@ Class | Method | HTTP request | Description
 *RecoveryIntelligenceLLMApi* | [**llm_negotiation_script_artists_artist_id_llm_negotiation_script_post**](docs/RecoveryIntelligenceLLMApi.md#llm_negotiation_script_artists_artist_id_llm_negotiation_script_post) | **POST** /artists/{artist_id}/llm/negotiation-script | Llm Negotiation Script
 *RecoveryIntelligenceLLMApi* | [**llm_personalized_advice_artists_artist_id_llm_advice_post**](docs/RecoveryIntelligenceLLMApi.md#llm_personalized_advice_artists_artist_id_llm_advice_post) | **POST** /artists/{artist_id}/llm/advice | Llm Personalized Advice
 *AdminApi* | [**admin_overview_admin_overview_get**](docs/AdminApi.md#admin_overview_admin_overview_get) | **GET** /admin/overview | Admin Overview
+*AdminApi* | [**assign_founder_manually_admin_artists_artist_id_founder_assign_post**](docs/AdminApi.md#assign_founder_manually_admin_artists_artist_id_founder_assign_post) | **POST** /admin/artists/{artist_id}/founder/assign | Assign Founder Manually
+*AdminApi* | [**founder_cohort_report_admin_reports_founder_cohort_get**](docs/AdminApi.md#founder_cohort_report_admin_reports_founder_cohort_get) | **GET** /admin/reports/founder-cohort | Founder Cohort Report
+*AdminApi* | [**founder_roster_admin_founders_get**](docs/AdminApi.md#founder_roster_admin_founders_get) | **GET** /admin/founders | Founder Roster
 *AdminApi* | [**list_anomalies_admin_anomalies_get**](docs/AdminApi.md#list_anomalies_admin_anomalies_get) | **GET** /admin/anomalies | List Anomalies
 *AdminApi* | [**list_artists_admin_artists_get**](docs/AdminApi.md#list_artists_admin_artists_get) | **GET** /admin/artists | List Artists
 *AdminApi* | [**list_audit_logs_admin_audit_logs_get**](docs/AdminApi.md#list_audit_logs_admin_audit_logs_get) | **GET** /admin/audit-logs | List Audit Logs
@@ -99,6 +102,7 @@ Class | Method | HTTP request | Description
 *AdminApi* | [**list_review_queue_admin_review_queue_get**](docs/AdminApi.md#list_review_queue_admin_review_queue_get) | **GET** /admin/review-queue | List Review Queue
 *AdminApi* | [**list_transactions_admin_transactions_get**](docs/AdminApi.md#list_transactions_admin_transactions_get) | **GET** /admin/transactions | List Transactions
 *AdminApi* | [**sol_risk_report_admin_reports_sol_risk_get**](docs/AdminApi.md#sol_risk_report_admin_reports_sol_risk_get) | **GET** /admin/reports/sol-risk | Sol Risk Report
+*AdminApi* | [**update_founder_cohort_limit_admin_founder_cohort_limit_put**](docs/AdminApi.md#update_founder_cohort_limit_admin_founder_cohort_limit_put) | **PUT** /admin/founder/cohort-limit | Update Founder Cohort Limit
 *AnomaliesApi* | [**anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get**](docs/AnomaliesApi.md#anomaly_recovery_probability_endpoint_anomalies_anomaly_id_recovery_probability_get) | **GET** /anomalies/{anomaly_id}/recovery-probability | Anomaly Recovery Probability Endpoint
 *AnomaliesApi* | [**detect_anomalies_artists_artist_id_anomalies_detect_post**](docs/AnomaliesApi.md#detect_anomalies_artists_artist_id_anomalies_detect_post) | **POST** /artists/{artist_id}/anomalies/detect | Detect Anomalies
 *AnomaliesApi* | [**fraud_scan_artists_artist_id_anomalies_fraud_scan_post**](docs/AnomaliesApi.md#fraud_scan_artists_artist_id_anomalies_fraud_scan_post) | **POST** /artists/{artist_id}/anomalies/fraud-scan | Fraud Scan
@@ -154,6 +158,7 @@ Class | Method | HTTP request | Description
 *ClaimsApi* | [**list_claims_artists_artist_id_claims_get**](docs/ClaimsApi.md#list_claims_artists_artist_id_claims_get) | **GET** /artists/{artist_id}/claims | List Claims
 *ClaimsApi* | [**reconcile_claim_claims_claim_id_reconcile_post**](docs/ClaimsApi.md#reconcile_claim_claims_claim_id_reconcile_post) | **POST** /claims/{claim_id}/reconcile | Reconcile Claim
 *ClaimsApi* | [**verify_evidence_packet_claims_claim_id_evidence_verify_get**](docs/ClaimsApi.md#verify_evidence_packet_claims_claim_id_evidence_verify_get) | **GET** /claims/{claim_id}/evidence/verify | Verify Evidence Packet
+*ConfigApi* | [**get_founder_status_config_founder_status_get**](docs/ConfigApi.md#get_founder_status_config_founder_status_get) | **GET** /config/founder-status | Get Founder Status
 *ConnectApi* | [**connect_global_social_artists_artist_id_connect_global_social_post**](docs/ConnectApi.md#connect_global_social_artists_artist_id_connect_global_social_post) | **POST** /artists/{artist_id}/connect/global-social | Connect Global Social
 *ConnectApi* | [**connect_global_social_status_artists_artist_id_connect_global_social_status_get**](docs/ConnectApi.md#connect_global_social_status_artists_artist_id_connect_global_social_status_get) | **GET** /artists/{artist_id}/connect/global-social/status | Connect Global Social Status
 *ConnectApi* | [**connect_soundcloud_artists_artist_id_connect_soundcloud_post**](docs/ConnectApi.md#connect_soundcloud_artists_artist_id_connect_soundcloud_post) | **POST** /artists/{artist_id}/connect/soundcloud | Connect Soundcloud
@@ -336,10 +341,31 @@ Class | Method | HTTP request | Description
 *WorkspaceApi* | [**workspace_claims_workspace_claims_get**](docs/WorkspaceApi.md#workspace_claims_workspace_claims_get) | **GET** /workspace/claims | Workspace Claims
 *WorkspaceApi* | [**workspace_deadlines_workspace_deadlines_get**](docs/WorkspaceApi.md#workspace_deadlines_workspace_deadlines_get) | **GET** /workspace/deadlines | Workspace Deadlines
 *WorkspaceApi* | [**workspace_overview_workspace_overview_get**](docs/WorkspaceApi.md#workspace_overview_workspace_overview_get) | **GET** /workspace/overview | Workspace Overview
+*Xr7ForensicsApi* | [**get_gap_report_artists_artist_id_xr7_reconciliation_gaps_get**](docs/Xr7ForensicsApi.md#get_gap_report_artists_artist_id_xr7_reconciliation_gaps_get) | **GET** /artists/{artist_id}/xr7/reconciliation/gaps | Get Gap Report
+*Xr7ForensicsApi* | [**queue_api_ingestion_artists_artist_id_xr7_queue_api_ingestion_post**](docs/Xr7ForensicsApi.md#queue_api_ingestion_artists_artist_id_xr7_queue_api_ingestion_post) | **POST** /artists/{artist_id}/xr7/queue/api-ingestion | Queue Api Ingestion
+*Xr7ForensicsApi* | [**queue_black_box_artists_artist_id_xr7_queue_black_box_detection_post**](docs/Xr7ForensicsApi.md#queue_black_box_artists_artist_id_xr7_queue_black_box_detection_post) | **POST** /artists/{artist_id}/xr7/queue/black-box-detection | Queue Black Box
+*Xr7ForensicsApi* | [**queue_file_ingestion_artists_artist_id_xr7_queue_file_ingestion_post**](docs/Xr7ForensicsApi.md#queue_file_ingestion_artists_artist_id_xr7_queue_file_ingestion_post) | **POST** /artists/{artist_id}/xr7/queue/file-ingestion | Queue File Ingestion
+*Xr7ForensicsApi* | [**queue_fingerprinting_artists_artist_id_xr7_queue_fingerprinting_post**](docs/Xr7ForensicsApi.md#queue_fingerprinting_artists_artist_id_xr7_queue_fingerprinting_post) | **POST** /artists/{artist_id}/xr7/queue/fingerprinting | Queue Fingerprinting
+*Xr7ForensicsApi* | [**queue_reconciliation_artists_artist_id_xr7_queue_reconciliation_post**](docs/Xr7ForensicsApi.md#queue_reconciliation_artists_artist_id_xr7_queue_reconciliation_post) | **POST** /artists/{artist_id}/xr7/queue/reconciliation | Queue Reconciliation
+*Xr7ForensicsApi* | [**run_api_ingestion_artists_artist_id_xr7_pipelines_api_ingestion_post**](docs/Xr7ForensicsApi.md#run_api_ingestion_artists_artist_id_xr7_pipelines_api_ingestion_post) | **POST** /artists/{artist_id}/xr7/pipelines/api-ingestion | Run Api Ingestion
+*Xr7ForensicsApi* | [**run_black_box_artists_artist_id_xr7_pipelines_black_box_detection_post**](docs/Xr7ForensicsApi.md#run_black_box_artists_artist_id_xr7_pipelines_black_box_detection_post) | **POST** /artists/{artist_id}/xr7/pipelines/black-box-detection | Run Black Box
+*Xr7ForensicsApi* | [**run_file_ingestion_artists_artist_id_xr7_pipelines_file_ingestion_post**](docs/Xr7ForensicsApi.md#run_file_ingestion_artists_artist_id_xr7_pipelines_file_ingestion_post) | **POST** /artists/{artist_id}/xr7/pipelines/file-ingestion | Run File Ingestion
+*Xr7ForensicsApi* | [**run_fingerprinting_artists_artist_id_xr7_pipelines_fingerprinting_post**](docs/Xr7ForensicsApi.md#run_fingerprinting_artists_artist_id_xr7_pipelines_fingerprinting_post) | **POST** /artists/{artist_id}/xr7/pipelines/fingerprinting | Run Fingerprinting
+*Xr7ForensicsApi* | [**run_reconciliation_artists_artist_id_xr7_pipelines_reconciliation_post**](docs/Xr7ForensicsApi.md#run_reconciliation_artists_artist_id_xr7_pipelines_reconciliation_post) | **POST** /artists/{artist_id}/xr7/pipelines/reconciliation | Run Reconciliation
+*Xr7ForensicsApi* | [**upsert_xr7_credentials_artists_artist_id_xr7_credentials_post**](docs/Xr7ForensicsApi.md#upsert_xr7_credentials_artists_artist_id_xr7_credentials_post) | **POST** /artists/{artist_id}/xr7/credentials | Upsert Xr7 Credentials
+*Xr7MetadataApi* | [**apply_repairs_artists_artist_id_xr7_metadata_repair_apply_post**](docs/Xr7MetadataApi.md#apply_repairs_artists_artist_id_xr7_metadata_repair_apply_post) | **POST** /artists/{artist_id}/xr7/metadata/repair/apply | Apply Repairs
+*Xr7MetadataApi* | [**suggest_repairs_artists_artist_id_xr7_metadata_repair_suggest_post**](docs/Xr7MetadataApi.md#suggest_repairs_artists_artist_id_xr7_metadata_repair_suggest_post) | **POST** /artists/{artist_id}/xr7/metadata/repair/suggest | Suggest Repairs
+*Xr7UgcApi* | [**ingest_signals_artists_artist_id_xr7_ugc_signals_ingest_post**](docs/Xr7UgcApi.md#ingest_signals_artists_artist_id_xr7_ugc_signals_ingest_post) | **POST** /artists/{artist_id}/xr7/ugc/signals/ingest | Ingest Signals
+*Xr7UgcApi* | [**ugc_opportunities_artists_artist_id_xr7_ugc_opportunities_get**](docs/Xr7UgcApi.md#ugc_opportunities_artists_artist_id_xr7_ugc_opportunities_get) | **GET** /artists/{artist_id}/xr7/ugc/opportunities | Ugc Opportunities
+*Xr7ValuationApi* | [**catalog_health_artists_artist_id_xr7_catalog_health_get**](docs/Xr7ValuationApi.md#catalog_health_artists_artist_id_xr7_catalog_health_get) | **GET** /artists/{artist_id}/xr7/catalog/health | Catalog Health
+*Xr7ValuationApi* | [**recovery_forecast_artists_artist_id_xr7_forecast_recovery_post**](docs/Xr7ValuationApi.md#recovery_forecast_artists_artist_id_xr7_forecast_recovery_post) | **POST** /artists/{artist_id}/xr7/forecast/recovery | Recovery Forecast
+*Xr7ValuationApi* | [**simulation_artists_artist_id_xr7_simulations_what_if_post**](docs/Xr7ValuationApi.md#simulation_artists_artist_id_xr7_simulations_what_if_post) | **POST** /artists/{artist_id}/xr7/simulations/what-if | Simulation
+*Xr7ValuationApi* | [**valuation_snapshot_artists_artist_id_xr7_valuation_snapshot_get**](docs/Xr7ValuationApi.md#valuation_snapshot_artists_artist_id_xr7_valuation_snapshot_get) | **GET** /artists/{artist_id}/xr7/valuation/snapshot | Valuation Snapshot
 
 
 ## Documentation For Models
 
+ - [APIIngestionRequest](docs/APIIngestionRequest.md)
  - [AdminAuditLogSchema](docs/AdminAuditLogSchema.md)
  - [AdviceRequest](docs/AdviceRequest.md)
  - [AdviceResponse](docs/AdviceResponse.md)
@@ -354,6 +380,7 @@ Class | Method | HTTP request | Description
  - [AssignReviewItemRequest](docs/AssignReviewItemRequest.md)
  - [AttorneyEvidenceRequest](docs/AttorneyEvidenceRequest.md)
  - [AuthConnectResponse](docs/AuthConnectResponse.md)
+ - [BlackBoxRequest](docs/BlackBoxRequest.md)
  - [BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost](docs/BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.md)
  - [BrandingProfilePatchRequest](docs/BrandingProfilePatchRequest.md)
  - [BrandingProfileUpsertRequest](docs/BrandingProfileUpsertRequest.md)
@@ -372,9 +399,11 @@ Class | Method | HTTP request | Description
  - [EstimateRequest](docs/EstimateRequest.md)
  - [EvidenceAnchorSchema](docs/EvidenceAnchorSchema.md)
  - [FeedbackOutcome](docs/FeedbackOutcome.md)
- - [ForecastRequest](docs/ForecastRequest.md)
+ - [FingerprintingRequest](docs/FingerprintingRequest.md)
  - [ForensicUniversalRoyaltyEventCreate](docs/ForensicUniversalRoyaltyEventCreate.md)
  - [ForensicUniversalRoyaltyEventSchema](docs/ForensicUniversalRoyaltyEventSchema.md)
+ - [FounderAssignRequest](docs/FounderAssignRequest.md)
+ - [FounderCohortLimitUpdateRequest](docs/FounderCohortLimitUpdateRequest.md)
  - [HTTPValidationError](docs/HTTPValidationError.md)
  - [HelpArticleCreateRequest](docs/HelpArticleCreateRequest.md)
  - [ImmutableLedgerEntrySchema](docs/ImmutableLedgerEntrySchema.md)
@@ -385,6 +414,8 @@ Class | Method | HTTP request | Description
  - [MLFeedbackEventSchema](docs/MLFeedbackEventSchema.md)
  - [MLFeedbackType](docs/MLFeedbackType.md)
  - [ManualRemittanceRequest](docs/ManualRemittanceRequest.md)
+ - [MetadataRepairApplyRequest](docs/MetadataRepairApplyRequest.md)
+ - [MetadataRepairSuggestRequest](docs/MetadataRepairSuggestRequest.md)
  - [NegotiationScriptRequest](docs/NegotiationScriptRequest.md)
  - [NegotiationScriptResponse](docs/NegotiationScriptResponse.md)
  - [NotificationDispatchRequest](docs/NotificationDispatchRequest.md)
@@ -400,6 +431,7 @@ Class | Method | HTTP request | Description
  - [PreSignatureContractReviewRequest](docs/PreSignatureContractReviewRequest.md)
  - [PredictRecoverableRequest](docs/PredictRecoverableRequest.md)
  - [ReconcileRequest](docs/ReconcileRequest.md)
+ - [ReconciliationRequest](docs/ReconciliationRequest.md)
  - [ReconstructRequest](docs/ReconstructRequest.md)
  - [RecoveryOutcomeFeedbackSchema](docs/RecoveryOutcomeFeedbackSchema.md)
  - [RecoverySubmitResponse](docs/RecoverySubmitResponse.md)
@@ -413,6 +445,7 @@ Class | Method | HTTP request | Description
  - [ReviewSourceType](docs/ReviewSourceType.md)
  - [RoyaltyLedgerEntryCreate](docs/RoyaltyLedgerEntryCreate.md)
  - [SimulatePayoutRequest](docs/SimulatePayoutRequest.md)
+ - [SimulationRequest](docs/SimulationRequest.md)
  - [SplitRepairRequest](docs/SplitRepairRequest.md)
  - [StatementSchema](docs/StatementSchema.md)
  - [StructuredFeedbackRequest](docs/StructuredFeedbackRequest.md)
@@ -434,6 +467,7 @@ Class | Method | HTTP request | Description
  - [TrolleyTransactionSchema](docs/TrolleyTransactionSchema.md)
  - [TrolleyTxnStatus](docs/TrolleyTxnStatus.md)
  - [TrolleyTxnType](docs/TrolleyTxnType.md)
+ - [UGCSignalIngestRequest](docs/UGCSignalIngestRequest.md)
  - [UtilityRankRequest](docs/UtilityRankRequest.md)
  - [ValidationError](docs/ValidationError.md)
  - [VarianceScanRequest](docs/VarianceScanRequest.md)
@@ -442,8 +476,11 @@ Class | Method | HTTP request | Description
  - [WidgetLeadSchema](docs/WidgetLeadSchema.md)
  - [WorkflowRunRequest](docs/WorkflowRunRequest.md)
  - [WorkflowRunResponse](docs/WorkflowRunResponse.md)
+ - [XR7ApiRoutersEarningsForecastRequest](docs/XR7ApiRoutersEarningsForecastRequest.md)
  - [XR7ApiRoutersForensicCatalogConfirmRequest](docs/XR7ApiRoutersForensicCatalogConfirmRequest.md)
  - [XR7ApiRoutersOnboardingCatalogConfirmRequest](docs/XR7ApiRoutersOnboardingCatalogConfirmRequest.md)
+ - [XR7ApiRoutersXr7ValuationForecastRequest](docs/XR7ApiRoutersXr7ValuationForecastRequest.md)
+ - [XR7ConnectorCredentialUpsert](docs/XR7ConnectorCredentialUpsert.md)
 
 
 <a id="documentation-for-authorization"></a>

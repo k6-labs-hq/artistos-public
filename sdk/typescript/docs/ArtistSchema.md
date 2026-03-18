@@ -28,6 +28,10 @@ Name | Type
 `primaryJurisdiction` | string
 `preferredContractType` | string
 `xr7FutureLeakagePrevented` | number
+`isFounder` | boolean
+`founderSlotNumber` | number
+`founderLockedAt` | Date
+`contingencyFeePercent` | number
 
 ## Example
 
@@ -58,6 +62,10 @@ const example = {
   "primaryJurisdiction": null,
   "preferredContractType": null,
   "xr7FutureLeakagePrevented": null,
+  "isFounder": null,
+  "founderSlotNumber": null,
+  "founderLockedAt": null,
+  "contingencyFeePercent": null,
 } satisfies ArtistSchema
 
 console.log(example)

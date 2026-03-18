@@ -26,6 +26,7 @@ __all__ = [
     "BillingApi",
     "BrandingApi",
     "ClaimsApi",
+    "ConfigApi",
     "ConnectApi",
     "DashboardApi",
     "DefaultApi",
@@ -49,6 +50,10 @@ __all__ = [
     "WidgetApi",
     "WorkflowApi",
     "WorkspaceApi",
+    "Xr7ForensicsApi",
+    "Xr7MetadataApi",
+    "Xr7UgcApi",
+    "Xr7ValuationApi",
     "ApiResponse",
     "ApiClient",
     "Configuration",
@@ -58,6 +63,7 @@ __all__ = [
     "ApiKeyError",
     "ApiAttributeError",
     "ApiException",
+    "APIIngestionRequest",
     "AdminAuditLogSchema",
     "AdviceRequest",
     "AdviceResponse",
@@ -72,6 +78,7 @@ __all__ = [
     "AssignReviewItemRequest",
     "AttorneyEvidenceRequest",
     "AuthConnectResponse",
+    "BlackBoxRequest",
     "BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost",
     "BrandingProfilePatchRequest",
     "BrandingProfileUpsertRequest",
@@ -90,9 +97,11 @@ __all__ = [
     "EstimateRequest",
     "EvidenceAnchorSchema",
     "FeedbackOutcome",
-    "ForecastRequest",
+    "FingerprintingRequest",
     "ForensicUniversalRoyaltyEventCreate",
     "ForensicUniversalRoyaltyEventSchema",
+    "FounderAssignRequest",
+    "FounderCohortLimitUpdateRequest",
     "HTTPValidationError",
     "HelpArticleCreateRequest",
     "ImmutableLedgerEntrySchema",
@@ -103,6 +112,8 @@ __all__ = [
     "MLFeedbackEventSchema",
     "MLFeedbackType",
     "ManualRemittanceRequest",
+    "MetadataRepairApplyRequest",
+    "MetadataRepairSuggestRequest",
     "NegotiationScriptRequest",
     "NegotiationScriptResponse",
     "NotificationDispatchRequest",
@@ -118,6 +129,7 @@ __all__ = [
     "PreSignatureContractReviewRequest",
     "PredictRecoverableRequest",
     "ReconcileRequest",
+    "ReconciliationRequest",
     "ReconstructRequest",
     "RecoveryOutcomeFeedbackSchema",
     "RecoverySubmitResponse",
@@ -131,6 +143,7 @@ __all__ = [
     "ReviewSourceType",
     "RoyaltyLedgerEntryCreate",
     "SimulatePayoutRequest",
+    "SimulationRequest",
     "SplitRepairRequest",
     "StatementSchema",
     "StructuredFeedbackRequest",
@@ -152,6 +165,7 @@ __all__ = [
     "TrolleyTransactionSchema",
     "TrolleyTxnStatus",
     "TrolleyTxnType",
+    "UGCSignalIngestRequest",
     "UtilityRankRequest",
     "ValidationError",
     "VarianceScanRequest",
@@ -160,8 +174,11 @@ __all__ = [
     "WidgetLeadSchema",
     "WorkflowRunRequest",
     "WorkflowRunResponse",
+    "XR7ApiRoutersEarningsForecastRequest",
     "XR7ApiRoutersForensicCatalogConfirmRequest",
     "XR7ApiRoutersOnboardingCatalogConfirmRequest",
+    "XR7ApiRoutersXr7ValuationForecastRequest",
+    "XR7ConnectorCredentialUpsert",
 ]
 
 # import apis into sdk package
@@ -173,6 +190,7 @@ from xr7_sdk.api.b2b_api import B2bApi as B2bApi
 from xr7_sdk.api.billing_api import BillingApi as BillingApi
 from xr7_sdk.api.branding_api import BrandingApi as BrandingApi
 from xr7_sdk.api.claims_api import ClaimsApi as ClaimsApi
+from xr7_sdk.api.config_api import ConfigApi as ConfigApi
 from xr7_sdk.api.connect_api import ConnectApi as ConnectApi
 from xr7_sdk.api.dashboard_api import DashboardApi as DashboardApi
 from xr7_sdk.api.default_api import DefaultApi as DefaultApi
@@ -196,6 +214,10 @@ from xr7_sdk.api.trolley_api import TrolleyApi as TrolleyApi
 from xr7_sdk.api.widget_api import WidgetApi as WidgetApi
 from xr7_sdk.api.workflow_api import WorkflowApi as WorkflowApi
 from xr7_sdk.api.workspace_api import WorkspaceApi as WorkspaceApi
+from xr7_sdk.api.xr7_forensics_api import Xr7ForensicsApi as Xr7ForensicsApi
+from xr7_sdk.api.xr7_metadata_api import Xr7MetadataApi as Xr7MetadataApi
+from xr7_sdk.api.xr7_ugc_api import Xr7UgcApi as Xr7UgcApi
+from xr7_sdk.api.xr7_valuation_api import Xr7ValuationApi as Xr7ValuationApi
 
 # import ApiClient
 from xr7_sdk.api_response import ApiResponse as ApiResponse
@@ -209,6 +231,7 @@ from xr7_sdk.exceptions import ApiAttributeError as ApiAttributeError
 from xr7_sdk.exceptions import ApiException as ApiException
 
 # import models into sdk package
+from xr7_sdk.models.api_ingestion_request import APIIngestionRequest as APIIngestionRequest
 from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema as AdminAuditLogSchema
 from xr7_sdk.models.advice_request import AdviceRequest as AdviceRequest
 from xr7_sdk.models.advice_response import AdviceResponse as AdviceResponse
@@ -223,6 +246,7 @@ from xr7_sdk.models.artist_schema import ArtistSchema as ArtistSchema
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest as AssignReviewItemRequest
 from xr7_sdk.models.attorney_evidence_request import AttorneyEvidenceRequest as AttorneyEvidenceRequest
 from xr7_sdk.models.auth_connect_response import AuthConnectResponse as AuthConnectResponse
+from xr7_sdk.models.black_box_request import BlackBoxRequest as BlackBoxRequest
 from xr7_sdk.models.body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post import BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost as BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost
 from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRequest as BrandingProfilePatchRequest
 from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest as BrandingProfileUpsertRequest
@@ -241,9 +265,11 @@ from xr7_sdk.models.demand_letter_response import DemandLetterResponse as Demand
 from xr7_sdk.models.estimate_request import EstimateRequest as EstimateRequest
 from xr7_sdk.models.evidence_anchor_schema import EvidenceAnchorSchema as EvidenceAnchorSchema
 from xr7_sdk.models.feedback_outcome import FeedbackOutcome as FeedbackOutcome
-from xr7_sdk.models.forecast_request import ForecastRequest as ForecastRequest
+from xr7_sdk.models.fingerprinting_request import FingerprintingRequest as FingerprintingRequest
 from xr7_sdk.models.forensic_universal_royalty_event_create import ForensicUniversalRoyaltyEventCreate as ForensicUniversalRoyaltyEventCreate
 from xr7_sdk.models.forensic_universal_royalty_event_schema import ForensicUniversalRoyaltyEventSchema as ForensicUniversalRoyaltyEventSchema
+from xr7_sdk.models.founder_assign_request import FounderAssignRequest as FounderAssignRequest
+from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest as FounderCohortLimitUpdateRequest
 from xr7_sdk.models.http_validation_error import HTTPValidationError as HTTPValidationError
 from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest as HelpArticleCreateRequest
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema as ImmutableLedgerEntrySchema
@@ -254,6 +280,8 @@ from xr7_sdk.models.location_inner import LocationInner as LocationInner
 from xr7_sdk.models.ml_feedback_event_schema import MLFeedbackEventSchema as MLFeedbackEventSchema
 from xr7_sdk.models.ml_feedback_type import MLFeedbackType as MLFeedbackType
 from xr7_sdk.models.manual_remittance_request import ManualRemittanceRequest as ManualRemittanceRequest
+from xr7_sdk.models.metadata_repair_apply_request import MetadataRepairApplyRequest as MetadataRepairApplyRequest
+from xr7_sdk.models.metadata_repair_suggest_request import MetadataRepairSuggestRequest as MetadataRepairSuggestRequest
 from xr7_sdk.models.negotiation_script_request import NegotiationScriptRequest as NegotiationScriptRequest
 from xr7_sdk.models.negotiation_script_response import NegotiationScriptResponse as NegotiationScriptResponse
 from xr7_sdk.models.notification_dispatch_request import NotificationDispatchRequest as NotificationDispatchRequest
@@ -269,6 +297,7 @@ from xr7_sdk.models.parser_plugin_upsert_request import ParserPluginUpsertReques
 from xr7_sdk.models.pre_signature_contract_review_request import PreSignatureContractReviewRequest as PreSignatureContractReviewRequest
 from xr7_sdk.models.predict_recoverable_request import PredictRecoverableRequest as PredictRecoverableRequest
 from xr7_sdk.models.reconcile_request import ReconcileRequest as ReconcileRequest
+from xr7_sdk.models.reconciliation_request import ReconciliationRequest as ReconciliationRequest
 from xr7_sdk.models.reconstruct_request import ReconstructRequest as ReconstructRequest
 from xr7_sdk.models.recovery_outcome_feedback_schema import RecoveryOutcomeFeedbackSchema as RecoveryOutcomeFeedbackSchema
 from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse as RecoverySubmitResponse
@@ -282,6 +311,7 @@ from xr7_sdk.models.review_item_status import ReviewItemStatus as ReviewItemStat
 from xr7_sdk.models.review_source_type import ReviewSourceType as ReviewSourceType
 from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate as RoyaltyLedgerEntryCreate
 from xr7_sdk.models.simulate_payout_request import SimulatePayoutRequest as SimulatePayoutRequest
+from xr7_sdk.models.simulation_request import SimulationRequest as SimulationRequest
 from xr7_sdk.models.split_repair_request import SplitRepairRequest as SplitRepairRequest
 from xr7_sdk.models.statement_schema import StatementSchema as StatementSchema
 from xr7_sdk.models.structured_feedback_request import StructuredFeedbackRequest as StructuredFeedbackRequest
@@ -303,6 +333,7 @@ from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema as Term
 from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema as TrolleyTransactionSchema
 from xr7_sdk.models.trolley_txn_status import TrolleyTxnStatus as TrolleyTxnStatus
 from xr7_sdk.models.trolley_txn_type import TrolleyTxnType as TrolleyTxnType
+from xr7_sdk.models.ugc_signal_ingest_request import UGCSignalIngestRequest as UGCSignalIngestRequest
 from xr7_sdk.models.utility_rank_request import UtilityRankRequest as UtilityRankRequest
 from xr7_sdk.models.validation_error import ValidationError as ValidationError
 from xr7_sdk.models.variance_scan_request import VarianceScanRequest as VarianceScanRequest
@@ -311,6 +342,9 @@ from xr7_sdk.models.verify_response import VerifyResponse as VerifyResponse
 from xr7_sdk.models.widget_lead_schema import WidgetLeadSchema as WidgetLeadSchema
 from xr7_sdk.models.workflow_run_request import WorkflowRunRequest as WorkflowRunRequest
 from xr7_sdk.models.workflow_run_response import WorkflowRunResponse as WorkflowRunResponse
+from xr7_sdk.models.xr7_api_routers_earnings_forecast_request import XR7ApiRoutersEarningsForecastRequest as XR7ApiRoutersEarningsForecastRequest
 from xr7_sdk.models.xr7_api_routers_forensic_catalog_confirm_request import XR7ApiRoutersForensicCatalogConfirmRequest as XR7ApiRoutersForensicCatalogConfirmRequest
 from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import XR7ApiRoutersOnboardingCatalogConfirmRequest as XR7ApiRoutersOnboardingCatalogConfirmRequest
+from xr7_sdk.models.xr7_api_routers_xr7_valuation_forecast_request import XR7ApiRoutersXr7ValuationForecastRequest as XR7ApiRoutersXr7ValuationForecastRequest
+from xr7_sdk.models.xr7_connector_credential_upsert import XR7ConnectorCredentialUpsert as XR7ConnectorCredentialUpsert
 

@@ -1,7 +1,7 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 README.md
+docs/APIIngestionRequest.md
 docs/AdminApi.md
 docs/AdminAuditLogSchema.md
 docs/AdviceRequest.md
@@ -21,6 +21,7 @@ docs/AttorneyEvidenceRequest.md
 docs/AuthConnectResponse.md
 docs/B2bApi.md
 docs/BillingApi.md
+docs/BlackBoxRequest.md
 docs/BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.md
 docs/BrandingApi.md
 docs/BrandingProfilePatchRequest.md
@@ -32,6 +33,7 @@ docs/ClaimSchema.md
 docs/ClaimStatus.md
 docs/ClaimTemplateRequest.md
 docs/ClaimsApi.md
+docs/ConfigApi.md
 docs/ConnectApi.md
 docs/ContractExtractRequest.md
 docs/CreateReviewItemRequest.md
@@ -47,10 +49,12 @@ docs/EvidenceAnchorSchema.md
 docs/ExpansionApi.md
 docs/FeedbackOutcome.md
 docs/FetchersApi.md
-docs/ForecastRequest.md
+docs/FingerprintingRequest.md
 docs/ForensicApiApi.md
 docs/ForensicUniversalRoyaltyEventCreate.md
 docs/ForensicUniversalRoyaltyEventSchema.md
+docs/FounderAssignRequest.md
+docs/FounderCohortLimitUpdateRequest.md
 docs/HTTPValidationError.md
 docs/HelpArticleCreateRequest.md
 docs/ImmutableLedgerEntrySchema.md
@@ -63,6 +67,8 @@ docs/LocationInner.md
 docs/MLFeedbackEventSchema.md
 docs/MLFeedbackType.md
 docs/ManualRemittanceRequest.md
+docs/MetadataRepairApplyRequest.md
+docs/MetadataRepairSuggestRequest.md
 docs/NegotiationScriptRequest.md
 docs/NegotiationScriptResponse.md
 docs/NotificationDispatchRequest.md
@@ -82,6 +88,7 @@ docs/PreSignatureContractReviewRequest.md
 docs/PredictRecoverableRequest.md
 docs/PublicApi.md
 docs/ReconcileRequest.md
+docs/ReconciliationRequest.md
 docs/ReconstructRequest.md
 docs/RecoveryApi.md
 docs/RecoveryIntelligenceLLMApi.md
@@ -98,6 +105,7 @@ docs/ReviewQueueApi.md
 docs/ReviewSourceType.md
 docs/RoyaltyLedgerEntryCreate.md
 docs/SimulatePayoutRequest.md
+docs/SimulationRequest.md
 docs/SplitRepairRequest.md
 docs/StatementSchema.md
 docs/StructuredFeedbackRequest.md
@@ -124,6 +132,7 @@ docs/TrolleyApi.md
 docs/TrolleyTransactionSchema.md
 docs/TrolleyTxnStatus.md
 docs/TrolleyTxnType.md
+docs/UGCSignalIngestRequest.md
 docs/UtilityRankRequest.md
 docs/ValidationError.md
 docs/VarianceScanRequest.md
@@ -135,8 +144,15 @@ docs/WorkflowApi.md
 docs/WorkflowRunRequest.md
 docs/WorkflowRunResponse.md
 docs/WorkspaceApi.md
+docs/XR7ApiRoutersEarningsForecastRequest.md
 docs/XR7ApiRoutersForensicCatalogConfirmRequest.md
 docs/XR7ApiRoutersOnboardingCatalogConfirmRequest.md
+docs/XR7ApiRoutersXr7ValuationForecastRequest.md
+docs/XR7ConnectorCredentialUpsert.md
+docs/Xr7ForensicsApi.md
+docs/Xr7MetadataApi.md
+docs/Xr7UgcApi.md
+docs/Xr7ValuationApi.md
 package.json
 src/apis/AdminApi.ts
 src/apis/AnomaliesApi.ts
@@ -145,6 +161,7 @@ src/apis/B2bApi.ts
 src/apis/BillingApi.ts
 src/apis/BrandingApi.ts
 src/apis/ClaimsApi.ts
+src/apis/ConfigApi.ts
 src/apis/ConnectApi.ts
 src/apis/DashboardApi.ts
 src/apis/DefaultApi.ts
@@ -169,8 +186,13 @@ src/apis/TrolleyApi.ts
 src/apis/WidgetApi.ts
 src/apis/WorkflowApi.ts
 src/apis/WorkspaceApi.ts
+src/apis/Xr7ForensicsApi.ts
+src/apis/Xr7MetadataApi.ts
+src/apis/Xr7UgcApi.ts
+src/apis/Xr7ValuationApi.ts
 src/apis/index.ts
 src/index.ts
+src/models/APIIngestionRequest.ts
 src/models/AdminAuditLogSchema.ts
 src/models/AdviceRequest.ts
 src/models/AdviceResponse.ts
@@ -185,6 +207,7 @@ src/models/ArtistSchema.ts
 src/models/AssignReviewItemRequest.ts
 src/models/AttorneyEvidenceRequest.ts
 src/models/AuthConnectResponse.ts
+src/models/BlackBoxRequest.ts
 src/models/BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.ts
 src/models/BrandingProfilePatchRequest.ts
 src/models/BrandingProfileUpsertRequest.ts
@@ -203,9 +226,11 @@ src/models/DemandLetterResponse.ts
 src/models/EstimateRequest.ts
 src/models/EvidenceAnchorSchema.ts
 src/models/FeedbackOutcome.ts
-src/models/ForecastRequest.ts
+src/models/FingerprintingRequest.ts
 src/models/ForensicUniversalRoyaltyEventCreate.ts
 src/models/ForensicUniversalRoyaltyEventSchema.ts
+src/models/FounderAssignRequest.ts
+src/models/FounderCohortLimitUpdateRequest.ts
 src/models/HTTPValidationError.ts
 src/models/HelpArticleCreateRequest.ts
 src/models/ImmutableLedgerEntrySchema.ts
@@ -216,6 +241,8 @@ src/models/LocationInner.ts
 src/models/MLFeedbackEventSchema.ts
 src/models/MLFeedbackType.ts
 src/models/ManualRemittanceRequest.ts
+src/models/MetadataRepairApplyRequest.ts
+src/models/MetadataRepairSuggestRequest.ts
 src/models/NegotiationScriptRequest.ts
 src/models/NegotiationScriptResponse.ts
 src/models/NotificationDispatchRequest.ts
@@ -231,6 +258,7 @@ src/models/ParserPluginUpsertRequest.ts
 src/models/PreSignatureContractReviewRequest.ts
 src/models/PredictRecoverableRequest.ts
 src/models/ReconcileRequest.ts
+src/models/ReconciliationRequest.ts
 src/models/ReconstructRequest.ts
 src/models/RecoveryOutcomeFeedbackSchema.ts
 src/models/RecoverySubmitResponse.ts
@@ -244,6 +272,7 @@ src/models/ReviewItemStatus.ts
 src/models/ReviewSourceType.ts
 src/models/RoyaltyLedgerEntryCreate.ts
 src/models/SimulatePayoutRequest.ts
+src/models/SimulationRequest.ts
 src/models/SplitRepairRequest.ts
 src/models/StatementSchema.ts
 src/models/StructuredFeedbackRequest.ts
@@ -265,6 +294,7 @@ src/models/TermsAcceptanceSchema.ts
 src/models/TrolleyTransactionSchema.ts
 src/models/TrolleyTxnStatus.ts
 src/models/TrolleyTxnType.ts
+src/models/UGCSignalIngestRequest.ts
 src/models/UtilityRankRequest.ts
 src/models/ValidationError.ts
 src/models/VarianceScanRequest.ts
@@ -273,8 +303,11 @@ src/models/VerifyResponse.ts
 src/models/WidgetLeadSchema.ts
 src/models/WorkflowRunRequest.ts
 src/models/WorkflowRunResponse.ts
+src/models/XR7ApiRoutersEarningsForecastRequest.ts
 src/models/XR7ApiRoutersForensicCatalogConfirmRequest.ts
 src/models/XR7ApiRoutersOnboardingCatalogConfirmRequest.ts
+src/models/XR7ApiRoutersXr7ValuationForecastRequest.ts
+src/models/XR7ConnectorCredentialUpsert.ts
 src/models/index.ts
 src/runtime.ts
 tsconfig.esm.json

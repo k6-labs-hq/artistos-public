@@ -9,6 +9,7 @@ from xr7_sdk.api.b2b_api import B2bApi
 from xr7_sdk.api.billing_api import BillingApi
 from xr7_sdk.api.branding_api import BrandingApi
 from xr7_sdk.api.claims_api import ClaimsApi
+from xr7_sdk.api.config_api import ConfigApi
 from xr7_sdk.api.connect_api import ConnectApi
 from xr7_sdk.api.dashboard_api import DashboardApi
 from xr7_sdk.api.default_api import DefaultApi
@@ -32,4 +33,8 @@ from xr7_sdk.api.trolley_api import TrolleyApi
 from xr7_sdk.api.widget_api import WidgetApi
 from xr7_sdk.api.workflow_api import WorkflowApi
 from xr7_sdk.api.workspace_api import WorkspaceApi
+from xr7_sdk.api.xr7_forensics_api import Xr7ForensicsApi
+from xr7_sdk.api.xr7_metadata_api import Xr7MetadataApi
+from xr7_sdk.api.xr7_ugc_api import Xr7UgcApi
+from xr7_sdk.api.xr7_valuation_api import Xr7ValuationApi
 

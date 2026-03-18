@@ -27,6 +27,10 @@ Name | Type | Description | Notes
 **primary_jurisdiction** | **str** |  | [optional] [default to 'USA']
 **preferred_contract_type** | **str** |  | [optional] [default to 'recording']
 **xr7_future_leakage_prevented** | **float** |  | [optional] [default to 0.0]
+**is_founder** | **bool** |  | [optional] [default to False]
+**founder_slot_number** | **int** |  | [optional] 
+**founder_locked_at** | **datetime** |  | [optional] 
+**contingency_fee_percent** | **float** |  | [optional] 
 
 ## Example
 

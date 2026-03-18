@@ -5,6 +5,9 @@ All URIs are relative to *http://localhost*
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**adminOverviewAdminOverviewGet**](AdminApi.md#adminoverviewadminoverviewget) | **GET** /admin/overview | Admin Overview |
+| [**assignFounderManuallyAdminArtistsArtistIdFounderAssignPost**](AdminApi.md#assignfoundermanuallyadminartistsartistidfounderassignpost) | **POST** /admin/artists/{artist_id}/founder/assign | Assign Founder Manually |
+| [**founderCohortReportAdminReportsFounderCohortGet**](AdminApi.md#foundercohortreportadminreportsfoundercohortget) | **GET** /admin/reports/founder-cohort | Founder Cohort Report |
+| [**founderRosterAdminFoundersGet**](AdminApi.md#founderrosteradminfoundersget) | **GET** /admin/founders | Founder Roster |
 | [**listAnomaliesAdminAnomaliesGet**](AdminApi.md#listanomaliesadminanomaliesget) | **GET** /admin/anomalies | List Anomalies |
 | [**listArtistsAdminArtistsGet**](AdminApi.md#listartistsadminartistsget) | **GET** /admin/artists | List Artists |
 | [**listAuditLogsAdminAuditLogsGet**](AdminApi.md#listauditlogsadminauditlogsget) | **GET** /admin/audit-logs | List Audit Logs |
@@ -12,6 +15,7 @@ All URIs are relative to *http://localhost*
 | [**listReviewQueueAdminReviewQueueGet**](AdminApi.md#listreviewqueueadminreviewqueueget) | **GET** /admin/review-queue | List Review Queue |
 | [**listTransactionsAdminTransactionsGet**](AdminApi.md#listtransactionsadmintransactionsget) | **GET** /admin/transactions | List Transactions |
 | [**solRiskReportAdminReportsSolRiskGet**](AdminApi.md#solriskreportadminreportssolriskget) | **GET** /admin/reports/sol-risk | Sol Risk Report |
+| [**updateFounderCohortLimitAdminFounderCohortLimitPut**](AdminApi.md#updatefoundercohortlimitadminfoundercohortlimitput) | **PUT** /admin/founder/cohort-limit | Update Founder Cohort Limit |
 
 
 
@@ -58,6 +62,225 @@ example().catch(console.error);
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
+| **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## assignFounderManuallyAdminArtistsArtistIdFounderAssignPost
+
+> any assignFounderManuallyAdminArtistsArtistIdFounderAssignPost(artistId, founderAssignRequest, xAdminKey, xAdminActor)
+
+Assign Founder Manually
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdminApi,
+} from '@xr7/sdk';
+import type { AssignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AdminApi();
+
+  const body = {
+    // string
+    artistId: artistId_example,
+    // FounderAssignRequest
+    founderAssignRequest: ...,
+    // string (optional)
+    xAdminKey: xAdminKey_example,
+    // string (optional)
+    xAdminActor: xAdminActor_example,
+  } satisfies AssignFounderManuallyAdminArtistsArtistIdFounderAssignPostRequest;
+
+  try {
+    const data = await api.assignFounderManuallyAdminArtistsArtistIdFounderAssignPost(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **artistId** | `string` |  | [Defaults to `undefined`] |
+| **founderAssignRequest** | [FounderAssignRequest](FounderAssignRequest.md) |  | |
+| **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## founderCohortReportAdminReportsFounderCohortGet
+
+> any founderCohortReportAdminReportsFounderCohortGet(xAdminKey, xAdminActor)
+
+Founder Cohort Report
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdminApi,
+} from '@xr7/sdk';
+import type { FounderCohortReportAdminReportsFounderCohortGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AdminApi();
+
+  const body = {
+    // string (optional)
+    xAdminKey: xAdminKey_example,
+    // string (optional)
+    xAdminActor: xAdminActor_example,
+  } satisfies FounderCohortReportAdminReportsFounderCohortGetRequest;
+
+  try {
+    const data = await api.founderCohortReportAdminReportsFounderCohortGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## founderRosterAdminFoundersGet
+
+> any founderRosterAdminFoundersGet(limit, offset, xAdminKey, xAdminActor)
+
+Founder Roster
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdminApi,
+} from '@xr7/sdk';
+import type { FounderRosterAdminFoundersGetRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AdminApi();
+
+  const body = {
+    // number (optional)
+    limit: 56,
+    // number (optional)
+    offset: 56,
+    // string (optional)
+    xAdminKey: xAdminKey_example,
+    // string (optional)
+    xAdminActor: xAdminActor_example,
+  } satisfies FounderRosterAdminFoundersGetRequest;
+
+  try {
+    const data = await api.founderRosterAdminFoundersGet(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **limit** | `number` |  | [Optional] [Defaults to `200`] |
+| **offset** | `number` |  | [Optional] [Defaults to `0`] |
 | **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
 | **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
 
@@ -648,6 +871,78 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: `application/json`
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | Successful Response |  -  |
+| **422** | Validation Error |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
+
+
+## updateFounderCohortLimitAdminFounderCohortLimitPut
+
+> any updateFounderCohortLimitAdminFounderCohortLimitPut(founderCohortLimitUpdateRequest, xAdminKey, xAdminActor)
+
+Update Founder Cohort Limit
+
+### Example
+
+```ts
+import {
+  Configuration,
+  AdminApi,
+} from '@xr7/sdk';
+import type { UpdateFounderCohortLimitAdminFounderCohortLimitPutRequest } from '@xr7/sdk';
+
+async function example() {
+  console.log("🚀 Testing @xr7/sdk SDK...");
+  const api = new AdminApi();
+
+  const body = {
+    // FounderCohortLimitUpdateRequest
+    founderCohortLimitUpdateRequest: ...,
+    // string (optional)
+    xAdminKey: xAdminKey_example,
+    // string (optional)
+    xAdminActor: xAdminActor_example,
+  } satisfies UpdateFounderCohortLimitAdminFounderCohortLimitPutRequest;
+
+  try {
+    const data = await api.updateFounderCohortLimitAdminFounderCohortLimitPut(body);
+    console.log(data);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+// Run the test
+example().catch(console.error);
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **founderCohortLimitUpdateRequest** | [FounderCohortLimitUpdateRequest](FounderCohortLimitUpdateRequest.md) |  | |
+| **xAdminKey** | `string` |  | [Optional] [Defaults to `&#39;&#39;`] |
+| **xAdminActor** | `string` |  | [Optional] [Defaults to `undefined`] |
+
+### Return type
+
+**any**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: `application/json`
 - **Accept**: `application/json`
 
 

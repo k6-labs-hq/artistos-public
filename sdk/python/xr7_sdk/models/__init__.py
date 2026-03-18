@@ -13,6 +13,7 @@
 """  # noqa: E501
 
 # import models into model package
+from xr7_sdk.models.api_ingestion_request import APIIngestionRequest
 from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema
 from xr7_sdk.models.advice_request import AdviceRequest
 from xr7_sdk.models.advice_response import AdviceResponse
@@ -27,6 +28,7 @@ from xr7_sdk.models.artist_schema import ArtistSchema
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest
 from xr7_sdk.models.attorney_evidence_request import AttorneyEvidenceRequest
 from xr7_sdk.models.auth_connect_response import AuthConnectResponse
+from xr7_sdk.models.black_box_request import BlackBoxRequest
 from xr7_sdk.models.body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post import BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost
 from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRequest
 from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest
@@ -45,9 +47,11 @@ from xr7_sdk.models.demand_letter_response import DemandLetterResponse
 from xr7_sdk.models.estimate_request import EstimateRequest
 from xr7_sdk.models.evidence_anchor_schema import EvidenceAnchorSchema
 from xr7_sdk.models.feedback_outcome import FeedbackOutcome
-from xr7_sdk.models.forecast_request import ForecastRequest
+from xr7_sdk.models.fingerprinting_request import FingerprintingRequest
 from xr7_sdk.models.forensic_universal_royalty_event_create import ForensicUniversalRoyaltyEventCreate
 from xr7_sdk.models.forensic_universal_royalty_event_schema import ForensicUniversalRoyaltyEventSchema
+from xr7_sdk.models.founder_assign_request import FounderAssignRequest
+from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest
 from xr7_sdk.models.http_validation_error import HTTPValidationError
 from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
@@ -58,6 +62,8 @@ from xr7_sdk.models.location_inner import LocationInner
 from xr7_sdk.models.ml_feedback_event_schema import MLFeedbackEventSchema
 from xr7_sdk.models.ml_feedback_type import MLFeedbackType
 from xr7_sdk.models.manual_remittance_request import ManualRemittanceRequest
+from xr7_sdk.models.metadata_repair_apply_request import MetadataRepairApplyRequest
+from xr7_sdk.models.metadata_repair_suggest_request import MetadataRepairSuggestRequest
 from xr7_sdk.models.negotiation_script_request import NegotiationScriptRequest
 from xr7_sdk.models.negotiation_script_response import NegotiationScriptResponse
 from xr7_sdk.models.notification_dispatch_request import NotificationDispatchRequest
@@ -73,6 +79,7 @@ from xr7_sdk.models.parser_plugin_upsert_request import ParserPluginUpsertReques
 from xr7_sdk.models.pre_signature_contract_review_request import PreSignatureContractReviewRequest
 from xr7_sdk.models.predict_recoverable_request import PredictRecoverableRequest
 from xr7_sdk.models.reconcile_request import ReconcileRequest
+from xr7_sdk.models.reconciliation_request import ReconciliationRequest
 from xr7_sdk.models.reconstruct_request import ReconstructRequest
 from xr7_sdk.models.recovery_outcome_feedback_schema import RecoveryOutcomeFeedbackSchema
 from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse
@@ -86,6 +93,7 @@ from xr7_sdk.models.review_item_status import ReviewItemStatus
 from xr7_sdk.models.review_source_type import ReviewSourceType
 from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate
 from xr7_sdk.models.simulate_payout_request import SimulatePayoutRequest
+from xr7_sdk.models.simulation_request import SimulationRequest
 from xr7_sdk.models.split_repair_request import SplitRepairRequest
 from xr7_sdk.models.statement_schema import StatementSchema
 from xr7_sdk.models.structured_feedback_request import StructuredFeedbackRequest
@@ -107,6 +115,7 @@ from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema
 from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema
 from xr7_sdk.models.trolley_txn_status import TrolleyTxnStatus
 from xr7_sdk.models.trolley_txn_type import TrolleyTxnType
+from xr7_sdk.models.ugc_signal_ingest_request import UGCSignalIngestRequest
 from xr7_sdk.models.utility_rank_request import UtilityRankRequest
 from xr7_sdk.models.validation_error import ValidationError
 from xr7_sdk.models.variance_scan_request import VarianceScanRequest
@@ -115,6 +124,9 @@ from xr7_sdk.models.verify_response import VerifyResponse
 from xr7_sdk.models.widget_lead_schema import WidgetLeadSchema
 from xr7_sdk.models.workflow_run_request import WorkflowRunRequest
 from xr7_sdk.models.workflow_run_response import WorkflowRunResponse
+from xr7_sdk.models.xr7_api_routers_earnings_forecast_request import XR7ApiRoutersEarningsForecastRequest
 from xr7_sdk.models.xr7_api_routers_forensic_catalog_confirm_request import XR7ApiRoutersForensicCatalogConfirmRequest
 from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import XR7ApiRoutersOnboardingCatalogConfirmRequest
+from xr7_sdk.models.xr7_api_routers_xr7_valuation_forecast_request import XR7ApiRoutersXr7ValuationForecastRequest
+from xr7_sdk.models.xr7_connector_credential_upsert import XR7ConnectorCredentialUpsert
 
