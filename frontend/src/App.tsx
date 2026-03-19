@@ -4,6 +4,7 @@ import { TVFilmDashboardVisualizations } from "./components/TVFilmDashboardVisua
 import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
 import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
 import { AnomalyDetailPage } from "./components/AnomalyDetailPage";
+import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPanel";
 
 type ThemeMode = "dark" | "light";
 
@@ -181,9 +182,14 @@ export function App() {
   );
 
   const anomalyMatch = useMemo(() => window.location.pathname.match(/^\/anomalies\/([^/]+)$/), []);
+  const adminHandoffsRoute = useMemo(() => window.location.pathname === "/admin/workflow/handoffs/ui", []);
 
   if (anomalyMatch) {
     return <AnomalyDetailPage anomalyId={decodeURIComponent(anomalyMatch[1])} />;
+  }
+
+  if (adminHandoffsRoute) {
+    return <AdminWorkflowHandoffsPanel />;
   }
 
   return (
