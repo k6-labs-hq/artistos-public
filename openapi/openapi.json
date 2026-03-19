@@ -520,6 +520,98 @@
         }
       }
     },
+    "/anomalies/{anomaly_id}/explain": {
+      "get": {
+        "tags": [
+          "anomalies"
+        ],
+        "summary": "Explain Anomaly",
+        "description": "Explain-my-gap endpoint: plain-language explanation with evidence citations.\n\nGenerates a natural-language explanation of why a royalty gap exists,\nincluding summary, top drivers, confidence, and recommended actions.",
+        "operationId": "explain_anomaly_anomalies__anomaly_id__explain_get",
+        "parameters": [
+          {
+            "name": "anomaly_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Anomaly Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/anomalies/{anomaly_id}/explain": {
+      "get": {
+        "tags": [
+          "transparency"
+        ],
+        "summary": "Explain Anomaly",
+        "operationId": "explain_anomaly_artists__artist_id__anomalies__anomaly_id__explain_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "anomaly_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Anomaly Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnomalyExplainWithRecoverabilitySchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/claims": {
       "get": {
         "tags": [
@@ -12017,57 +12109,6 @@
             "content": {
               "application/json": {
                 "schema": {}
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/artists/{artist_id}/anomalies/{anomaly_id}/explain": {
-      "get": {
-        "tags": [
-          "transparency"
-        ],
-        "summary": "Explain Anomaly",
-        "operationId": "explain_anomaly_artists__artist_id__anomalies__anomaly_id__explain_get",
-        "parameters": [
-          {
-            "name": "artist_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Artist Id"
-            }
-          },
-          {
-            "name": "anomaly_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Anomaly Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AnomalyExplainWithRecoverabilitySchema"
-                }
               }
             }
           },
