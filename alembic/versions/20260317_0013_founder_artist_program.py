@@ -93,8 +93,8 @@ def upgrade() -> None:
 
     op.execute(
         """
-        INSERT INTO platform_config (id, founder_cohort_limit, founder_fee_percent, founder_slots_filled)
-        SELECT 1, 2500, 10, 0
+        INSERT INTO platform_config (id, founder_cohort_limit, founder_fee_percent, founder_slots_filled, updated_at)
+        SELECT 1, 2500, 10, 0, CURRENT_TIMESTAMP
         WHERE NOT EXISTS (SELECT 1 FROM platform_config WHERE id = 1)
         """
     )

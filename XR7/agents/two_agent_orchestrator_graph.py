@@ -218,6 +218,7 @@ def _serialize_handoff(row: AgentHandoffRecord) -> dict[str, Any]:
 def query_handoffs(
     *,
     artist_id: str | None = None,
+    artist_ids: list[str] | None = None,
     limit: int = 50,
     offset: int = 0,
     from_agent: str | None = None,
@@ -230,8 +231,24 @@ def query_handoffs(
     try:
         query = db.query(AgentHandoffRecord)
         filters = []
+        if artist_id and artist_ids is not None and artist_id not in artist_ids:
+            return {
+                "total": 0,
+                "limit": limit,
+                "offset": offset,
+                "items": [],
+            }
         if artist_id:
             filters.append(AgentHandoffRecord.artist_id == artist_id)
+        elif artist_ids is not None:
+            if not artist_ids:
+                return {
+                    "total": 0,
+                    "limit": limit,
+                    "offset": offset,
+                    "items": [],
+                }
+            filters.append(AgentHandoffRecord.artist_id.in_(artist_ids))
         if from_agent:
             filters.append(AgentHandoffRecord.from_agent == from_agent)
         if to_agent:

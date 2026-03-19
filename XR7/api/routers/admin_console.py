@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import io
+import csv
 import hmac
 import os
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -58,6 +61,52 @@ def _founder_label(artist: Artist) -> str:
     if artist.is_founder and artist.founder_slot_number is not None:
         return f"Founder #{int(artist.founder_slot_number)} ✓"
     return "Standard"
+
+
+def _handoff_items_with_artist_names(db: Session, items: list[dict]) -> list[dict]:
+    artist_ids = [item["artist_id"] for item in items]
+    artist_names = {
+        row.id: row.name
+        for row in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()
+    } if artist_ids else {}
+    return [{**item, "artist_name": artist_names.get(item["artist_id"])} for item in items]
+
+
+def _handoff_csv_response(items: list[dict]) -> StreamingResponse:
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "id",
+        "run_id",
+        "artist_id",
+        "artist_name",
+        "handoff_id",
+        "from_agent",
+        "to_agent",
+        "status",
+        "readiness_score",
+        "readiness_threshold",
+        "created_at",
+    ])
+    for item in items:
+        writer.writerow([
+            item.get("id") or "",
+            item.get("run_id") or "",
+            item.get("artist_id") or "",
+            item.get("artist_name") or "",
+            item.get("handoff_id") or "",
+            item.get("from_agent") or "",
+            item.get("to_agent") or "",
+            item.get("status") or "",
+            item.get("readiness_score") or 0,
+            item.get("readiness_threshold") or 0,
+            item.get("created_at") or "",
+        ])
+    return StreamingResponse(
+        io.BytesIO(out.getvalue().encode("utf-8")),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="workflow_handoffs.csv"'},
+    )
 
 
 @router.get("/artists")
@@ -310,18 +359,27 @@ def list_audit_logs(
 @router.get("/workflow/handoffs")
 def list_workflow_handoffs(
     artist_id: str | None = Query(default=None),
+    q: str | None = Query(default=None),
     status: str | None = Query(default=None),
     from_agent: str | None = Query(default=None),
     to_agent: str | None = Query(default=None),
     since: datetime | None = Query(default=None),
     until: datetime | None = Query(default=None),
+    format: str = Query(default="json", pattern="^(json|csv)$"),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     actor: str = Depends(_require_admin),
     db: Session = Depends(get_db),
 ):
+    artist_ids: list[str] | None = None
+    if q:
+        artist_ids = [
+            row.id
+            for row in db.query(Artist.id).filter(Artist.name.ilike(f"%{q.strip()}%")).all()
+        ]
     results = query_handoffs(
         artist_id=artist_id,
+        artist_ids=artist_ids,
         status=status,
         from_agent=from_agent,
         to_agent=to_agent,
@@ -330,12 +388,7 @@ def list_workflow_handoffs(
         limit=limit,
         offset=offset,
     )
-    artist_ids = [item["artist_id"] for item in results["items"]]
-    artist_names = {
-        row.id: row.name
-        for row in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()
-    } if artist_ids else {}
-    items = [{**item, "artist_name": artist_names.get(item["artist_id"])} for item in results["items"]]
+    items = _handoff_items_with_artist_names(db, results["items"])
     _log(
         db,
         actor,
@@ -343,17 +396,32 @@ def list_workflow_handoffs(
         "workflow_handoffs",
         {
             "artist_id": artist_id,
+            "q": q,
             "status": status,
             "from_agent": from_agent,
             "to_agent": to_agent,
             "since": since.isoformat() if since else None,
             "until": until.isoformat() if until else None,
+            "format": format,
             "limit": limit,
             "offset": offset,
             "returned": len(items),
             "total": results["total"],
         },
     )
+    if format == "csv":
+        csv_results = query_handoffs(
+            artist_id=artist_id,
+            artist_ids=artist_ids,
+            status=status,
+            from_agent=from_agent,
+            to_agent=to_agent,
+            since=since,
+            until=until,
+            limit=max(results["total"], 1),
+            offset=0,
+        )
+        return _handoff_csv_response(_handoff_items_with_artist_names(db, csv_results["items"]))
     return _paginated_response(items, results["total"], limit, offset)
 
 

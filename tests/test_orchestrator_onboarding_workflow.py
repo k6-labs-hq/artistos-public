@@ -205,9 +205,10 @@ def test_dashboard_exposes_handoff_status(monkeypatch):
 def test_admin_handoffs_endpoint_returns_paginated_results(monkeypatch):
     monkeypatch.setenv("ADMIN_API_KEY", "admin-secret")
     artist_id = _create_artist(status="ACTIVE")
+    captured: dict[str, object] = {}
     monkeypatch.setattr(
         "XR7.api.routers.admin_console.query_handoffs",
-        lambda **kwargs: {
+        lambda **kwargs: captured.update(kwargs) or {
             "total": 1,
             "limit": kwargs["limit"],
             "offset": kwargs["offset"],
@@ -231,7 +232,7 @@ def test_admin_handoffs_endpoint_returns_paginated_results(monkeypatch):
 
     client = TestClient(app)
     response = client.get(
-        f"/admin/workflow/handoffs?artist_id={artist_id}&status=active&limit=10&offset=0",
+        f"/admin/workflow/handoffs?artist_id={artist_id}&q=Orchestra&status=active&limit=10&offset=0",
         headers={"X-Admin-Key": "admin-secret", "X-Admin-Actor": "ops-user@xr7.test"},
     )
     assert response.status_code == 200
@@ -241,3 +242,60 @@ def test_admin_handoffs_endpoint_returns_paginated_results(monkeypatch):
     assert payload["offset"] == 0
     assert payload["items"][0]["handoff_id"] == "handoff-admin-1"
     assert payload["items"][0]["artist_id"] == artist_id
+    assert payload["items"][0]["artist_name"] == "Orchestra Test Artist"
+    assert captured["artist_id"] == artist_id
+    assert artist_id in list(captured["artist_ids"])
+    assert captured["status"] == "active"
+    assert captured["from_agent"] is None
+    assert captured["to_agent"] is None
+    assert captured["since"] is None
+    assert captured["until"] is None
+    assert captured["limit"] == 10
+    assert captured["offset"] == 0
+
+
+def test_admin_handoffs_endpoint_exports_csv(monkeypatch):
+    monkeypatch.setenv("ADMIN_API_KEY", "admin-secret")
+    artist_id = _create_artist(status="ACTIVE")
+    calls: list[dict[str, object]] = []
+
+    def _query(**kwargs):
+        calls.append(kwargs)
+        return {
+            "total": 1,
+            "limit": kwargs["limit"],
+            "offset": kwargs["offset"],
+            "items": [
+                {
+                    "id": "row-admin-2",
+                    "run_id": "run-admin-2",
+                    "artist_id": artist_id,
+                    "handoff_id": "handoff-admin-2",
+                    "from_agent": "onboarding_preparation",
+                    "to_agent": "recovery_execution",
+                    "readiness_score": 90.0,
+                    "readiness_threshold": 85.0,
+                    "status": "active",
+                    "payload": {"artist_status": "active"},
+                    "created_at": "2026-03-19T12:00:00+00:00",
+                }
+            ],
+        }
+
+    monkeypatch.setattr("XR7.api.routers.admin_console.query_handoffs", _query)
+
+    client = TestClient(app)
+    response = client.get(
+        "/admin/workflow/handoffs?format=csv&q=Orchestra",
+        headers={"X-Admin-Key": "admin-secret", "X-Admin-Actor": "ops-user@xr7.test"},
+    )
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    assert "attachment; filename=\"workflow_handoffs.csv\"" == response.headers["content-disposition"]
+    body = response.text
+    assert "artist_name" in body
+    assert "Orchestra Test Artist" in body
+    assert "handoff-admin-2" in body
+    assert len(calls) == 2
+    assert artist_id in list(calls[0]["artist_ids"])
+    assert artist_id in list(calls[1]["artist_ids"])
