@@ -31,7 +31,7 @@ class InviteMessagingService:
         Returns:
             Dict with subject, body_text, body_html
         """
-        subject = "Your Private XR7 Analysis Session Is Ready"
+        subject = f"{recipient_name}, Your Private XR7 Analysis Session Is Ready"
 
         body_text = f"""\
 Hello {recipient_name},

@@ -24,7 +24,7 @@ class InviteTokenGenerator:
             secret_key: JWT secret key (defaults to XR7_JWT_SECRET from env)
             algorithm: JWT algorithm (HS256, RS256, etc.)
         """
-        self.secret_key = secret_key or settings.xr7_jwt_secret
+        self.secret_key = secret_key or settings.jwt_secret
         self.algorithm = algorithm
 
     def generate(

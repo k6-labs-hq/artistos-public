@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.api.routers.auth import get_optional_auth_payload
@@ -24,6 +25,19 @@ from XR7.services.branding import inject_branding_metadata
 from XR7.services.invite_service import get_invite_service
 
 router = APIRouter(prefix="/invites", tags=["invites"])
+
+
+class EmailTriggeredInviteRequest(BaseModel):
+    sender_email: str
+    sender_name: str
+    message_body: Optional[str] = None
+
+
+class DashboardQuickGenerateRequest(BaseModel):
+    recipient_name: str
+    recipient_email: Optional[str] = None
+    role: InviteRole = InviteRole.ARTIST
+    campaign: Optional[str] = None
 
 
 @router.post("/generate", response_model=InviteWithTokenSchema)
@@ -240,9 +254,7 @@ def get_analytics(
 
 @router.post("/email-trigger")
 def email_triggered_invite(
-    sender_email: str,
-    sender_name: str,
-    message_body: Optional[str] = None,
+    req: EmailTriggeredInviteRequest,
     db: Session = Depends(get_db),
 ) -> dict:
     """Auto-generate invite when artist emails inquiry.
@@ -259,12 +271,12 @@ def email_triggered_invite(
 
     # Create invite
     invite, token = service.create_invite(
-        recipient_name=sender_name or "Creator",
-        recipient_email=sender_email,
+        recipient_name=req.sender_name or "Creator",
+        recipient_email=req.sender_email,
         channel=InviteChannel.EMAIL,
         role=InviteRole.ARTIST,
         campaign="email_inquiry",
-        custom_message=message_body,
+        custom_message=req.message_body,
     )
 
     # Mark as sent
@@ -275,7 +287,7 @@ def email_triggered_invite(
         {
             "success": True,
             "invite_id": invite.id,
-            "sender_email": sender_email,
+            "sender_email": req.sender_email,
             "invite_link": f"/onboarding/invite/{token}",
         },
     )
@@ -348,10 +360,7 @@ async def instagram_dm_webhook(
 
 @router.post("/dashboard/quick-generate")
 def dashboard_quick_generate(
-    recipient_name: str,
-    recipient_email: Optional[str] = None,
-    role: InviteRole = InviteRole.ARTIST,
-    campaign: Optional[str] = None,
+    req: DashboardQuickGenerateRequest,
     db: Session = Depends(get_db),
 ) -> dict:
     """Quick invite generation for internal dashboard (Matt's admin panel).
@@ -361,11 +370,11 @@ def dashboard_quick_generate(
     service = get_invite_service(db)
 
     invite, token = service.create_invite(
-        recipient_name=recipient_name,
-        recipient_email=recipient_email,
+        recipient_name=req.recipient_name,
+        recipient_email=req.recipient_email,
         channel=InviteChannel.MANUAL,
-        role=role,
-        campaign=campaign or "manual_generation",
+        role=req.role,
+        campaign=req.campaign or "manual_generation",
     )
 
     service.send_invite(invite.id)
@@ -378,8 +387,8 @@ def dashboard_quick_generate(
         {
             "success": True,
             "invite_id": invite.id,
-            "recipient_name": recipient_name,
-            "recipient_email": recipient_email,
+            "recipient_name": req.recipient_name,
+            "recipient_email": req.recipient_email,
             "invite_link": invite_link,
             "expires_at": invite.token_expiration.isoformat(),
             "copy_ready": True,

@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from XR7.api.app import app
+from XR7.models.base import Base, engine
 from XR7.models import (
     Invite,
     InviteChannel,
@@ -27,6 +28,7 @@ client = TestClient(app)
 @pytest.fixture
 def db():
     """Create a test database session."""
+    Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     yield db
     db.close()
