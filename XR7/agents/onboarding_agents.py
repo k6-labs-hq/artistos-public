@@ -21,8 +21,13 @@ from XR7.models.statement import Statement
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.payer_playbooks import build_claim_playbook
+from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder
+from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
+from XR7.recovery.leakage_benchmark_engine import LeakageBenchmarkEngine
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
+from XR7.recovery.society_signal_feed import SocietySignalFeed
 from XR7.recovery.split_verification import verify_splits
+from XR7.recovery.trust_defensibility import TrustDefensibilityService
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
@@ -1805,4 +1810,143 @@ async def RecoverabilityExplainerAgent(state: XR7State) -> XR7State:
         score=score,
         updates={"recoverability_explainer": explainer},
         decision="recoverability explainer synthesized for trust layer and dashboard",
+    )
+
+
+async def DiscoveryRuleAgent(state: XR7State) -> XR7State:
+    anomalies = [a for a in (state.get("anomalies") or []) if isinstance(a, dict)]
+    engine = DiscoveryRuleEngine()
+    analyses = []
+    urgent = 0
+    for anomaly in anomalies:
+        result = engine.evaluate(anomaly)
+        if bool(result.get("urgent_flag")):
+            urgent += 1
+        analyses.append(
+            {
+                "anomaly_id": anomaly.get("id"),
+                "urgent_flag": bool(result.get("urgent_flag")),
+                "days_remaining": result.get("days_remaining"),
+                "deadline": result.get("statute_of_limitations_deadline"),
+                "discovery_memo": result.get("discovery_memo"),
+            }
+        )
+
+    score = 0.92 if analyses else 0.82
+    return _finalize(
+        state,
+        agent_name="discovery_rule_agent",
+        score=score,
+        updates={"discovery_rule_results": analyses, "sol_guardian_alerts": [a for a in analyses if a.get("urgent_flag")]},
+        decision=f"discovery rule analysis complete; urgent={urgent}",
+    )
+
+
+async def ContractRecoverabilityAgent(state: XR7State) -> XR7State:
+    anomalies = [a for a in (state.get("anomalies") or []) if isinstance(a, dict)]
+    rows: list[dict[str, Any]] = []
+    low_confidence = 0
+    for anomaly in anomalies:
+        payload = build_recoverability_payload(anomaly, contract_metadata=anomaly.get("contract_metadata") or {})
+        contract = payload.get("contract_recoverability") or {}
+        if float(contract.get("contract_recoverability_score") or 0.0) < 0.40:
+            low_confidence += 1
+        rows.append(
+            {
+                "anomaly_id": anomaly.get("id"),
+                "contract_recoverability": contract,
+                "recoverability_class": (payload.get("recoverability") or {}).get("recoverability_class"),
+            }
+        )
+
+    score = 0.9 if rows else 0.8
+    escalate = low_confidence > 0
+    out = _finalize(
+        state,
+        agent_name="contract_recoverability_agent",
+        score=score,
+        updates={"contract_recoverability_results": rows},
+        decision=f"contract recoverability analyzed; low_confidence={low_confidence}",
+    )
+    if escalate:
+        out["next_action"] = "human_review"
+    return out
+
+
+async def LeakageBenchmarkAgent(state: XR7State) -> XR7State:
+    engine = LeakageBenchmarkEngine()
+    anomalies = [a for a in (state.get("anomalies") or []) if isinstance(a, dict)]
+    claims = [c for c in (state.get("claims") or []) if isinstance(c, dict)]
+    leaked = sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies)
+    recovered = sum(float(c.get("recovered_amount") or 0.0) for c in claims)
+    expired = sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies if str(a.get("recoverability_class") or "") == "Expired (Black-Box Redistributed)")
+    profile = {
+        "estimated_leaked": leaked,
+        "recovered": recovered,
+        "expired": expired,
+        "total_estimated_earnings": max(leaked * 3.5, 1.0),
+    }
+    result = engine.compare_against_cohort(profile, [])
+    return _finalize(
+        state,
+        agent_name="leakage_benchmark_agent",
+        score=0.9,
+        updates={"catalog_health_vs_industry": result},
+        decision="leakage benchmark narrative generated",
+    )
+
+
+async def EvidencePackageAgent(state: XR7State) -> XR7State:
+    anomalies = [a for a in (state.get("anomalies") or []) if isinstance(a, dict)]
+    claims = [c for c in (state.get("claims") or []) if isinstance(c, dict)]
+    if not anomalies or not claims:
+        return _finalize(
+            state,
+            agent_name="evidence_package_agent",
+            score=0.7,
+            updates={"evidence_package_agent": {"status": "no_input"}},
+            decision="insufficient claims/anomalies for package build",
+        )
+
+    anomaly = anomalies[0]
+    claim = claims[0]
+    recoverability = build_recoverability_payload(anomaly)
+    trust = TrustDefensibilityService().trust_score(
+        data_completeness=0.85 if anomaly.get("description") else 0.6,
+        model_confidence=float(anomaly.get("confidence_score") or 0.0),
+        contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
+        sol_risk=0.25,
+    )
+    package = ClaimsEvidencePackageBuilder().build(
+        claim=claim,
+        anomaly=anomaly,
+        recoverability_payload=recoverability,
+        trust_score=float(trust.get("trust_score") or 0.0),
+    )
+    return _finalize(
+        state,
+        agent_name="evidence_package_agent",
+        score=0.91,
+        updates={"claims_evidence_package": package},
+        decision=f"evidence package built rating={package.get('claim_strength_rating')}",
+    )
+
+
+async def SocietySignalAgent(state: XR7State) -> XR7State:
+    feed = SocietySignalFeed()
+    anomalies = [a for a in (state.get("anomalies") or []) if isinstance(a, dict)]
+    signal = {
+        "signal_type": "redistribution_pause",
+        "payer_or_society": "MLC",
+        "royalty_type": "digital_mechanicals",
+        "effective_at": datetime.now(timezone.utc).isoformat(),
+        "source": "agent_simulation",
+    }
+    result = feed.apply_signal(signal, anomalies)
+    return _finalize(
+        state,
+        agent_name="society_signal_agent",
+        score=0.88,
+        updates={"society_signal_updates": result, "society_activity_feed": feed.dashboard_feed()},
+        decision=f"society signal applied affected={result.get('affected_anomaly_count')}",
     )

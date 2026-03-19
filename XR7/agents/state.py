@@ -116,6 +116,12 @@ class XR7State(TypedDict, total=False):
 
     recoverability_results: Annotated[list[dict[str, Any]], add]
     recoverability_explainer: dict[str, Any]
+    discovery_rule_results: Annotated[list[dict[str, Any]], add]
+    contract_recoverability_results: Annotated[list[dict[str, Any]], add]
+    catalog_health_vs_industry: dict[str, Any]
+    claims_evidence_package: dict[str, Any]
+    society_signal_updates: dict[str, Any]
+    society_activity_feed: Annotated[list[dict[str, Any]], add]
 
 
 def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
@@ -228,6 +234,12 @@ def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
         "support_escalation_recommended": False,
         "recoverability_results": [],
         "recoverability_explainer": {},
+        "discovery_rule_results": [],
+        "contract_recoverability_results": [],
+        "catalog_health_vs_industry": {},
+        "claims_evidence_package": {},
+        "society_signal_updates": {},
+        "society_activity_feed": [],
     }
 
 

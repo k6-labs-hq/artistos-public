@@ -631,6 +631,51 @@ class MetadataRepairEngine:
             )
         )
 
+    def _apply_expiration_feedback(self, artist_id: str, health: dict[str, Any]) -> None:
+        expired = (
+            self.db.query(Anomaly)
+            .filter(
+                Anomaly.artist_id == artist_id,
+                Anomaly.recoverability_class == "Expired (Black-Box Redistributed)",
+            )
+            .all()
+        )
+        expired_amount = sum(float(a.estimated_recoverable or 0.0) for a in expired)
+        lift = float(health.get("projected_leakage_avoided") or 0.0)
+        normalized = round(max(0.0, min(100.0, (lift * 0.04) + (len(expired) * 1.5))), 2)
+
+        existing = (
+            self.db.query(Anomaly)
+            .filter(
+                Anomaly.artist_id == artist_id,
+                Anomaly.subtype == "EXPIRATION_FEEDBACK_LOOP",
+                Anomaly.status == AnomalyStatus.OPEN,
+            )
+            .first()
+        )
+        desc = (
+            "Expired anomalies were fed into metadata prevention scoring to reduce forward leakage "
+            f"(expired_count={len(expired)}, expired_amount={round(expired_amount, 2)})."
+        )
+        if existing:
+            existing.description = desc
+            existing.estimated_recoverable = normalized
+            existing.confidence_score = 0.81
+            return
+
+        self.db.add(
+            Anomaly(
+                artist_id=artist_id,
+                category=AnomalyCategory.ROYALTY,
+                subtype="EXPIRATION_FEEDBACK_LOOP",
+                severity=AnomalySeverity.LOW,
+                estimated_recoverable=normalized,
+                confidence_score=0.81,
+                status=AnomalyStatus.OPEN,
+                description=desc,
+            )
+        )
+
     def run_historical_audit_and_repair(
         self,
         artist_id: str,
@@ -685,6 +730,7 @@ class MetadataRepairEngine:
         if artist is not None and hasattr(artist, "xr7_future_leakage_prevented"):
             artist.xr7_future_leakage_prevented = float(health.get("projected_leakage_avoided") or 0.0)
         self._emit_future_risk_anomaly(artist_id, health)
+        self._apply_expiration_feedback(artist_id, health)
         self.db.commit()
 
         return MetadataAuditResult(
@@ -714,12 +760,14 @@ class MetadataRepairEngine:
                     "issue_id": row.id,
                     "issue_type": row.issue_type,
                     "repair_status": row.repair_status,
+                    "discovery_trigger": row.repair_status in {"AUTO_REPAIRED", "REQUIRES_REVIEW"},
                     "before": _json_load(row.before_value_json),
                     "after": _json_load(row.after_value_json),
                     "confidence_score": row.confidence_score,
                     "repair_rationale": row.repair_rationale,
                     "chain_of_custody_hash": row.chain_of_custody_hash,
                     "projected_leakage_avoided": row.projected_leakage_avoided,
+                    "metadata_repair_event_date": row.repaired_at.isoformat() if row.repaired_at else (row.created_at.isoformat() if row.created_at else None),
                     "created_at": row.created_at.isoformat() if row.created_at else None,
                     "repaired_at": row.repaired_at.isoformat() if row.repaired_at else None,
                 }

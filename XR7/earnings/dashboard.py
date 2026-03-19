@@ -61,10 +61,13 @@ from XR7.ml.royalty_optimizer import RoyaltyOptimizer
 from XR7.ml.recovery_potential import RecoveryPotentialModel
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.models.contract import Contract
+from XR7.models.artist import Artist
+from XR7.models.society_signal_log import SocietySignalLog
 from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
 from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
+from XR7.recovery.leakage_benchmark_engine import LeakageBenchmarkEngine
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.ugc.usage_monitor import UGCUsageMonitor
 from XR7.ugc.global_scanner import GlobalUGCScanner
@@ -173,6 +176,8 @@ class DashboardEngine:
         valuation = self._financing_section(artist_id)
         optimization = self._optimization_playground_section(artist_id)
         industry = self._industry_comparison_section(artist_id)
+        catalog_health_vs_industry = self._catalog_health_vs_industry_section(artist_id, anomalies, claims)
+        society_activity = self._society_activity_section(artist_id)
 
         return {
             "artist_id": artist_id,
@@ -211,6 +216,8 @@ class DashboardEngine:
             "financing_opportunities": valuation,
             "optimization_playground": optimization,
             "industry_comparison": industry,
+            "catalog_health_vs_industry": catalog_health_vs_industry,
+            "society_activity": society_activity,
             "chat_agent_available": True,
             "ask_anything": {
                 "sample_questions": [
@@ -301,6 +308,78 @@ class DashboardEngine:
         engine = IndustryBenchmarkEngine()
         b = engine.get_benchmarks(artist_id)
         return {"benchmarks": b, "message": engine.generate_comparison_report(b)}
+
+    def _catalog_health_vs_industry_section(self, artist_id: str, anomalies: list[Anomaly], claims: list[Claim]) -> dict[str, Any]:
+        benchmark = LeakageBenchmarkEngine()
+        leaked = sum(float(a.estimated_recoverable or 0.0) for a in anomalies)
+        recovered = sum(float(c.recovered_amount or 0.0) for c in claims if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED})
+        expired = 0.0
+        for a in anomalies:
+            payload = {
+                "id": a.id,
+                "subtype": a.subtype,
+                "description": a.description,
+                "estimated_recoverable": a.estimated_recoverable,
+                "event_date": a.time_window_end or a.created_at,
+                "created_at": a.created_at,
+            }
+            recoverability = build_recoverability_payload(payload)
+            rc = (recoverability.get("recoverability") or {}).get("recoverability_class")
+            if rc == "Expired (Black-Box Redistributed)":
+                expired += float(a.estimated_recoverable or 0.0)
+
+        artist = self.db.query(Artist).filter(Artist.id == artist_id).first()
+        client_profile = {
+            "estimated_leaked": leaked,
+            "recovered": recovered,
+            "expired": expired,
+            "total_estimated_earnings": max(leaked * 3.5, 1.0),
+            "track_count": len(self.db.query(Work).filter(Work.artist_id == artist_id).all()),
+            "primary_territory": str(getattr(artist, "primary_jurisdiction", None) or "US"),
+            "distribution_channels": ["DSP", "SYNC"],
+            "societies": ["ASCAP", "BMI", "MLC"],
+            "catalog_age_years": 5,
+            "benchmark_opt_in": True,
+        }
+
+        peers: list[dict[str, Any]] = []
+        peer_artists = self.db.query(Artist).filter(Artist.id != artist_id).limit(40).all()
+        for p in peer_artists:
+            peer_anomalies = self.db.query(Anomaly).filter(Anomaly.artist_id == p.id).all()
+            peer_claims = self.db.query(Claim).filter(Claim.artist_id == p.id).all()
+            peers.append(
+                {
+                    "estimated_leaked": sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies),
+                    "recovered": sum(float(c.recovered_amount or 0.0) for c in peer_claims if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED}),
+                    "expired": sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies if str(a.recoverability_class or "") == "Expired (Black-Box Redistributed)"),
+                    "total_estimated_earnings": max(sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies) * 3.5, 1.0),
+                    "benchmark_opt_in": True,
+                }
+            )
+
+        return benchmark.compare_against_cohort(client_profile, peers)
+
+    def _society_activity_section(self, artist_id: str) -> dict[str, Any]:
+        rows = (
+            self.db.query(SocietySignalLog)
+            .order_by(SocietySignalLog.created_at.desc())
+            .limit(50)
+            .all()
+        )
+        return {
+            "feed": [
+                {
+                    "source": r.source,
+                    "signal_type": r.signal_type,
+                    "payer_or_society": r.payer_or_society,
+                    "affected_anomaly_count": r.affected_anomaly_count,
+                    "classification_impact_json": r.classification_impact_json,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                }
+                for r in rows
+            ],
+            "count": len(rows),
+        }
 
     def _catalog_segment_section(self, works: list[Work], payments: list[Payment], anomalies: list[Anomaly]) -> dict:
         segmenter = CatalogSegmenter()
@@ -906,6 +985,8 @@ class DashboardEngine:
 
     def _recoverability_breakdown_section(self, anomalies: list[Anomaly]) -> dict[str, Any]:
         by_class: dict[str, dict[str, Any]] = {}
+        narratives: list[str] = []
+        contract_clauses: list[str] = []
         for anomaly in anomalies:
             payload = build_recoverability_payload(
                 {
@@ -924,6 +1005,12 @@ class DashboardEngine:
                 }
             )
             cls = str((payload.get("recoverability") or {}).get("recoverability_class") or "Unclassified")
+            narrative = str(((payload.get("black_box_expiration") or {}).get("probability_narrative") or "")).strip()
+            if narrative:
+                narratives.append(narrative)
+            contract_clause = str(((payload.get("contract_recoverability") or {}).get("governing_clause") or "")).strip()
+            if contract_clause:
+                contract_clauses.append(contract_clause)
             if cls not in by_class:
                 by_class[cls] = {
                     "count": 0,
@@ -963,6 +1050,8 @@ class DashboardEngine:
             "expired_total": round(expired_total, 2),
             "copyright_recoverable": copyright_data,
             "contract_recoverable": contract_data,
+            "probability_narrative": narratives[0] if narratives else None,
+            "contract_clause_citation": contract_clauses[0] if contract_clauses else None,
         }
 
     def _repair_transparency_panel_section(self, artist_id: str) -> dict[str, Any]:

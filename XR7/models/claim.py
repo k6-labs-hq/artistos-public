@@ -65,6 +65,10 @@ class Claim(Base):
     supporting_documents: Mapped[list[dict[str, Any]] | None] = mapped_column(JSON, nullable=True)
     attorney_file_generated: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     attorney_file_generated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    trust_score: Mapped[float | None] = mapped_column(Float, nullable=True)
+    attorney_review_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    legal_defensibility_report: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    claim_strength_rating: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
@@ -111,5 +115,9 @@ class ClaimSchema(BaseModel):
     supporting_documents: list[dict[str, Any]] | None = None
     attorney_file_generated: bool = False
     attorney_file_generated_at: datetime | None = None
+    trust_score: float | None = None
+    attorney_review_required: bool = False
+    legal_defensibility_report: dict[str, Any] | None = None
+    claim_strength_rating: str | None = None
     created_at: datetime
     updated_at: datetime

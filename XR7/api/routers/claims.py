@@ -34,11 +34,14 @@ from XR7.recovery.evidence_strength import score_evidence_strength
 from XR7.recovery.negotiation_intelligence import build_negotiation_intel
 from XR7.recovery.orchestrator import ClaimsOrchestrator
 from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
+from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder
+from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.recovery_automation import build_automation_plan
 from XR7.recovery.sla_predictor import predict_claim_sla_dates
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
+from XR7.recovery.trust_defensibility import TrustDefensibilityService
 from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
 from XR7.services.pdf_builder import safe_pdf_text as _safe_pdf_text
 from XR7.services.review_queue import enqueue_review_item
@@ -374,6 +377,13 @@ def create_claim_for_artist(
         "created_at": anomaly.created_at,
     }
     recoverability = build_recoverability_payload(anomaly_payload)
+    discovery = DiscoveryRuleEngine().evaluate(anomaly_payload)
+    trust = TrustDefensibilityService().trust_score(
+        data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
+        model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
+        contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
+        sol_risk=1.0 if discovery.get("urgent_flag") else 0.25,
+    )
     if not bool(recoverability.get("claim_draft_allowed")):
         raise HTTPException(
             status_code=422,
@@ -389,6 +399,11 @@ def create_claim_for_artist(
         anomaly_id=anomaly.id,
         claim_type=payload.claim_type.strip() or "RECOVERY",
     )
+    claim.trust_score = float(trust.get("trust_score") or 0.0)
+    claim.attorney_review_required = bool(trust.get("requires_attorney_review"))
+    claim.claim_strength_rating = None
+    db.commit()
+    db.refresh(claim)
     return claim
 
 
@@ -414,6 +429,17 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
                     payload={"claim_id": existing.id, "strength": strength},
                 )
                 raise HTTPException(status_code=400, detail="Evidence strength is too low to advance claim")
+
+        status_value_before = existing.status.value if hasattr(existing.status, "value") else str(existing.status)
+        if status_value_before in {"PREPARED", "FILED"} and bool(existing.attorney_review_required):
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "message": "Attorney review required before filing due to low TrustScore",
+                    "trust_score": existing.trust_score,
+                    "attorney_review_required": True,
+                },
+            )
 
         updated = orchestrator.advance_claim(claim_id)
         pref = (
@@ -496,6 +522,47 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
                 priority_score=max(float(claim.recovered_amount or 0.0), discrepancy),
                 payload={"claim_id": claim_id, "reconciliation": recon},
             )
+            anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+            if anomaly:
+                anomaly_payload = {
+                    "id": anomaly.id,
+                    "artist_id": anomaly.artist_id,
+                    "category": str(anomaly.category),
+                    "subtype": anomaly.subtype,
+                    "severity": str(anomaly.severity),
+                    "estimated_recoverable": anomaly.estimated_recoverable,
+                    "confidence_score": anomaly.confidence_score,
+                    "time_window_end": anomaly.time_window_end,
+                    "description": anomaly.description,
+                    "created_at": anomaly.created_at,
+                }
+                recoverability = build_recoverability_payload(anomaly_payload)
+                trust = TrustDefensibilityService().trust_score(
+                    data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
+                    model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
+                    contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
+                    sol_risk=1.0 if bool((DiscoveryRuleEngine().evaluate(anomaly_payload)).get("urgent_flag")) else 0.25,
+                )
+                package = ClaimsEvidencePackageBuilder().build(
+                    claim={
+                        "id": claim.id,
+                        "artist_id": claim.artist_id,
+                        "governing_law_state": claim.governing_law_state,
+                    },
+                    anomaly=anomaly_payload,
+                    recoverability_payload=recoverability,
+                    trust_score=float(trust.get("trust_score") or 0.0),
+                )
+                claim.trust_score = float(trust.get("trust_score") or 0.0)
+                claim.attorney_review_required = bool(trust.get("requires_attorney_review"))
+                claim.legal_defensibility_report = TrustDefensibilityService().legal_defensibility_report(
+                    claim_id=claim.id,
+                    anomaly_payload=anomaly_payload,
+                    classification_payload=recoverability,
+                    evidence_package=package,
+                )
+                claim.claim_strength_rating = str(package.get("claim_strength_rating") or "") or None
+                db.commit()
         return packet
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

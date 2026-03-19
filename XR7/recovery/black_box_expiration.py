@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import csv
+import json
+import math
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
 
@@ -69,8 +72,30 @@ def _add_days(dt: datetime, days: int) -> datetime:
     return dt + timedelta(days=days)
 
 
-# Avoid top-level import cycle concerns.
-from datetime import timedelta  # noqa: E402
+def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
+    return max(low, min(high, value))
+
+
+def _safe_float(value: Any, default: float = 0.0) -> float:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _quantile(sorted_values: list[float], q: float) -> float:
+    if not sorted_values:
+        return 0.0
+    if len(sorted_values) == 1:
+        return sorted_values[0]
+    qq = _clamp(q)
+    idx = qq * (len(sorted_values) - 1)
+    lower = int(math.floor(idx))
+    upper = int(math.ceil(idx))
+    if lower == upper:
+        return sorted_values[lower]
+    frac = idx - lower
+    return sorted_values[lower] + (sorted_values[upper] - sorted_values[lower]) * frac
 
 
 def get_rule(payer_or_society: str | None, royalty_type: str | None = None) -> BlackBoxRule:
@@ -209,6 +234,230 @@ def evaluate_black_box_expiration(
     }
 
 
+@dataclass
+class SocietyFreezeEvent:
+    payer_or_society: str
+    freeze_started_at: datetime
+    freeze_ended_at: datetime | None = None
+    source: str = "manual"
+    note: str = ""
+
+
+class BlackBoxExpirationProbabilityModel:
+    """Probabilistic expiration model using empirical survival curves per society/royalty type."""
+
+    def __init__(self) -> None:
+        self._durations_by_key: dict[tuple[str, str], list[float]] = {}
+        self._freeze_events: dict[tuple[str, str], SocietyFreezeEvent] = {}
+        self.model_version = "xr7-blackbox-prob-v1"
+
+    def ingest_rows(self, rows: list[dict[str, Any]]) -> int:
+        count = 0
+        for row in rows:
+            payer = str(row.get("payer_or_society") or row.get("society") or row.get("payer") or "").strip().upper()
+            royalty_type = str(row.get("royalty_type") or "unmatched_royalties").strip().lower()
+            event_dt = _to_utc_datetime(row.get("event_date"))
+            redist_dt = _to_utc_datetime(row.get("redistributed_at"))
+            if not payer or event_dt is None or redist_dt is None or redist_dt <= event_dt:
+                continue
+            duration_days = float((redist_dt - event_dt).total_seconds() / 86400.0)
+            key = (payer, royalty_type)
+            self._durations_by_key.setdefault(key, []).append(duration_days)
+            count += 1
+        for durations in self._durations_by_key.values():
+            durations.sort()
+        return count
+
+    def ingest_csv(self, csv_path: str) -> int:
+        rows: list[dict[str, Any]] = []
+        with open(csv_path, encoding="utf-8") as fp:
+            reader = csv.DictReader(fp)
+            for row in reader:
+                rows.append(dict(row))
+        return self.ingest_rows(rows)
+
+    def set_freeze_event(
+        self,
+        *,
+        payer_or_society: str,
+        royalty_type: str,
+        freeze_started_at: datetime | str,
+        freeze_ended_at: datetime | str | None = None,
+        source: str = "manual",
+        note: str = "",
+    ) -> None:
+        start_dt = _to_utc_datetime(freeze_started_at)
+        if start_dt is None:
+            return
+        end_dt = _to_utc_datetime(freeze_ended_at)
+        key = (str(payer_or_society).strip().upper(), str(royalty_type).strip().lower())
+        self._freeze_events[key] = SocietyFreezeEvent(
+            payer_or_society=key[0],
+            freeze_started_at=start_dt,
+            freeze_ended_at=end_dt,
+            source=source,
+            note=note,
+        )
+
+    def _durations_for_key(self, payer_or_society: str, royalty_type: str) -> list[float]:
+        key = (payer_or_society.strip().upper(), royalty_type.strip().lower())
+        if key in self._durations_by_key:
+            return list(self._durations_by_key[key])
+        payer_only_matches: list[float] = []
+        for (payer, _rt), values in self._durations_by_key.items():
+            if payer == key[0]:
+                payer_only_matches.extend(values)
+        if payer_only_matches:
+            return sorted(payer_only_matches)
+        rule = get_rule(payer_or_society, royalty_type)
+        if rule.redistribution_model == "contract_governed":
+            return []
+        low = float(rule.window_min_days or 365 * 2)
+        high = float(rule.window_max_days or low)
+        if high < low:
+            high = low
+        return sorted([low, (low + high) / 2.0, high])
+
+    def _elapsed_days_with_freeze(
+        self,
+        *,
+        payer_or_society: str,
+        royalty_type: str,
+        event_dt: datetime,
+        as_of: datetime,
+    ) -> tuple[float, dict[str, Any] | None]:
+        key = (payer_or_society.strip().upper(), royalty_type.strip().lower())
+        freeze = self._freeze_events.get(key)
+        if freeze is None:
+            elapsed = float(max(0.0, (as_of - event_dt).total_seconds() / 86400.0))
+            return elapsed, None
+
+        start = freeze.freeze_started_at
+        end = freeze.freeze_ended_at
+        if end is None or end > as_of:
+            effective_anchor = start if start > event_dt else event_dt
+            elapsed = float(max(0.0, (as_of - effective_anchor).total_seconds() / 86400.0))
+        else:
+            frozen_days = max(0.0, (end - start).total_seconds() / 86400.0)
+            base_elapsed = max(0.0, (as_of - event_dt).total_seconds() / 86400.0)
+            elapsed = max(0.0, base_elapsed - frozen_days)
+
+        return elapsed, {
+            "freeze_started_at": start.isoformat(),
+            "freeze_ended_at": end.isoformat() if end else None,
+            "source": freeze.source,
+            "note": freeze.note,
+        }
+
+    def predict(
+        self,
+        *,
+        payer_or_society: str,
+        royalty_type: str,
+        event_date: datetime | date | str | None,
+        as_of: datetime | None = None,
+    ) -> dict[str, Any]:
+        now = as_of or datetime.now(timezone.utc)
+        event_dt = _to_utc_datetime(event_date)
+        if event_dt is None:
+            return {
+                "P_already_redistributed": 0.0,
+                "P_still_recoverable": 1.0,
+                "p10_expiration_date": None,
+                "p50_expiration_date": None,
+                "p90_expiration_date": None,
+                "redistribution_risk_score": 0,
+                "days_remaining": None,
+                "probability_narrative": "Insufficient event date data; XR7 defaults to recoverable pending additional evidence.",
+                "model_version": self.model_version,
+            }
+
+        rule = get_rule(payer_or_society, royalty_type)
+        if rule.redistribution_model == "contract_governed":
+            return {
+                "P_already_redistributed": 0.0,
+                "P_still_recoverable": 1.0,
+                "p10_expiration_date": None,
+                "p50_expiration_date": None,
+                "p90_expiration_date": None,
+                "redistribution_risk_score": 0,
+                "days_remaining": None,
+                "probability_narrative": rule.note,
+                "model_version": self.model_version,
+            }
+
+        durations = self._durations_for_key(payer_or_society, royalty_type)
+        elapsed_days, freeze_context = self._elapsed_days_with_freeze(
+            payer_or_society=payer_or_society,
+            royalty_type=royalty_type,
+            event_dt=event_dt,
+            as_of=now,
+        )
+
+        n = max(len(durations), 1)
+        redistributed_count = sum(1 for d in durations if d <= elapsed_days)
+        p_redistributed = _clamp(redistributed_count / n)
+        p_recoverable = _clamp(1.0 - p_redistributed)
+
+        q10_days = _quantile(durations, 0.10)
+        q50_days = _quantile(durations, 0.50)
+        q90_days = _quantile(durations, 0.90)
+        p10_date = _add_days(event_dt, int(round(q10_days))).isoformat()
+        p50_date = _add_days(event_dt, int(round(q50_days))).isoformat()
+        p90_date = _add_days(event_dt, int(round(q90_days))).isoformat()
+
+        p50_exp_dt = _add_days(event_dt, int(round(q50_days)))
+        days_remaining = max(0, int((p50_exp_dt - now).total_seconds() // 86400))
+
+        redistribution_risk_score = int(round(_clamp(p_redistributed) * 100.0))
+        if freeze_context:
+            narrative = (
+                f"{payer_or_society} has an active redistribution freeze signal. XR7 reset the timing clock to the freeze context "
+                f"and currently estimates {p_recoverable:.1%} recoverability ({p_redistributed:.1%} redistributed risk)."
+            )
+        else:
+            narrative = (
+                f"XR7 estimates {p_recoverable:.1%} that funds are still recoverable and {p_redistributed:.1%} already redistributed, "
+                f"using historical {payer_or_society} timing behavior for {royalty_type}."
+            )
+
+        out = {
+            "P_already_redistributed": round(p_redistributed, 6),
+            "P_still_recoverable": round(p_recoverable, 6),
+            "p10_expiration_date": p10_date,
+            "p50_expiration_date": p50_date,
+            "p90_expiration_date": p90_date,
+            "redistribution_risk_score": redistribution_risk_score,
+            "days_remaining": days_remaining,
+            "probability_narrative": narrative,
+            "model_version": self.model_version,
+        }
+        if freeze_context:
+            out["freeze_event"] = freeze_context
+        return out
+
+
+class SocietyBehaviorCalibrationJob:
+    """Quarterly recalibration from confirmed redistribution events."""
+
+    def __init__(self, model: BlackBoxExpirationProbabilityModel) -> None:
+        self.model = model
+
+    def recalibrate(self, confirmed_events: list[dict[str, Any]]) -> dict[str, Any]:
+        ingested = self.model.ingest_rows(confirmed_events)
+        societies = len({str((e.get("payer_or_society") or e.get("society") or "")).upper() for e in confirmed_events if e.get("payer_or_society") or e.get("society")})
+        return {
+            "job": "society_behavior_calibration",
+            "ingested_events": ingested,
+            "unique_societies": societies,
+            "model_version": self.model.model_version,
+            "recalibrated_at": datetime.now(timezone.utc).isoformat(),
+        }
+
+
+_DEFAULT_PROB_MODEL = BlackBoxExpirationProbabilityModel()
+
+
 def evaluate_black_box_expiration_for_anomaly(anomaly_like: dict[str, Any], as_of: datetime | None = None) -> dict[str, Any]:
     payer, royalty_type = infer_payer_and_royalty_type(anomaly_like)
     event_date = (
@@ -217,14 +466,75 @@ def evaluate_black_box_expiration_for_anomaly(anomaly_like: dict[str, Any], as_o
         or anomaly_like.get("time_window_start")
         or anomaly_like.get("created_at")
     )
-    result = evaluate_black_box_expiration(
+    static_result = evaluate_black_box_expiration(
         payer_or_society=payer,
         royalty_type=royalty_type,
         event_date=event_date,
         as_of=as_of,
     )
+    probability_result = _DEFAULT_PROB_MODEL.predict(
+        payer_or_society=payer,
+        royalty_type=royalty_type,
+        event_date=event_date,
+        as_of=as_of,
+    )
+
+    is_expired = static_result.get("is_expired")
+    if not is_expired and probability_result.get("P_already_redistributed", 0.0) >= 0.9:
+        is_expired = True
+
     return {
         "payer_or_society": payer,
         "royalty_type": royalty_type,
-        **result,
+        **static_result,
+        "is_expired": bool(is_expired),
+        **probability_result,
+    }
+
+
+def register_society_freeze_event(
+    *,
+    payer_or_society: str,
+    royalty_type: str,
+    freeze_started_at: datetime | str,
+    freeze_ended_at: datetime | str | None = None,
+    source: str = "manual",
+    note: str = "",
+) -> None:
+    _DEFAULT_PROB_MODEL.set_freeze_event(
+        payer_or_society=payer_or_society,
+        royalty_type=royalty_type,
+        freeze_started_at=freeze_started_at,
+        freeze_ended_at=freeze_ended_at,
+        source=source,
+        note=note,
+    )
+
+
+def train_black_box_expiration_probability_model_from_csv(csv_path: str) -> dict[str, Any]:
+    ingested = _DEFAULT_PROB_MODEL.ingest_csv(csv_path)
+    return {
+        "ingested_events": ingested,
+        "model_version": _DEFAULT_PROB_MODEL.model_version,
+        "trained_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+def export_black_box_model_snapshot() -> dict[str, Any]:
+    keys = [
+        {"payer_or_society": payer, "royalty_type": rt, "samples": len(vals)}
+        for (payer, rt), vals in sorted(_DEFAULT_PROB_MODEL._durations_by_key.items())
+    ]
+    return {
+        "model_version": _DEFAULT_PROB_MODEL.model_version,
+        "society_royalty_keys": keys,
+        "freeze_events": {
+            f"{k[0]}::{k[1]}": {
+                "freeze_started_at": v.freeze_started_at.isoformat(),
+                "freeze_ended_at": v.freeze_ended_at.isoformat() if v.freeze_ended_at else None,
+                "source": v.source,
+                "note": v.note,
+            }
+            for k, v in _DEFAULT_PROB_MODEL._freeze_events.items()
+        },
     }

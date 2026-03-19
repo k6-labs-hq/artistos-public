@@ -59,6 +59,8 @@ export function DashboardView({ artistId }: DashboardViewProps) {
   const catalogHealth = (dashboard.catalog_health || {}) as Record<string, unknown>;
   const trend = (dashboard.earnings_trend || {}) as Record<string, unknown>;
   const recoverability = (dashboard.recoverability_breakdown || {}) as Record<string, unknown>;
+  const probabilityNarrative = String((recoverability.probability_narrative as string | undefined) || "");
+  const contractClauseCitation = String((recoverability.contract_clause_citation as string | undefined) || "");
 
   const confidence = Number(
     agentStatus.agent_orchestra_status?.confidence ??
@@ -146,6 +148,8 @@ export function DashboardView({ artistId }: DashboardViewProps) {
         expiredAmount={Number((recoverability.expired_total as number | undefined) || 0)}
         byClass={(recoverability.by_class as Record<string, { count?: number; amount?: number; estimated_recoverable?: number }> | undefined) || {}}
         claimWindowLabel="Recoverable, contract-based, and copyright-damages classes are draftable"
+        probabilityNarrative={probabilityNarrative || undefined}
+        contractClauseCitation={contractClauseCitation || undefined}
       />
 
       <SovereigntyInsightsPanel

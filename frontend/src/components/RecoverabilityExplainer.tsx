@@ -15,6 +15,8 @@ type RecoverabilityExplainerProps = {
   expirationDate?: string | null;
   discoveryDate?: string;
   claimWindowLabel?: string;
+  probabilityNarrative?: string;
+  contractClauseCitation?: string;
   compact?: boolean;
 };
 
@@ -38,6 +40,8 @@ export function RecoverabilityExplainer({
   expirationDate,
   discoveryDate,
   claimWindowLabel = "Varies by payer/society",
+  probabilityNarrative,
+  contractClauseCitation,
   compact = false,
 }: RecoverabilityExplainerProps): JSX.Element {
   const [showDetails, setShowDetails] = useState(false);
@@ -88,6 +92,8 @@ export function RecoverabilityExplainer({
           <p className="label">Here is why</p>
           <p>{topRule}</p>
           <p>Rule windows are applied to event date, then compared to discovery date.</p>
+          {probabilityNarrative && <p>{probabilityNarrative}</p>}
+          {contractClauseCitation && <p>Contract clause: {contractClauseCitation}</p>}
         </article>
 
         <article className="recoverability-card prevention" title="Expired and low-confidence anomalies still improve future recovery outcomes.">

@@ -20,6 +20,8 @@ from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
+from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
+from XR7.recovery.trust_defensibility import TrustDefensibilityService
 from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
@@ -47,6 +49,13 @@ def list_anomalies(
     for r in rows:
         anomaly_payload = AnomalySchema.model_validate(r).model_dump(mode="json")
         recoverability_payload = build_recoverability_payload(anomaly_payload)
+        discovery = DiscoveryRuleEngine().evaluate(anomaly_payload)
+        trust = TrustDefensibilityService().trust_score(
+            data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
+            model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
+            contract_evidence_quality=0.7 if recoverability_payload.get("contract_recoverability") else 0.45,
+            sol_risk=1.0 if discovery.get("urgent_flag") else 0.25,
+        )
         obj = {
             **anomaly_payload,
             "branding": brand_meta,
@@ -58,6 +67,9 @@ def list_anomalies(
                 }
             ),
             **recoverability_payload,
+            "redistribution_risk_score": (recoverability_payload.get("black_box_expiration") or {}).get("redistribution_risk_score"),
+            "trust_score": trust.get("trust_score"),
+            "urgent_flag": bool(discovery.get("urgent_flag")),
         }
         if debug:
             obj.update(
@@ -98,10 +110,21 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
         behavior,
     )
     anomaly_payload = AnomalySchema.model_validate(anomaly).model_dump(mode="json")
+    discovery = DiscoveryRuleEngine().evaluate(anomaly_payload)
+    recoverability = build_recoverability_payload(anomaly_payload)
+    trust = TrustDefensibilityService().trust_score(
+        data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
+        model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
+        contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
+        sol_risk=1.0 if discovery.get("urgent_flag") else 0.25,
+    )
     return {
         "anomaly_id": anomaly_id,
         **probability,
-        **build_recoverability_payload(anomaly_payload),
+        **recoverability,
+        "redistribution_risk_score": (recoverability.get("black_box_expiration") or {}).get("redistribution_risk_score"),
+        "trust_score": trust.get("trust_score"),
+        "urgent_flag": bool(discovery.get("urgent_flag")),
     }
 
 

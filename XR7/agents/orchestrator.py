@@ -50,6 +50,11 @@ from XR7.agents.onboarding_agents import (
     BlackBoxExpirationAgent,
     RecoverabilityClassificationAgent,
     RecoverabilityExplainerAgent,
+    DiscoveryRuleAgent,
+    ContractRecoverabilityAgent,
+    LeakageBenchmarkAgent,
+    EvidencePackageAgent,
+    SocietySignalAgent,
     ReleaseTimelineAgent,
     RightsConflictDetectorAgent,
     SocialUGCCollectorAgent,
@@ -143,6 +148,11 @@ AGENTS: dict[str, AgentFn] = {
     "black_box_expiration_agent": BlackBoxExpirationAgent,
     "recoverability_classification_agent": RecoverabilityClassificationAgent,
     "recoverability_explainer_agent": RecoverabilityExplainerAgent,
+    "discovery_rule_agent": DiscoveryRuleAgent,
+    "contract_recoverability_agent": ContractRecoverabilityAgent,
+    "leakage_benchmark_agent": LeakageBenchmarkAgent,
+    "evidence_package_agent": EvidencePackageAgent,
+    "society_signal_agent": SocietySignalAgent,
     "evidence_verifier": EvidenceVerifierAgent,
     "claim_drafter": ClaimDrafterAgent,
     "legal_authority_agent": LegalAuthorityAgent,
@@ -217,6 +227,11 @@ RECOVERY_ORDER: list[str] = [
     "black_box_expiration_agent",
     "recoverability_classification_agent",
     "recoverability_explainer_agent",
+    "discovery_rule_agent",
+    "contract_recoverability_agent",
+    "leakage_benchmark_agent",
+    "society_signal_agent",
+    "evidence_package_agent",
     "evidence_verifier",
     "claim_drafter",
     "legal_authority_agent",
@@ -317,6 +332,9 @@ def _merge_state(base: XR7State, patch: XR7State) -> XR7State:
             "support_messages",
             "support_suggested_replies",
             "recoverability_results",
+            "discovery_rule_results",
+            "contract_recoverability_results",
+            "society_activity_feed",
         } and isinstance(value, list):
             merged[key] = list(merged.get(key) or []) + list(value)
         elif key == "confidence_scores" and isinstance(value, dict):
@@ -342,6 +360,9 @@ def _merge_state(base: XR7State, patch: XR7State) -> XR7State:
             "attorney_export_package",
             "attorney_export_manifest",
             "recoverability_explainer",
+            "catalog_health_vs_industry",
+            "claims_evidence_package",
+            "society_signal_updates",
         } and isinstance(value, dict):
             merged[key] = {**(merged.get(key) or {}), **value}
         else:

@@ -12,7 +12,9 @@ Provides artist-centric money-recovery tools:
 from __future__ import annotations
 
 import asyncio
+import json
 from datetime import datetime, timezone
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -28,6 +30,7 @@ from XR7.models.event import Event
 from XR7.models.payment import Payment
 from XR7.models.statement import Statement
 from XR7.models.work import Work
+from XR7.models.society_signal_log import SocietySignalLog
 from XR7.network.coop_recovery import CoopRecoveryNetwork
 from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
 from XR7.recovery.edm_festival_auditor import EDMFestivalAuditor
@@ -54,9 +57,19 @@ from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
 from XR7.recovery.sla_guarantee import sla_status_for_artist
 from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recoupment_tracker import compute_recoupment, recoupment_summary
+from XR7.recovery.black_box_expiration import (
+    export_black_box_model_snapshot,
+    train_black_box_expiration_probability_model_from_csv,
+)
+from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder
+from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
+from XR7.recovery.leakage_benchmark_engine import LeakageBenchmarkEngine
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
+from XR7.recovery.society_signal_feed import SocietySignalFeed
 from XR7.recovery.split_verification import upsert_split_conflict_anomalies, verify_splits
 from XR7.blockchain.split_verifier import SplitVerifier
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
+from XR7.recovery.trust_defensibility import TrustDefensibilityService
 from XR7.recovery.underpayment_heatmap import build_underpayment_heatmap
 from XR7.recovery.underpayment_reconstruction import reconstruct_historical_underpayment
 from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
@@ -1071,3 +1084,145 @@ def pooled_claim(artist_id: str, anomaly_ids: list[str], db: Session = Depends(g
         "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "result": payload,
     }
+
+
+@router.post("/{artist_id}/recovery/discovery-rule")
+def run_discovery_rule(artist_id: str, anomaly: dict[str, Any], db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    result = DiscoveryRuleEngine(db=db).evaluate({**anomaly, "artist_id": artist_id})
+    return inject_branding_metadata(db, {"artist_id": artist_id, **result})
+
+
+@router.post("/{artist_id}/recovery/black-box/train")
+def train_black_box_model(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    csv_path = str(payload.get("csv_path") or "")
+    if csv_path:
+        training = train_black_box_expiration_probability_model_from_csv(csv_path)
+    else:
+        training = {
+            "ingested_events": 0,
+            "model_version": "xr7-blackbox-prob-v1",
+            "trained_at": datetime.now(timezone.utc).isoformat(),
+        }
+    return inject_branding_metadata(db, {"artist_id": artist_id, **training, "snapshot": export_black_box_model_snapshot()})
+
+
+@router.post("/{artist_id}/recovery/leakage-benchmark")
+def leakage_benchmark(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    engine = LeakageBenchmarkEngine(epsilon=float(payload.get("epsilon") or 1.0))
+    client_profile = payload.get("client_profile") or {}
+    peers = payload.get("peer_profiles") or []
+    result = engine.compare_against_cohort(client_profile, peers)
+    return inject_branding_metadata(db, {"artist_id": artist_id, **result})
+
+
+@router.post("/{artist_id}/recovery/society-signal")
+def ingest_society_signal(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    feed = SocietySignalFeed()
+    result = feed.apply_signal(payload, anomalies)
+
+    row = SocietySignalLog(
+        source=str((result.get("signal") or {}).get("source") or "partner_feed"),
+        signal_type=str((result.get("signal") or {}).get("signal_type") or "unknown"),
+        payer_or_society=str((result.get("signal") or {}).get("payer_or_society") or "GENERIC"),
+        affected_anomaly_count=int(result.get("affected_anomaly_count") or 0),
+        classification_impact_json=json.dumps(result.get("classification_impact") or {}),
+    )
+    db.add(row)
+    db.commit()
+    return inject_branding_metadata(db, {"artist_id": artist_id, **result, "society_activity_feed": feed.dashboard_feed()})
+
+
+@router.post("/{artist_id}/claims/{claim_id}/evidence-package")
+def build_claim_evidence_package(artist_id: str, claim_id: str, payload: dict[str, Any] | None = None, db: Session = Depends(get_db)):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+    if not anomaly:
+        raise HTTPException(status_code=404, detail="Anomaly not found")
+
+    anomaly_payload = _anomaly_to_dict(anomaly)
+    anomaly_payload["description"] = anomaly.description
+    anomaly_payload["event_date"] = anomaly.time_window_end.isoformat() if anomaly.time_window_end else None
+    anomaly_payload["created_at"] = anomaly.created_at.isoformat() if anomaly.created_at else None
+
+    recoverability = build_recoverability_payload(anomaly_payload)
+    discovery = DiscoveryRuleEngine().evaluate(anomaly_payload)
+    trust = TrustDefensibilityService(db).trust_score(
+        data_completeness=0.85 if anomaly.description else 0.6,
+        model_confidence=float(anomaly.confidence_score or 0.0),
+        contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
+        sol_risk=1.0 if bool(discovery.get("urgent_flag")) else 0.25,
+    )
+
+    builder = ClaimsEvidencePackageBuilder(
+        confidence_gate_threshold=float((payload or {}).get("confidence_gate_threshold") or 0.65)
+    )
+    package = builder.build(
+        claim={"id": claim.id, "artist_id": claim.artist_id, "governing_law_state": claim.governing_law_state},
+        anomaly=anomaly_payload,
+        recoverability_payload=recoverability,
+        trust_score=float(trust.get("trust_score") or 0.0),
+        precedent_refs=(payload or {}).get("precedent_refs") or [],
+    )
+
+    claim.trust_score = float(trust.get("trust_score") or 0.0)
+    claim.attorney_review_required = bool(trust.get("requires_attorney_review"))
+    claim.claim_strength_rating = str(package.get("claim_strength_rating") or "") or None
+    claim.legal_defensibility_report = TrustDefensibilityService(db).legal_defensibility_report(
+        claim_id=claim.id,
+        anomaly_payload=anomaly_payload,
+        classification_payload=recoverability,
+        evidence_package=package,
+    )
+    db.commit()
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "claim_id": claim_id,
+            "claim_strength_rating": package.get("claim_strength_rating"),
+            "human_attorney_review_required": package.get("human_attorney_review_required"),
+            "json": package,
+            "pdf_text": builder.export_pdf_text(package),
+            "xlsx_csv": builder.export_xlsx_bytes(package).decode("utf-8"),
+        },
+    )
+
+
+@router.get("/{artist_id}/claims/{claim_id}/legal-defensibility-report")
+def get_legal_defensibility_report(artist_id: str, claim_id: str, db: Session = Depends(get_db)):
+    claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "claim_id": claim_id,
+            "trust_score": claim.trust_score,
+            "attorney_review_required": claim.attorney_review_required,
+            "claim_strength_rating": claim.claim_strength_rating,
+            "legal_defensibility_report": claim.legal_defensibility_report or {},
+        },
+    )

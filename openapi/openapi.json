@@ -291,7 +291,13 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AnomalyWithRecoverabilitySchema"
+                  },
+                  "title": "Response List Anomalies Artists  Artist Id  Anomalies Get"
+                }
               }
             }
           },
@@ -373,7 +379,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AnomalyRecoveryProbabilityResponseSchema"
+                }
               }
             }
           },
@@ -413,7 +421,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/DetectAnomaliesResponseSchema"
+                }
               }
             }
           },
@@ -2940,6 +2950,330 @@
             }
           }
         },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/recovery/discovery-rule": {
+      "post": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Run Discovery Rule",
+        "operationId": "run_discovery_rule_artists__artist_id__recovery_discovery_rule_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Anomaly"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/recovery/black-box/train": {
+      "post": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Train Black Box Model",
+        "operationId": "train_black_box_model_artists__artist_id__recovery_black_box_train_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/recovery/leakage-benchmark": {
+      "post": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Leakage Benchmark",
+        "operationId": "leakage_benchmark_artists__artist_id__recovery_leakage_benchmark_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/recovery/society-signal": {
+      "post": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Ingest Society Signal",
+        "operationId": "ingest_society_signal_artists__artist_id__recovery_society_signal_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/claims/{claim_id}/evidence-package": {
+      "post": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Build Claim Evidence Package",
+        "operationId": "build_claim_evidence_package_artists__artist_id__claims__claim_id__evidence_package_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/claims/{claim_id}/legal-defensibility-report": {
+      "get": {
+        "tags": [
+          "recovery"
+        ],
+        "summary": "Get Legal Defensibility Report",
+        "operationId": "get_legal_defensibility_report_artists__artist_id__claims__claim_id__legal_defensibility_report_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "claim_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Claim Id"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11731,7 +12065,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/AnomalyExplainWithRecoverabilitySchema"
+                }
               }
             }
           },
@@ -14965,6 +15301,116 @@
         }
       }
     },
+    "/artists/{artist_id}/trust/defensibility": {
+      "get": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "Get Trust Defensibility",
+        "operationId": "get_trust_defensibility_artists__artist_id__trust_defensibility_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Trust Defensibility Artists  Artist Id  Trust Defensibility Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/trust/classification-audit": {
+      "post": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "Append Classification Audit",
+        "operationId": "append_classification_audit_artists__artist_id__trust_classification_audit_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Append Classification Audit Artists  Artist Id  Trust Classification Audit Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/artists/{artist_id}/referrals": {
       "post": {
         "tags": [
@@ -16713,7 +17159,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/TVFilmScanAnomaliesResponse"
+                }
               }
             }
           },
@@ -16982,7 +17430,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/TVFilmDashboardResponse"
+                }
               }
             }
           },
@@ -17021,7 +17471,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/TVFilmTrustExplainResponse"
+                }
               }
             }
           },
@@ -18041,6 +18493,253 @@
         ],
         "title": "AnomalyCategory"
       },
+      "AnomalyExplainWithRecoverabilitySchema": {
+        "properties": {
+          "anomaly_id": {
+            "type": "string",
+            "title": "Anomaly Id"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "black_box_expiration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BlackBoxExpirationSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recoverability": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RecoverabilityClassificationSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "legal_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Basis"
+          },
+          "contract_recoverability": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Recoverability"
+          },
+          "recoverability_explainer_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recoverability Explainer Line"
+          },
+          "redistribution_risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redistribution Risk Score"
+          },
+          "trust_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Score"
+          },
+          "urgent_flag": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgent Flag"
+          },
+          "claim_draft_allowed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Draft Allowed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "anomaly_id",
+          "explanation"
+        ],
+        "title": "AnomalyExplainWithRecoverabilitySchema"
+      },
+      "AnomalyRecoveryProbabilityResponseSchema": {
+        "properties": {
+          "anomaly_id": {
+            "type": "string",
+            "title": "Anomaly Id"
+          },
+          "probability_of_recovery": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Probability Of Recovery"
+          },
+          "expected_recovery_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Recovery Amount"
+          },
+          "expected_effort_hours": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Effort Hours"
+          },
+          "expected_time_to_resolution": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Time To Resolution"
+          },
+          "black_box_expiration": {
+            "$ref": "#/components/schemas/BlackBoxExpirationSchema"
+          },
+          "recoverability": {
+            "$ref": "#/components/schemas/RecoverabilityClassificationSchema"
+          },
+          "legal_basis": {
+            "type": "string",
+            "title": "Legal Basis"
+          },
+          "contract_recoverability": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Recoverability"
+          },
+          "recoverability_explainer_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recoverability Explainer Line"
+          },
+          "redistribution_risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redistribution Risk Score"
+          },
+          "trust_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Score"
+          },
+          "urgent_flag": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgent Flag"
+          },
+          "claim_draft_allowed": {
+            "type": "boolean",
+            "title": "Claim Draft Allowed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "anomaly_id",
+          "black_box_expiration",
+          "recoverability",
+          "legal_basis",
+          "claim_draft_allowed"
+        ],
+        "title": "AnomalyRecoveryProbabilityResponseSchema"
+      },
       "AnomalySchema": {
         "properties": {
           "id": {
@@ -18180,6 +18879,55 @@
             ],
             "title": "Feature Snapshot"
           },
+          "recoverability_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recoverability Class"
+          },
+          "legal_basis": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Basis"
+          },
+          "redistribution_risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redistribution Risk Score"
+          },
+          "trust_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Score"
+          },
+          "urgent_flag": {
+            "type": "boolean",
+            "title": "Urgent Flag",
+            "default": false
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -18217,6 +18965,255 @@
           "CLOSED"
         ],
         "title": "AnomalyStatus"
+      },
+      "AnomalyWithRecoverabilitySchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "category": {
+            "$ref": "#/components/schemas/AnomalyCategory"
+          },
+          "subtype": {
+            "type": "string",
+            "title": "Subtype"
+          },
+          "severity": {
+            "$ref": "#/components/schemas/AnomalySeverity"
+          },
+          "expected_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Amount"
+          },
+          "actual_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Amount"
+          },
+          "estimated_recoverable": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Recoverable"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          },
+          "time_window_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Window Start"
+          },
+          "time_window_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Time Window End"
+          },
+          "territory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Territory"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AnomalyStatus"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "anomaly_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anomaly Score"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          },
+          "feature_snapshot": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Snapshot"
+          },
+          "recoverability_class": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recoverability Class"
+          },
+          "legal_basis": {
+            "type": "string",
+            "title": "Legal Basis"
+          },
+          "redistribution_risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redistribution Risk Score"
+          },
+          "trust_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Score"
+          },
+          "urgent_flag": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgent Flag"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "recovery_probability": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Recovery Probability"
+          },
+          "black_box_expiration": {
+            "$ref": "#/components/schemas/BlackBoxExpirationSchema"
+          },
+          "recoverability": {
+            "$ref": "#/components/schemas/RecoverabilityClassificationSchema"
+          },
+          "contract_recoverability": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Recoverability"
+          },
+          "recoverability_explainer_line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recoverability Explainer Line"
+          },
+          "claim_draft_allowed": {
+            "type": "boolean",
+            "title": "Claim Draft Allowed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "category",
+          "subtype",
+          "severity",
+          "confidence_score",
+          "status",
+          "legal_basis",
+          "created_at",
+          "recovery_probability",
+          "black_box_expiration",
+          "recoverability",
+          "claim_draft_allowed"
+        ],
+        "title": "AnomalyWithRecoverabilitySchema"
       },
       "ApprovalRequest": {
         "properties": {
@@ -18875,6 +19872,179 @@
           "state"
         ],
         "title": "AuthConnectResponse"
+      },
+      "BlackBoxExpirationSchema": {
+        "properties": {
+          "payer_or_society": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payer Or Society"
+          },
+          "royalty_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Royalty Type"
+          },
+          "is_expired": {
+            "type": "boolean",
+            "title": "Is Expired"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration Date"
+          },
+          "days_remaining": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Days Remaining"
+          },
+          "rule_applied": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Applied"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "P_already_redistributed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P Already Redistributed"
+          },
+          "P_still_recoverable": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P Still Recoverable"
+          },
+          "p10_expiration_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P10 Expiration Date"
+          },
+          "p50_expiration_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P50 Expiration Date"
+          },
+          "p90_expiration_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P90 Expiration Date"
+          },
+          "redistribution_risk_score": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redistribution Risk Score"
+          },
+          "probability_narrative": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Probability Narrative"
+          },
+          "freeze_event": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Freeze Event"
+          },
+          "model_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_expired",
+          "explanation"
+        ],
+        "title": "BlackBoxExpirationSchema"
       },
       "BlackBoxRequest": {
         "properties": {
@@ -19850,6 +21020,45 @@
             ],
             "title": "Attorney File Generated At"
           },
+          "trust_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Score"
+          },
+          "attorney_review_required": {
+            "type": "boolean",
+            "title": "Attorney Review Required",
+            "default": false
+          },
+          "legal_defensibility_report": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Defensibility Report"
+          },
+          "claim_strength_rating": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Strength Rating"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -20217,6 +21426,28 @@
           "markdown"
         ],
         "title": "DemandLetterResponse"
+      },
+      "DetectAnomaliesResponseSchema": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "detected": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Detected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "detected"
+        ],
+        "title": "DetectAnomaliesResponseSchema"
       },
       "EmailTriggeredInviteRequest": {
         "properties": {
@@ -22402,6 +23633,39 @@
         ],
         "title": "ReconstructRequest"
       },
+      "RecoverabilityClassificationSchema": {
+        "properties": {
+          "recoverability_class": {
+            "type": "string",
+            "title": "Recoverability Class"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "legal_basis": {
+            "type": "string",
+            "title": "Legal Basis"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recoverability_class",
+          "rationale",
+          "legal_basis",
+          "recommended_action",
+          "confidence_score"
+        ],
+        "title": "RecoverabilityClassificationSchema"
+      },
       "RecoveryAutoRequest": {
         "properties": {
           "include_rights_registration": {
@@ -23829,6 +25093,39 @@
         "type": "object",
         "title": "TVFilmClaimDraftRequest"
       },
+      "TVFilmDashboardResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "sections": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Sections"
+          },
+          "trust_layer": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Trust Layer"
+          },
+          "role_breakdown": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Role Breakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "sections",
+          "trust_layer",
+          "role_breakdown"
+        ],
+        "title": "TVFilmDashboardResponse"
+      },
       "TVFilmForecastRequest": {
         "properties": {
           "anomaly_ids": {
@@ -23891,6 +25188,109 @@
         ],
         "title": "TVFilmPortfolioAnalysisRequest"
       },
+      "TVFilmRecoverabilityPreviewItem": {
+        "properties": {
+          "subtype": {
+            "type": "string",
+            "title": "Subtype"
+          },
+          "estimated_recoverable": {
+            "type": "number",
+            "title": "Estimated Recoverable"
+          },
+          "union": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Union"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "black_box_expiration": {
+            "$ref": "#/components/schemas/BlackBoxExpirationSchema"
+          },
+          "recoverability": {
+            "$ref": "#/components/schemas/RecoverabilityClassificationSchema"
+          },
+          "legal_basis": {
+            "type": "string",
+            "title": "Legal Basis"
+          },
+          "claim_draft_allowed": {
+            "type": "boolean",
+            "title": "Claim Draft Allowed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subtype",
+          "estimated_recoverable",
+          "black_box_expiration",
+          "recoverability",
+          "legal_basis",
+          "claim_draft_allowed"
+        ],
+        "title": "TVFilmRecoverabilityPreviewItem"
+      },
+      "TVFilmScanAnomaliesResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "signals_scanned": {
+            "type": "integer",
+            "title": "Signals Scanned"
+          },
+          "anomalies_created": {
+            "type": "integer",
+            "title": "Anomalies Created"
+          },
+          "anomaly_rule_catalog": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Anomaly Rule Catalog"
+          },
+          "recoverability_summary": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Recoverability Summary"
+          },
+          "recoverability_preview": {
+            "items": {
+              "$ref": "#/components/schemas/TVFilmRecoverabilityPreviewItem"
+            },
+            "type": "array",
+            "title": "Recoverability Preview"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "signals_scanned",
+          "anomalies_created",
+          "anomaly_rule_catalog",
+          "recoverability_summary",
+          "recoverability_preview"
+        ],
+        "title": "TVFilmScanAnomaliesResponse"
+      },
       "TVFilmTrustExplainRequest": {
         "properties": {
           "role": {
@@ -23908,6 +25308,59 @@
           "role"
         ],
         "title": "TVFilmTrustExplainRequest"
+      },
+      "TVFilmTrustExplainResponse": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "agency_mode": {
+            "type": "boolean",
+            "title": "Agency Mode"
+          },
+          "logo_state": {
+            "type": "string",
+            "title": "Logo State"
+          },
+          "what_xr7_is_doing_now": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "What Xr7 Is Doing Now"
+          },
+          "plain_language": {
+            "type": "string",
+            "title": "Plain Language"
+          },
+          "recoverability_explainer": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Recoverability Explainer"
+          },
+          "agency_language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agency Language"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "agency_mode",
+          "logo_state",
+          "what_xr7_is_doing_now",
+          "plain_language",
+          "recoverability_explainer"
+        ],
+        "title": "TVFilmTrustExplainResponse"
       },
       "TaxOptimizerRequest": {
         "properties": {
