@@ -42,6 +42,7 @@ from xr7_sdk.api.transparency_api import TransparencyApi
 from xr7_sdk.api.trolley_api import TrolleyApi
 from xr7_sdk.api.trust_api import TrustApi
 from xr7_sdk.api.tvfilm_api import TvfilmApi
+from xr7_sdk.api.vip_api import VipApi
 from xr7_sdk.api.widget_api import WidgetApi
 from xr7_sdk.api.workflow_api import WorkflowApi
 from xr7_sdk.api.workspace_api import WorkspaceApi

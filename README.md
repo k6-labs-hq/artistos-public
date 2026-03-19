@@ -65,6 +65,193 @@ POST /tvfilm/trust/explain
 | **Platform API Connectors** | ⚠️ Pending | YouTube CMS requires Google partnership; TikTok/IG require approved developer access |
 | **Ticketing API Connectors** | ⚠️ Pending | Ticketmaster/AXS require formal partnership agreements |
 
+---
+
+## Invite-Only Premier Experience (Founders Circle)
+
+XR7 Engine 2 now features a **premium tier** for hand-selected, high-value artists: the **Founders Circle**. This is an invite-only, deeply personalized experience combining white-glove concierge service, AI-powered copilot advisor, exclusive weekly briefs, and referral rewards.
+
+### VIP Membership API
+
+**Admin endpoints** (org-level credentials):
+
+```
+POST /admin/vip/invite-codes         # Generate invite codes for Founders Circle tier
+POST /admin/artists/{id}/vip/grant   # Grant VIP directly (no invite code needed)
+DELETE /admin/artists/{id}/vip        # Revoke VIP membership
+```
+
+**Artist endpoints** (authenticated artist):
+
+```
+POST /invite/vip/claim                     # Claim an invite code to join Founders Circle
+GET  /artists/{id}/vip/status              # Check VIP membership status and tier
+GET  /artists/{id}/vip/drops               # List VIP Drop exclusives (feature catalog)
+GET  /artists/{id}/weekly-brief            # Get latest AI-generated weekly strategic brief
+POST /artists/{id}/weekly-brief/generate   # Trigger on-demand brief generation
+POST /artists/{id}/copilot/query           # Submit strategic question to XR7 Advisor copilot
+GET  /artists/{id}/copilot/history        # Retrieve copilot query history
+POST /artists/{id}/copilot/feedback        # Provide thumbs up/down feedback on copilot response
+GET  /artists/{id}/persona                # Get AI-enriched artist persona profile
+POST /artists/{id}/persona/enrich         # Trigger background persona enrichment from public sources
+GET  /artists/{id}/concierge/messages     # List concierge inbox messages
+POST /concierge/send                       # Send a concierge message (artist ↔ analyst)
+POST /artists/{id}/concierge/read         # Mark messages as read
+POST /artists/{id}/concierge/escalate     # Request urgent human analyst session (one-click escalation)
+GET  /artists/{id}/vip/referrals          # List referrals created
+POST /artists/{id}/vip/referral           # Create a new VIP referral (invite a peer)
+```
+
+### VIP Features
+
+| Feature | Description | API Surface |
+|---------|-------------|-------------|
+| **Invite-Only Tier** | Hand-curated membership with exclusive perks | `POST /invite/vip/claim`, `GET /vip/status` |
+| **Weekly Strategic Brief** | AI-synthesized weekly digest: open claims, revenue forecast, anomalies, action items | `GET /weekly-brief`, `POST /generate` |
+| **XR7 Advisor Copilot** | Context-aware natural-language Q&A with confidence scoring and source citations | `POST /copilot/query`, feedback loop |
+| **Deep Persona Enrichment** | Rich artist profile from public data: detected roles, genres, notable works, collaborators | `GET /persona`, `POST /enrich` |
+| **White-Glove Concierge** | Dedicated analyst inbox + one-click escalation for urgent issues | `GET /concierge/messages`, `POST /escalate` |
+| **Adaptive UI (Music vs TV/Film)** | UI mode detection from persona: music catalog vs TV/Film production workflows | Integrated into persona enrichment |
+| **VIP Drops (Feature Catalog)** | Exclusives and early-access features, feature-flagged per tier | `GET /vip/drops` |
+| **Referral Rewards Program** | Invite musician/creator peers; earn perks for referrals | `GET /referrals`, `POST /create` |
+| **Premium Billing** | White-labeled billing surface, priority invoice routing, net terms negotiable | Existing billing + VIP routing |
+| **Logo + Watermark Customization** | Branded recovery documents and email signatures | `logo_url`, `watermark_text` fields in membership |
+
+### Request/Response Reference
+
+**Claim an Invite Code:**
+
+```
+POST /invite/vip/claim
+
+Request:  {"artist_id": "37f25000-...", "invite_code": "abcd1234..."}
+Response: {
+  "success": true,
+  "membership": {
+    "tier_level": "FOUNDERS_CIRCLE",
+    "is_active": true,
+    "concierge_analyst_name": "Jane...",
+    "referral_slots_remaining": 10,
+    "perks_unlocked": ["weekly_brief", "copilot", "concierge", "referral_rewards"]
+  },
+  "message": "Welcome to Founders Circle!"
+}
+```
+
+**Get VIP Status:**
+
+```
+GET /artists/{artist_id}/vip/status
+
+Response: {
+  "artist_id": "37f25000-...",
+  "is_vip": true,
+  "tier_level": "FOUNDERS_CIRCLE",
+  "membership": {
+    "id": "fcm-...",
+    "tier_level": "FOUNDERS_CIRCLE",
+    "is_active": true,
+    "concierge_analyst_name": "Jane Doe",
+    "concierge_analyst_email": "jane@xr7.test",
+    "calendly_link": "https://calendly.com/jane-xr7/vip-sync",
+    "referral_slots_remaining": 10,
+    "perks_unlocked": ["weekly_brief", "copilot", "concierge", "referral_rewards"],
+    "activated_at": "2026-03-18T...",
+    "created_at": "2026-03-18T..."
+  }
+}
+```
+
+**List VIP Drops:**
+
+```
+GET /artists/{artist_id}/vip/drops
+
+Response: [
+  {
+    "title": "Recovery Forecast Model v2",
+    "description": "New ML forecast 15% more accurate on TV/Film gap analysis",
+    "available_since": "2026-03-15",
+    "is_new": true,
+    "feature_flag": "founders_forecast_v2"
+  },
+  ...
+]
+```
+
+**Copilot Query:**
+
+```
+POST /artists/{artist_id}/copilot/query
+
+Request: {
+  "query": "What should I focus on this week?",
+  "include_catalog_context": true,
+  "include_recovery_context": true
+}
+
+Response: {
+  "query_id": "cq-...",
+  "response": "Based on your portfolio, focus on...",
+  "confidence": 0.87,
+  "sources_cited": ["claims_db", "catalog_metadata", "earnings_forecast"],
+  "action_suggestions": [
+    "Review open claims in Recovery Story timeline",
+    "Schedule your monthly 1:1 strategy call"
+  ],
+  "latency_ms": 342
+}
+```
+
+**SDK Usage (Python):**
+
+```python
+from xr7_sdk.api.vip_api import VipApi
+
+vip = VipApi()
+
+# Claim invite
+membership = vip.claim_invite({
+    "artist_id": "37f25000-...",
+    "invite_code": "abcd1234..."
+})
+print(membership["membership"]["tier_level"])  # FOUNDERS_CIRCLE
+
+# Check status
+status = vip.get_vip_status(artist_id="37f25000-...")
+print(f"VIP: {status['is_vip']}, Tier: {status['tier_level']}")
+
+# Get drops
+drops = vip.get_vip_drops(artist_id="37f25000-...")
+for drop in drops:
+    print(f"{drop['title']}: {drop['available_since']}")
+```
+
+**SDK Usage (TypeScript):**
+
+```typescript
+import { VipApi } from 'xr7-sdk';
+
+const vip = new VipApi();
+
+// Claim invite
+const membership = await vip.claimInvite({
+  artistId: "37f25000-...",
+  inviteCode: "abcd1234..."
+});
+console.log(membership.membership.tier_level); // FOUNDERS_CIRCLE
+
+// Check status
+const status = await vip.getVipStatus({ artistId: "37f25000-..." });
+console.log(`VIP: ${status.is_vip}, Tier: ${status.tier_level}`);
+
+// Get drops
+const drops = await vip.getVipDrops({ artistId: "37f25000-..." });
+drops.forEach(drop => console.log(`${drop.title}: ${drop.available_since}`));
+```
+
+---
+
 ### Data Ingestion — No API Keys Required
 
 The platform is **fully operational today** using the statement file upload workflow.  Artists download their royalty statements from distributors and PRO portals and upload them as CSV files:
