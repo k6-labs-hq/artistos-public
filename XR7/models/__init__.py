@@ -29,6 +29,22 @@ from XR7.models.ml_feedback import (
 from XR7.models.model_registry import ModelRegistryEntry, ModelRegistryEntrySchema
 from XR7.models.catalog_segment import CatalogSegment, CatalogSegmentSchema
 from XR7.models.platform_config import PlatformConfig
+from XR7.models.invite import (
+    Invite,
+    InviteSchema,
+    InviteWithTokenSchema,
+    InviteCreate,
+    InviteGenerateRequest,
+    InviteValidateRequest,
+    InviteRedeemRequest,
+    InviteStatus,
+    InviteChannel,
+    InviteRole,
+    InviteEvent,
+    InviteAnalytics,
+    InviteAnalyticsSchema,
+    InviteValidationResponse,
+)
 from XR7.models.xr7_royalty import (
     XR7Track,
     XR7Work,
@@ -64,6 +80,10 @@ __all__ = [
     "ModelRegistryEntry", "ModelRegistryEntrySchema",
     "CatalogSegment", "CatalogSegmentSchema",
     "PlatformConfig",
+    "Invite", "InviteSchema", "InviteWithTokenSchema", "InviteCreate",
+    "InviteGenerateRequest", "InviteValidateRequest", "InviteRedeemRequest",
+    "InviteStatus", "InviteChannel", "InviteRole", "InviteEvent",
+    "InviteAnalytics", "InviteAnalyticsSchema", "InviteValidationResponse",
     "XR7Track", "XR7Work", "XR7IdentifierMapping", "XR7UsageEvent",
     "XR7RoyaltyStatement", "XR7RoyaltyStatementLine", "XR7UnmatchedWork",
     "XR7IdentityNode", "XR7IdentityEdge", "XR7ConnectorCredential",
