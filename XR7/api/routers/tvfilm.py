@@ -16,6 +16,7 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.statement import Statement
 from XR7.models.tvfilm_portfolio_job import TVFilmPortfolioJob, TVFilmPortfolioJobStatus
+from XR7.services.branding import inject_branding_metadata
 from XR7.services.tvfilm_compensation_engine import calculate_expected_compensation
 from XR7.services.tvfilm_evidence_packets import (
     build_tvfilm_bulk_export_zip,
@@ -209,7 +210,7 @@ async def tvfilm_ingestion_commit(artist_id: str, file: UploadFile = File(...), 
     db.commit()
     db.refresh(statement)
 
-    return {
+    return inject_branding_metadata(db, {
         "statement_id": statement.id,
         "artist_id": artist_id,
         "format_detected": statement.format_detected,
@@ -221,7 +222,7 @@ async def tvfilm_ingestion_commit(artist_id: str, file: UploadFile = File(...), 
             "role_linking": True,
             "union_studio_rule_engine": True,
         },
-    }
+    })
 
 
 @router.get("/artists/{artist_id}/calculation-audit")
@@ -252,11 +253,11 @@ def tvfilm_calculation_audit(artist_id: str, db: Session = Depends(get_db)):
                 }
             )
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "rows_audited": len(calculations),
         "calculation_profiles": calculations,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/anomalies/scan")
@@ -320,12 +321,12 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
             created += 1
 
     db.commit()
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "signals_scanned": scanned_rows,
         "anomalies_created": created,
         "anomaly_rule_catalog": ANOMALY_RULE_CATALOG,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/claims/draft")
@@ -371,12 +372,12 @@ def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Se
         drafted_ids.append(claim.id)
 
     db.commit()
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "claims_drafted": len(drafted_ids),
         "claim_ids": drafted_ids,
         "evidence_template": payload.union_template,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/claims/bulk-draft")
@@ -419,12 +420,12 @@ def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftReques
     for item in drafted:
         template_groups[item["template"]] = template_groups.get(item["template"], 0) + 1
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "claims_drafted": len(drafted),
         "drafts": drafted,
         "template_groups": template_groups,
-    }
+    })
 
 
 @router.post("/artists/{artist_id}/forecast")
@@ -460,7 +461,7 @@ def tvfilm_forecast(artist_id: str, payload: TVFilmForecastRequest, db: Session 
         by_production[production_id] = round(by_production.get(production_id, 0.0) + value, 2)
         by_platform[platform] = round(by_platform.get(platform, 0.0) + value, 2)
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "forecast": forecast,
         "inputs": {
@@ -476,7 +477,7 @@ def tvfilm_forecast(artist_id: str, payload: TVFilmForecastRequest, db: Session 
         "per_role_forecast": by_role,
         "per_production_forecast": by_production,
         "per_platform_forecast": by_platform,
-    }
+    })
 
 
 @router.post("/enterprise/portfolio/analyze")
@@ -563,7 +564,7 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
         role = str(snap.get("role") or "Unspecified")
         role_breakdown[role] = round(role_breakdown.get(role, 0.0) + float(anomaly.estimated_recoverable or 0.0), 2)
 
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "sections": {
             "residuals_discovered": {"value": round(total_residuals, 2), "count": len(anomalies)},
@@ -580,7 +581,7 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
             "what_xr7_is_doing_now": trust_stream,
         },
         "role_breakdown": role_breakdown,
-    }
+    })
 
 
 @router.post("/trust/explain")
@@ -609,14 +610,14 @@ def tvfilm_trust_explain(payload: TVFilmTrustExplainRequest):
 def run_tvfilm_agents(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(db, artist_id)
     state = run_tvfilm_vertical_orchestra_sync(artist_id)
-    return {
+    return inject_branding_metadata(db, {
         "artist_id": artist_id,
         "run_id": state.get("run_id"),
         "current_step": state.get("current_step"),
         "confidence_scores": state.get("confidence_scores", {}),
         "evidence_hash_count": len(state.get("evidence_hashes") or []),
         "agent_activity": state.get("agent_activity", []),
-    }
+    })
 
 
 @router.get("/claims/{claim_id}/evidence/export")
