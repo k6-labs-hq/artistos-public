@@ -11,6 +11,7 @@ from xr7_common.settings import settings
 # Import model modules so metadata is complete for autogenerate/use.
 import XR7.models.anomaly  # noqa: F401
 import XR7.models.artist  # noqa: F401
+import XR7.models.agent_handoff  # noqa: F401
 import XR7.models.catalog_confirmation  # noqa: F401
 import XR7.models.catalog_graph  # noqa: F401
 import XR7.models.claim  # noqa: F401

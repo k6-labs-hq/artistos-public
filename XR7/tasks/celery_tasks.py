@@ -44,6 +44,18 @@ def run_artist_workflow(self, artist_id: str, run_id: str | None = None) -> dict
 
 @celery_app.task(name="xr7.workflow.run_onboarding_for_incomplete_artists", bind=True)
 def run_onboarding_for_incomplete_artists(self) -> dict:  # noqa: ANN001
+    # Backward-compatible alias to the new two-agent schedule task.
+    return run_nightly_preparation_scan()
+
+
+@celery_app.task(name="xr7.workflow.run_recovery_for_new_data", bind=True)
+def run_recovery_for_new_data(self) -> dict:  # noqa: ANN001
+    # Backward-compatible alias to the new two-agent schedule task.
+    return run_daily_recovery_scan()
+
+
+@celery_app.task(name="xr7.workflow.run_nightly_preparation_scan", bind=True)
+def run_nightly_preparation_scan(self=None) -> dict:  # noqa: ANN001
     db = SessionLocal()
     try:
         artists = db.query(Artist).filter(Artist.status != ArtistLifecycleStatus.ACTIVE.value).all()
@@ -51,21 +63,27 @@ def run_onboarding_for_incomplete_artists(self) -> dict:  # noqa: ANN001
         for artist in artists:
             run_artist_workflow.delay(artist.id)
             triggered += 1
-        return {"triggered": triggered, "scope": "incomplete_onboarding"}
+        return {"triggered": triggered, "scope": "nightly_preparation_scan", "agent": "onboarding_preparation"}
     finally:
         db.close()
 
 
-@celery_app.task(name="xr7.workflow.run_recovery_for_new_data", bind=True)
-def run_recovery_for_new_data(self) -> dict:  # noqa: ANN001
+@celery_app.task(name="xr7.workflow.run_daily_recovery_scan", bind=True)
+def run_daily_recovery_scan(self=None) -> dict:  # noqa: ANN001
     threshold = datetime.now(timezone.utc) - timedelta(hours=6)
     db = SessionLocal()
     try:
-        rows = db.query(Statement).filter(Statement.uploaded_at >= threshold).all()
+        rows = (
+            db.query(Statement)
+            .join(Artist, Artist.id == Statement.artist_id)
+            .filter(Statement.uploaded_at >= threshold)
+            .filter(Artist.status == ArtistLifecycleStatus.ACTIVE.value)
+            .all()
+        )
         artist_ids = sorted({r.artist_id for r in rows})
         for artist_id in artist_ids:
             run_artist_workflow.delay(artist_id)
-        return {"triggered": len(artist_ids), "scope": "new_statements"}
+        return {"triggered": len(artist_ids), "scope": "daily_recovery_scan", "agent": "recovery_execution"}
     finally:
         db.close()
 

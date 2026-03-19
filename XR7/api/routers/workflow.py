@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.agents.orchestrator import get_run_trace
+from XR7.agents.orchestrator import get_run_trace, query_handoffs
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
@@ -21,6 +22,29 @@ class WorkflowRunResponse(BaseModel):
     run_id: str
     status: str
     status_url: str
+    branding: dict[str, Any] | None = None
+
+
+class AgentHandoffResponse(BaseModel):
+    id: str
+    run_id: str
+    artist_id: str
+    handoff_id: str
+    from_agent: str
+    to_agent: str
+    readiness_score: float
+    readiness_threshold: float
+    status: str
+    payload: dict[str, Any]
+    created_at: str | None = None
+
+
+class AgentHandoffListResponse(BaseModel):
+    artist_id: str
+    total: int
+    limit: int
+    offset: int
+    handoffs: list[AgentHandoffResponse]
     branding: dict[str, Any] | None = None
 
 
@@ -63,3 +87,42 @@ def workflow_run_status(artist_id: str, run_id: str, db: Session = Depends(get_d
         "event_count": len(trace.get("events") or []),
         "confidence_scores": trace.get("confidence_scores") or {},
     })
+
+
+@router.get("/artists/{artist_id}/workflow/handoffs", response_model=AgentHandoffListResponse)
+def workflow_handoffs(
+    artist_id: str,
+    limit: int = Query(default=20, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    from_agent: str | None = Query(default=None),
+    to_agent: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    since: datetime | None = Query(default=None),
+    until: datetime | None = Query(default=None),
+    db: Session = Depends(get_db),
+):
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+
+    handoff_result = query_handoffs(
+        artist_id=artist_id,
+        limit=limit,
+        offset=offset,
+        from_agent=from_agent,
+        to_agent=to_agent,
+        status=status,
+        since=since,
+        until=until,
+    )
+    payload = inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "total": handoff_result["total"],
+            "limit": limit,
+            "offset": offset,
+            "handoffs": handoff_result["items"],
+        },
+    )
+    return AgentHandoffListResponse(**payload)

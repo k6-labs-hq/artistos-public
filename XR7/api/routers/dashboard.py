@@ -36,7 +36,7 @@ from sqlalchemy.orm import Session
 
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.api.routers.auth import require_artist_access
-from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace
+from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace, list_handoffs_for_artist
 from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -267,6 +267,11 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
       "manifest": state.get("attorney_export_manifest") or {},
       "narrative_highlights": state.get("narrative_highlights") or [],
     }
+    handoffs = list_handoffs_for_artist(artist_id, limit=1)
+    dashboard["agent_handoff_status"] = {
+      "latest_handoff": handoffs[0] if handoffs else None,
+      "handoff_history_url": f"/artists/{artist_id}/workflow/handoffs",
+    }
     return dashboard
 
 
@@ -305,6 +310,10 @@ def get_agents_status(
     "split_conflicts": state.get("split_conflicts") or [],
     "registration_actions": state.get("registration_actions") or [],
     "follow_up_actions": state.get("follow_up_actions") or [],
+    "agent_handoff_status": {
+      "latest_handoff": (list_handoffs_for_artist(artist_id, limit=1) or [None])[0],
+      "handoff_history_url": f"/artists/{artist_id}/workflow/handoffs",
+    },
   })
 
 

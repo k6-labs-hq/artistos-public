@@ -718,6 +718,8 @@
       const pricing = data.artist_pricing || {};
       const cal = data.calibration_health || {};
       const trend = data.earnings_trend || {};
+      const handoffStatus = data.agent_handoff_status || {};
+      const latestHandoff = handoffStatus.latest_handoff || null;
       const actions = state.filteredActions;
       const charts = state.charts || {};
 
@@ -740,6 +742,14 @@
           <span class="mono">${esc((e.timestamp || "").replace("T", " ").replace("Z", ""))}</span>
         </li>
       `).join("") || "<li>No activity rows match current filters.</li>";
+
+      const handoffCard = latestHandoff
+        ? `<div class="v">${esc(latestHandoff.from_agent || "onboarding_preparation")} <span class="mono">-&gt;</span> ${esc(latestHandoff.to_agent || "recovery_execution")}</div>
+           <p class="note">Status ${esc(latestHandoff.status || "unknown")}. Readiness ${Number(latestHandoff.readiness_score || 0).toFixed(1)} / ${Number(latestHandoff.readiness_threshold || 0).toFixed(1)}.<span class="stamp">Last updated: ${fmtTs(latestHandoff.created_at || data.generated_at)}</span></p>
+           <div class="pill">Handoff ID • ${esc(latestHandoff.handoff_id || "pending")}</div>
+           <p class="note"><a href="${esc(handoffStatus.handoff_history_url || "#")}" target="_blank" rel="noreferrer">Open handoff history</a></p>`
+        : `<div class="v">No handoff yet</div>
+           <p class="note">The preparation agent is still assembling the evidence and readiness package.<span class="stamp">Last updated: ${fmtTs(data.generated_at)}</span></p>`;
 
       cardsEl.innerHTML = [
         card(
@@ -786,6 +796,11 @@
           <div class="v">${esc(trend.trend || "INSUFFICIENT_DATA")}</div>
           <p class="note">90-day outlook range: ${money(trend.predicted_low)} to ${money(trend.predicted_high)}.<span class="stamp">Last updated: ${fmtTs(data.generated_at)}</span></p>
           ${renderMiniChart(charts)}
+        </article>`,
+
+        `<article class="card wide">
+          <div class="k">Agent Handoff</div>
+          ${handoffCard}
         </article>`,
 
         `<article class="card full">

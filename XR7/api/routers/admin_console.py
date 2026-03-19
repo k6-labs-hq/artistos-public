@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from XR7.agents.orchestrator import query_handoffs
 from XR7.models.admin_audit_log import AdminAuditLog, AdminAuditLogSchema
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistSchema
@@ -304,6 +305,56 @@ def list_audit_logs(
     rows = query.order_by(AdminAuditLog.created_at.desc()).offset(offset).limit(limit).all()
     _log(db, actor, "list", "audit_logs", {"actor_filter": actor_filter, "action": action, "returned": len(rows)})
     return rows
+
+
+@router.get("/workflow/handoffs")
+def list_workflow_handoffs(
+    artist_id: str | None = Query(default=None),
+    status: str | None = Query(default=None),
+    from_agent: str | None = Query(default=None),
+    to_agent: str | None = Query(default=None),
+    since: datetime | None = Query(default=None),
+    until: datetime | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+    actor: str = Depends(_require_admin),
+    db: Session = Depends(get_db),
+):
+    results = query_handoffs(
+        artist_id=artist_id,
+        status=status,
+        from_agent=from_agent,
+        to_agent=to_agent,
+        since=since,
+        until=until,
+        limit=limit,
+        offset=offset,
+    )
+    artist_ids = [item["artist_id"] for item in results["items"]]
+    artist_names = {
+        row.id: row.name
+        for row in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()
+    } if artist_ids else {}
+    items = [{**item, "artist_name": artist_names.get(item["artist_id"])} for item in results["items"]]
+    _log(
+        db,
+        actor,
+        "list",
+        "workflow_handoffs",
+        {
+            "artist_id": artist_id,
+            "status": status,
+            "from_agent": from_agent,
+            "to_agent": to_agent,
+            "since": since.isoformat() if since else None,
+            "until": until.isoformat() if until else None,
+            "limit": limit,
+            "offset": offset,
+            "returned": len(items),
+            "total": results["total"],
+        },
+    )
+    return _paginated_response(items, results["total"], limit, offset)
 
 
 @router.get("/overview")

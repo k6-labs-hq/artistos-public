@@ -449,6 +449,26 @@
       font-size: 0.78rem;
       font-weight: 700;
     }
+
+    .handoff-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    .handoff-row {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      background: rgba(15, 23, 42, 0.03);
+      font-size: 0.84rem;
+      line-height: 1.45;
+    }
+
+    .handoff-row strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 0.9rem;
+    }
   </style>
 </head>
 <body>
@@ -473,6 +493,11 @@
     <section class="card">
       <h2>Dashboard Snapshot</h2>
       <div class="metric-grid" id="dashboardMetrics"></div>
+    </section>
+
+    <section class="card">
+      <h2>Agent Handoff</h2>
+      <div class="handoff-stack" id="handoffStatusList"></div>
     </section>
 
     <section class="card">
@@ -564,6 +589,7 @@
   <script>
     const statusEl = document.getElementById("status");
     const dashboardMetrics = document.getElementById("dashboardMetrics");
+    const handoffStatusList = document.getElementById("handoffStatusList");
     const globalList = document.getElementById("globalList");
     const metadataHealthMetrics = document.getElementById("metadataHealthMetrics");
     const metadataHealthList = document.getElementById("metadataHealthList");
@@ -663,6 +689,43 @@
       return root;
     }
 
+    function formatDateTime(value) {
+      if (!value) {
+        return "not available";
+      }
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) {
+        return "not available";
+      }
+      return d.toLocaleString();
+    }
+
+    function renderHandoffStatus(data) {
+      const handoff = data?.agent_handoff_status?.latest_handoff || null;
+      const historyUrl = data?.agent_handoff_status?.handoff_history_url || "";
+      handoffStatusList.innerHTML = "";
+
+      const item = document.createElement("div");
+      item.className = "handoff-row";
+      if (!handoff) {
+        item.innerHTML = [
+          "<strong>No agent handoff yet</strong>",
+          "<div class=\"subtext\">The preparation agent is still collecting enough signal to transfer control.</div>",
+        ].join("");
+        handoffStatusList.appendChild(item);
+        return;
+      }
+
+      item.innerHTML = [
+        `<strong>${handoff.from_agent || "onboarding_preparation"} -> ${handoff.to_agent || "recovery_execution"}</strong>`,
+        `<div>Status: ${handoff.status || "unknown"}</div>`,
+        `<div>Readiness: ${Number(handoff.readiness_score || 0).toFixed(1)} / ${Number(handoff.readiness_threshold || 0).toFixed(1)}</div>`,
+        `<div>Recorded: ${formatDateTime(handoff.created_at)}</div>`,
+        historyUrl ? `<div class=\"subtext\">History: ${historyUrl}?limit=5</div>` : "",
+      ].join("");
+      handoffStatusList.appendChild(item);
+    }
+
     async function loadDashboard() {
       const id = artistId();
       if (!id) {
@@ -692,6 +755,7 @@
       dashboardMetrics.appendChild(metricNode("Still Pursuing", `$${Number(balance).toFixed(2)}`));
       const feePercent = Number((artist && artist.contingency_fee_percent) || 0);
       dashboardMetrics.appendChild(metricNode("Platform Fee", `${feePercent.toFixed(2)}%`));
+      renderHandoffStatus(data);
 
       if (artist && artist.is_founder && artist.founder_slot_number) {
         founderBadgeEl.textContent = `Founder #${artist.founder_slot_number} - 12% for life`;

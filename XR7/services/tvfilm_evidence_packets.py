@@ -33,6 +33,7 @@ def build_tvfilm_evidence_packet(*, artist: Artist, claim: Claim, anomaly: Anoma
             "claim_type": claim.claim_type,
             "status": str(getattr(claim.status, "value", claim.status)),
             "template": template,
+            "orchestration_owner": "RecoveryExecutionAgent",
         },
         "anomaly": {
             "anomaly_id": anomaly.id,
@@ -73,6 +74,13 @@ def build_tvfilm_evidence_packet(*, artist: Artist, claim: Claim, anomaly: Anoma
         },
         "integrity": {
             "evidence_hashes": list((claim.evidence or {}).get("evidence_hashes") or []),
+        },
+        "governance": {
+            "two_agent_model": True,
+            "handoff_required": True,
+            "preparation_owner": "OnboardingPreparationAgent",
+            "execution_owner": "RecoveryExecutionAgent",
+            "explainability_level": "full_trace",
         },
     }
     return packet

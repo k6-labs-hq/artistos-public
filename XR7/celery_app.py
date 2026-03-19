@@ -42,16 +42,12 @@ celery_app.conf.update(
             "task": "xr7.pipeline.nightly_advance_ensemble",
             "schedule": 86400,
         },
-        "xr7-workflow-incomplete-onboarding": {
-            "task": "xr7.workflow.run_onboarding_for_incomplete_artists",
-            "schedule": 21600,
+        "xr7-two-agent-nightly-preparation-scan": {
+            "task": "xr7.workflow.run_nightly_preparation_scan",
+            "schedule": 86400,
         },
-        "xr7-workflow-recovery-new-data": {
-            "task": "xr7.workflow.run_recovery_for_new_data",
-            "schedule": 21600,
-        },
-        "xr7-workflow-follow-up-readiness": {
-            "task": "xr7.workflow.run_follow_up_and_readiness",
+        "xr7-two-agent-daily-recovery-scan": {
+            "task": "xr7.workflow.run_daily_recovery_scan",
             "schedule": 86400,
         },
         "xr7-workflow-soundcloud-sync-daily": {

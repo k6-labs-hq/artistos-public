@@ -292,57 +292,102 @@ Partner connector environment variables are documented in `.env.example` (for ex
 
 ## Autonomous AI Onboarding & Recovery Agents
 
-XR7 Engine 2 now includes a fully autonomous, LangGraph-powered agent orchestra that handles
-artist onboarding, catalog preparation, and royalty recovery with minimal friction and
-maximum transparency.
+XR7 Engine 2 uses exactly two non-competing LangGraph agents under one top-level orchestrator.
 
-Key capabilities:
-- Zero-friction onboarding: drag-and-drop statements, automatic portal guidance, file repair, and catalog building.
-- Smart expectations: baseline earnings estimates and readiness scoring.
-- Early wins: automatic identification and drafting of the first quick-win claim.
-- Deep intelligence: UGC discovery, rights conflict detection, contract extraction, and metadata registration.
-- Human-in-the-loop only when necessary: high-value claims and legal escalations are paused for review with traceability.
+### Agent 1: Onboarding & Preparation Agent
 
-Agents include:
+This agent owns all work before active recovery begins:
+
 - ArtistIntentInterpreterAgent
-- PortalAutoNavigatorAgent
 - SmartUploadFixerAgent
 - CatalogAutoBuilderAgent
+- ArtistProfileEnricherAgent
+- WelcomeSummaryAgent
+- ArtistReadinessScoreAgent
+- AutoMetadataRegistrarAgent
+- RightsConflictDetectorAgent (preparation phase only)
+- SocialUGCCollectorAgent (discovery phase)
+- AutoContractExtractorAgent (pre-onboarding contracts)
+- ReleaseTimelineAgent
+- ArtistPersonaAdapterAgent
+- Onboarding flow nodes: role selection, ingestion classification/repair, profile filling, first-claim fast-track scaffolding
+- TV/Film preparation nodes: role taxonomy interpretation, production metadata prep, episode/season repair
+
+Output contract:
+
+- Prepared artist profile
+- Cleaned catalog graph and metadata status
+- Readiness score and onboarding progress
+- Handoff payload for recovery
+
+### Agent 2: Recovery & Execution Agent
+
+This agent owns all work once artist status is ready/active:
+
+- PortalAutoNavigatorAgent
 - DistributorSyncAgent
 - ArtistExplainerAgent
 - EarningsExpectationAgent
 - AutoSplitResolverAgent
 - ArtistComfortAgent
-- FirstClaimFastTrackAgent
-- ArtistProfileEnricherAgent
-- WelcomeSummaryAgent
-- AutoMetadataRegistrarAgent
-- RightsConflictDetectorAgent
-- SocialUGCCollectorAgent
-- AutoContractExtractorAgent
-- ReleaseTimelineAgent
-- ArtistReadinessScoreAgent
 - AutoFollowUpAgent
-- ArtistPersonaAdapterAgent
+- AutoAdvanceEvaluatorAgent (mapped to outcome forecasting)
+- AdvanceRecoveryOrchestratorAgent (analyst + executive gated packet flow)
+- RightsRegistrationAgent
+- AutoPayerChaserAgent
+- AutoEvidenceBuilderAgent
+- AutoSettlementTrackerAgent
+- AutoSOLGuardianAgent
+- Detection, claim drafting, legal risk, negotiation, escalation, disbursement
+- TV/Film execution parity: distribution windows, backend participation, foreign residuals, payroll audits, syndication, streaming reuse, UGC clip scan, evidence exports
 
-LangGraph orchestration details:
-- Stateful execution model with typed graph state and per-node confidence scores.
-- Reflection/self-critique loop when confidence drops below threshold.
-- Checkpointer support via `LANGGRAPH_CHECKPOINTER_URL` and thread-scoped run IDs.
-- Interrupt safety before escalation/disbursement for high-stakes transitions.
+### Two-Agent Orchestrator State Machine
 
-Dashboard exposure:
-- `agent_orchestra_status` with current step, confidence, and trace URL.
-- `onboarding_progress`, `comfort_messages`, `portal_guidance`, `fast_track_claim`.
-- `expected_earnings`, `public_profile`, `readiness_score`, `ugc_opportunities`.
-- `catalog_profile`, `split_conflicts`, `registration_actions`, `follow_up_actions`.
+```text
+       +------------------------------------------+
+       |          Top-Level Orchestrator          |
+       | route by artist_status + readiness state |
+       +-------------------+----------------------+
+               |
+       artist_status=preparing
+               v
+  +--------------------------------------------------------------+
+  | Agent 1: Onboarding & Preparation                            |
+  | run only preparation nodes                                   |
+  | stop condition: readiness_score >= threshold (default 85.0)  |
+  +----------------------------+---------------------------------+
+               | handoff payload
+               v
+  +--------------------------------------------------------------+
+  | Agent 2: Recovery & Execution                                |
+  | run only recovery, claims, evidence, advances, tv/film exec  |
+  | no onboarding or preparation node access                     |
+  +--------------------------------------------------------------+
+```
+
+Strict anti-competition rules:
+
+- Agent 1 never executes active recovery, claims, advances, settlement tracking, or evidence generation.
+- Agent 2 never executes onboarding/preparation workflows.
+- Handoff requires readiness gate (`readiness_score >= XR7_ONBOARDING_READINESS_THRESHOLD`, default `85`).
+- Explicit handoff trigger is supported for supervised operations.
+
+LangGraph reliability model:
+
+- Typed graph state with explicit `handoff` channel and `artist_status` routing.
+- Reflection/self-critique loop preserved for low-confidence node outcomes.
+- Checkpointer-compatible orchestration and thread-scoped run traces.
+- Interrupt safety retained for high-stakes legal/escalation/disbursement flows.
+- Explainability and immutable trace events remain first-class outputs.
+- Persistent SQL handoff records in `agent_handoffs` for run-level audit/query.
 
 Scheduler behavior:
-- Every 6 hours: run onboarding completion + new-data recovery workflows.
-- Every 24 hours: run follow-up/readiness workflows.
-- Event-triggered: statement uploads and UGC fetches enqueue autonomous runs.
 
-Every critical decision is logged with evidence hashes and trace events for auditability.
+- Nightly prep scan: `xr7.workflow.run_nightly_preparation_scan` (Agent 1 scope)
+- Daily recovery scan: `xr7.workflow.run_daily_recovery_scan` (Agent 2 scope)
+- Event-triggered runs continue for ingestion and platform data updates.
+
+Every critical decision remains logged with confidence + evidence hashes for auditability.
 
 ## Ultra-Simple Artist Onboarding Flow
 
@@ -1946,10 +1991,10 @@ Recover failed runs by restoring checkpoint state and replaying deterministic no
 
 ### Adding a New Node
 
-1. Implement node interface contract
-2. Emit confidence + trace events
-3. Wire node in orchestra supervisor routing
-4. Add tests for success/fallback/reflection paths
+1. Assign node ownership to exactly one agent: onboarding/preparation or recovery/execution.
+2. Implement node interface contract with confidence + trace events.
+3. Wire node only inside the owning subgraph (`onboarding_preparation_graph.py` or `recovery_execution_graph.py`).
+4. Add unit + handoff tests to ensure no cross-agent execution leakage.
 
 ### Dry-Run Mode
 
