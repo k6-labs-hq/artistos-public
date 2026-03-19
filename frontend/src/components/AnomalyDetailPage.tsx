@@ -1,0 +1,149 @@
+import { useEffect, useMemo, useState } from "react";
+
+import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
+
+type AnomalyPayload = {
+  id: string;
+  artist_id: string;
+  subtype?: string;
+  category?: string;
+  severity?: string;
+  estimated_recoverable?: number;
+  created_at?: string;
+};
+
+type RecoverabilityPayload = {
+  black_box_expiration?: {
+    expiration_date?: string | null;
+  };
+  recoverability?: {
+    recoverability_class?: string;
+  };
+};
+
+type AnomalyDetailPageProps = {
+  anomalyId: string;
+};
+
+export function AnomalyDetailPage({ anomalyId }: AnomalyDetailPageProps): JSX.Element {
+  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [anomaly, setAnomaly] = useState<AnomalyPayload | null>(null);
+  const [explain, setExplain] = useState<RecoverabilityPayload | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function run() {
+      try {
+        const anomalyResp = await fetch(`${apiBase}/anomalies/${anomalyId}`);
+        if (!anomalyResp.ok) {
+          throw new Error(`Failed to load anomaly ${anomalyId}`);
+        }
+        const anomalyData = (await anomalyResp.json()) as AnomalyPayload;
+
+        let explainData: RecoverabilityPayload | null = null;
+        if (anomalyData.artist_id) {
+          const explainResp = await fetch(`${apiBase}/artists/${anomalyData.artist_id}/anomalies/${anomalyId}/explain`);
+          if (explainResp.ok) {
+            explainData = (await explainResp.json()) as RecoverabilityPayload;
+          }
+        }
+
+        if (!mounted) return;
+        setAnomaly(anomalyData);
+        setExplain(explainData);
+      } catch (err) {
+        if (!mounted) return;
+        setError(String(err));
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, [anomalyId, apiBase]);
+
+  const byClass = useMemo(() => {
+    const cls = explain?.recoverability?.recoverability_class;
+    const amount = Number(anomaly?.estimated_recoverable || 0);
+    if (!cls) return {};
+    return {
+      [cls]: {
+        count: 1,
+        amount,
+      },
+    };
+  }, [explain, anomaly]);
+
+  const recoverabilityClass = explain?.recoverability?.recoverability_class || "Recoverable";
+  const amount = Number(anomaly?.estimated_recoverable || 0);
+  const expiredAmount = recoverabilityClass === "Expired (Black-Box Redistributed)" ? amount : 0;
+  const recoverableAmount = expiredAmount > 0 ? 0 : amount;
+
+  if (loading) {
+    return (
+      <section className="anomaly-detail-page">
+        <p>Loading anomaly detail...</p>
+      </section>
+    );
+  }
+
+  if (error || !anomaly) {
+    return (
+      <section className="anomaly-detail-page">
+        <h2>Anomaly Detail</h2>
+        <p>Unable to load anomaly: {error || anomalyId}</p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="anomaly-detail-page" data-reveal="true">
+      <header className="section-head">
+        <h2>Anomaly Detail</h2>
+        <p>
+          {anomaly.category} / {anomaly.subtype} · Severity {anomaly.severity}
+        </p>
+      </header>
+
+      <div className="anomaly-detail-kpis">
+        <article>
+          <span>Anomaly ID</span>
+          <strong>{anomaly.id}</strong>
+        </article>
+        <article>
+          <span>Artist ID</span>
+          <strong>{anomaly.artist_id}</strong>
+        </article>
+        <article>
+          <span>Estimated Recoverable</span>
+          <strong>${amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</strong>
+        </article>
+      </div>
+
+      <RecoverabilityExplainer
+        title="Anomaly Recoverability"
+        recoverableAmount={recoverableAmount}
+        expiredAmount={expiredAmount}
+        byClass={byClass}
+        eventDate={anomaly.created_at}
+        expirationDate={explain?.black_box_expiration?.expiration_date || null}
+        discoveryDate={new Date().toISOString().slice(0, 10)}
+        claimWindowLabel="Derived from society window + contract/damages pathways"
+      />
+
+      <div className="anomaly-detail-actions">
+        <a href="/" className="ghost large">
+          Back to XR7 Home
+        </a>
+      </div>
+    </section>
+  );
+}

@@ -7,7 +7,13 @@ from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.anomaly.engine import AnomalyEngine
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
-from XR7.models.anomaly import Anomaly, AnomalySchema
+from XR7.models.anomaly import (
+    Anomaly,
+    AnomalyRecoveryProbabilityResponseSchema,
+    AnomalySchema,
+    AnomalyWithRecoverabilitySchema,
+    DetectAnomaliesResponseSchema,
+)
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.review_queue import ReviewSourceType
@@ -23,7 +29,7 @@ router = APIRouter(tags=["anomalies"])
 logger = get_logger(__name__)
 
 
-@router.get("/artists/{artist_id}/anomalies")
+@router.get("/artists/{artist_id}/anomalies", response_model=list[AnomalyWithRecoverabilitySchema])
 def list_anomalies(
     artist_id: str,
     status: str | None = None,
@@ -73,7 +79,7 @@ def get_anomaly(anomaly_id: str, db: Session = Depends(get_db)):
     return anomaly
 
 
-@router.get("/anomalies/{anomaly_id}/recovery-probability")
+@router.get("/anomalies/{anomaly_id}/recovery-probability", response_model=AnomalyRecoveryProbabilityResponseSchema)
 def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends(get_db)):
     anomaly = db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
     if not anomaly:
@@ -99,7 +105,7 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
     }
 
 
-@router.post("/artists/{artist_id}/anomalies/detect")
+@router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
 def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     if not artist:

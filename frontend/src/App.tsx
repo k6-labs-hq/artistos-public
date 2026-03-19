@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TVFilmDashboardVisualizations } from "./components/TVFilmDashboardVisualizations";
 import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
 import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
+import { AnomalyDetailPage } from "./components/AnomalyDetailPage";
 
 type ThemeMode = "dark" | "light";
 
@@ -178,6 +179,12 @@ export function App() {
       "Detect leakage across music, TV, and film revenue systems. Surface actionable recovery opportunities with AI-powered analysis, trust-layer explainability, and enterprise portfolio automation.",
     [],
   );
+
+  const anomalyMatch = useMemo(() => window.location.pathname.match(/^\/anomalies\/([^/]+)$/), []);
+
+  if (anomalyMatch) {
+    return <AnomalyDetailPage anomalyId={decodeURIComponent(anomalyMatch[1])} />;
+  }
 
   return (
     <div className="xr7-app">

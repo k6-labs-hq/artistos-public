@@ -75,3 +75,62 @@ class AnomalySchema(BaseModel):
     model_version: str | None = None
     feature_snapshot: str | None = None
     created_at: datetime
+
+
+class BlackBoxExpirationSchema(BaseModel):
+    payer_or_society: str | None = None
+    royalty_type: str | None = None
+    is_expired: bool
+    expiration_date: str | None = None
+    days_remaining: int | None = None
+    rule_applied: str | None = None
+    explanation: str
+
+
+class RecoverabilityClassificationSchema(BaseModel):
+    recoverability_class: str
+    rationale: str
+    legal_basis: str
+    recommended_action: str
+    confidence_score: float
+
+
+class RecoverabilityPayloadSchema(BaseModel):
+    black_box_expiration: BlackBoxExpirationSchema
+    recoverability: RecoverabilityClassificationSchema
+    legal_basis: str
+    claim_draft_allowed: bool
+
+
+class AnomalyWithRecoverabilitySchema(AnomalySchema):
+    recovery_probability: dict
+    black_box_expiration: BlackBoxExpirationSchema
+    recoverability: RecoverabilityClassificationSchema
+    legal_basis: str
+    claim_draft_allowed: bool
+
+
+class DetectAnomaliesResponseSchema(BaseModel):
+    artist_id: str
+    detected: list[dict]
+
+
+class AnomalyRecoveryProbabilityResponseSchema(BaseModel):
+    anomaly_id: str
+    probability_of_recovery: float | None = None
+    expected_recovery_amount: float | None = None
+    expected_effort_hours: float | None = None
+    expected_time_to_resolution: int | None = None
+    black_box_expiration: BlackBoxExpirationSchema
+    recoverability: RecoverabilityClassificationSchema
+    legal_basis: str
+    claim_draft_allowed: bool
+
+
+class AnomalyExplainWithRecoverabilitySchema(BaseModel):
+    anomaly_id: str
+    explanation: str
+    black_box_expiration: BlackBoxExpirationSchema | None = None
+    recoverability: RecoverabilityClassificationSchema | None = None
+    legal_basis: str | None = None
+    claim_draft_allowed: bool | None = None

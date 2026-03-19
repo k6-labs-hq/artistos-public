@@ -10,7 +10,12 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import run_tvfilm_vertical_orchestra_sync
-from XR7.models.anomaly import Anomaly, AnomalyStatus
+from XR7.models.anomaly import (
+    Anomaly,
+    AnomalyStatus,
+    BlackBoxExpirationSchema,
+    RecoverabilityClassificationSchema,
+)
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
@@ -73,6 +78,48 @@ class TVFilmTrustExplainRequest(BaseModel):
 
 class TVFilmBulkExportRequest(BaseModel):
     claim_ids: list[str] = Field(default_factory=list)
+
+
+class TVFilmRecoverabilityPreviewItem(BaseModel):
+    subtype: str
+    estimated_recoverable: float
+    union: str | None = None
+    platform: str | None = None
+    black_box_expiration: BlackBoxExpirationSchema
+    recoverability: RecoverabilityClassificationSchema
+    legal_basis: str
+    claim_draft_allowed: bool
+
+
+class TVFilmScanAnomaliesResponse(BaseModel):
+    artist_id: str
+    signals_scanned: int
+    anomalies_created: int
+    anomaly_rule_catalog: dict[str, Any]
+    recoverability_summary: dict[str, int]
+    recoverability_preview: list[TVFilmRecoverabilityPreviewItem]
+
+
+class TVFilmDashboardRecoverabilityBucket(BaseModel):
+    count: int
+    amount: float
+
+
+class TVFilmDashboardResponse(BaseModel):
+    artist_id: str
+    sections: dict[str, Any]
+    trust_layer: dict[str, Any]
+    role_breakdown: dict[str, float]
+
+
+class TVFilmTrustExplainResponse(BaseModel):
+    role: str
+    agency_mode: bool
+    logo_state: str
+    what_xr7_is_doing_now: list[str]
+    plain_language: str
+    recoverability_explainer: dict[str, Any]
+    agency_language: str | None = None
 
 
 def _artist_or_404(db: Session, artist_id: str) -> Artist:
@@ -261,7 +308,7 @@ def tvfilm_calculation_audit(artist_id: str, db: Session = Depends(get_db)):
     })
 
 
-@router.post("/artists/{artist_id}/anomalies/scan")
+@router.post("/artists/{artist_id}/anomalies/scan", response_model=TVFilmScanAnomaliesResponse)
 def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(db, artist_id)
     statements = db.query(Statement).filter(Statement.artist_id == artist_id).order_by(Statement.uploaded_at.desc()).limit(10).all()
@@ -624,7 +671,7 @@ def tvfilm_enterprise_portfolio_job(job_id: str, db: Session = Depends(get_db)):
     }
 
 
-@router.get("/artists/{artist_id}/dashboard")
+@router.get("/artists/{artist_id}/dashboard", response_model=TVFilmDashboardResponse)
 def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(db, artist_id)
 
@@ -732,7 +779,7 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
     })
 
 
-@router.post("/trust/explain")
+@router.post("/trust/explain", response_model=TVFilmTrustExplainResponse)
 def tvfilm_trust_explain(payload: TVFilmTrustExplainRequest):
     role = payload.role.strip() or "TV/Film Professional"
     return {
