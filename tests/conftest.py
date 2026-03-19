@@ -44,6 +44,7 @@ import XR7.models.invite  # noqa: F401
 import XR7.models.legal_defensibility_event  # noqa: F401
 import XR7.models.society_signal_log  # noqa: F401
 import XR7.models.agent_handoff  # noqa: F401
+import XR7.models.vip  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"

@@ -47,6 +47,10 @@ from XR7.api.routers import governance as governance_router
 from XR7.api.routers import advance_governance as advance_governance_router
 from XR7.api.routers import tvfilm as tvfilm_router
 from XR7.api.routers import invites as invites_router
+from XR7.api.routers import vip as vip_router
+from XR7.api.routers import concierge as concierge_router
+from XR7.api.routers import copilot as copilot_router
+from XR7.api.routers import vip_referrals as vip_referrals_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -94,6 +98,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.invite  # noqa: F401
     import XR7.models.legal_defensibility_event  # noqa: F401
     import XR7.models.society_signal_log  # noqa: F401
+    import XR7.models.vip  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -234,6 +239,10 @@ app.include_router(governance_router.router)
 app.include_router(advance_governance_router.router)
 app.include_router(tvfilm_router.router)
 app.include_router(invites_router.router)
+app.include_router(vip_router.router)
+app.include_router(concierge_router.router)
+app.include_router(copilot_router.router)
+app.include_router(vip_referrals_router.router)
 
 
 @app.get("/health")
