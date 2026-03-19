@@ -24,6 +24,8 @@ from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.trust_defensibility import TrustDefensibilityService
 from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.gap_explainer_service import GapExplainerService
+from XR7.models.xr7_royalty import XR7AIDecisionAuditLog
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -206,3 +208,79 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})
     return inject_branding_metadata(db, {"artist_id": artist_id, "result": result})
+
+
+@router.get("/anomalies/{anomaly_id}/explain")
+def explain_anomaly(anomaly_id: str, db: Session = Depends(get_db)):
+    """Explain-my-gap endpoint: plain-language explanation with evidence citations.
+
+    Generates a natural-language explanation of why a royalty gap exists,
+    including summary, top drivers, confidence, and recommended actions.
+    """
+    anomaly = db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
+    if not anomaly:
+        raise HTTPException(status_code=404, detail="Anomaly not found")
+
+    anomaly_payload = AnomalySchema.model_validate(anomaly).model_dump(mode="json")
+
+    service = GapExplainerService(db=db)
+    explanation = service.explain_gap_sync(anomaly_payload)
+
+    # Log the explanation decision to audit trail
+    audit_log = XR7AIDecisionAuditLog(
+        tenant_id="default",
+        artist_id=anomaly.artist_id,
+        decision_type="gap_explanation",
+        model_provider=service.provider,
+        model_version=service.model,
+        prompt_hash="",  # Would be hash of prompt in production
+        input_ref=f"anomaly:{anomaly_id}",
+        output_ref=f"gap_explanation:{anomaly_id}",
+    )
+    db.add(audit_log)
+    db.commit()
+
+    return inject_branding_metadata(db, {
+        "anomaly_id": anomaly_id,
+        "explanation": explanation,
+    })
+
+
+@router.get("/artists/{artist_id}/anomalies/{anomaly_id}/explain")
+def explain_artist_anomaly(artist_id: str, anomaly_id: str, db: Session = Depends(get_db)):
+    """Artist-scoped explain-my-gap endpoint."""
+    anomaly = (
+        db.query(Anomaly)
+        .filter(Anomaly.id == anomaly_id, Anomaly.artist_id == artist_id)
+        .first()
+    )
+    if not anomaly:
+        raise HTTPException(status_code=404, detail="Anomaly not found for this artist")
+
+    anomaly_payload = AnomalySchema.model_validate(anomaly).model_dump(mode="json")
+
+    service = GapExplainerService(db=db)
+    explanation = service.explain_gap_sync(anomaly_payload)
+
+    # Log the explanation decision to audit trail
+    audit_log = XR7AIDecisionAuditLog(
+        tenant_id="default",
+        artist_id=artist_id,
+        decision_type="gap_explanation",
+        model_provider=service.provider,
+        model_version=service.model,
+        prompt_hash="",  # Would be hash of prompt in production
+        input_ref=f"anomaly:{anomaly_id}",
+        output_ref=f"gap_explanation:{anomaly_id}",
+    )
+    db.add(audit_log)
+    db.commit()
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "anomaly_id": anomaly_id,
+            "explanation": explanation,
+        },
+    )

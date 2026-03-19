@@ -2,9 +2,6 @@
 
 Revision ID: 20260319_0022_private_invites_system
 Revises: 20260318_0021_tvfilm_enterprise_foundation
-down_revision = "20260318_0021"
-branch_labels = None
-depends_on = None
 Create Date: 2026-03-19 00:00:00.000000
 
 """
@@ -14,6 +11,9 @@ from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
 revision = "20260319_0022_private_invites_system"
+down_revision = "20260318_0021"
+branch_labels = None
+depends_on = None
 
 
 def upgrade() -> None:
