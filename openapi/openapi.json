@@ -18625,6 +18625,926 @@
         }
       }
     },
+    "/invite/vip/claim": {
+      "post": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "Claim a VIP invite code",
+        "description": "Activate Founders Circle / VIP membership using a single-use invite code.",
+        "operationId": "claim_vip_invite_invite_vip_claim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimVipInviteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimVipInviteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/vip/status": {
+      "get": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "Get artist VIP/Founders Circle status",
+        "operationId": "get_vip_status_artists__artist_id__vip_status_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VipStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/vip/drops": {
+      "get": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "List current VIP Drop features available to this member",
+        "operationId": "get_vip_drops_artists__artist_id__vip_drops_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VipDropItem"
+                  },
+                  "title": "Response Get Vip Drops Artists  Artist Id  Vip Drops Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/artists/{artist_id}/vip/grant": {
+      "post": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "Admin: directly grant VIP membership to an artist",
+        "operationId": "admin_grant_vip_admin_artists__artist_id__vip_grant_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminGrantVipRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminVipGrantResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/artists/{artist_id}/vip": {
+      "delete": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "Admin: revoke VIP membership",
+        "operationId": "admin_revoke_vip_admin_artists__artist_id__vip_delete",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminRevokeResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/vip/invite-codes": {
+      "post": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "Admin: generate VIP invite codes",
+        "operationId": "generate_vip_invite_codes_admin_vip_invite_codes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateInviteCodesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateInviteCodesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/concierge/messages": {
+      "get": {
+        "tags": [
+          "concierge"
+        ],
+        "summary": "List concierge inbox messages for an artist",
+        "operationId": "list_concierge_messages_artists__artist_id__concierge_messages_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "thread_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Thread Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ConciergeMessageSchema"
+                  },
+                  "title": "Response List Concierge Messages Artists  Artist Id  Concierge Messages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/concierge/send": {
+      "post": {
+        "tags": [
+          "concierge"
+        ],
+        "summary": "Send a concierge message (artist \u2192 analyst or system)",
+        "operationId": "send_concierge_message_concierge_send_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendConciergeMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConciergeMessageSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/concierge/read": {
+      "post": {
+        "tags": [
+          "concierge"
+        ],
+        "summary": "Mark concierge messages as read",
+        "operationId": "mark_messages_read_artists__artist_id__concierge_read_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarkReadRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MarkReadResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/concierge/escalate": {
+      "post": {
+        "tags": [
+          "concierge"
+        ],
+        "summary": "One-click escalation: request a named human analyst",
+        "operationId": "request_human_analyst_artists__artist_id__concierge_escalate_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EscalateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/persona/enrich": {
+      "post": {
+        "tags": [
+          "concierge"
+        ],
+        "summary": "Trigger background persona enrichment from public sources",
+        "operationId": "enrich_persona_artists__artist_id__persona_enrich_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrichPersonaRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrichPersonaResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/persona": {
+      "get": {
+        "tags": [
+          "concierge"
+        ],
+        "summary": "Get enriched persona profile",
+        "operationId": "get_persona_artists__artist_id__persona_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PersonaProfileSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/copilot/query": {
+      "post": {
+        "tags": [
+          "copilot"
+        ],
+        "summary": "Ask the personalized XR7 Advisor copilot",
+        "operationId": "copilot_query_artists__artist_id__copilot_query_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopilotQueryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopilotQueryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/copilot/feedback": {
+      "post": {
+        "tags": [
+          "copilot"
+        ],
+        "summary": "Submit thumbs up/down feedback on a copilot response",
+        "operationId": "copilot_feedback_artists__artist_id__copilot_feedback_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CopilotFeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopilotFeedbackResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/copilot/history": {
+      "get": {
+        "tags": [
+          "copilot"
+        ],
+        "summary": "Get recent copilot query history",
+        "operationId": "copilot_history_artists__artist_id__copilot_history_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CopilotQuerySchema"
+                  },
+                  "title": "Response Copilot History Artists  Artist Id  Copilot History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/weekly-brief": {
+      "get": {
+        "tags": [
+          "copilot"
+        ],
+        "summary": "Get the latest AI-generated weekly brief",
+        "operationId": "get_weekly_brief_artists__artist_id__weekly_brief_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/WeeklyBriefSchema"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Weekly Brief Artists  Artist Id  Weekly Brief Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/weekly-brief/generate": {
+      "post": {
+        "tags": [
+          "copilot"
+        ],
+        "summary": "Trigger on-demand weekly brief generation",
+        "operationId": "generate_weekly_brief_artists__artist_id__weekly_brief_generate_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateBriefResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/vip/referral": {
+      "post": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "VIP member refers another elite creator",
+        "operationId": "create_vip_referral_artists__artist_id__vip_referral_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVipReferralRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateVipReferralResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/vip/referrals": {
+      "get": {
+        "tags": [
+          "vip"
+        ],
+        "summary": "List VIP referrals made by this artist",
+        "operationId": "list_vip_referrals_artists__artist_id__vip_referrals_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VipReferralSchema"
+                  },
+                  "title": "Response List Vip Referrals Artists  Artist Id  Vip Referrals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -18765,6 +19685,67 @@
         ],
         "title": "AdminAuditLogSchema"
       },
+      "AdminGrantVipRequest": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "tier_level": {
+            "$ref": "#/components/schemas/VipTierLevel",
+            "default": "FOUNDERS_CIRCLE"
+          },
+          "concierge_analyst_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concierge Analyst Name"
+          },
+          "concierge_analyst_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concierge Analyst Email"
+          },
+          "calendly_link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendly Link"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id"
+        ],
+        "title": "AdminGrantVipRequest"
+      },
       "AdminLoginRequest": {
         "properties": {
           "email": {
@@ -18782,6 +19763,41 @@
           "password"
         ],
         "title": "AdminLoginRequest"
+      },
+      "AdminRevokeResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "AdminRevokeResponse"
+      },
+      "AdminVipGrantResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "membership": {
+            "$ref": "#/components/schemas/FoundersCircleMemberSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "membership"
+        ],
+        "title": "AdminVipGrantResponse"
       },
       "AdvanceAcceptRequest": {
         "properties": {
@@ -21040,6 +22056,16 @@
         "type": "object",
         "title": "BrandingProfileUpsertRequest"
       },
+      "BriefStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "generating",
+          "complete",
+          "failed"
+        ],
+        "title": "BriefStatus"
+      },
       "BulkOnboardRequest": {
         "properties": {
           "artists": {
@@ -21645,6 +22671,167 @@
         ],
         "title": "ClaimTemplateRequest"
       },
+      "ClaimVipInviteRequest": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "invite_code": {
+            "type": "string",
+            "title": "Invite Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "invite_code"
+        ],
+        "title": "ClaimVipInviteRequest"
+      },
+      "ClaimVipInviteResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "membership": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FoundersCircleMemberSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message"
+        ],
+        "title": "ClaimVipInviteResponse"
+      },
+      "ConciergeMessageSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "sender_type": {
+            "$ref": "#/components/schemas/ConciergeMessageSender"
+          },
+          "sender_name": {
+            "type": "string",
+            "title": "Sender Name"
+          },
+          "analyst_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Analyst Id"
+          },
+          "message_body": {
+            "type": "string",
+            "title": "Message Body"
+          },
+          "read_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Read At"
+          },
+          "attachments": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachments"
+          },
+          "escalated": {
+            "type": "boolean",
+            "title": "Escalated"
+          },
+          "escalated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Escalated At"
+          },
+          "human_analyst_requested": {
+            "type": "boolean",
+            "title": "Human Analyst Requested"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "sender_type",
+          "sender_name",
+          "message_body",
+          "escalated",
+          "human_analyst_requested",
+          "created_at"
+        ],
+        "title": "ConciergeMessageSchema"
+      },
+      "ConciergeMessageSender": {
+        "type": "string",
+        "enum": [
+          "artist",
+          "analyst",
+          "system"
+        ],
+        "title": "ConciergeMessageSender"
+      },
       "ContractExtractRequest": {
         "properties": {
           "contract_id": {
@@ -21704,6 +22891,199 @@
         ],
         "title": "ContractExtractRequest"
       },
+      "CopilotFeedbackRequest": {
+        "properties": {
+          "query_id": {
+            "type": "string",
+            "title": "Query Id"
+          },
+          "thumbs_up": {
+            "type": "boolean",
+            "title": "Thumbs Up"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query_id",
+          "thumbs_up"
+        ],
+        "title": "CopilotFeedbackRequest"
+      },
+      "CopilotFeedbackResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "title": "CopilotFeedbackResponse"
+      },
+      "CopilotQueryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          },
+          "include_catalog_context": {
+            "type": "boolean",
+            "title": "Include Catalog Context",
+            "default": true
+          },
+          "include_recovery_context": {
+            "type": "boolean",
+            "title": "Include Recovery Context",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "CopilotQueryRequest"
+      },
+      "CopilotQueryResponse": {
+        "properties": {
+          "query_id": {
+            "type": "string",
+            "title": "Query Id"
+          },
+          "response": {
+            "type": "string",
+            "title": "Response"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence"
+          },
+          "sources_cited": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sources Cited"
+          },
+          "action_suggestions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Action Suggestions"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "title": "Latency Ms"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query_id",
+          "response",
+          "confidence",
+          "latency_ms"
+        ],
+        "title": "CopilotQueryResponse"
+      },
+      "CopilotQuerySchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "query_text": {
+            "type": "string",
+            "title": "Query Text"
+          },
+          "response_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Response Text"
+          },
+          "context_snapshot": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Context Snapshot"
+          },
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "sources_cited": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sources Cited"
+          },
+          "latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latency Ms"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "thumbs_up": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thumbs Up"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "query_text",
+          "created_at"
+        ],
+        "title": "CopilotQuerySchema"
+      },
       "CreateReviewItemRequest": {
         "properties": {
           "artist_id": {
@@ -21753,6 +23133,47 @@
           "reason"
         ],
         "title": "CreateReviewItemRequest"
+      },
+      "CreateVipReferralRequest": {
+        "properties": {
+          "referred_email": {
+            "type": "string",
+            "title": "Referred Email"
+          }
+        },
+        "type": "object",
+        "required": [
+          "referred_email"
+        ],
+        "title": "CreateVipReferralRequest"
+      },
+      "CreateVipReferralResponse": {
+        "properties": {
+          "referral_id": {
+            "type": "string",
+            "title": "Referral Id"
+          },
+          "invite_code": {
+            "type": "string",
+            "title": "Invite Code"
+          },
+          "invite_link": {
+            "type": "string",
+            "title": "Invite Link"
+          },
+          "slots_remaining": {
+            "type": "integer",
+            "title": "Slots Remaining"
+          }
+        },
+        "type": "object",
+        "required": [
+          "referral_id",
+          "invite_code",
+          "invite_link",
+          "slots_remaining"
+        ],
+        "title": "CreateVipReferralResponse"
       },
       "CreatorIngestRequest": {
         "properties": {
@@ -21988,6 +23409,73 @@
           "sender_name"
         ],
         "title": "EmailTriggeredInviteRequest"
+      },
+      "EnrichPersonaRequest": {
+        "properties": {
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "EnrichPersonaRequest"
+      },
+      "EnrichPersonaResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "status",
+          "message"
+        ],
+        "title": "EnrichPersonaResponse"
+      },
+      "EnrichmentStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "in_progress",
+          "complete",
+          "failed"
+        ],
+        "title": "EnrichmentStatus"
+      },
+      "EscalateResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "escalation_id": {
+            "type": "string",
+            "title": "Escalation Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "message",
+          "escalation_id"
+        ],
+        "title": "EscalateResponse"
       },
       "EstimateRequest": {
         "properties": {
@@ -22563,6 +24051,239 @@
           "founder_cohort_limit"
         ],
         "title": "FounderCohortLimitUpdateRequest"
+      },
+      "FoundersCircleMemberSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "tier_level": {
+            "$ref": "#/components/schemas/VipTierLevel"
+          },
+          "invite_code_used": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite Code Used"
+          },
+          "granted_by_admin": {
+            "type": "boolean",
+            "title": "Granted By Admin"
+          },
+          "granted_by_admin_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Granted By Admin Id"
+          },
+          "activated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Activated At"
+          },
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          },
+          "perks_unlocked": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perks Unlocked"
+          },
+          "referral_slots_remaining": {
+            "type": "integer",
+            "title": "Referral Slots Remaining"
+          },
+          "concierge_analyst_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concierge Analyst Name"
+          },
+          "concierge_analyst_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Concierge Analyst Email"
+          },
+          "calendly_link": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendly Link"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          },
+          "watermark_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Watermark Text"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "tier_level",
+          "granted_by_admin",
+          "activated_at",
+          "is_active",
+          "referral_slots_remaining",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "FoundersCircleMemberSchema"
+      },
+      "GenerateBriefResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "brief_week": {
+            "type": "string",
+            "title": "Brief Week"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "brief_week",
+          "status"
+        ],
+        "title": "GenerateBriefResponse"
+      },
+      "GenerateInviteCodesRequest": {
+        "properties": {
+          "count": {
+            "type": "integer",
+            "title": "Count",
+            "default": 1
+          },
+          "tier_level": {
+            "$ref": "#/components/schemas/VipTierLevel",
+            "default": "FOUNDERS_CIRCLE"
+          },
+          "expires_in_days": {
+            "type": "integer",
+            "title": "Expires In Days",
+            "default": 30
+          },
+          "perk_bonus": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perk Bonus"
+          },
+          "admin_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Admin Id"
+          }
+        },
+        "type": "object",
+        "title": "GenerateInviteCodesRequest"
+      },
+      "GenerateInviteCodesResponse": {
+        "properties": {
+          "codes": {
+            "items": {
+              "$ref": "#/components/schemas/VipInviteCodeSchema"
+            },
+            "type": "array",
+            "title": "Codes"
+          },
+          "invite_links": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Invite Links"
+          }
+        },
+        "type": "object",
+        "required": [
+          "codes",
+          "invite_links"
+        ],
+        "title": "GenerateInviteCodesResponse"
       },
       "HTTPValidationError": {
         "properties": {
@@ -23409,6 +25130,35 @@
         ],
         "title": "ManualRemittanceRequest"
       },
+      "MarkReadRequest": {
+        "properties": {
+          "message_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Message Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message_ids"
+        ],
+        "title": "MarkReadRequest"
+      },
+      "MarkReadResponse": {
+        "properties": {
+          "marked": {
+            "type": "integer",
+            "title": "Marked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "marked"
+        ],
+        "title": "MarkReadResponse"
+      },
       "MetadataRepairApplyRequest": {
         "properties": {
           "tenant_id": {
@@ -24044,6 +25794,213 @@
         ],
         "title": "ParserPluginUpsertRequest"
       },
+      "PersonaProfileSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "enrichment_status": {
+            "$ref": "#/components/schemas/EnrichmentStatus"
+          },
+          "enrichment_job_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enrichment Job Id"
+          },
+          "enriched_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Enriched At"
+          },
+          "imdb_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imdb Id"
+          },
+          "discogs_artist_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discogs Artist Id"
+          },
+          "spotify_artist_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spotify Artist Id"
+          },
+          "musicbrainz_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Musicbrainz Id"
+          },
+          "pro_credits": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pro Credits"
+          },
+          "social_handles": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Social Handles"
+          },
+          "detected_roles": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detected Roles"
+          },
+          "primary_vertical": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Vertical"
+          },
+          "catalog_summary": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Summary"
+          },
+          "bio_snippet": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bio Snippet"
+          },
+          "genre_tags": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Genre Tags"
+          },
+          "notable_works": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notable Works"
+          },
+          "collaborators": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Collaborators"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "enrichment_status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "PersonaProfileSchema"
+      },
       "PreSignatureContractReviewRequest": {
         "properties": {
           "contract_text": {
@@ -24322,6 +26279,16 @@
           "referred_artist_id"
         ],
         "title": "ReferralRequest"
+      },
+      "ReferralStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "joined",
+          "expired",
+          "rewarded"
+        ],
+        "title": "ReferralStatus"
       },
       "RegisterRequest": {
         "properties": {
@@ -24743,6 +26710,54 @@
           "record_type"
         ],
         "title": "RoyaltyLedgerEntryCreate"
+      },
+      "SendConciergeMessageRequest": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "message_body": {
+            "type": "string",
+            "title": "Message Body"
+          },
+          "attachments": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachments"
+          },
+          "request_human_analyst": {
+            "type": "boolean",
+            "title": "Request Human Analyst",
+            "default": false
+          },
+          "thread_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Thread Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "message_body"
+        ],
+        "title": "SendConciergeMessageRequest"
       },
       "SimulatePayoutRequest": {
         "properties": {
@@ -26413,6 +28428,382 @@
           "expires_in_seconds"
         ],
         "title": "VerifyResponse"
+      },
+      "VipDropItem": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "available_since": {
+            "type": "string",
+            "title": "Available Since"
+          },
+          "is_new": {
+            "type": "boolean",
+            "title": "Is New",
+            "default": true
+          },
+          "feature_flag": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Feature Flag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "available_since"
+        ],
+        "title": "VipDropItem"
+      },
+      "VipInviteCodeSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "tier_level": {
+            "$ref": "#/components/schemas/VipTierLevel"
+          },
+          "is_used": {
+            "type": "boolean",
+            "title": "Is Used"
+          },
+          "used_by_artist_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Used By Artist Id"
+          },
+          "used_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Used At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "max_uses": {
+            "type": "integer",
+            "title": "Max Uses"
+          },
+          "use_count": {
+            "type": "integer",
+            "title": "Use Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "perk_bonus": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perk Bonus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "tier_level",
+          "is_used",
+          "max_uses",
+          "use_count",
+          "created_at"
+        ],
+        "title": "VipInviteCodeSchema"
+      },
+      "VipReferralSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "referrer_artist_id": {
+            "type": "string",
+            "title": "Referrer Artist Id"
+          },
+          "referred_email": {
+            "type": "string",
+            "title": "Referred Email"
+          },
+          "referred_artist_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referred Artist Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReferralStatus"
+          },
+          "perk_code_referrer": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perk Code Referrer"
+          },
+          "perk_code_referred": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Perk Code Referred"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "joined_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Joined At"
+          },
+          "rewarded_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rewarded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "referrer_artist_id",
+          "referred_email",
+          "status",
+          "created_at"
+        ],
+        "title": "VipReferralSchema"
+      },
+      "VipStatusResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "is_vip": {
+            "type": "boolean",
+            "title": "Is Vip"
+          },
+          "tier_level": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/VipTierLevel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "membership": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FoundersCircleMemberSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "persona": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PersonaProfileSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "is_vip"
+        ],
+        "title": "VipStatusResponse"
+      },
+      "VipTierLevel": {
+        "type": "string",
+        "enum": [
+          "VIP",
+          "FOUNDERS_CIRCLE"
+        ],
+        "title": "VipTierLevel"
+      },
+      "WeeklyBriefSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "brief_week": {
+            "type": "string",
+            "title": "Brief Week"
+          },
+          "text_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text Summary"
+          },
+          "audio_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Url"
+          },
+          "video_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Url"
+          },
+          "key_insights": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Key Insights"
+          },
+          "action_items": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Action Items"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BriefStatus"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "brief_week",
+          "status",
+          "created_at"
+        ],
+        "title": "WeeklyBriefSchema"
       },
       "WeeklyStoryRequest": {
         "properties": {

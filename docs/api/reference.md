@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 358
+Total endpoints: 377
 
 ## Endpoint Table
 
@@ -20,6 +20,8 @@ Total endpoints: 358
 | admin | GET | /admin/anomalies | List Anomalies | list_anomalies_admin_anomalies_get | - | - | curl -X GET http://localhost:8000/admin/anomalies |
 | admin | GET | /admin/artists | List Artists | list_artists_admin_artists_get | - | - | curl -X GET http://localhost:8000/admin/artists |
 | admin | POST | /admin/artists/{artist_id}/founder/assign | Assign Founder Manually | assign_founder_manually_admin_artists__artist_id__founder_assign_post | FounderAssignRequest | - | curl -X POST http://localhost:8000/admin/artists/<artist_id>/founder/assign -H 'Content-Type: application/json' -d '{}' |
+| vip | DELETE | /admin/artists/{artist_id}/vip | Admin: revoke VIP membership | admin_revoke_vip_admin_artists__artist_id__vip_delete | - | AdminRevokeResponse | curl -X DELETE http://localhost:8000/admin/artists/<artist_id>/vip |
+| vip | POST | /admin/artists/{artist_id}/vip/grant | Admin: directly grant VIP membership to an artist | admin_grant_vip_admin_artists__artist_id__vip_grant_post | AdminGrantVipRequest | AdminVipGrantResponse | curl -X POST http://localhost:8000/admin/artists/<artist_id>/vip/grant -H 'Content-Type: application/json' -d '{}' |
 | admin | GET | /admin/audit-logs | List Audit Logs | list_audit_logs_admin_audit_logs_get | - | array | curl -X GET http://localhost:8000/admin/audit-logs |
 | governance | GET | /admin/audit/events | List Admin Audit Events | list_admin_audit_events_admin_audit_events_get | - | object | curl -X GET http://localhost:8000/admin/audit/events |
 | admin | GET | /admin/claims | List Claims | list_claims_admin_claims_get | - | - | curl -X GET http://localhost:8000/admin/claims |
@@ -32,6 +34,7 @@ Total endpoints: 358
 | admin | GET | /admin/reports/sol-risk | Sol Risk Report | sol_risk_report_admin_reports_sol_risk_get | - | - | curl -X GET http://localhost:8000/admin/reports/sol-risk |
 | admin | GET | /admin/review-queue | List Review Queue | list_review_queue_admin_review_queue_get | - | - | curl -X GET http://localhost:8000/admin/review-queue |
 | admin | GET | /admin/transactions | List Transactions | list_transactions_admin_transactions_get | - | - | curl -X GET http://localhost:8000/admin/transactions |
+| vip | POST | /admin/vip/invite-codes | Admin: generate VIP invite codes | generate_vip_invite_codes_admin_vip_invite_codes_post | GenerateInviteCodesRequest | GenerateInviteCodesResponse | curl -X POST http://localhost:8000/admin/vip/invite-codes -H 'Content-Type: application/json' -d '{}' |
 | admin | GET | /admin/workflow/handoffs | List Workflow Handoffs | list_workflow_handoffs_admin_workflow_handoffs_get | - | - | curl -X GET http://localhost:8000/admin/workflow/handoffs |
 | anomalies | GET | /anomalies/{anomaly_id} | Get Anomaly | get_anomaly_anomalies__anomaly_id__get | - | AnomalySchema | curl -X GET http://localhost:8000/anomalies/<anomaly_id> |
 | anomalies | GET | /anomalies/{anomaly_id}/explain | Explain Anomaly | explain_anomaly_anomalies__anomaly_id__explain_get | - | - | curl -X GET http://localhost:8000/anomalies/<anomaly_id>/explain |
@@ -69,6 +72,9 @@ Total endpoints: 358
 | recovery | POST | /artists/{artist_id}/claims/{claim_id}/evidence-package | Build Claim Evidence Package | build_claim_evidence_package_artists__artist_id__claims__claim_id__evidence_package_post | inline | - | curl -X POST http://localhost:8000/artists/<artist_id>/claims/<claim_id>/evidence-package -H 'Content-Type: application/json' -d '{}' |
 | recovery | GET | /artists/{artist_id}/claims/{claim_id}/legal-defensibility-report | Get Legal Defensibility Report | get_legal_defensibility_report_artists__artist_id__claims__claim_id__legal_defensibility_report_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/claims/<claim_id>/legal-defensibility-report |
 | trolley | POST | /artists/{artist_id}/claims/{claim_id}/manual-remittance | Manual Remittance | manual_remittance_artists__artist_id__claims__claim_id__manual_remittance_post | ManualRemittanceRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/claims/<claim_id>/manual-remittance -H 'Content-Type: application/json' -d '{}' |
+| concierge | POST | /artists/{artist_id}/concierge/escalate | One-click escalation: request a named human analyst | request_human_analyst_artists__artist_id__concierge_escalate_post | - | EscalateResponse | curl -X POST http://localhost:8000/artists/<artist_id>/concierge/escalate |
+| concierge | GET | /artists/{artist_id}/concierge/messages | List concierge inbox messages for an artist | list_concierge_messages_artists__artist_id__concierge_messages_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/concierge/messages |
+| concierge | POST | /artists/{artist_id}/concierge/read | Mark concierge messages as read | mark_messages_read_artists__artist_id__concierge_read_post | MarkReadRequest | MarkReadResponse | curl -X POST http://localhost:8000/artists/<artist_id>/concierge/read -H 'Content-Type: application/json' -d '{}' |
 | artists | POST | /artists/{artist_id}/connect | Connect Artist | connect_artist_artists__artist_id__connect_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect |
 | expansion | GET | /artists/{artist_id}/connect/accounts | List Connected Accounts | list_connected_accounts_artists__artist_id__connect_accounts_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/accounts |
 | expansion | DELETE | /artists/{artist_id}/connect/accounts/{account_id} | Disconnect Connected Account | disconnect_connected_account_artists__artist_id__connect_accounts__account_id__delete | - | - | curl -X DELETE http://localhost:8000/artists/<artist_id>/connect/accounts/{account_id} |
@@ -87,6 +93,9 @@ Total endpoints: 358
 | ingestion | GET | /artists/{artist_id}/connect/soundexchange-mlc/status | Soundexchange Mlc Status | soundexchange_mlc_status_artists__artist_id__connect_soundexchange_mlc_status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/soundexchange-mlc/status |
 | artists | POST | /artists/{artist_id}/connect/{provider} | Connect Provider | connect_provider_artists__artist_id__connect__provider__post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/connect/<provider> |
 | artists | GET | /artists/{artist_id}/connect/{provider}/status | Provider Connection Status | provider_connection_status_artists__artist_id__connect__provider__status_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/connect/<provider>/status |
+| copilot | POST | /artists/{artist_id}/copilot/feedback | Submit thumbs up/down feedback on a copilot response | copilot_feedback_artists__artist_id__copilot_feedback_post | CopilotFeedbackRequest | CopilotFeedbackResponse | curl -X POST http://localhost:8000/artists/<artist_id>/copilot/feedback -H 'Content-Type: application/json' -d '{}' |
+| copilot | GET | /artists/{artist_id}/copilot/history | Get recent copilot query history | copilot_history_artists__artist_id__copilot_history_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/copilot/history |
+| copilot | POST | /artists/{artist_id}/copilot/query | Ask the personalized XR7 Advisor copilot | copilot_query_artists__artist_id__copilot_query_post | CopilotQueryRequest | CopilotQueryResponse | curl -X POST http://localhost:8000/artists/<artist_id>/copilot/query -H 'Content-Type: application/json' -d '{}' |
 | creator_economy | POST | /artists/{artist_id}/creator/ingest | Ingest Creator Data | ingest_creator_data_artists__artist_id__creator_ingest_post | CreatorIngestRequest | object | curl -X POST http://localhost:8000/artists/<artist_id>/creator/ingest -H 'Content-Type: application/json' -d '{}' |
 | creator_economy | GET | /artists/{artist_id}/creator/platforms | List Creator Platforms | list_creator_platforms_artists__artist_id__creator_platforms_get | - | object | curl -X GET http://localhost:8000/artists/<artist_id>/creator/platforms |
 | dashboard | GET | /artists/{artist_id}/dashboard | Get Artist Dashboard | get_artist_dashboard_artists__artist_id__dashboard_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/dashboard |
@@ -151,6 +160,8 @@ Total endpoints: 358
 | onboarding | GET | /artists/{artist_id}/parsers/plugins | List Parser Plugins | list_parser_plugins_artists__artist_id__parsers_plugins_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/parsers/plugins |
 | onboarding | PUT | /artists/{artist_id}/parsers/plugins | Upsert Parser Plugin | upsert_parser_plugin_artists__artist_id__parsers_plugins_put | ParserPluginUpsertRequest | ParserPluginSchema | curl -X PUT http://localhost:8000/artists/<artist_id>/parsers/plugins -H 'Content-Type: application/json' -d '{}' |
 | onboarding | POST | /artists/{artist_id}/parsers/{parser_type} | Parse Statement With Engine | parse_statement_with_engine_artists__artist_id__parsers__parser_type__post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/parsers/{parser_type} |
+| concierge | GET | /artists/{artist_id}/persona | Get enriched persona profile | get_persona_artists__artist_id__persona_get | - | PersonaProfileSchema | curl -X GET http://localhost:8000/artists/<artist_id>/persona |
+| concierge | POST | /artists/{artist_id}/persona/enrich | Trigger background persona enrichment from public sources | enrich_persona_artists__artist_id__persona_enrich_post | EnrichPersonaRequest | EnrichPersonaResponse | curl -X POST http://localhost:8000/artists/<artist_id>/persona/enrich -H 'Content-Type: application/json' -d '{}' |
 | artists | GET | /artists/{artist_id}/preferences | Get Artist Preferences | get_artist_preferences_artists__artist_id__preferences_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/preferences |
 | artists | PUT | /artists/{artist_id}/preferences | Update Artist Preferences | update_artist_preferences_artists__artist_id__preferences_put | ArtistPreferenceUpdateRequest | - | curl -X PUT http://localhost:8000/artists/<artist_id>/preferences -H 'Content-Type: application/json' -d '{}' |
 | governance | POST | /artists/{artist_id}/privacy/erase | Erase Artist Data | erase_artist_data_artists__artist_id__privacy_erase_post | - | object | curl -X POST http://localhost:8000/artists/<artist_id>/privacy/erase |
@@ -224,6 +235,12 @@ Total endpoints: 358
 | recovery | POST | /artists/{artist_id}/ugc/global-scan | Ugc Global Scan | ugc_global_scan_artists__artist_id__ugc_global_scan_post | - | - | curl -X POST http://localhost:8000/artists/<artist_id>/ugc/global-scan |
 | recovery | GET | /artists/{artist_id}/ugc/monitor | Ugc Monitor | ugc_monitor_artists__artist_id__ugc_monitor_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/ugc/monitor |
 | onboarding | POST | /artists/{artist_id}/variance/scan | Variance Scan | variance_scan_artists__artist_id__variance_scan_post | VarianceScanRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/variance/scan -H 'Content-Type: application/json' -d '{}' |
+| vip | GET | /artists/{artist_id}/vip/drops | List current VIP Drop features available to this member | get_vip_drops_artists__artist_id__vip_drops_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/vip/drops |
+| vip | POST | /artists/{artist_id}/vip/referral | VIP member refers another elite creator | create_vip_referral_artists__artist_id__vip_referral_post | CreateVipReferralRequest | CreateVipReferralResponse | curl -X POST http://localhost:8000/artists/<artist_id>/vip/referral -H 'Content-Type: application/json' -d '{}' |
+| vip | GET | /artists/{artist_id}/vip/referrals | List VIP referrals made by this artist | list_vip_referrals_artists__artist_id__vip_referrals_get | - | array | curl -X GET http://localhost:8000/artists/<artist_id>/vip/referrals |
+| vip | GET | /artists/{artist_id}/vip/status | Get artist VIP/Founders Circle status | get_vip_status_artists__artist_id__vip_status_get | - | VipStatusResponse | curl -X GET http://localhost:8000/artists/<artist_id>/vip/status |
+| copilot | GET | /artists/{artist_id}/weekly-brief | Get the latest AI-generated weekly brief | get_weekly_brief_artists__artist_id__weekly_brief_get | - | inline | curl -X GET http://localhost:8000/artists/<artist_id>/weekly-brief |
+| copilot | POST | /artists/{artist_id}/weekly-brief/generate | Trigger on-demand weekly brief generation | generate_weekly_brief_artists__artist_id__weekly_brief_generate_post | - | GenerateBriefResponse | curl -X POST http://localhost:8000/artists/<artist_id>/weekly-brief/generate |
 | workflow | GET | /artists/{artist_id}/workflow/handoffs | Workflow Handoffs | workflow_handoffs_artists__artist_id__workflow_handoffs_get | - | AgentHandoffListResponse | curl -X GET http://localhost:8000/artists/<artist_id>/workflow/handoffs |
 | onboarding | GET | /artists/{artist_id}/workflow/preview | Preview Full Workflow | preview_full_workflow_artists__artist_id__workflow_preview_get | - | - | curl -X GET http://localhost:8000/artists/<artist_id>/workflow/preview |
 | onboarding | POST | /artists/{artist_id}/workflow/run | Run Full Workflow | run_full_workflow_artists__artist_id__workflow_run_post | WorkflowRunRequest | - | curl -X POST http://localhost:8000/artists/<artist_id>/workflow/run -H 'Content-Type: application/json' -d '{}' |
@@ -287,6 +304,7 @@ Total endpoints: 358
 | claims | POST | /claims/{claim_id}/reconcile | Reconcile Claim | reconcile_claim_claims__claim_id__reconcile_post | ReconcileRequest | ClaimSchema | curl -X POST http://localhost:8000/claims/<claim_id>/reconcile -H 'Content-Type: application/json' -d '{}' |
 | claims | GET | /claims/{claim_id}/sla-prediction | Claim Sla Prediction | claim_sla_prediction_claims__claim_id__sla_prediction_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/sla-prediction |
 | claims | GET | /claims/{claim_id}/strength-explainer | Claim Strength Explainer | claim_strength_explainer_claims__claim_id__strength_explainer_get | - | - | curl -X GET http://localhost:8000/claims/<claim_id>/strength-explainer |
+| concierge | POST | /concierge/send | Send a concierge message (artist → analyst or system) | send_concierge_message_concierge_send_post | SendConciergeMessageRequest | ConciergeMessageSchema | curl -X POST http://localhost:8000/concierge/send -H 'Content-Type: application/json' -d '{}' |
 | config | GET | /config/founder-status | Get Founder Status | get_founder_status_config_founder_status_get | - | - | curl -X GET http://localhost:8000/config/founder-status |
 | dashboard | GET | /dashboard/ui | Get Dashboard Ui | get_dashboard_ui_dashboard_ui_get | - | - | curl -X GET http://localhost:8000/dashboard/ui |
 | expansion | GET | /education/guides | Education Guides Index | education_guides_index_education_guides_get | - | - | curl -X GET http://localhost:8000/education/guides |
@@ -294,6 +312,7 @@ Total endpoints: 358
 | untagged | GET | /health | Health | health_health_get | - | - | curl -X GET http://localhost:8000/health |
 | untagged | GET | /health/readiness | Readiness | readiness_health_readiness_get | - | - | curl -X GET http://localhost:8000/health/readiness |
 | ingestion | GET | /ingestion/supported-formats | Supported Formats | supported_formats_ingestion_supported_formats_get | - | object | curl -X GET http://localhost:8000/ingestion/supported-formats |
+| vip | POST | /invite/vip/claim | Claim a VIP invite code | claim_vip_invite_invite_vip_claim_post | ClaimVipInviteRequest | ClaimVipInviteResponse | curl -X POST http://localhost:8000/invite/vip/claim -H 'Content-Type: application/json' -d '{}' |
 | invites | GET | /invites/ | List Invites | list_invites_invites__get | - | object | curl -X GET http://localhost:8000/invites/ |
 | invites | GET | /invites/analytics/summary | Get Analytics | get_analytics_invites_analytics_summary_get | - | object | curl -X GET http://localhost:8000/invites/analytics/summary |
 | invites | POST | /invites/dashboard/quick-generate | Dashboard Quick Generate | dashboard_quick_generate_invites_dashboard_quick_generate_post | DashboardQuickGenerateRequest | object | curl -X POST http://localhost:8000/invites/dashboard/quick-generate -H 'Content-Type: application/json' -d '{}' |
