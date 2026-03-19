@@ -114,6 +114,9 @@ class XR7State(TypedDict, total=False):
     support_suggested_replies: Annotated[list[str], add]
     support_escalation_recommended: bool
 
+    recoverability_results: Annotated[list[dict[str, Any]], add]
+    recoverability_explainer: dict[str, Any]
+
 
 def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
     rid = run_id or str(uuid4())
@@ -223,6 +226,8 @@ def initial_state(artist_id: str, run_id: str | None = None) -> XR7State:
         "support_confidence": 0.0,
         "support_suggested_replies": [],
         "support_escalation_recommended": False,
+        "recoverability_results": [],
+        "recoverability_explainer": {},
     }
 
 

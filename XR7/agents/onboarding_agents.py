@@ -21,6 +21,7 @@ from XR7.models.statement import Statement
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.payer_playbooks import build_claim_playbook
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.split_verification import verify_splits
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
@@ -1687,4 +1688,121 @@ async def RightsRegistrationAgent(state: XR7State) -> XR7State:
             }
         },
         decision=f"rights gaps={len(gaps)}",
+    )
+
+
+async def BlackBoxExpirationAgent(state: XR7State) -> XR7State:
+    anomalies = list(state.get("anomalies") or [])
+    recoverability_results: list[dict[str, Any]] = []
+
+    for anomaly in anomalies:
+        if not isinstance(anomaly, dict):
+            continue
+        payload = build_recoverability_payload(anomaly)
+        recoverability_results.append(
+            {
+                "anomaly_id": anomaly.get("id"),
+                "subtype": anomaly.get("subtype"),
+                "black_box_expiration": payload.get("black_box_expiration"),
+                "claim_draft_allowed": payload.get("claim_draft_allowed"),
+            }
+        )
+
+    score = 0.92 if recoverability_results else 0.84
+    return _finalize(
+        state,
+        agent_name="black_box_expiration_agent",
+        score=score,
+        updates={"recoverability_results": recoverability_results},
+        decision=f"black-box windows evaluated for anomalies={len(recoverability_results)}",
+    )
+
+
+async def RecoverabilityClassificationAgent(state: XR7State) -> XR7State:
+    anomalies = list(state.get("anomalies") or [])
+    existing = {
+        str(r.get("anomaly_id")): r
+        for r in (state.get("recoverability_results") or [])
+        if isinstance(r, dict)
+    }
+    classified: list[dict[str, Any]] = []
+
+    for anomaly in anomalies:
+        if not isinstance(anomaly, dict):
+            continue
+        anomaly_id = str(anomaly.get("id") or "")
+        payload = build_recoverability_payload(anomaly)
+        cls = (payload.get("recoverability") or {}).get("recoverability_class")
+        merged = {
+            "anomaly_id": anomaly.get("id"),
+            "subtype": anomaly.get("subtype"),
+            "estimated_recoverable": anomaly.get("estimated_recoverable"),
+            "recoverability": payload.get("recoverability"),
+            "black_box_expiration": payload.get("black_box_expiration"),
+            "legal_basis": payload.get("legal_basis"),
+            "claim_draft_allowed": payload.get("claim_draft_allowed"),
+        }
+        if anomaly_id in existing and isinstance(existing[anomaly_id], dict):
+            merged = {**existing[anomaly_id], **merged}
+        merged["recoverability_class"] = cls
+        classified.append(merged)
+
+    score = 0.93 if classified else 0.84
+    return _finalize(
+        state,
+        agent_name="recoverability_classification_agent",
+        score=score,
+        updates={"recoverability_results": classified},
+        decision=f"recoverability classification completed for anomalies={len(classified)}",
+    )
+
+
+async def RecoverabilityExplainerAgent(state: XR7State) -> XR7State:
+    results = [r for r in (state.get("recoverability_results") or []) if isinstance(r, dict)]
+
+    totals: dict[str, float] = {}
+    for row in results:
+        cls = str(row.get("recoverability_class") or (row.get("recoverability") or {}).get("recoverability_class") or "Unclassified")
+        amount = float((row.get("estimated_recoverable") or 0.0) or 0.0)
+        totals[cls] = round(float(totals.get(cls, 0.0)) + amount, 2)
+
+    recoverable_amount = round(sum(v for k, v in totals.items() if k != "Expired (Black-Box Redistributed)"), 2)
+    expired_amount = round(float(totals.get("Expired (Black-Box Redistributed)") or 0.0), 2)
+
+    explainer = {
+        "here_is_what_you_can_still_recover": {
+            "amount": recoverable_amount,
+            "category": "Recoverable and legally actionable classes",
+            "why": "Within claim window or recoverable through contract/copyright damages paths.",
+            "what_xr7_will_do_next": "XR7 will draft claims, attach evidence hashes, and prepare negotiation workflows.",
+        },
+        "here_is_what_expired": {
+            "amount": expired_amount,
+            "category": "Expired black-box redistributed funds",
+            "why_it_expired": "Redistribution windows elapsed based on society/union rules.",
+            "which_rule_applied": "ASCAP/BMI/SESAC 2-3 years; MLC 3 years; foreign societies often 6-18 months.",
+        },
+        "here_is_why": [
+            "ASCAP redistributes unmatched royalties after 2-3 years.",
+            "MLC redistributes unmatched digital mechanicals after 3 years.",
+            "Foreign societies often redistribute after 6-18 months.",
+        ],
+        "here_is_what_xr7_prevents_going_forward": [
+            "Metadata repair",
+            "Identifier normalization",
+            "Cross-system linking",
+            "Future leakage prevention scoring",
+            "UGC fingerprinting",
+            "Foreign society crosswalks",
+        ],
+        "by_class_amount": totals,
+    }
+
+    score = 0.91 if results else 0.83
+    return _finalize(
+        state,
+        agent_name="recoverability_explainer_agent",
+        score=score,
+        updates={"recoverability_explainer": explainer},
+        decision="recoverability explainer synthesized for trust layer and dashboard",
     )

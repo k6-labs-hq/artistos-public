@@ -1083,3 +1083,176 @@ input:focus-visible {
     transform: none;
   }
 }
+
+.recoverability-explainer {
+  margin-top: 1.25rem;
+  padding: 1.1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--bg-elevated) 84%, transparent);
+}
+
+.recoverability-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.recoverability-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.9rem;
+}
+
+.recoverability-card {
+  border-radius: 12px;
+  padding: 0.85rem;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-base) 40%, transparent);
+}
+
+.recoverability-card .label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.recoverability-card strong {
+  font-size: 1.25rem;
+}
+
+.recoverability-card.can-recover {
+  border-color: color-mix(in srgb, #1fa35b 55%, var(--border-color));
+}
+
+.recoverability-card.expired {
+  border-color: color-mix(in srgb, #cf4f44 55%, var(--border-color));
+}
+
+.recoverability-card.why {
+  border-color: color-mix(in srgb, #4d7fdc 55%, var(--border-color));
+}
+
+.recoverability-card.prevention {
+  border-color: color-mix(in srgb, #ca9a23 55%, var(--border-color));
+}
+
+.recoverability-card.prevention ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.recoverability-timeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-start;
+  padding: 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-base) 38%, transparent);
+}
+
+.timeline-item .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-top: 0.3rem;
+  background: color-mix(in srgb, var(--text-main) 35%, transparent);
+}
+
+.timeline-item.active .dot {
+  background: #1fa35b;
+}
+
+.timeline-item.expired .dot {
+  background: #cf4f44;
+}
+
+.timeline-item p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.timeline-item strong {
+  font-size: 0.84rem;
+}
+
+.recoverability-class-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.class-row {
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.6rem;
+  background: color-mix(in srgb, var(--bg-base) 34%, transparent);
+}
+
+.class-row span {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+  min-height: 2.2em;
+}
+
+.class-row strong {
+  display: block;
+  margin-top: 0.18rem;
+}
+
+.class-row small {
+  color: var(--text-secondary);
+}
+
+.learn-more-btn {
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-base) 45%, var(--accent) 15%);
+  color: var(--text-main);
+  border-radius: 999px;
+  padding: 0.38rem 0.72rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.recoverability-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, #000 58%, transparent);
+  display: grid;
+  place-items: center;
+  z-index: 35;
+  padding: 1rem;
+}
+
+.recoverability-modal {
+  width: min(720px, 100%);
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  padding: 1rem;
+}
+
+.recoverability-modal ul {
+  padding-left: 1.2rem;
+}
+
+@media (max-width: 960px) {
+  .recoverability-grid,
+  .recoverability-timeline,
+  .recoverability-class-grid {
+    grid-template-columns: 1fr;
+  }
+}

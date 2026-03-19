@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 336
+Total endpoints: 347
 
 ## Endpoint Table
 
@@ -283,6 +283,17 @@ Total endpoints: 336
 | untagged | GET | /health | Health | health_health_get | - | - | curl -X GET http://localhost:8000/health |
 | untagged | GET | /health/readiness | Readiness | readiness_health_readiness_get | - | - | curl -X GET http://localhost:8000/health/readiness |
 | ingestion | GET | /ingestion/supported-formats | Supported Formats | supported_formats_ingestion_supported_formats_get | - | object | curl -X GET http://localhost:8000/ingestion/supported-formats |
+| invites | GET | /invites/ | List Invites | list_invites_invites__get | - | object | curl -X GET http://localhost:8000/invites/ |
+| invites | GET | /invites/analytics/summary | Get Analytics | get_analytics_invites_analytics_summary_get | - | object | curl -X GET http://localhost:8000/invites/analytics/summary |
+| invites | POST | /invites/dashboard/quick-generate | Dashboard Quick Generate | dashboard_quick_generate_invites_dashboard_quick_generate_post | DashboardQuickGenerateRequest | object | curl -X POST http://localhost:8000/invites/dashboard/quick-generate -H 'Content-Type: application/json' -d '{}' |
+| invites | POST | /invites/email-trigger | Email Triggered Invite | email_triggered_invite_invites_email_trigger_post | EmailTriggeredInviteRequest | object | curl -X POST http://localhost:8000/invites/email-trigger -H 'Content-Type: application/json' -d '{}' |
+| invites | POST | /invites/generate | Generate Invite | generate_invite_invites_generate_post | InviteGenerateRequest | InviteWithTokenSchema | curl -X POST http://localhost:8000/invites/generate -H 'Content-Type: application/json' -d '{}' |
+| invites | POST | /invites/instagram-webhook | Instagram Dm Webhook | instagram_dm_webhook_invites_instagram_webhook_post | - | object | curl -X POST http://localhost:8000/invites/instagram-webhook |
+| invites | POST | /invites/open | Open Invite | open_invite_invites_open_post | InviteValidateRequest | InviteSchema | curl -X POST http://localhost:8000/invites/open -H 'Content-Type: application/json' -d '{}' |
+| invites | POST | /invites/redeem | Redeem Invite | redeem_invite_invites_redeem_post | - | InviteSchema | curl -X POST http://localhost:8000/invites/redeem |
+| invites | POST | /invites/validate | Validate Invite | validate_invite_invites_validate_post | InviteValidateRequest | InviteValidationResponse | curl -X POST http://localhost:8000/invites/validate -H 'Content-Type: application/json' -d '{}' |
+| invites | GET | /invites/{invite_id} | Get Invite | get_invite_invites__invite_id__get | - | InviteSchema | curl -X GET http://localhost:8000/invites/{invite_id} |
+| invites | POST | /invites/{invite_id}/revoke | Revoke Invite | revoke_invite_invites__invite_id__revoke_post | - | InviteSchema | curl -X POST http://localhost:8000/invites/{invite_id}/revoke |
 | forensic-api | GET | /ledger | List Ledger | list_ledger_ledger_get | - | array | curl -X GET http://localhost:8000/ledger |
 | forensic-api | GET | /ledger/{entry_id} | Get Ledger Entry | get_ledger_entry_ledger__entry_id__get | - | ImmutableLedgerEntrySchema | curl -X GET http://localhost:8000/ledger/{entry_id} |
 | b2b | GET | /management/{org_id}/anomalies | Management Anomalies Drilldown | management_anomalies_drilldown_management__org_id__anomalies_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/anomalies |

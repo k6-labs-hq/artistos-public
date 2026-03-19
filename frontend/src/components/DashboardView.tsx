@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 import { api } from "@/api";
 import { SovereigntyInsightsPanel } from "./SovereigntyInsightsPanel";
+import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
 
 type DashboardViewProps = {
   artistId: string;
@@ -57,6 +58,7 @@ export function DashboardView({ artistId }: DashboardViewProps) {
   const deadlines = (dashboard.deadlines || {}) as Record<string, unknown>;
   const catalogHealth = (dashboard.catalog_health || {}) as Record<string, unknown>;
   const trend = (dashboard.earnings_trend || {}) as Record<string, unknown>;
+  const recoverability = (dashboard.recoverability_breakdown || {}) as Record<string, unknown>;
 
   const confidence = Number(
     agentStatus.agent_orchestra_status?.confidence ??
@@ -137,6 +139,14 @@ export function DashboardView({ artistId }: DashboardViewProps) {
           <p>Expected 90-day total: ${Number(trend.predicted_total || 0).toFixed(2)}</p>
         </article>
       </div>
+
+      <RecoverabilityExplainer
+        title="Post Black-Box Recoverability"
+        recoverableAmount={Number((recoverability.recoverable_total as number | undefined) || 0)}
+        expiredAmount={Number((recoverability.expired_total as number | undefined) || 0)}
+        byClass={(recoverability.by_class as Record<string, { count?: number; amount?: number; estimated_recoverable?: number }> | undefined) || {}}
+        claimWindowLabel="Recoverable, contract-based, and copyright-damages classes are draftable"
+      />
 
       <SovereigntyInsightsPanel
         confidence={confidence}

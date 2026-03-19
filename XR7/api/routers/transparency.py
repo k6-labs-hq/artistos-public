@@ -4,7 +4,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from XR7.models.artist import Artist
+from XR7.models.anomaly import Anomaly, AnomalySchema
 from XR7.models.base import get_db
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.services.branding import inject_branding_metadata
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 
@@ -26,4 +28,8 @@ async def explain_anomaly(artist_id: str, anomaly_id: str, db: Session = Depends
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
     payload = await ImmutableLedgerViewer(db).explain_anomaly(anomaly_id)
-    return inject_branding_metadata(db, {"artist_id": artist_id, **payload})
+    anomaly = db.query(Anomaly).filter(Anomaly.id == anomaly_id, Anomaly.artist_id == artist_id).first()
+    recoverability = {}
+    if anomaly:
+        recoverability = build_recoverability_payload(AnomalySchema.model_validate(anomaly).model_dump(mode="json"))
+    return inject_branding_metadata(db, {"artist_id": artist_id, **payload, **recoverability})

@@ -12,6 +12,7 @@ from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
 from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
 from XR7.services.review_queue import enqueue_review_item
@@ -38,8 +39,10 @@ def list_anomalies(
 
     payload = []
     for r in rows:
+        anomaly_payload = AnomalySchema.model_validate(r).model_dump(mode="json")
+        recoverability_payload = build_recoverability_payload(anomaly_payload)
         obj = {
-            **AnomalySchema.model_validate(r).model_dump(mode="json"),
+            **anomaly_payload,
             "branding": brand_meta,
             "recovery_probability": anomaly_recovery_probability(
                 {
@@ -48,6 +51,7 @@ def list_anomalies(
                     "severity": str(r.severity),
                 }
             ),
+            **recoverability_payload,
         }
         if debug:
             obj.update(
@@ -87,9 +91,11 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
         },
         behavior,
     )
+    anomaly_payload = AnomalySchema.model_validate(anomaly).model_dump(mode="json")
     return {
         "anomaly_id": anomaly_id,
         **probability,
+        **build_recoverability_payload(anomaly_payload),
     }
 
 
@@ -102,7 +108,11 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
 
+    enriched: list[dict] = []
     for row in anomaly_dicts:
+        row_payload = dict(row)
+        row_payload.update(build_recoverability_payload(row_payload))
+        enriched.append(row_payload)
         anomaly_id = row.get("id")
         priority = float(row.get("estimated_recoverable") or 0.0)
         reason = f"Anomaly detected: {row.get('subtype') or row.get('category') or 'UNKNOWN'}"
@@ -113,7 +123,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
             source_id=str(anomaly_id) if anomaly_id else None,
             reason=reason,
             priority_score=priority,
-            payload=row,
+            payload=row_payload,
         )
         if float(row.get("confidence_score") or 1.0) < 0.55:
             enqueue_review_item(
@@ -123,7 +133,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
                 source_id=str(anomaly_id) if anomaly_id else None,
                 reason="Low rule confidence anomaly requires analyst review",
                 priority_score=priority,
-                payload=row,
+                payload=row_payload,
             )
 
     try:
@@ -131,7 +141,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
     except Exception:  # noqa: BLE001
         logger.exception("Failed to enqueue HubSpot anomalies sync", extra={"artist_id": artist_id})
 
-    return inject_branding_metadata(db, {"artist_id": artist_id, "detected": anomaly_dicts})
+    return inject_branding_metadata(db, {"artist_id": artist_id, "detected": enriched})
 
 
 @router.post("/artists/{artist_id}/ai-music/scan-influence")

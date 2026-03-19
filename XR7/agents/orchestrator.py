@@ -47,6 +47,9 @@ from XR7.agents.onboarding_agents import (
     PortalAutoNavigatorAgent,
     PROPortalGuideAgent,
     ReflectionNode,
+    BlackBoxExpirationAgent,
+    RecoverabilityClassificationAgent,
+    RecoverabilityExplainerAgent,
     ReleaseTimelineAgent,
     RightsConflictDetectorAgent,
     SocialUGCCollectorAgent,
@@ -137,6 +140,9 @@ AGENTS: dict[str, AgentFn] = {
     "first_claim_fast_track": FirstClaimFastTrackAgent,
     "welcome_summary": WelcomeSummaryAgent,
     "detection_agent": DetectionAgent,
+    "black_box_expiration_agent": BlackBoxExpirationAgent,
+    "recoverability_classification_agent": RecoverabilityClassificationAgent,
+    "recoverability_explainer_agent": RecoverabilityExplainerAgent,
     "evidence_verifier": EvidenceVerifierAgent,
     "claim_drafter": ClaimDrafterAgent,
     "legal_authority_agent": LegalAuthorityAgent,
@@ -208,6 +214,9 @@ ONBOARDING_ORDER: list[str] = [
 
 RECOVERY_ORDER: list[str] = [
     "detection_agent",
+    "black_box_expiration_agent",
+    "recoverability_classification_agent",
+    "recoverability_explainer_agent",
     "evidence_verifier",
     "claim_drafter",
     "legal_authority_agent",
@@ -307,6 +316,7 @@ def _merge_state(base: XR7State, patch: XR7State) -> XR7State:
             "narrative_highlights",
             "support_messages",
             "support_suggested_replies",
+            "recoverability_results",
         } and isinstance(value, list):
             merged[key] = list(merged.get(key) or []) + list(value)
         elif key == "confidence_scores" and isinstance(value, dict):
@@ -331,6 +341,7 @@ def _merge_state(base: XR7State, patch: XR7State) -> XR7State:
             "narrative_sections",
             "attorney_export_package",
             "attorney_export_manifest",
+            "recoverability_explainer",
         } and isinstance(value, dict):
             merged[key] = {**(merged.get(key) or {}), **value}
         else:

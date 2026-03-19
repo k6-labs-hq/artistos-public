@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 
+import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
+
 const roleOptions = [
   "Writer (TV/Film)",
   "Screenwriter",
@@ -165,6 +167,23 @@ export function TVFilmWorkspace(): JSX.Element {
           </tbody>
         </table>
       </div>
+
+      <RecoverabilityExplainer
+        title="TV/Film Recoverability Explainer"
+        recoverableAmount={486000 + 72400 + 214300}
+        expiredAmount={39800}
+        byClass={{
+          Recoverable: { count: 19, amount: 612400 },
+          "Potentially Recoverable (Contract-Based)": { count: 8, amount: 160300 },
+          "Recoverable via Copyright Damages": { count: 6, amount: 124000 },
+          "Expired (Black-Box Redistributed)": { count: 4, amount: 39800 },
+          "Future Leakage Prevention Only": { count: 7, amount: 0 },
+        }}
+        eventDate="2023-06-01"
+        expirationDate="2026-06-01"
+        discoveryDate="2026-03-19"
+        claimWindowLabel="Union windows + contract rights + discovery-rule damages"
+      />
     </section>
   );
 }

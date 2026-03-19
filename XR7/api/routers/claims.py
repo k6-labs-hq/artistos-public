@@ -29,6 +29,7 @@ from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.cash_recovery_forecast import build_claim_forecast
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.evidence_strength import score_evidence_strength
 from XR7.recovery.negotiation_intelligence import build_negotiation_intel
 from XR7.recovery.orchestrator import ClaimsOrchestrator
@@ -357,6 +358,32 @@ def create_claim_for_artist(
     existing = db.query(Claim).filter(Claim.anomaly_id == anomaly.id).first()
     if existing:
         raise HTTPException(status_code=409, detail="Claim already exists for anomaly")
+
+    anomaly_payload = {
+        "id": anomaly.id,
+        "artist_id": anomaly.artist_id,
+        "category": str(anomaly.category),
+        "subtype": anomaly.subtype,
+        "severity": str(anomaly.severity),
+        "estimated_recoverable": anomaly.estimated_recoverable,
+        "confidence_score": anomaly.confidence_score,
+        "time_window_start": anomaly.time_window_start,
+        "time_window_end": anomaly.time_window_end,
+        "description": anomaly.description,
+        "feature_snapshot": anomaly.feature_snapshot,
+        "created_at": anomaly.created_at,
+    }
+    recoverability = build_recoverability_payload(anomaly_payload)
+    if not bool(recoverability.get("claim_draft_allowed")):
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Claim drafting is not allowed for this anomaly recoverability class",
+                "recoverability_class": (recoverability.get("recoverability") or {}).get("recoverability_class"),
+                "recommended_action": (recoverability.get("recoverability") or {}).get("recommended_action"),
+                "rule_applied": (recoverability.get("black_box_expiration") or {}).get("rule_applied"),
+            },
+        )
 
     claim = ClaimsOrchestrator(db).create_claim(
         anomaly_id=anomaly.id,

@@ -64,6 +64,7 @@ from XR7.models.contract import Contract
 from XR7.recovery.priority_ranker import build_action_queue
 from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
 from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.ugc.usage_monitor import UGCUsageMonitor
 from XR7.ugc.global_scanner import GlobalUGCScanner
@@ -157,6 +158,7 @@ class DashboardEngine:
         metadata_health_prevention = self._metadata_health_prevention_section(artist_id)
         post_repair_forecast = self._post_repair_forecast_section(artist_id)
         future_leakage_prevention = self._future_leakage_prevention_section(artist_id, works, anomalies, payments)
+        recoverability_breakdown = self._recoverability_breakdown_section(anomalies)
         repair_transparency_panel = self._repair_transparency_panel_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
         expected_value = self._expected_value_section(anomalies, claims, contracts, catalog_health)
@@ -187,6 +189,13 @@ class DashboardEngine:
             "forecasted_royalties_post_repair": post_repair_forecast,
             "forecast_disclaimer": post_repair_forecast.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
             "future_leakage_prevention": future_leakage_prevention,
+            "recoverability_breakdown": recoverability_breakdown,
+            "recoverable_vs_expired": {
+                "recoverable_total": recoverability_breakdown.get("recoverable_total", 0.0),
+                "expired_total": recoverability_breakdown.get("expired_total", 0.0),
+            },
+            "copyright_recoverable": recoverability_breakdown.get("copyright_recoverable", {}),
+            "contract_recoverable": recoverability_breakdown.get("contract_recoverable", {}),
             "repair_transparency_panel": repair_transparency_panel,
             "catalog_health": catalog_health,
             "catalog_segments": segment_insight,
@@ -846,8 +855,36 @@ class DashboardEngine:
             2,
         )
 
+        expired_anomaly_count = 0
+        expired_estimated_total = 0.0
+        for anomaly in anomalies:
+            payload = build_recoverability_payload(
+                {
+                    "id": anomaly.id,
+                    "artist_id": anomaly.artist_id,
+                    "category": str(anomaly.category),
+                    "subtype": anomaly.subtype,
+                    "severity": str(anomaly.severity),
+                    "estimated_recoverable": anomaly.estimated_recoverable,
+                    "confidence_score": anomaly.confidence_score,
+                    "time_window_start": anomaly.time_window_start,
+                    "time_window_end": anomaly.time_window_end,
+                    "description": anomaly.description,
+                    "feature_snapshot": anomaly.feature_snapshot,
+                    "created_at": anomaly.created_at,
+                }
+            )
+            recoverability_class = str((payload.get("recoverability") or {}).get("recoverability_class") or "")
+            if recoverability_class == "Expired (Black-Box Redistributed)":
+                expired_anomaly_count += 1
+                expired_estimated_total += float(anomaly.estimated_recoverable or 0.0)
+
         return {
             "predicted_leakage_avoided": predicted_avoided,
+            "expired_anomalies_recycled_into_prevention": {
+                "count": expired_anomaly_count,
+                "historical_value_reference": round(expired_estimated_total, 2),
+            },
             "recommended_repairs": [
                 {
                     "work_id": p.work_id,
@@ -865,6 +902,67 @@ class DashboardEngine:
                 }
                 for i in auto_applied[:20]
             ],
+        }
+
+    def _recoverability_breakdown_section(self, anomalies: list[Anomaly]) -> dict[str, Any]:
+        by_class: dict[str, dict[str, Any]] = {}
+        for anomaly in anomalies:
+            payload = build_recoverability_payload(
+                {
+                    "id": anomaly.id,
+                    "artist_id": anomaly.artist_id,
+                    "category": str(anomaly.category),
+                    "subtype": anomaly.subtype,
+                    "severity": str(anomaly.severity),
+                    "estimated_recoverable": anomaly.estimated_recoverable,
+                    "confidence_score": anomaly.confidence_score,
+                    "time_window_start": anomaly.time_window_start,
+                    "time_window_end": anomaly.time_window_end,
+                    "description": anomaly.description,
+                    "feature_snapshot": anomaly.feature_snapshot,
+                    "created_at": anomaly.created_at,
+                }
+            )
+            cls = str((payload.get("recoverability") or {}).get("recoverability_class") or "Unclassified")
+            if cls not in by_class:
+                by_class[cls] = {
+                    "count": 0,
+                    "estimated_recoverable": 0.0,
+                    "examples": [],
+                }
+            by_class[cls]["count"] += 1
+            by_class[cls]["estimated_recoverable"] += float(anomaly.estimated_recoverable or 0.0)
+            if len(by_class[cls]["examples"]) < 5:
+                by_class[cls]["examples"].append(
+                    {
+                        "anomaly_id": anomaly.id,
+                        "subtype": anomaly.subtype,
+                        "rule_applied": (payload.get("black_box_expiration") or {}).get("rule_applied"),
+                    }
+                )
+
+        for summary in by_class.values():
+            summary["estimated_recoverable"] = round(float(summary["estimated_recoverable"]), 2)
+
+        recoverable_total = sum(v["estimated_recoverable"] for k, v in by_class.items() if k != "Expired (Black-Box Redistributed)")
+        expired_total = float((by_class.get("Expired (Black-Box Redistributed)") or {}).get("estimated_recoverable") or 0.0)
+        copyright_data = by_class.get("Recoverable via Copyright Damages") or {
+            "count": 0,
+            "estimated_recoverable": 0.0,
+            "examples": [],
+        }
+        contract_data = by_class.get("Potentially Recoverable (Contract-Based)") or {
+            "count": 0,
+            "estimated_recoverable": 0.0,
+            "examples": [],
+        }
+
+        return {
+            "by_class": by_class,
+            "recoverable_total": round(float(recoverable_total), 2),
+            "expired_total": round(expired_total, 2),
+            "copyright_recoverable": copyright_data,
+            "contract_recoverable": contract_data,
         }
 
     def _repair_transparency_panel_section(self, artist_id: str) -> dict[str, Any]:

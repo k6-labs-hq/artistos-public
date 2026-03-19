@@ -17217,6 +17217,569 @@
         }
       }
     },
+    "/invites/generate": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Generate Invite",
+        "description": "Generate and send a personalized invite.\n\nThis endpoint creates a new invite token and prepares it for sending\nvia email, Instagram DM, SMS, or manual distribution.\n\nThe invite link will direct the recipient to a premium onboarding\nportal pre-populated with their name.",
+        "operationId": "generate_invite_invites_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteWithTokenSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/validate": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Validate Invite",
+        "description": "Validate an invite token and check eligibility.\n\nThis is called by the frontend when the user clicks the invite link.\nIt verifies the JWT signature, expiration, and database status.\n\nReturns:\n- is_valid: boolean\n- invite_id: the invite ID (if found)\n- recipient_name: the invitee's name for personalization\n- error: error message (if not valid)",
+        "operationId": "validate_invite_invites_validate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteValidationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/open": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Open Invite",
+        "description": "Record that an invite link was opened (click-through tracking).\n\nCalled when the user clicks the invite link and the welcome screen\nis displayed.",
+        "operationId": "open_invite_invites_open_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteValidateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/redeem": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Redeem Invite",
+        "description": "Redeem an invite and link it to a newly created artist account.\n\nCalled after the user completes onboarding and an artist record\nis created. The invite is marked as redeemed (single-use) and linked\nto the artist.",
+        "operationId": "redeem_invite_invites_redeem_post",
+        "parameters": [
+          {
+            "name": "invite_token",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Invite Token"
+            }
+          },
+          {
+            "name": "artist_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/{invite_id}": {
+      "get": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Get Invite",
+        "description": "Get invite details by ID.\n\nAccessible after validation or by admins.",
+        "operationId": "get_invite_invites__invite_id__get",
+        "parameters": [
+          {
+            "name": "invite_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Invite Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/": {
+      "get": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "List Invites",
+        "description": "List invites (admin/dashboard endpoint).\n\nOptionally filter by status, campaign, or VIP flag.",
+        "operationId": "list_invites_invites__get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/InviteStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "campaign",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Campaign"
+            }
+          },
+          {
+            "name": "is_vip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Is Vip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Invites Invites  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/{invite_id}/revoke": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Revoke Invite",
+        "description": "Revoke an invite (admin endpoint).\n\nOnce revoked, the invite cannot be redeemed.",
+        "operationId": "revoke_invite_invites__invite_id__revoke_post",
+        "parameters": [
+          {
+            "name": "invite_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Invite Id"
+            }
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Reason"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/analytics/summary": {
+      "get": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Get Analytics",
+        "description": "Get invite analytics for dashboard.\n\nReturns:\n- invites_created\n- invites_sent\n- invites_opened\n- invites_redeemed\n- open_rate_percent\n- redemption_rate_percent\n- role_distribution",
+        "operationId": "get_analytics_invites_analytics_summary_get",
+        "parameters": [
+          {
+            "name": "campaign",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Campaign"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 30,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Analytics Invites Analytics Summary Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/email-trigger": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Email Triggered Invite",
+        "description": "Auto-generate invite when artist emails inquiry.\n\nWebhook: called by email parsing service when someone\nemails XR7 with keywords like \"analysis\", \"royalties\", \"help\".\n\nAutomatically:\n1. Creates an invite\n2. Sends personalized reply with invite link\n3. Tracks campaign as \"email_inquiry\"",
+        "operationId": "email_triggered_invite_invites_email_trigger_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EmailTriggeredInviteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Email Triggered Invite Invites Email Trigger Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/instagram-webhook": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Instagram Dm Webhook",
+        "description": "Handle Instagram DM webhooks for auto-responders.\n\nWhen someone DMs @yourartistpage with keywords\n(\"analysis\", \"royalties\", \"help\", \"XR7\", \"TV/Film\", \"music\"),\nautomatically:\n1. Parse sender name from IG profile\n2. Create invite\n3. Send auto-reply with personalized link\n4. Track as \"instagram_dm\" channel\n\nIntegration: Connect to Instagram Business Graph API webhook.",
+        "operationId": "instagram_dm_webhook_invites_instagram_webhook_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Instagram Dm Webhook Invites Instagram Webhook Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invites/dashboard/quick-generate": {
+      "post": {
+        "tags": [
+          "invites"
+        ],
+        "summary": "Dashboard Quick Generate",
+        "description": "Quick invite generation for internal dashboard (Matt's admin panel).\n\nOne-click invite creation with instant link copy.",
+        "operationId": "dashboard_quick_generate_invites_dashboard_quick_generate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DashboardQuickGenerateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Dashboard Quick Generate Invites Dashboard Quick Generate Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -19526,6 +20089,45 @@
         ],
         "title": "CurrencyTaxEstimateRequest"
       },
+      "DashboardQuickGenerateRequest": {
+        "properties": {
+          "recipient_name": {
+            "type": "string",
+            "title": "Recipient Name"
+          },
+          "recipient_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/InviteRole",
+            "default": "artist"
+          },
+          "campaign": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient_name"
+        ],
+        "title": "DashboardQuickGenerateRequest"
+      },
       "DecideReviewItemRequest": {
         "properties": {
           "decision": {
@@ -19615,6 +20217,35 @@
           "markdown"
         ],
         "title": "DemandLetterResponse"
+      },
+      "EmailTriggeredInviteRequest": {
+        "properties": {
+          "sender_email": {
+            "type": "string",
+            "title": "Sender Email"
+          },
+          "sender_name": {
+            "type": "string",
+            "title": "Sender Name"
+          },
+          "message_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message Body"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sender_email",
+          "sender_name"
+        ],
+        "title": "EmailTriggeredInviteRequest"
       },
       "EstimateRequest": {
         "properties": {
@@ -20349,6 +20980,91 @@
         ],
         "title": "ImmutableLedgerEntrySchema"
       },
+      "InviteChannel": {
+        "type": "string",
+        "enum": [
+          "email",
+          "instagram_dm",
+          "sms",
+          "manual"
+        ],
+        "title": "InviteChannel",
+        "description": "How the invite was sent."
+      },
+      "InviteGenerateRequest": {
+        "properties": {
+          "recipient_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Recipient Name"
+          },
+          "recipient_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Email"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/InviteChannel",
+            "default": "email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/InviteRole",
+            "default": "artist"
+          },
+          "is_vip": {
+            "type": "boolean",
+            "title": "Is Vip",
+            "default": false
+          },
+          "custom_message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Custom Message"
+          },
+          "referring_agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referring Agent Id"
+          },
+          "campaign": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recipient_name"
+        ],
+        "title": "InviteGenerateRequest",
+        "description": "Request to generate/send an invite."
+      },
       "InviteRequest": {
         "properties": {
           "email": {
@@ -20361,6 +21077,348 @@
           "email"
         ],
         "title": "InviteRequest"
+      },
+      "InviteRole": {
+        "type": "string",
+        "enum": [
+          "artist",
+          "writer",
+          "director",
+          "actor",
+          "studio",
+          "distributor",
+          "manager",
+          "agent",
+          "analyst"
+        ],
+        "title": "InviteRole",
+        "description": "Role the invitee will assume upon redemption."
+      },
+      "InviteSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "recipient_name": {
+            "type": "string",
+            "title": "Recipient Name"
+          },
+          "recipient_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Email"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InviteStatus"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/InviteChannel"
+          },
+          "role": {
+            "$ref": "#/components/schemas/InviteRole"
+          },
+          "is_vip": {
+            "type": "boolean",
+            "title": "Is Vip"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
+          },
+          "redeemed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redeemed At"
+          },
+          "token_expiration": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Token Expiration"
+          },
+          "campaign": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign"
+          },
+          "referring_agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referring Agent Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recipient_name",
+          "recipient_email",
+          "status",
+          "channel",
+          "role",
+          "is_vip",
+          "created_at",
+          "sent_at",
+          "opened_at",
+          "redeemed_at",
+          "token_expiration",
+          "campaign",
+          "referring_agent_id"
+        ],
+        "title": "InviteSchema",
+        "description": "Invite response model."
+      },
+      "InviteStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "sent",
+          "opened",
+          "redeemed",
+          "expired",
+          "revoked"
+        ],
+        "title": "InviteStatus",
+        "description": "Invite lifecycle status."
+      },
+      "InviteValidateRequest": {
+        "properties": {
+          "invite_token": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Invite Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invite_token"
+        ],
+        "title": "InviteValidateRequest",
+        "description": "Request to validate an invite token."
+      },
+      "InviteValidationResponse": {
+        "properties": {
+          "is_valid": {
+            "type": "boolean",
+            "title": "Is Valid"
+          },
+          "invite_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invite Id"
+          },
+          "recipient_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Name"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_valid"
+        ],
+        "title": "InviteValidationResponse",
+        "description": "Response from invite validation."
+      },
+      "InviteWithTokenSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "recipient_name": {
+            "type": "string",
+            "title": "Recipient Name"
+          },
+          "recipient_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient Email"
+          },
+          "status": {
+            "$ref": "#/components/schemas/InviteStatus"
+          },
+          "channel": {
+            "$ref": "#/components/schemas/InviteChannel"
+          },
+          "role": {
+            "$ref": "#/components/schemas/InviteRole"
+          },
+          "is_vip": {
+            "type": "boolean",
+            "title": "Is Vip"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "sent_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sent At"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
+          },
+          "redeemed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Redeemed At"
+          },
+          "token_expiration": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Token Expiration"
+          },
+          "campaign": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Campaign"
+          },
+          "referring_agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Referring Agent Id"
+          },
+          "invite_token": {
+            "type": "string",
+            "title": "Invite Token"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "recipient_name",
+          "recipient_email",
+          "status",
+          "channel",
+          "role",
+          "is_vip",
+          "created_at",
+          "sent_at",
+          "opened_at",
+          "redeemed_at",
+          "token_expiration",
+          "campaign",
+          "referring_agent_id",
+          "invite_token"
+        ],
+        "title": "InviteWithTokenSchema",
+        "description": "Invite response with token (only after generation)."
       },
       "LedgerIngestRequest": {
         "properties": {

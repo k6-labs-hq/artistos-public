@@ -16,6 +16,7 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.statement import Statement
 from XR7.models.tvfilm_portfolio_job import TVFilmPortfolioJob, TVFilmPortfolioJobStatus
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.tvfilm_compensation_engine import calculate_expected_compensation
 from XR7.services.tvfilm_evidence_packets import (
@@ -269,6 +270,8 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
 
     created = 0
     scanned_rows = 0
+    recoverability_counts: dict[str, int] = {}
+    recoverability_preview: list[dict[str, Any]] = []
 
     for st in statements:
         payload = json.loads(st.ingestion_metadata_json or "{}")
@@ -318,6 +321,37 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
                     ),
                 )
             )
+
+            recoverability = build_recoverability_payload(
+                {
+                    "artist_id": artist_id,
+                    "category": str(ANOMALY_TO_CATEGORY[anomaly_group]),
+                    "subtype": subtype,
+                    "severity": str(severity),
+                    "estimated_recoverable": estimated,
+                    "confidence_score": round(confidence, 4),
+                    "territory": row.get("market"),
+                    "description": f"TV/Film anomaly detected for production {row.get('production_id')}",
+                    "event_date": row.get("statement_period_end") or row.get("event_date"),
+                    "feature_snapshot": {
+                        "union": row.get("union"),
+                        "platform": row.get("platform"),
+                        "production_id": row.get("production_id"),
+                    },
+                }
+            )
+            recoverability_class = str((recoverability.get("recoverability") or {}).get("recoverability_class") or "Unknown")
+            recoverability_counts[recoverability_class] = recoverability_counts.get(recoverability_class, 0) + 1
+            if len(recoverability_preview) < 25:
+                recoverability_preview.append(
+                    {
+                        "subtype": subtype,
+                        "estimated_recoverable": round(estimated, 2),
+                        "union": row.get("union"),
+                        "platform": row.get("platform"),
+                        **recoverability,
+                    }
+                )
             created += 1
 
     db.commit()
@@ -326,6 +360,8 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
         "signals_scanned": scanned_rows,
         "anomalies_created": created,
         "anomaly_rule_catalog": ANOMALY_RULE_CATALOG,
+        "recoverability_summary": recoverability_counts,
+        "recoverability_preview": recoverability_preview,
     })
 
 
@@ -345,7 +381,34 @@ def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Se
         raise HTTPException(status_code=400, detail="No anomalies available to draft claims")
 
     drafted_ids: list[str] = []
+    skipped: list[dict[str, Any]] = []
     for anomaly in anomalies:
+        recoverability_payload = build_recoverability_payload(
+            {
+                "id": anomaly.id,
+                "artist_id": anomaly.artist_id,
+                "category": str(anomaly.category),
+                "subtype": anomaly.subtype,
+                "severity": str(anomaly.severity),
+                "estimated_recoverable": anomaly.estimated_recoverable,
+                "confidence_score": anomaly.confidence_score,
+                "time_window_start": anomaly.time_window_start,
+                "time_window_end": anomaly.time_window_end,
+                "description": anomaly.description,
+                "feature_snapshot": anomaly.feature_snapshot,
+                "created_at": anomaly.created_at,
+            }
+        )
+        if not bool(recoverability_payload.get("claim_draft_allowed")):
+            skipped.append(
+                {
+                    "anomaly_id": anomaly.id,
+                    "recoverability_class": (recoverability_payload.get("recoverability") or {}).get("recoverability_class"),
+                    "rule_applied": (recoverability_payload.get("black_box_expiration") or {}).get("rule_applied"),
+                }
+            )
+            continue
+
         claim = Claim(
             artist_id=artist_id,
             anomaly_id=anomaly.id,
@@ -377,6 +440,7 @@ def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Se
         "claims_drafted": len(drafted_ids),
         "claim_ids": drafted_ids,
         "evidence_template": payload.union_template,
+        "skipped": skipped,
     })
 
 
@@ -392,7 +456,33 @@ def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftReques
         raise HTTPException(status_code=400, detail="No anomalies available to draft claims")
 
     drafted: list[dict[str, Any]] = []
+    skipped: list[dict[str, Any]] = []
     for anomaly in anomalies:
+        recoverability_payload = build_recoverability_payload(
+            {
+                "id": anomaly.id,
+                "artist_id": anomaly.artist_id,
+                "category": str(anomaly.category),
+                "subtype": anomaly.subtype,
+                "severity": str(anomaly.severity),
+                "estimated_recoverable": anomaly.estimated_recoverable,
+                "confidence_score": anomaly.confidence_score,
+                "time_window_start": anomaly.time_window_start,
+                "time_window_end": anomaly.time_window_end,
+                "description": anomaly.description,
+                "feature_snapshot": anomaly.feature_snapshot,
+                "created_at": anomaly.created_at,
+            }
+        )
+        if not bool(recoverability_payload.get("claim_draft_allowed")):
+            skipped.append(
+                {
+                    "anomaly_id": anomaly.id,
+                    "recoverability_class": (recoverability_payload.get("recoverability") or {}).get("recoverability_class"),
+                }
+            )
+            continue
+
         feature_snapshot = json.loads(anomaly.feature_snapshot or "{}")
         template = str(feature_snapshot.get("recommended_template") or "STUDIO_GENERIC")
         claim = Claim(
@@ -425,6 +515,7 @@ def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftReques
         "claims_drafted": len(drafted),
         "drafts": drafted,
         "template_groups": template_groups,
+        "skipped": skipped,
     })
 
 
@@ -559,10 +650,42 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
     ]
 
     role_breakdown: dict[str, float] = {}
+    recoverability_by_class: dict[str, dict[str, Any]] = {}
     for anomaly in anomalies:
         snap = json.loads(anomaly.feature_snapshot or "{}")
         role = str(snap.get("role") or "Unspecified")
         role_breakdown[role] = round(role_breakdown.get(role, 0.0) + float(anomaly.estimated_recoverable or 0.0), 2)
+
+        recoverability = build_recoverability_payload(
+            {
+                "id": anomaly.id,
+                "artist_id": anomaly.artist_id,
+                "category": str(anomaly.category),
+                "subtype": anomaly.subtype,
+                "severity": str(anomaly.severity),
+                "estimated_recoverable": anomaly.estimated_recoverable,
+                "confidence_score": anomaly.confidence_score,
+                "time_window_start": anomaly.time_window_start,
+                "time_window_end": anomaly.time_window_end,
+                "description": anomaly.description,
+                "feature_snapshot": anomaly.feature_snapshot,
+                "created_at": anomaly.created_at,
+            }
+        )
+        cls = str((recoverability.get("recoverability") or {}).get("recoverability_class") or "Unclassified")
+        if cls not in recoverability_by_class:
+            recoverability_by_class[cls] = {"count": 0, "amount": 0.0}
+        recoverability_by_class[cls]["count"] += 1
+        recoverability_by_class[cls]["amount"] = round(
+            float(recoverability_by_class[cls]["amount"]) + float(anomaly.estimated_recoverable or 0.0),
+            2,
+        )
+
+    recoverable_amount = round(
+        sum(v["amount"] for k, v in recoverability_by_class.items() if k != "Expired (Black-Box Redistributed)"),
+        2,
+    )
+    expired_amount = round(float((recoverability_by_class.get("Expired (Black-Box Redistributed)") or {}).get("amount") or 0.0), 2)
 
     return inject_branding_metadata(db, {
         "artist_id": artist_id,
@@ -575,10 +698,35 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
             "metadata_health_tvfilm": {"open_issues": metadata_health_total, "status": "healthy" if metadata_health_total < 5 else "at_risk"},
             "backend_participation": {"active_claims": backend_claims},
             "agency_portfolio_view": {"available": True, "path": "/tvfilm/enterprise/portfolio/{job_id}"},
+            "recoverability": {
+                "recoverable_amount": recoverable_amount,
+                "expired_amount": expired_amount,
+                "by_class": recoverability_by_class,
+            },
         },
         "trust_layer": {
             "logo_state": "glowing",
             "what_xr7_is_doing_now": trust_stream,
+            "recoverability_explainer": {
+                "here_is_what_you_can_still_recover": {
+                    "amount": recoverable_amount,
+                    "why": "Within claim windows or contract/damages pathways.",
+                    "next": "XR7 drafts claims, evidence packets, and negotiation playbooks.",
+                },
+                "here_is_what_expired": {
+                    "amount": expired_amount,
+                    "why": "Black-box redistribution windows elapsed under society/union rules.",
+                    "rule_note": "Examples: ASCAP 2-3 years, MLC 3 years, foreign residual societies 6-18 months.",
+                },
+                "here_is_what_xr7_prevents_going_forward": [
+                    "Metadata repair",
+                    "Identifier normalization",
+                    "Cross-system linking",
+                    "Future leakage prevention scoring",
+                    "UGC fingerprinting",
+                    "Foreign society crosswalks",
+                ],
+            },
         },
         "role_breakdown": role_breakdown,
     })
@@ -598,6 +746,23 @@ def tvfilm_trust_explain(payload: TVFilmTrustExplainRequest):
             "Forecasting 30/60/90/180-day recovery with confidence bands.",
         ],
         "plain_language": f"XR7 is checking every payment line tied to your {role} work, showing exactly where money is missing, why it is missing, and what claim action is being prepared.",
+        "recoverability_explainer": {
+            "what_you_can_still_recover": "Within claim window anomalies, plus contract and damages pathways.",
+            "what_expired": "Black-box redistributed unmatched funds after payer/society windows.",
+            "why": [
+                "ASCAP redistributes unmatched royalties after 2-3 years.",
+                "MLC redistributes unmatched digital mechanicals after 3 years.",
+                "Foreign societies often redistribute after 6-18 months.",
+            ],
+            "what_xr7_prevents_going_forward": [
+                "Metadata repair",
+                "Identifier normalization",
+                "Cross-system linking",
+                "Future leakage prevention",
+                "UGC fingerprinting",
+                "Foreign society crosswalks",
+            ],
+        },
         "agency_language": (
             "XR7 is running portfolio-scale reconciliation across roster, production, union, and platform dimensions with audit-grade evidence hashes."
             if payload.agency_mode
