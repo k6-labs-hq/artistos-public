@@ -49,7 +49,7 @@ def _test_coverage():
     """Count test functions across tests/*.py. Target = 300 for 100%."""
     tests_dir = ROOT / "tests"
     count = sum(
-        len(re.findall(r"^def test_", f.read_text(encoding="utf-8"), re.MULTILINE))
+        len(re.findall(r"^\s*def test_", f.read_text(encoding="utf-8"), re.MULTILINE))
         for f in tests_dir.glob("test_*.py")
     )
     target = TEST_FUNCTION_TARGET
