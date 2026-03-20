@@ -1,0 +1,5 @@
+cluster_name           = "xr7-dev"
+cluster_endpoint       = "https://example-dev-k8s-endpoint"
+cluster_ca_certificate = "<ca-cert-pem>"
+cluster_token          = "<token>"
+app_image              = "ghcr.io/mkallberg21/artistos-api:dev"

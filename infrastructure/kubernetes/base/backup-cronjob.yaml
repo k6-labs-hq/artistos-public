@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: xr7-pg-backup
+  namespace: xr7
+spec:
+  schedule: "0 3 * * *"
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 7
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: postgres:16
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  pg_dump "$DATABASE_URL" | gzip > /backup/"$(date +%F)"-xr7.sql.gz
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: xr7-runtime-secrets
+                      key: database_url
+              volumeMounts:
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: backup
+              persistentVolumeClaim:
+                claimName: xr7-backup-pvc

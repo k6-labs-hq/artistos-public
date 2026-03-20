@@ -1,0 +1,50 @@
+name: Progressive Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - prod
+      image_tag:
+        description: "Container tag to deploy"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
+
+      - name: Deploy baseline manifests
+        run: kubectl apply -k infrastructure/kubernetes/base
+
+      - name: Update API image
+        run: |
+          kubectl -n xr7 set image deployment/xr7-api api=ghcr.io/${{ github.repository_owner }}/artistos-api:${{ inputs.image_tag }}
+          kubectl -n xr7 set image deployment/xr7-worker worker=ghcr.io/${{ github.repository_owner }}/artistos-api:${{ inputs.image_tag }}
+          kubectl -n xr7 set image deployment/xr7-scheduler scheduler=ghcr.io/${{ github.repository_owner }}/artistos-api:${{ inputs.image_tag }}
+
+      - name: Canary health gate
+        run: |
+          kubectl -n xr7 rollout status deployment/xr7-api --timeout=180s
+          kubectl -n xr7 rollout status deployment/xr7-worker --timeout=180s
+
+      - name: SLO gate
+        run: /usr/bin/env bash scripts/ops/slo_gate.sh

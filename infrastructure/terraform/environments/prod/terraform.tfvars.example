@@ -1,0 +1,5 @@
+cluster_name           = "xr7-prod"
+cluster_endpoint       = "https://example-prod-k8s-endpoint"
+cluster_ca_certificate = "<ca-cert-pem>"
+cluster_token          = "<token>"
+app_image              = "ghcr.io/mkallberg21/artistos-api:prod"

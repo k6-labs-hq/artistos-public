@@ -1,0 +1,25 @@
+groups:
+  - name: xr7-slo
+    interval: 30s
+    rules:
+      - record: xr7:http_error_ratio_5m
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          /
+          sum(rate(http_requests_total[5m]))
+      - alert: XR7HighApiErrorRate
+        expr: xr7:http_error_ratio_5m > 0.02
+        for: 10m
+        labels:
+          severity: page
+        annotations:
+          summary: "XR7 API error ratio exceeds 2%"
+          runbook: "infrastructure/runbooks/incident_response.md"
+      - alert: XR7WorkerBacklogHigh
+        expr: celery_queue_depth > 500
+        for: 15m
+        labels:
+          severity: page
+        annotations:
+          summary: "XR7 Celery queue depth exceeded 500"
+          runbook: "infrastructure/runbooks/worker_backlog.md"

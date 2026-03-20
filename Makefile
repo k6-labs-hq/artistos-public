@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill
 
 BASE_REF ?= origin/main
 
@@ -78,3 +78,24 @@ worker:
 
 beat:
 	celery -A XR7.celery_app:celery_app beat --loglevel=INFO
+
+infra-plan-dev:
+	terraform -chdir=infrastructure/terraform/environments/dev init -backend=false
+	terraform -chdir=infrastructure/terraform/environments/dev validate
+
+infra-plan-staging:
+	terraform -chdir=infrastructure/terraform/environments/staging init -backend=false
+	terraform -chdir=infrastructure/terraform/environments/staging validate
+
+infra-plan-prod:
+	terraform -chdir=infrastructure/terraform/environments/prod init -backend=false
+	terraform -chdir=infrastructure/terraform/environments/prod validate
+
+k8s-apply-base:
+	kubectl apply -k infrastructure/kubernetes/base
+
+slo-gate:
+	bash scripts/ops/slo_gate.sh
+
+restore-drill:
+	bash scripts/ops/restore_drill.sh
