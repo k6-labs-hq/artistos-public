@@ -2,16 +2,16 @@
 
 <!-- COMPLETION_START -->
 
-## Project Completion: 79%
+## Project Completion: 82%
 
-`████████████████░░░░` **79%** — 2026-03-20
+`████████████████░░░░` **82%** — 2026-03-20
 
 | Signal | Detail | Weight |
 |--------|--------|--------|
-| 🚀 Market Readiness | 11 ✅&nbsp; 1 🔑&nbsp; 4 ⚠️&nbsp; (72% of 16 components) | 45% |
+| 🚀 Market Readiness | 17 ✅&nbsp; 1 🔑&nbsp; 4 ⚠️&nbsp; (80% of 22 components) | 45% |
 | 🧪 Test Coverage | 196/300 test functions (65%) | 25% |
 | 📚 Documentation | 52/52 docs complete (100%) | 20% |
-| ⚙️  Infrastructure | 8/8 checks passing | 10% |
+| ⚙️  Infrastructure | 27/27 checks passing | 10% |
 
 <!-- COMPLETION_END -->
 
@@ -79,6 +79,12 @@ POST /tvfilm/trust/explain
 | **DSP API Connectors** | ⚠️ Pending | DSPs don't expose royalty data via API — use distributor CSV exports |
 | **Platform API Connectors** | ⚠️ Pending | YouTube CMS requires Google partnership; TikTok/IG require approved developer access |
 | **Ticketing API Connectors** | ⚠️ Pending | Ticketmaster/AXS require formal partnership agreements |
+| **Kubernetes Runtime** | ✅ Ready | Base manifests + env overlays for dev/staging/prod with autoscaling, ingress, backup cron, network policies |
+| **Infrastructure as Code** | ✅ Ready | AWS foundation module: VPC, EKS, RDS, ElastiCache Redis, S3, KMS via Terraform — full code |
+| **Progressive Deployment** | ✅ Ready | Overlay-based kustomize deploys, GitHub Actions SLO-gated promotion workflow |
+| **Observability Pipeline** | ✅ Ready | OTel collector, Prometheus SLO rules, Grafana dashboard — wired to API and worker services |
+| **Disaster Recovery** | ✅ Ready | Nightly backup cron, weekly restore drill tooling, DR and incident runbooks |
+| **Platform Security** | ✅ Ready | Network policies, pod security, dependency audit (pip-audit) and CVE scan (Trivy) in CI |
 
 ---
 

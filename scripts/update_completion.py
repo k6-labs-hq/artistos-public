@@ -73,16 +73,42 @@ def _doc_completeness():
 
 
 def _infrastructure():
-    """Presence of key project files."""
+    """Presence of key project files and platform infrastructure."""
+    k8s_overlays = (ROOT / "infrastructure/kubernetes/overlays")
     checks = {
-        "Dockerfile":          (ROOT / "Dockerfile").exists(),
-        "docker-compose.yml":  (ROOT / "docker-compose.yml").exists(),
-        "pyproject.toml":      (ROOT / "pyproject.toml").exists(),
-        "CI workflows":        any((ROOT / ".github/workflows").glob("*.yml")),
-        "OpenAPI spec":        (ROOT / "openapi/openapi.json").exists(),
-        "TS SDK lockfile":     (ROOT / "sdk/typescript/package-lock.json").exists(),
-        "Alembic migrations":  any((ROOT / "alembic/versions").glob("[0-9]*.py")),
-        "requirements.txt":    (ROOT / "requirements.txt").exists(),
+        # app baseline
+        "Dockerfile":                 (ROOT / "Dockerfile").exists(),
+        "docker-compose.yml":         (ROOT / "docker-compose.yml").exists(),
+        "pyproject.toml":             (ROOT / "pyproject.toml").exists(),
+        "CI workflows":               any((ROOT / ".github/workflows").glob("*.yml")),
+        "OpenAPI spec":               (ROOT / "openapi/openapi.json").exists(),
+        "TS SDK lockfile":            (ROOT / "sdk/typescript/package-lock.json").exists(),
+        "Alembic migrations":         any((ROOT / "alembic/versions").glob("[0-9]*.py")),
+        "requirements.txt":           (ROOT / "requirements.txt").exists(),
+        # kubernetes platform
+        "K8s base manifests":         (ROOT / "infrastructure/kubernetes/base/kustomization.yaml").exists(),
+        "K8s env overlays":           all((k8s_overlays / e / "kustomization.yaml").exists() for e in ["dev", "staging", "prod"]),
+        "K8s autoscaling":            (ROOT / "infrastructure/kubernetes/base/autoscaling.yaml").exists(),
+        "K8s backup cron":            (ROOT / "infrastructure/kubernetes/base/backup-cronjob.yaml").exists(),
+        "K8s security policies":      (ROOT / "infrastructure/kubernetes/base/security.yaml").exists(),
+        # terraform
+        "Terraform aws_foundation":   (ROOT / "infrastructure/terraform/modules/aws_foundation/main.tf").exists(),
+        "Terraform platform module":  (ROOT / "infrastructure/terraform/modules/platform/main.tf").exists(),
+        "Terraform dev env":          (ROOT / "infrastructure/terraform/environments/dev/main.tf").exists(),
+        "Terraform staging env":      (ROOT / "infrastructure/terraform/environments/staging/main.tf").exists(),
+        "Terraform prod env":         (ROOT / "infrastructure/terraform/environments/prod/main.tf").exists(),
+        # operations
+        "Deploy script":              (ROOT / "scripts/ops/deploy_env.sh").exists(),
+        "Bootstrap script":           (ROOT / "scripts/ops/bootstrap_env.sh").exists(),
+        "SLO gate script":            (ROOT / "scripts/ops/slo_gate.sh").exists(),
+        "DR restore drill":           (ROOT / "scripts/ops/restore_drill.sh").exists(),
+        # observability
+        "OTel collector config":      (ROOT / "infrastructure/observability/otel/collector-config.yaml").exists(),
+        "Prometheus SLO rules":       (ROOT / "infrastructure/observability/prometheus/slo-rules.yaml").exists(),
+        "Grafana dashboard":          (ROOT / "infrastructure/observability/grafana/xr7-overview-dashboard.json").exists(),
+        # incident runbooks
+        "Incident runbook":           (ROOT / "infrastructure/runbooks/incident_response.md").exists(),
+        "DR runbook":                 (ROOT / "infrastructure/runbooks/disaster_recovery.md").exists(),
     }
     present = sum(checks.values())
     total   = len(checks)
