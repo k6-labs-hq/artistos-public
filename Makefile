@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down docker-build worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
 
 BASE_REF ?= origin/main
 
@@ -72,6 +72,10 @@ up:
 
 down:
 	docker compose down
+
+docker-build:
+	docker buildx build --load -t xr7:latest .
+	docker image ls xr7:latest
 
 worker:
 	celery -A XR7.celery_app:celery_app worker --loglevel=INFO
