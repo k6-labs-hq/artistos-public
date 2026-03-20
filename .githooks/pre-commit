@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(git rev-parse --show-toplevel)"
+cd "$repo_root"
+
+python_bin="${PYTHON:-}"
+if [[ -z "$python_bin" ]]; then
+	if [[ -x "$repo_root/.venv/bin/python" ]]; then
+		python_bin="$repo_root/.venv/bin/python"
+	else
+		python_bin="python3"
+	fi
+fi
+
+"$python_bin" scripts/update_completion.py
+git add README.md

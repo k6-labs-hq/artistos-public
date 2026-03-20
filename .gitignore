@@ -29,3 +29,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local SQLite dev database
+XR7.db

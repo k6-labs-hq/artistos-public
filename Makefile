@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks
 
 BASE_REF ?= origin/main
 
@@ -47,6 +47,13 @@ api-reference:
 
 docs-check: openapi api-reference
 	git diff --exit-code -- openapi/openapi.json docs/api/reference.md
+
+update-completion:
+	$(PYTHON) scripts/update_completion.py
+
+install-git-hooks:
+	git config core.hooksPath .githooks
+	chmod +x .githooks/pre-commit
 
 sdk-python:
 	./scripts/generate_sdk_python.sh
