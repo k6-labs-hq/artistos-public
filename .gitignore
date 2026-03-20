@@ -32,3 +32,7 @@ Thumbs.db
 
 # Local SQLite dev database
 XR7.db
+
+# Infrastructure secrets/state inputs
+infrastructure/secrets/runtime.env
+infrastructure/terraform/environments/*/terraform.tfvars

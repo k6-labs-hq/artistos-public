@@ -32,19 +32,8 @@ jobs:
           mkdir -p ~/.kube
           echo "${{ secrets.KUBECONFIG }}" > ~/.kube/config
 
-      - name: Deploy baseline manifests
-        run: kubectl apply -k infrastructure/kubernetes/base
-
-      - name: Update API image
-        run: |
-          kubectl -n xr7 set image deployment/xr7-api api=ghcr.io/${{ github.repository_owner }}/artistos-api:${{ inputs.image_tag }}
-          kubectl -n xr7 set image deployment/xr7-worker worker=ghcr.io/${{ github.repository_owner }}/artistos-api:${{ inputs.image_tag }}
-          kubectl -n xr7 set image deployment/xr7-scheduler scheduler=ghcr.io/${{ github.repository_owner }}/artistos-api:${{ inputs.image_tag }}
-
-      - name: Canary health gate
-        run: |
-          kubectl -n xr7 rollout status deployment/xr7-api --timeout=180s
-          kubectl -n xr7 rollout status deployment/xr7-worker --timeout=180s
+      - name: Deploy environment overlay
+        run: scripts/ops/deploy_env.sh ${{ inputs.environment }} ${{ inputs.image_tag }} xr7
 
       - name: SLO gate
         run: /usr/bin/env bash scripts/ops/slo_gate.sh

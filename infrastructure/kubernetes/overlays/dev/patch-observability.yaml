@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xr7-api
+  namespace: xr7
+spec:
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "true"
+    spec:
+      containers:
+        - name: api
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://opentelemetry-collector.xr7.svc.cluster.local:4317
+            - name: OTEL_SERVICE_NAME
+              value: xr7-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xr7-worker
+  namespace: xr7
+spec:
+  template:
+    metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-python: "true"
+    spec:
+      containers:
+        - name: worker
+          env:
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://opentelemetry-collector.xr7.svc.cluster.local:4317
+            - name: OTEL_SERVICE_NAME
+              value: xr7-worker

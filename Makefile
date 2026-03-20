@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret
 
 BASE_REF ?= origin/main
 
@@ -99,3 +99,24 @@ slo-gate:
 
 restore-drill:
 	bash scripts/ops/restore_drill.sh
+
+bootstrap-dev:
+	bash scripts/ops/bootstrap_env.sh dev infrastructure/terraform/environments/dev/terraform.tfvars
+
+bootstrap-staging:
+	bash scripts/ops/bootstrap_env.sh staging infrastructure/terraform/environments/staging/terraform.tfvars
+
+bootstrap-prod:
+	bash scripts/ops/bootstrap_env.sh prod infrastructure/terraform/environments/prod/terraform.tfvars
+
+deploy-dev:
+	bash scripts/ops/deploy_env.sh dev dev xr7
+
+deploy-staging:
+	bash scripts/ops/deploy_env.sh staging staging xr7
+
+deploy-prod:
+	bash scripts/ops/deploy_env.sh prod latest xr7
+
+apply-runtime-secret:
+	bash scripts/ops/apply_runtime_secret.sh xr7 infrastructure/secrets/runtime.env

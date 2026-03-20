@@ -30,3 +30,30 @@ jobs:
 
       - name: Terraform Validate
         run: terraform -chdir=infrastructure/terraform/environments/${{ matrix.env }} validate
+
+  kubernetes-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Validate kustomize overlays
+        run: |
+          kubectl kustomize infrastructure/kubernetes/overlays/dev > /tmp/dev.yaml
+          kubectl kustomize infrastructure/kubernetes/overlays/staging > /tmp/staging.yaml
+          kubectl kustomize infrastructure/kubernetes/overlays/prod > /tmp/prod.yaml
+
+  scripts-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Shell lint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+          shellcheck scripts/ops/*.sh

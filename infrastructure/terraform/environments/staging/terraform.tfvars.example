@@ -1,5 +1,12 @@
 cluster_name           = "xr7-staging"
-cluster_endpoint       = "https://example-staging-k8s-endpoint"
-cluster_ca_certificate = "<ca-cert-pem>"
-cluster_token          = "<token>"
+region                 = "us-east-1"
+vpc_cidr               = "10.80.0.0/16"
+private_subnets        = ["10.80.1.0/24", "10.80.2.0/24", "10.80.3.0/24"]
+public_subnets         = ["10.80.101.0/24", "10.80.102.0/24", "10.80.103.0/24"]
+db_name                = "xr7"
+db_username            = "xr7"
+db_password            = "replace-me"
 app_image              = "ghcr.io/mkallberg21/artistos-api:staging"
+tags = {
+	Owner = "platform"
+}

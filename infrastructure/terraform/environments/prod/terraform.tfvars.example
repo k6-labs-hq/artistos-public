@@ -1,5 +1,12 @@
 cluster_name           = "xr7-prod"
-cluster_endpoint       = "https://example-prod-k8s-endpoint"
-cluster_ca_certificate = "<ca-cert-pem>"
-cluster_token          = "<token>"
+region                 = "us-east-1"
+vpc_cidr               = "10.90.0.0/16"
+private_subnets        = ["10.90.1.0/24", "10.90.2.0/24", "10.90.3.0/24"]
+public_subnets         = ["10.90.101.0/24", "10.90.102.0/24", "10.90.103.0/24"]
+db_name                = "xr7"
+db_username            = "xr7"
+db_password            = "replace-me"
 app_image              = "ghcr.io/mkallberg21/artistos-api:prod"
+tags = {
+	Owner = "platform"
+}
