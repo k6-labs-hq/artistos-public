@@ -104,13 +104,13 @@ async def lifespan(app: FastAPI):
     import XR7.models.legal_defensibility_event  # noqa: F401
     import XR7.models.society_signal_log  # noqa: F401
     import XR7.models.vip  # noqa: F401
-        import XR7.models.notification_delivery_log  # noqa: F401
-        import XR7.models.case_room  # noqa: F401
-        import XR7.models.data_residency  # noqa: F401
-        import XR7.models.connector_sync_cursor  # noqa: F401
-        import XR7.models.webhook_event  # noqa: F401
-        import XR7.models.slo_metric  # noqa: F401
-        import XR7.models.batch_ingestion_job  # noqa: F401
+    import XR7.models.notification_delivery_log  # noqa: F401
+    import XR7.models.case_room  # noqa: F401
+    import XR7.models.data_residency  # noqa: F401
+    import XR7.models.connector_sync_cursor  # noqa: F401
+    import XR7.models.webhook_event  # noqa: F401
+    import XR7.models.slo_metric  # noqa: F401
+    import XR7.models.batch_ingestion_job  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 

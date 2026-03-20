@@ -12183,6 +12183,81 @@
         }
       }
     },
+    "/artists/{artist_id}/notifications/delivery-log": {
+      "get": {
+        "tags": [
+          "notifications"
+        ],
+        "summary": "List notification delivery log for an artist",
+        "description": "Return persisted delivery log rows for audit and debugging.",
+        "operationId": "get_delivery_log_artists__artist_id__notifications_delivery_log_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "event_key",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event Key"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationDeliveryLogSchema"
+                  },
+                  "title": "Response Get Delivery Log Artists  Artist Id  Notifications Delivery Log Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/stats/public/leaderboard": {
       "get": {
         "tags": [
@@ -19545,6 +19620,1890 @@
         }
       }
     },
+    "/case-rooms": {
+      "post": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Create a case room",
+        "operationId": "create_case_room_case_rooms_post",
+        "parameters": [
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaseRoomCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRoomSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}": {
+      "get": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Get case room detail",
+        "operationId": "get_case_room_case_rooms__room_id__get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRoomSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/case-rooms": {
+      "get": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "List case rooms for an artist",
+        "operationId": "list_case_rooms_artists__artist_id__case_rooms_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CaseRoomSchema"
+                  },
+                  "title": "Response List Case Rooms Artists  Artist Id  Case Rooms Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/status": {
+      "patch": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Update case room status",
+        "operationId": "update_case_room_status_case_rooms__room_id__status_patch",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRoomSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/members": {
+      "post": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Add a member to a case room",
+        "operationId": "add_member_case_rooms__room_id__members_post",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddMemberRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseRoomMemberSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "List case room members",
+        "operationId": "list_members_case_rooms__room_id__members_get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CaseRoomMemberSchema"
+                  },
+                  "title": "Response List Members Case Rooms  Room Id  Members Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/members/{email}": {
+      "delete": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Remove a member from a case room",
+        "operationId": "remove_member_case_rooms__room_id__members__email__delete",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "email",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Email"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/comments": {
+      "post": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Post a comment to a case room",
+        "operationId": "post_comment_case_rooms__room_id__comments_post",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostCommentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseCommentSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "List case room timeline (comments)",
+        "operationId": "list_comments_case_rooms__room_id__comments_get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CaseCommentSchema"
+                  },
+                  "title": "Response List Comments Case Rooms  Room Id  Comments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/comments/{comment_id}": {
+      "patch": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Edit a case room comment",
+        "operationId": "edit_comment_case_rooms__room_id__comments__comment_id__patch",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "comment_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Comment Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Body"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseCommentSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/attachments": {
+      "get": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "List case room attachments (role-filtered)",
+        "operationId": "list_attachments_case_rooms__room_id__attachments_get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CaseAttachmentSchema"
+                  },
+                  "title": "Response List Attachments Case Rooms  Room Id  Attachments Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/approvals": {
+      "post": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Request approval in a case room",
+        "operationId": "request_approval_case_rooms__room_id__approvals_post",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseApprovalSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "List approvals for a case room",
+        "operationId": "list_approvals_case_rooms__room_id__approvals_get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CaseApprovalSchema"
+                  },
+                  "title": "Response List Approvals Case Rooms  Room Id  Approvals Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/case-rooms/{room_id}/approvals/{approval_id}/decide": {
+      "post": {
+        "tags": [
+          "case-rooms"
+        ],
+        "summary": "Record an approval decision",
+        "operationId": "decide_approval_case_rooms__room_id__approvals__approval_id__decide_post",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "approval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Approval Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecideApprovalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseApprovalSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orgs/{org_id}/data-residency": {
+      "put": {
+        "tags": [
+          "data-residency"
+        ],
+        "summary": "Upsert data residency policy for an org",
+        "operationId": "upsert_policy_admin_orgs__org_id__data_residency_put",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DataResidencyPolicyUpsert"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataResidencyPolicySchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "data-residency"
+        ],
+        "summary": "Get data residency policy for an org",
+        "operationId": "get_org_policy_admin_orgs__org_id__data_residency_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataResidencyPolicySchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orgs/{org_id}/data-residency/check": {
+      "post": {
+        "tags": [
+          "data-residency"
+        ],
+        "summary": "Check whether a storage region is permitted",
+        "description": "Returns {allowed: bool} \u2014 useful for pre-flight checks before writes.",
+        "operationId": "check_region_admin_orgs__org_id__data_residency_check_post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Region"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Check Region Admin Orgs  Org Id  Data Residency Check Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/connectors/webhook/ingest": {
+      "post": {
+        "tags": [
+          "connector-reliability"
+        ],
+        "summary": "Ingest Webhook Event",
+        "description": "Receive and persist an inbound webhook payload.",
+        "operationId": "ingest_webhook_event_connectors_webhook_ingest_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookIngestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEventSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/connectors/webhook/queue": {
+      "get": {
+        "tags": [
+          "connector-reliability"
+        ],
+        "summary": "Get Dlq",
+        "description": "List failed webhook events (DLQ).",
+        "operationId": "get_dlq_admin_connectors_webhook_queue_get",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Source"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/WebhookEventSchema"
+                  },
+                  "title": "Response Get Dlq Admin Connectors Webhook Queue Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/connectors/webhook/{event_id}/replay": {
+      "post": {
+        "tags": [
+          "connector-reliability"
+        ],
+        "summary": "Replay Webhook Event",
+        "description": "Reset a FAILED event to REPLAYING for re-processing.",
+        "operationId": "replay_webhook_event_admin_connectors_webhook__event_id__replay_post",
+        "parameters": [
+          {
+            "name": "event_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Event Id"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookEventSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/connectors/{integration}/sync-cursor": {
+      "get": {
+        "tags": [
+          "connector-reliability"
+        ],
+        "summary": "Get Sync Cursor",
+        "description": "Return the current sync cursor for an artist/integration pair.",
+        "operationId": "get_sync_cursor_artists__artist_id__connectors__integration__sync_cursor_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "integration",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorSyncCursorSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "connector-reliability"
+        ],
+        "summary": "Update Sync Cursor",
+        "description": "Advance the sync cursor after a successful fetch.",
+        "operationId": "update_sync_cursor_artists__artist_id__connectors__integration__sync_cursor_put",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "integration",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Integration"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncCursorUpdateRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConnectorSyncCursorSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orgs/{org_id}/slo": {
+      "post": {
+        "tags": [
+          "slo"
+        ],
+        "summary": "Define Slo",
+        "description": "Define a new SLO metric definition for an org.",
+        "operationId": "define_slo_admin_orgs__org_id__slo_post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SloMetricCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SloMetricSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "slo"
+        ],
+        "summary": "List Slo Metrics",
+        "description": "List SLO metrics for an org, optionally filtered to breached ones.",
+        "operationId": "list_slo_metrics_admin_orgs__org_id__slo_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "breached_only",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false,
+              "title": "Breached Only"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SloMetricSchema"
+                  },
+                  "title": "Response List Slo Metrics Admin Orgs  Org Id  Slo Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orgs/{org_id}/slo/{slo_id}": {
+      "patch": {
+        "tags": [
+          "slo"
+        ],
+        "summary": "Update Slo Measurement",
+        "description": "Record a new measurement against an SLO (publish from telemetry collector).",
+        "operationId": "update_slo_measurement_admin_orgs__org_id__slo__slo_id__patch",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "slo_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slo Id"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SloMetricUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SloMetricSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orgs/{org_id}/cost-telemetry": {
+      "post": {
+        "tags": [
+          "slo"
+        ],
+        "summary": "Record Period Costs",
+        "description": "Record period-level cost telemetry for a tenant.",
+        "operationId": "record_period_costs_admin_orgs__org_id__cost_telemetry_post",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TenantCostLedgerCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantCostLedgerSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "slo"
+        ],
+        "summary": "Get Cost Telemetry",
+        "description": "Return cost ledger entries for a tenant, newest first.",
+        "operationId": "get_cost_telemetry_admin_orgs__org_id__cost_telemetry_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 120,
+              "minimum": 1,
+              "default": 12,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TenantCostLedgerSchema"
+                  },
+                  "title": "Response Get Cost Telemetry Admin Orgs  Org Id  Cost Telemetry Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/orgs/{org_id}/cost-telemetry/alert-check": {
+      "get": {
+        "tags": [
+          "slo"
+        ],
+        "summary": "Cost Alert Check",
+        "description": "Return whether the most recent period has exceeded the budget alert threshold.",
+        "operationId": "cost_alert_check_admin_orgs__org_id__cost_telemetry_alert_check_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "x-admin-key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/statements/batch": {
+      "post": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "Create Batch Job",
+        "description": "Submit a batch of statement filenames for ingestion.\n\nIdempotent: re-submitting the same ``idempotency_key`` returns the\noriginal job without creating a duplicate.",
+        "operationId": "create_batch_job_artists__artist_id__statements_batch_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchIngestionJobCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchIngestionJobSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/statements/batch/{job_id}": {
+      "get": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "Get Batch Job",
+        "operationId": "get_batch_job_artists__artist_id__statements_batch__job_id__get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchIngestionJobSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/statements/batch/{job_id}/files": {
+      "get": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "Get Batch Job Files",
+        "operationId": "get_batch_job_files_artists__artist_id__statements_batch__job_id__files_get",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BatchIngestionFileSchema"
+                  },
+                  "title": "Response Get Batch Job Files Artists  Artist Id  Statements Batch  Job Id  Files Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/statements/batch/{job_id}/retry-failed": {
+      "post": {
+        "tags": [
+          "ingestion"
+        ],
+        "summary": "Retry Failed Files",
+        "description": "Reset all failed files in a job back to 'pending' for re-processing.",
+        "operationId": "retry_failed_files_artists__artist_id__statements_batch__job_id__retry_failed_post",
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchIngestionJobSchema"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -19627,6 +21586,39 @@
         },
         "type": "object",
         "title": "APIIngestionRequest"
+      },
+      "AddMemberRequest": {
+        "properties": {
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "role": {
+            "$ref": "#/components/schemas/CaseRoomMemberRole",
+            "default": "viewer"
+          },
+          "is_external": {
+            "type": "boolean",
+            "title": "Is External",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "title": "AddMemberRequest"
       },
       "AdminAuditLogSchema": {
         "properties": {
@@ -20742,6 +22734,15 @@
         ],
         "title": "AnomalyWithRecoverabilitySchema"
       },
+      "ApprovalDecision": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "approved",
+          "rejected"
+        ],
+        "title": "ApprovalDecision"
+      },
       "ApprovalRequest": {
         "properties": {
           "approved": {
@@ -21399,6 +23400,207 @@
           "state"
         ],
         "title": "AuthConnectResponse"
+      },
+      "BatchIngestionFileSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "parsed_rows": {
+            "type": "integer",
+            "title": "Parsed Rows"
+          },
+          "error_msg": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Msg"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "job_id",
+          "filename",
+          "status",
+          "parsed_rows",
+          "error_msg",
+          "processed_at",
+          "created_at"
+        ],
+        "title": "BatchIngestionFileSchema"
+      },
+      "BatchIngestionJobCreate": {
+        "properties": {
+          "filenames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Filenames"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "filenames"
+        ],
+        "title": "BatchIngestionJobCreate"
+      },
+      "BatchIngestionJobSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Idempotency Key"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "total_files": {
+            "type": "integer",
+            "title": "Total Files"
+          },
+          "processed_files": {
+            "type": "integer",
+            "title": "Processed Files"
+          },
+          "failed_files": {
+            "type": "integer",
+            "title": "Failed Files"
+          },
+          "error_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Summary"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "org_id",
+          "idempotency_key",
+          "status",
+          "total_files",
+          "processed_files",
+          "failed_files",
+          "error_summary",
+          "submitted_at",
+          "completed_at",
+          "created_at"
+        ],
+        "title": "BatchIngestionJobSchema"
       },
       "BlackBoxExpirationSchema": {
         "properties": {
@@ -22082,6 +24284,440 @@
           "artists"
         ],
         "title": "BulkOnboardRequest"
+      },
+      "CaseApprovalSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "room_id": {
+            "type": "string",
+            "title": "Room Id"
+          },
+          "requested_by": {
+            "type": "string",
+            "title": "Requested By"
+          },
+          "approver_email": {
+            "type": "string",
+            "title": "Approver Email"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "room_id",
+          "requested_by",
+          "approver_email",
+          "decision",
+          "notes",
+          "due_at",
+          "decided_at",
+          "created_at"
+        ],
+        "title": "CaseApprovalSchema"
+      },
+      "CaseAttachmentSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "room_id": {
+            "type": "string",
+            "title": "Room Id"
+          },
+          "uploaded_by": {
+            "type": "string",
+            "title": "Uploaded By"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "storage_key": {
+            "type": "string",
+            "title": "Storage Key"
+          },
+          "content_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Type"
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size Bytes"
+          },
+          "min_role_required": {
+            "type": "string",
+            "title": "Min Role Required"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "room_id",
+          "uploaded_by",
+          "filename",
+          "storage_key",
+          "content_type",
+          "size_bytes",
+          "min_role_required",
+          "created_at"
+        ],
+        "title": "CaseAttachmentSchema"
+      },
+      "CaseCommentSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "room_id": {
+            "type": "string",
+            "title": "Room Id"
+          },
+          "author_email": {
+            "type": "string",
+            "title": "Author Email"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "mentions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mentions"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          },
+          "edited": {
+            "type": "boolean",
+            "title": "Edited"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "room_id",
+          "author_email",
+          "body",
+          "mentions",
+          "parent_id",
+          "edited",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CaseCommentSchema"
+      },
+      "CaseRoomCreate": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "claim_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "sla_deadline_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Deadline At"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "title"
+        ],
+        "title": "CaseRoomCreate"
+      },
+      "CaseRoomMemberRole": {
+        "type": "string",
+        "enum": [
+          "owner",
+          "approver",
+          "commenter",
+          "viewer"
+        ],
+        "title": "CaseRoomMemberRole"
+      },
+      "CaseRoomMemberSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "room_id": {
+            "type": "string",
+            "title": "Room Id"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "is_external": {
+            "type": "boolean",
+            "title": "Is External"
+          },
+          "joined_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Joined At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "room_id",
+          "email",
+          "display_name",
+          "role",
+          "is_external",
+          "joined_at"
+        ],
+        "title": "CaseRoomMemberSchema"
+      },
+      "CaseRoomSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "claim_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claim Id"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "sla_deadline_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sla Deadline At"
+          },
+          "sla_breached": {
+            "type": "boolean",
+            "title": "Sla Breached"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "closed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Closed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "claim_id",
+          "title",
+          "status",
+          "sla_deadline_at",
+          "sla_breached",
+          "org_id",
+          "created_by",
+          "created_at",
+          "updated_at",
+          "closed_at"
+        ],
+        "title": "CaseRoomSchema"
       },
       "CatalogConfirmationSchema": {
         "properties": {
@@ -22832,6 +25468,71 @@
         ],
         "title": "ConciergeMessageSender"
       },
+      "ConnectorSyncCursorSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "integration": {
+            "type": "string",
+            "title": "Integration"
+          },
+          "cursor_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cursor Value"
+          },
+          "last_successful_fetch_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Successful Fetch At"
+          },
+          "fetch_count": {
+            "type": "string",
+            "title": "Fetch Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "integration",
+          "cursor_value",
+          "last_successful_fetch_at",
+          "fetch_count",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ConnectorSyncCursorSchema"
+      },
       "ContractExtractRequest": {
         "properties": {
           "contract_id": {
@@ -23268,6 +25969,147 @@
           "recipient_name"
         ],
         "title": "DashboardQuickGenerateRequest"
+      },
+      "DataRegion": {
+        "type": "string",
+        "enum": [
+          "us-east-1",
+          "us-west-2",
+          "eu-west-1",
+          "eu-central-1",
+          "ap-southeast-1",
+          "ap-northeast-1",
+          "global"
+        ],
+        "title": "DataRegion"
+      },
+      "DataResidencyPolicySchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "org_id": {
+            "type": "string",
+            "title": "Org Id"
+          },
+          "primary_region": {
+            "type": "string",
+            "title": "Primary Region"
+          },
+          "permitted_regions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permitted Regions"
+          },
+          "allow_cross_region_ai": {
+            "type": "boolean",
+            "title": "Allow Cross Region Ai"
+          },
+          "audit_log_region_locked": {
+            "type": "boolean",
+            "title": "Audit Log Region Locked"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "org_id",
+          "primary_region",
+          "permitted_regions",
+          "allow_cross_region_ai",
+          "audit_log_region_locked",
+          "active",
+          "created_by",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DataResidencyPolicySchema"
+      },
+      "DataResidencyPolicyUpsert": {
+        "properties": {
+          "primary_region": {
+            "$ref": "#/components/schemas/DataRegion",
+            "default": "global"
+          },
+          "permitted_regions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permitted Regions"
+          },
+          "allow_cross_region_ai": {
+            "type": "boolean",
+            "title": "Allow Cross Region Ai",
+            "default": true
+          },
+          "audit_log_region_locked": {
+            "type": "boolean",
+            "title": "Audit Log Region Locked",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "DataResidencyPolicyUpsert"
+      },
+      "DecideApprovalRequest": {
+        "properties": {
+          "decision": {
+            "$ref": "#/components/schemas/ApprovalDecision"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "DecideApprovalRequest"
       },
       "DecideReviewItemRequest": {
         "properties": {
@@ -25244,6 +28086,112 @@
         ],
         "title": "NegotiationScriptResponse"
       },
+      "NotificationDeliveryLogSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist Id"
+          },
+          "event_key": {
+            "type": "string",
+            "title": "Event Key"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel"
+          },
+          "recipient": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recipient"
+          },
+          "sent": {
+            "type": "boolean",
+            "title": "Sent"
+          },
+          "skip_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Skip Reason"
+          },
+          "rendered_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rendered Title"
+          },
+          "rendered_body": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rendered Body"
+          },
+          "org_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Org Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "event_key",
+          "channel",
+          "recipient",
+          "sent",
+          "skip_reason",
+          "rendered_title",
+          "rendered_body",
+          "org_id",
+          "created_at"
+        ],
+        "title": "NotificationDeliveryLogSchema"
+      },
       "NotificationDispatchRequest": {
         "properties": {
           "event_key": {
@@ -26001,6 +28949,46 @@
         ],
         "title": "PersonaProfileSchema"
       },
+      "PostCommentRequest": {
+        "properties": {
+          "author_email": {
+            "type": "string",
+            "title": "Author Email"
+          },
+          "body": {
+            "type": "string",
+            "title": "Body"
+          },
+          "mentions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mentions"
+          },
+          "parent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "author_email",
+          "body"
+        ],
+        "title": "PostCommentRequest"
+      },
       "PreSignatureContractReviewRequest": {
         "properties": {
           "contract_text": {
@@ -26357,6 +29345,36 @@
           "expires_in_seconds"
         ],
         "title": "RegisterResponse"
+      },
+      "RequestApprovalRequest": {
+        "properties": {
+          "requested_by": {
+            "type": "string",
+            "title": "Requested By"
+          },
+          "approver_email": {
+            "type": "string",
+            "title": "Approver Email"
+          },
+          "due_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Due At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requested_by",
+          "approver_email"
+        ],
+        "title": "RequestApprovalRequest"
       },
       "ReviewAssignmentSchema": {
         "properties": {
@@ -26837,6 +29855,188 @@
         },
         "type": "object",
         "title": "SimulationRequest"
+      },
+      "SloMetricCreate": {
+        "properties": {
+          "metric_name": {
+            "type": "string",
+            "title": "Metric Name"
+          },
+          "window_seconds": {
+            "type": "integer",
+            "title": "Window Seconds",
+            "default": 3600
+          },
+          "threshold_ms": {
+            "type": "number",
+            "title": "Threshold Ms",
+            "default": 2000.0
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric_name"
+        ],
+        "title": "SloMetricCreate"
+      },
+      "SloMetricSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "org_id": {
+            "type": "string",
+            "title": "Org Id"
+          },
+          "metric_name": {
+            "type": "string",
+            "title": "Metric Name"
+          },
+          "window_seconds": {
+            "type": "integer",
+            "title": "Window Seconds"
+          },
+          "threshold_ms": {
+            "type": "number",
+            "title": "Threshold Ms"
+          },
+          "current_p95_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current P95 Ms"
+          },
+          "error_budget_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Budget Pct"
+          },
+          "burn_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Burn Rate"
+          },
+          "breached": {
+            "type": "boolean",
+            "title": "Breached"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "measured_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Measured At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "org_id",
+          "metric_name",
+          "window_seconds",
+          "threshold_ms",
+          "current_p95_ms",
+          "error_budget_pct",
+          "burn_rate",
+          "breached",
+          "description",
+          "measured_at",
+          "created_at"
+        ],
+        "title": "SloMetricSchema"
+      },
+      "SloMetricUpdate": {
+        "properties": {
+          "current_p95_ms": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current P95 Ms"
+          },
+          "error_budget_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Budget Pct"
+          },
+          "burn_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Burn Rate"
+          },
+          "breached": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Breached"
+          }
+        },
+        "type": "object",
+        "title": "SloMetricUpdate"
       },
       "SplitRepairRequest": {
         "properties": {
@@ -27374,6 +30574,19 @@
           "suggestions"
         ],
         "title": "SupportSuggestionResponse"
+      },
+      "SyncCursorUpdateRequest": {
+        "properties": {
+          "cursor_value": {
+            "type": "string",
+            "title": "Cursor Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cursor_value"
+        ],
+        "title": "SyncCursorUpdateRequest"
       },
       "SyncJobCreateRequest": {
         "properties": {
@@ -27974,6 +31187,179 @@
           "attorney"
         ],
         "title": "TeamRole"
+      },
+      "TenantCostLedgerCreate": {
+        "properties": {
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "pipeline_cost_usd": {
+            "type": "number",
+            "title": "Pipeline Cost Usd",
+            "default": 0.0
+          },
+          "compute_cost_usd": {
+            "type": "number",
+            "title": "Compute Cost Usd",
+            "default": 0.0
+          },
+          "storage_cost_usd": {
+            "type": "number",
+            "title": "Storage Cost Usd",
+            "default": 0.0
+          },
+          "llm_tokens_used": {
+            "type": "integer",
+            "title": "Llm Tokens Used",
+            "default": 0
+          },
+          "llm_cost_usd": {
+            "type": "number",
+            "title": "Llm Cost Usd",
+            "default": 0.0
+          },
+          "budget_limit_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Limit Usd"
+          },
+          "budget_alert_pct": {
+            "type": "number",
+            "title": "Budget Alert Pct",
+            "default": 80.0
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "period_start",
+          "period_end"
+        ],
+        "title": "TenantCostLedgerCreate"
+      },
+      "TenantCostLedgerSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "org_id": {
+            "type": "string",
+            "title": "Org Id"
+          },
+          "period_start": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period Start"
+          },
+          "period_end": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Period End"
+          },
+          "pipeline_cost_usd": {
+            "type": "number",
+            "title": "Pipeline Cost Usd"
+          },
+          "compute_cost_usd": {
+            "type": "number",
+            "title": "Compute Cost Usd"
+          },
+          "storage_cost_usd": {
+            "type": "number",
+            "title": "Storage Cost Usd"
+          },
+          "llm_tokens_used": {
+            "type": "integer",
+            "title": "Llm Tokens Used"
+          },
+          "llm_cost_usd": {
+            "type": "number",
+            "title": "Llm Cost Usd"
+          },
+          "total_cost_usd": {
+            "type": "number",
+            "title": "Total Cost Usd"
+          },
+          "budget_limit_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Limit Usd"
+          },
+          "budget_alert_pct": {
+            "type": "number",
+            "title": "Budget Alert Pct"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "org_id",
+          "period_start",
+          "period_end",
+          "pipeline_cost_usd",
+          "compute_cost_usd",
+          "storage_cost_usd",
+          "llm_tokens_used",
+          "llm_cost_usd",
+          "total_cost_usd",
+          "budget_limit_usd",
+          "budget_alert_pct",
+          "notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "TenantCostLedgerSchema"
       },
       "TermsAcceptRequest": {
         "properties": {
@@ -28702,6 +32088,132 @@
           "FOUNDERS_CIRCLE"
         ],
         "title": "VipTierLevel"
+      },
+      "WebhookEventSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "raw_payload": {
+            "type": "string",
+            "title": "Raw Payload"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          },
+          "signature_verified": {
+            "type": "boolean",
+            "title": "Signature Verified"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "processing_error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processing Error"
+          },
+          "attempts": {
+            "type": "integer",
+            "title": "Attempts"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source",
+          "event_type",
+          "raw_payload",
+          "signature",
+          "signature_verified",
+          "status",
+          "processing_error",
+          "attempts",
+          "processed_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "WebhookEventSchema"
+      },
+      "WebhookIngestRequest": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "raw_payload": {
+            "type": "string",
+            "title": "Raw Payload"
+          },
+          "signature": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "event_type",
+          "raw_payload"
+        ],
+        "title": "WebhookIngestRequest"
       },
       "WeeklyBriefSchema": {
         "properties": {

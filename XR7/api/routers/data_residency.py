@@ -16,6 +16,7 @@ from XR7.models.data_residency import (
     DataResidencyPolicySchema,
     DataResidencyPolicyUpsert,
 )
+from XR7.services.branding import inject_branding_metadata
 from XR7.services.data_residency_service import assert_region_allowed, get_policy
 
 router = APIRouter(prefix="/admin/orgs", tags=["data-residency"])
@@ -79,6 +80,9 @@ def check_region(org_id: str, region: str, db: Session = Depends(get_db)) -> dic
     """Returns {allowed: bool} — useful for pre-flight checks before writes."""
     try:
         assert_region_allowed(org_id, region, db)
-        return {"allowed": True, "org_id": org_id, "region": region}
+        return inject_branding_metadata(db, {"allowed": True, "org_id": org_id, "region": region})
     except HTTPException as exc:
-        return {"allowed": False, "org_id": org_id, "region": region, "reason": exc.detail}
+        return inject_branding_metadata(
+            db,
+            {"allowed": False, "org_id": org_id, "region": region, "reason": exc.detail},
+        )
