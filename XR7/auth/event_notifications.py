@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from XR7.auth.notification_service import get_notification_service
+from XR7.models.notification_delivery_log import NotificationDeliveryLog
 from XR7.models.notification_preference import NotificationPreference
 from XR7.services.branding import apply_brand_placeholders, communication_templates, get_branding_profile
 
@@ -20,6 +21,25 @@ def _is_within_quiet_hours(pref: NotificationPreference, hour_24: int) -> bool:
     if start < end:
         return start <= hour_24 < end
     return hour_24 >= start or hour_24 < end
+
+
+def _persist_skip_log(db, pref, event_key: str, reason: str, org_id: str | None) -> None:
+    if db is None:
+        return
+    try:
+        log = NotificationDeliveryLog(
+            artist_id=getattr(pref, "artist_id", None),
+            event_key=event_key,
+            channel="skipped",
+            recipient=None,
+            sent=False,
+            skip_reason=reason,
+            org_id=org_id,
+        )
+        db.add(log)
+        db.commit()
+    except Exception:
+        db.rollback()
 
 
 def send_event_notification(
@@ -50,9 +70,11 @@ def send_event_notification(
     }.get(event_key, event_key in founder_events)
 
     if not allowed:
+        _persist_skip_log(db, pref, event_key, "event_disabled", org_id)
         return {"sent": False, "reason": "event_disabled"}
 
     if _is_within_quiet_hours(pref, current_hour_utc):
+        _persist_skip_log(db, pref, event_key, "quiet_hours", org_id)
         return {"sent": False, "reason": "quiet_hours"}
 
     svc = get_notification_service()
@@ -82,7 +104,7 @@ def send_event_notification(
     if pref.email:
         email_sent = svc.send_email(pref.email, branded_title, branded_body)
 
-    return {
+    result = {
         "sent": bool(sms_sent or email_sent),
         "sms_sent": sms_sent,
         "email_sent": email_sent,
@@ -91,3 +113,29 @@ def send_event_notification(
             "body": branded_body,
         },
     }
+
+    # Persist delivery log rows for auditability
+    if db is not None:
+        artist_id = getattr(pref, "artist_id", None)
+        for channel, sent_flag, recipient in (
+            ("sms", sms_sent, pref.phone),
+            ("email", email_sent, pref.email),
+        ):
+            if recipient:
+                log = NotificationDeliveryLog(
+                    artist_id=artist_id,
+                    event_key=event_key,
+                    channel=channel,
+                    recipient=recipient,
+                    sent=bool(sent_flag),
+                    rendered_title=branded_title,
+                    rendered_body=branded_body,
+                    org_id=org_id,
+                )
+                db.add(log)
+        try:
+            db.commit()
+        except Exception:
+            db.rollback()
+
+    return result

@@ -51,6 +51,11 @@ from XR7.api.routers import vip as vip_router
 from XR7.api.routers import concierge as concierge_router
 from XR7.api.routers import copilot as copilot_router
 from XR7.api.routers import vip_referrals as vip_referrals_router
+from XR7.api.routers import case_rooms as case_rooms_router
+from XR7.api.routers import data_residency as data_residency_router
+from XR7.api.routers import connector_reliability as connector_reliability_router
+from XR7.api.routers import slo as slo_router
+from XR7.api.routers import batch_ingestion as batch_ingestion_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -99,6 +104,13 @@ async def lifespan(app: FastAPI):
     import XR7.models.legal_defensibility_event  # noqa: F401
     import XR7.models.society_signal_log  # noqa: F401
     import XR7.models.vip  # noqa: F401
+        import XR7.models.notification_delivery_log  # noqa: F401
+        import XR7.models.case_room  # noqa: F401
+        import XR7.models.data_residency  # noqa: F401
+        import XR7.models.connector_sync_cursor  # noqa: F401
+        import XR7.models.webhook_event  # noqa: F401
+        import XR7.models.slo_metric  # noqa: F401
+        import XR7.models.batch_ingestion_job  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -243,6 +255,11 @@ app.include_router(vip_router.router)
 app.include_router(concierge_router.router)
 app.include_router(copilot_router.router)
 app.include_router(vip_referrals_router.router)
+app.include_router(case_rooms_router.router)
+app.include_router(data_residency_router.router)
+app.include_router(connector_reliability_router.router)
+app.include_router(slo_router.router)
+app.include_router(batch_ingestion_router.router)
 
 
 @app.get("/health")

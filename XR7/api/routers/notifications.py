@@ -1,11 +1,17 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Optional
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.models.notification_delivery_log import (
+    NotificationDeliveryLog,
+    NotificationDeliveryLogSchema,
+)
 from XR7.models.notification_preference import NotificationPreference, NotificationPreferenceSchema
 from XR7.notifications.push_voice import register_push_token, voice_balance_query
 from XR7.earnings.dashboard import DashboardEngine
@@ -88,3 +94,28 @@ def voice_query(artist_id: str, question: str, db: Session = Depends(get_db)):
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})
     return inject_branding_metadata(db, {"artist_id": artist_id, "response": result})
+
+
+@router.get(
+    "/artists/{artist_id}/notifications/delivery-log",
+    response_model=List[NotificationDeliveryLogSchema],
+    summary="List notification delivery log for an artist",
+)
+def get_delivery_log(
+    artist_id: str,
+    event_key: Optional[str] = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=200),
+    db: Session = Depends(get_db),
+):
+    """Return persisted delivery log rows for audit and debugging."""
+    artist = db.query(Artist).filter(Artist.id == artist_id).first()
+    if not artist:
+        raise HTTPException(status_code=404, detail="Artist not found")
+    q = db.query(NotificationDeliveryLog).filter(
+        NotificationDeliveryLog.artist_id == artist_id
+    )
+    if event_key:
+        q = q.filter(NotificationDeliveryLog.event_key == event_key)
+    return (
+        q.order_by(NotificationDeliveryLog.created_at.desc()).limit(limit).all()
+    )
