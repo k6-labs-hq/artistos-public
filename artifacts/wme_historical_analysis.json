@@ -1,0 +1,89 @@
+{
+  "organization_name": "William Morris Endeavor",
+  "entity_type": "Talent Agency",
+  "analysis_completed_at": "2026-03-20T05:55:28.876757+00:00",
+  "roster_size": 5,
+  "total_estimated_recoverable": 913000.0,
+  "by_vertical": {
+    "MUSIC": {
+      "clients": 3,
+      "estimated_recoverable": 404000.0
+    },
+    "TV_FILM": {
+      "clients": 2,
+      "estimated_recoverable": 509000.0
+    }
+  },
+  "sol_risk": {
+    "high": 2,
+    "medium": 2,
+    "low": 1,
+    "unknown": 0
+  },
+  "top_25_clients": [
+    {
+      "client": "Client C",
+      "vertical": "TV_FILM",
+      "estimated_recoverable": 310000.0,
+      "sol_risk": "high",
+      "platform": "Netflix",
+      "union": "SAG-AFTRA",
+      "payer": "Studio C"
+    },
+    {
+      "client": "Client D",
+      "vertical": "TV_FILM",
+      "estimated_recoverable": 199000.0,
+      "sol_risk": "medium",
+      "platform": "Hulu",
+      "union": "WGA",
+      "payer": "Studio D"
+    },
+    {
+      "client": "Client A",
+      "vertical": "MUSIC",
+      "estimated_recoverable": 182000.0,
+      "sol_risk": "high",
+      "platform": "Spotify",
+      "union": "",
+      "payer": "Distributor A"
+    },
+    {
+      "client": "Client B",
+      "vertical": "MUSIC",
+      "estimated_recoverable": 137000.0,
+      "sol_risk": "medium",
+      "platform": "Apple Music",
+      "union": "",
+      "payer": "Publisher B"
+    },
+    {
+      "client": "Client E",
+      "vertical": "MUSIC",
+      "estimated_recoverable": 85000.0,
+      "sol_risk": "low",
+      "platform": "YouTube",
+      "union": "",
+      "payer": "DSP E"
+    }
+  ],
+  "execution_plan": {
+    "next_24h": [
+      "Ingest final roster and statement exports (CSV/TSV/XLSX) for all available clients.",
+      "Run historical rollup and rank clients by recoverable value and SOL urgency.",
+      "Open claim/evidence workstreams for top high-risk, high-value cohort first."
+    ],
+    "next_7d": [
+      "Complete anomaly and claim packet generation for top 20% of recoverable value.",
+      "Parallel legal/partner outreach on key-needed connectors and external records.",
+      "Stand up weekly executive rollup dashboard for agency leadership."
+    ]
+  },
+  "tomorrow_meeting_checklist": [
+    "Client roster with vertical tag (MUSIC or TV_FILM).",
+    "Historical statements/exports per client (distributor, PRO, studio/platform, ticketing where applicable).",
+    "Temporary legal authorization or agency attestation for data review.",
+    "Operator credentials and environment keys for any direct API connectors.",
+    "Decision owners for legal escalation and payout routing."
+  ]
+}

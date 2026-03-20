@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
 
 BASE_REF ?= origin/main
 
@@ -120,3 +120,6 @@ deploy-prod:
 
 apply-runtime-secret:
 	bash scripts/ops/apply_runtime_secret.sh xr7 infrastructure/secrets/runtime.env
+
+enterprise-historical-analysis:
+	$(PYTHON) scripts/recovery/run_enterprise_historical_analysis.py --input scripts/recovery/examples/wme_historical_analysis_template.csv --organization "WME" --entity-type "Talent Agency"

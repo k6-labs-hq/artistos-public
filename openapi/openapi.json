@@ -21504,6 +21504,84 @@
         }
       }
     },
+    "/enterprise/historical/analyze": {
+      "post": {
+        "tags": [
+          "enterprise"
+        ],
+        "summary": "Analyze Enterprise Historical",
+        "operationId": "analyze_enterprise_historical_enterprise_historical_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterpriseHistoricalAnalysisRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/enterprise/historical/analyze-file": {
+      "post": {
+        "tags": [
+          "enterprise"
+        ],
+        "summary": "Analyze Enterprise Historical File",
+        "operationId": "analyze_enterprise_historical_file_enterprise_historical_analyze_file_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_analyze_enterprise_historical_file_enterprise_historical_analyze_file_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -23795,6 +23873,30 @@
         },
         "type": "object",
         "title": "BlackBoxRequest"
+      },
+      "Body_analyze_enterprise_historical_file_enterprise_historical_analyze_file_post": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type",
+            "default": "Talent Agency"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name",
+          "file"
+        ],
+        "title": "Body_analyze_enterprise_historical_file_enterprise_historical_analyze_file_post"
       },
       "Body_edm_festival_audit_artists__artist_id__recovery_edm_festival_audit_post": {
         "properties": {
@@ -26295,6 +26397,32 @@
           "failed"
         ],
         "title": "EnrichmentStatus"
+      },
+      "EnterpriseHistoricalAnalysisRequest": {
+        "properties": {
+          "organization_name": {
+            "type": "string",
+            "title": "Organization Name"
+          },
+          "entity_type": {
+            "type": "string",
+            "title": "Entity Type",
+            "default": "Talent Agency"
+          },
+          "records": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Records"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization_name"
+        ],
+        "title": "EnterpriseHistoricalAnalysisRequest"
       },
       "EscalateResponse": {
         "properties": {

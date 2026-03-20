@@ -1,0 +1,6 @@
+client,vertical,role,union,platform,payer,estimated_missing,estimated_underpayment,estimated_backend_missing,estimated_royalty_gap,estimated_unpaid_performance,estimated_unpaid_sync,estimated_unpaid_neighboring,estimated_mechanical_gap,estimated_residual_gap,estimated_ugc_gap,sol_risk
+Client A,MUSIC,Recording Artist,,Spotify,Distributor A,0,0,0,120000,18000,24000,6000,9000,0,5000,high
+Client B,MUSIC,Songwriter,,Apple Music,Publisher B,0,0,0,87000,22000,14000,4000,7000,0,3000,medium
+Client C,TV_FILM,Actor,SAG-AFTRA,Netflix,Studio C,140000,32000,28000,0,0,0,0,0,110000,0,high
+Client D,TV_FILM,Writer,WGA,Hulu,Studio D,90000,18000,15000,0,0,0,0,0,76000,0,medium
+Client E,MUSIC,Producer,,YouTube,DSP E,0,0,0,45000,12000,9000,3000,4000,0,12000,low

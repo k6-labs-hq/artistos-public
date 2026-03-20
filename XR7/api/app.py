@@ -56,6 +56,7 @@ from XR7.api.routers import data_residency as data_residency_router
 from XR7.api.routers import connector_reliability as connector_reliability_router
 from XR7.api.routers import slo as slo_router
 from XR7.api.routers import batch_ingestion as batch_ingestion_router
+from XR7.api.routers import enterprise_analysis as enterprise_analysis_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -261,6 +262,7 @@ app.include_router(data_residency_router.router)
 app.include_router(connector_reliability_router.router)
 app.include_router(slo_router.router)
 app.include_router(batch_ingestion_router.router)
+app.include_router(enterprise_analysis_router.router)
 
 
 @app.get("/health")
