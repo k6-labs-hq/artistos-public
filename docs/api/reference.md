@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 410
+Total endpoints: 412
 
 ## Endpoint Table
 
@@ -342,6 +342,8 @@ Total endpoints: 410
 | dashboard | GET | /dashboard/ui | Get Dashboard Ui | get_dashboard_ui_dashboard_ui_get | - | - | curl -X GET http://localhost:8000/dashboard/ui |
 | expansion | GET | /education/guides | Education Guides Index | education_guides_index_education_guides_get | - | - | curl -X GET http://localhost:8000/education/guides |
 | expansion | GET | /education/guides/{guide_id} | Education Guide Detail | education_guide_detail_education_guides__guide_id__get | - | - | curl -X GET http://localhost:8000/education/guides/{guide_id} |
+| enterprise | POST | /enterprise/historical/analyze | Analyze Enterprise Historical | analyze_enterprise_historical_enterprise_historical_analyze_post | EnterpriseHistoricalAnalysisRequest | - | curl -X POST http://localhost:8000/enterprise/historical/analyze -H 'Content-Type: application/json' -d '{}' |
+| enterprise | POST | /enterprise/historical/analyze-file | Analyze Enterprise Historical File | analyze_enterprise_historical_file_enterprise_historical_analyze_file_post | - | - | curl -X POST http://localhost:8000/enterprise/historical/analyze-file |
 | untagged | GET | /health | Health | health_health_get | - | - | curl -X GET http://localhost:8000/health |
 | untagged | GET | /health/readiness | Readiness | readiness_health_readiness_get | - | - | curl -X GET http://localhost:8000/health/readiness |
 | ingestion | GET | /ingestion/supported-formats | Supported Formats | supported_formats_ingestion_supported_formats_get | - | object | curl -X GET http://localhost:8000/ingestion/supported-formats |

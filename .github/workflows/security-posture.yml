@@ -27,7 +27,7 @@ jobs:
         run: pip-audit -r requirements.txt
 
       - name: Trivy repo scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: fs
           scan-ref: .
