@@ -18,8 +18,8 @@ spec:
       serviceAccountName: xr7-workload
       containers:
         - name: api
-          image: ghcr.io/mkallberg21/artistos-api:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/mkallberg21/artistos:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:
@@ -78,8 +78,8 @@ spec:
       serviceAccountName: xr7-workload
       containers:
         - name: worker
-          image: ghcr.io/mkallberg21/artistos-api:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/mkallberg21/artistos:latest
+          imagePullPolicy: Always
           command: ["celery", "-A", "XR7.celery_app:celery_app", "worker", "--loglevel=INFO"]
           envFrom:
             - secretRef:
@@ -112,8 +112,8 @@ spec:
       serviceAccountName: xr7-workload
       containers:
         - name: scheduler
-          image: ghcr.io/mkallberg21/artistos-api:latest
-          imagePullPolicy: IfNotPresent
+          image: ghcr.io/mkallberg21/artistos:latest
+          imagePullPolicy: Always
           command: ["celery", "-A", "XR7.celery_app:celery_app", "beat", "--loglevel=INFO"]
           envFrom:
             - secretRef:

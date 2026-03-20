@@ -11,3 +11,5 @@ kind: ServiceAccount
 metadata:
   name: xr7-workload
   namespace: xr7
+imagePullSecrets:
+  - name: ghcr-io-credentials

@@ -20,9 +20,9 @@ echo "[deploy] applying ${OVERLAY}"
 kubectl apply -k "${OVERLAY}"
 
 echo "[deploy] updating image tag ${IMAGE_TAG}"
-kubectl -n "${NAMESPACE}" set image deployment/xr7-api api="ghcr.io/mkallberg21/artistos-api:${IMAGE_TAG}"
-kubectl -n "${NAMESPACE}" set image deployment/xr7-worker worker="ghcr.io/mkallberg21/artistos-api:${IMAGE_TAG}"
-kubectl -n "${NAMESPACE}" set image deployment/xr7-scheduler scheduler="ghcr.io/mkallberg21/artistos-api:${IMAGE_TAG}"
+kubectl -n "${NAMESPACE}" set image deployment/xr7-api api="ghcr.io/mkallberg21/artistos:${IMAGE_TAG}"
+kubectl -n "${NAMESPACE}" set image deployment/xr7-worker worker="ghcr.io/mkallberg21/artistos:${IMAGE_TAG}"
+kubectl -n "${NAMESPACE}" set image deployment/xr7-scheduler scheduler="ghcr.io/mkallberg21/artistos:${IMAGE_TAG}"
 
 echo "[deploy] waiting for rollouts"
 kubectl -n "${NAMESPACE}" rollout status deployment/xr7-api --timeout=300s
