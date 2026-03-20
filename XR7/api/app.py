@@ -111,6 +111,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.webhook_event  # noqa: F401
     import XR7.models.slo_metric  # noqa: F401
     import XR7.models.batch_ingestion_job  # noqa: F401
+    import XR7.models.xr7_idempotency  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 

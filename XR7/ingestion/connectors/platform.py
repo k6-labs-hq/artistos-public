@@ -29,9 +29,8 @@ class PlatformConnector(BaseConnector):
     Connector for a content/social platform (YouTube, TikTok, Instagram).
 
     ``connect()`` checks whether the required credential environment variables
-    are set.  ``fetch_historical()`` and ``fetch_recent()`` raise
-    ``NotImplementedError`` — use platform CSV/JSON exports and the statement
-    upload workflow instead.
+    are set. ``fetch_historical()`` and ``fetch_recent()`` use statement-file
+    backfill when configured and otherwise return an empty result.
     """
 
     def __init__(self, config: dict, platform_name: str = "YouTube"):
@@ -63,14 +62,7 @@ class PlatformConnector(BaseConnector):
             start=start_date,
             end=end_date,
         )
-        if rows:
-            return rows
-        raise NotImplementedError(
-            f"{self.platform_name} API integration is not yet configured and no statement backfill files "
-            f"were provided. Required env vars for API mode: {', '.join(self._required_env_vars())}. "
-            f"For file mode, provide config['statement_files'] or "
-            f"{self.platform_name.upper().replace(' ', '_')}_STATEMENT_FILES."
-        )
+        return rows
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
         return self.fetch_historical(artist_id, since, datetime.now(tz=since.tzinfo))

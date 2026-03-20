@@ -52,6 +52,7 @@ import XR7.models.connector_sync_cursor  # noqa: F401
 import XR7.models.webhook_event  # noqa: F401
 import XR7.models.slo_metric  # noqa: F401
 import XR7.models.batch_ingestion_job  # noqa: F401
+import XR7.models.xr7_idempotency  # noqa: F401
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"
@@ -61,7 +62,7 @@ test_engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestSession = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+TestSession = sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=test_engine)
 
 # Create all tables once
 Base.metadata.create_all(bind=test_engine)

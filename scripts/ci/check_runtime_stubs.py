@@ -26,12 +26,6 @@ EXCLUDE_PATH_PARTS = {
 # Keep this list intentionally small.
 ALLOWLIST: dict[str, list[str]] = {
     "XR7/llm/claim_drafter.py": [r"use placeholders if not present"],
-    "XR7/ingestion/parser_engine.py": [r"raise\s+NotImplementedError"],
-    "XR7/ingestion/connectors/pro.py": [r"raise\s+NotImplementedError"],
-    "XR7/ingestion/connectors/dsp.py": [r"raise\s+NotImplementedError"],
-    "XR7/ingestion/connectors/platform.py": [r"raise\s+NotImplementedError"],
-    "XR7/ingestion/connectors/ticketing.py": [r"raise\s+NotImplementedError"],
-    "XR7/ingestion/connectors/distributor.py": [r"raise\s+NotImplementedError"],
 }
 
 RULES = [

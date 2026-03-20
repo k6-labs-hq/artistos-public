@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import Any
 
@@ -132,7 +133,7 @@ class PostRepairForecastPipeline:
             ],
         ).to_dict()
 
-        ugc_report = asyncio.run(UGCRepairEngine().analyze(artist_id))
+        ugc_report = self._run_ugc_analysis_sync(artist_id)
         foreign_report = ForeignSocietyCrosswalkEngine(self.db).analyze(artist_id)
 
         cleaned_rows = self._cleaned_historical_rows(
@@ -244,3 +245,17 @@ class PostRepairForecastPipeline:
                 "model": (base.get("model_metadata") or {}).get("model_name", "PostRepairEarningsForecaster"),
             },
         }
+
+    @staticmethod
+    def _run_ugc_analysis_sync(artist_id: str) -> dict[str, Any]:
+        """Run async UGC analysis from both sync and async call sites safely."""
+        coro = UGCRepairEngine().analyze(artist_id)
+        try:
+            asyncio.get_running_loop()
+        except RuntimeError:
+            return asyncio.run(coro)
+
+        # We are already inside an event loop (e.g. FastAPI thread worker calling
+        # async orchestration). Run in an isolated thread with its own loop.
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            return executor.submit(lambda: asyncio.run(coro)).result()

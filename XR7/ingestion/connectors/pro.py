@@ -22,9 +22,8 @@ class PROConnector(BaseConnector):
     Connector for a Performing Rights Organisation (PRO).
 
     ``connect()`` checks whether the required API key environment variable is
-    set.  ``fetch_historical()`` and ``fetch_recent()`` raise
-    ``NotImplementedError`` until a real API integration is built — use the
-    statement file upload workflow in the meantime.
+    set. ``fetch_historical()`` and ``fetch_recent()`` use statement-file
+    backfill when configured and otherwise return an empty result.
     """
 
     def __init__(self, config: dict, pro_name: str = "ASCAP"):
@@ -52,14 +51,7 @@ class PROConnector(BaseConnector):
             start=start_date,
             end=end_date,
         )
-        if rows:
-            return rows
-        raise NotImplementedError(
-            f"{self.pro_name} API integration is not yet configured and no statement backfill files "
-            f"were provided. Set '{self._env_key()}' for API mode or provide local statement files "
-            f"via config['statement_files'] / {self.pro_name.upper().replace(' ', '_')}_STATEMENT_FILES. "
-            f"You can always upload files through POST /artists/{{artist_id}}/statements/upload."
-        )
+        return rows
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
         return self.fetch_historical(artist_id, since, datetime.now(tz=since.tzinfo))

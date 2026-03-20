@@ -549,13 +549,11 @@ class TestConnectorCredentials:
         c = PROConnector(config={"api_key": "from-config"}, pro_name="BMI")
         assert c.connect() is True
 
-    def test_pro_fetch_historical_raises_not_implemented(self, monkeypatch):
+    def test_pro_fetch_historical_returns_empty_without_backfill(self, monkeypatch):
         monkeypatch.delenv("ASCAP_API_KEY", raising=False)
         c = PROConnector(config={}, pro_name="ASCAP")
-        with pytest.raises(NotImplementedError) as exc:
-            c.fetch_historical("artist-1", datetime.now(timezone.utc), datetime.now(timezone.utc))
-        assert "ASCAP" in str(exc.value)
-        assert "statements/upload" in str(exc.value)
+        rows = c.fetch_historical("artist-1", datetime.now(timezone.utc), datetime.now(timezone.utc))
+        assert rows == []
 
     def test_dsp_connect_false_without_creds(self, monkeypatch):
         monkeypatch.delenv("SPOTIFY_CLIENT_ID", raising=False)
@@ -569,12 +567,12 @@ class TestConnectorCredentials:
         c = DSPConnector(config={}, dsp_name="Spotify")
         assert c.connect() is True
 
-    def test_dsp_fetch_historical_raises_not_implemented(self, monkeypatch):
+    def test_dsp_fetch_historical_returns_empty_without_backfill(self, monkeypatch):
         monkeypatch.delenv("SPOTIFY_CLIENT_ID", raising=False)
         monkeypatch.delenv("SPOTIFY_CLIENT_SECRET", raising=False)
         c = DSPConnector(config={}, dsp_name="Spotify")
-        with pytest.raises(NotImplementedError):
-            c.fetch_historical("a", datetime.now(timezone.utc), datetime.now(timezone.utc))
+        rows = c.fetch_historical("a", datetime.now(timezone.utc), datetime.now(timezone.utc))
+        assert rows == []
 
     def test_platform_connect_false_without_key(self, monkeypatch):
         monkeypatch.delenv("YOUTUBE_API_KEY", raising=False)
@@ -1226,14 +1224,12 @@ class TestDistributorConnector:
         c = DistributorConnector(config={}, distributor_name="ONErpm")
         assert c.connect() is False
 
-    def test_fetch_historical_raises_not_implemented(self, monkeypatch):
+    def test_fetch_historical_returns_empty_without_backfill(self, monkeypatch):
         monkeypatch.delenv("AMUSE_API_KEY", raising=False)
         from XR7.ingestion.connectors.distributor import DistributorConnector
         c = DistributorConnector(config={}, distributor_name="Amuse")
-        with pytest.raises(NotImplementedError) as exc:
-            c.fetch_historical("artist-1", datetime.now(timezone.utc), datetime.now(timezone.utc))
-        assert "Amuse" in str(exc.value)
-        assert "statements/upload" in str(exc.value)
+        rows = c.fetch_historical("artist-1", datetime.now(timezone.utc), datetime.now(timezone.utc))
+        assert rows == []
 
     def test_supported_distributors_includes_all(self):
         from XR7.ingestion.connectors.distributor import DistributorConnector

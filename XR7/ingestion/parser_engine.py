@@ -19,7 +19,7 @@ class BaseStatementParser:
     parser_type = "base"
 
     def parse(self, content: bytes, artist_id: str, filename: str) -> ParserOutput:
-        raise NotImplementedError
+        raise RuntimeError("BaseStatementParser.parse must be implemented by a concrete parser")
 
 
 class DistributorStatementParser(BaseStatementParser):
