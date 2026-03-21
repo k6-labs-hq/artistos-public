@@ -57,6 +57,7 @@ from XR7.api.routers import connector_reliability as connector_reliability_route
 from XR7.api.routers import slo as slo_router
 from XR7.api.routers import batch_ingestion as batch_ingestion_router
 from XR7.api.routers import enterprise_analysis as enterprise_analysis_router
+from XR7.api.routers import fingerprinting as fingerprinting_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -113,6 +114,8 @@ async def lifespan(app: FastAPI):
     import XR7.models.slo_metric  # noqa: F401
     import XR7.models.batch_ingestion_job  # noqa: F401
     import XR7.models.xr7_idempotency  # noqa: F401
+    import XR7.models.fingerprint_job  # noqa: F401
+    import XR7.models.fingerprint_match  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -263,6 +266,7 @@ app.include_router(connector_reliability_router.router)
 app.include_router(slo_router.router)
 app.include_router(batch_ingestion_router.router)
 app.include_router(enterprise_analysis_router.router)
+app.include_router(fingerprinting_router.router)
 
 
 @app.get("/health")

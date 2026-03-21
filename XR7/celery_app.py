@@ -58,7 +58,20 @@ celery_app.conf.update(
             "task": "xr7.workflow.run_soundcloud_healthcheck_hourly",
             "schedule": 3600,
         },
+        # ── Fingerprinting subsystem ────────────────────────────────────────
+        "fp-provider-health-check-hourly": {
+            "task": "fp.provider_health_check_all",
+            "schedule": 3600,
+        },
+        "fp-reprocess-failed-jobs-every-15min": {
+            "task": "fp.reprocess_failed_jobs",
+            "schedule": 900,
+        },
+        "fp-anomaly-detection-sweep-nightly": {
+            "task": "fp.anomaly_detection_sweep",
+            "schedule": 86400,
+        },
     },
 )
 
-celery_app.autodiscover_tasks(["XR7.tasks"])
+celery_app.autodiscover_tasks(["XR7.tasks", "XR7.fingerprinting"])
