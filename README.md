@@ -22,6 +22,7 @@ XR7 is a comprehensive platform designed to detect, recover, and prevent earning
 XR7 now supports production-grade TV/Film recovery workflows in parity with the music stack, including role-specific onboarding, ingestion normalization, anomaly detection, claim drafting, forecasting, agent orchestration, enterprise portfolio analysis, and trust-layer explainability.
 
 The TV/Film stack now includes:
+
 - union and studio compensation calculation rules for SAG-AFTRA, WGA, DGA, IATSE, AFM/AFTRA, and major studio/streaming platforms
 - rule-driven calculation audits per imported statement row
 - document-grade TV/Film evidence packet rendering to JSON, PDF, and ZIP
@@ -29,6 +30,7 @@ The TV/Film stack now includes:
 - frontend onboarding and enterprise workspace surfaces for role selection, agency roster intake, and live trust-layer status
 
 Supported TV/Film role taxonomy includes:
+
 - Writer (TV/Film), Screenwriter, Showrunner
 - Director, Producer, Actor, Voice Actor
 - Stunt Performer, Editor, Cinematographer
@@ -38,7 +40,7 @@ Supported TV/Film role taxonomy includes:
 
 New TV/Film API surface:
 
-```
+```text
 GET  /tvfilm/roles/options
 GET  /tvfilm/ingestion/formats
 POST /tvfilm/ingestion/preview
@@ -62,7 +64,7 @@ POST /tvfilm/trust/explain
 ## Market Readiness
 
 | Component | Status | Notes |
-|-----------|--------|-------|
+| --- | --- | --- |
 | **Artist Recovery Dashboard** | ✅ Ready | Single endpoint showing leakage, in-pursuit totals, deposits received, calibration health, balance outstanding, activity feed |
 | **Royalty Estimator Widget** | ✅ Ready | MFA-gated, lead capture, results email, CTA — no API keys needed |
 | **Earnings Engine** | ✅ Ready | Full historical reconstruction and real-time calculation |
@@ -86,7 +88,7 @@ POST /tvfilm/trust/explain
 | **Disaster Recovery** | ✅ Ready | Nightly backup cron, weekly restore drill tooling, DR and incident runbooks |
 | **Platform Security** | ✅ Ready | Network policies, pod security, dependency audit (pip-audit) and CVE scan (Trivy) in CI |
 
----
+| --- |
 
 ## Invite-Only Premier Experience (Founders Circle)
 
@@ -96,7 +98,7 @@ XR7 Engine 2 now features a **premium tier** for hand-selected, high-value artis
 
 **Admin endpoints** (org-level credentials):
 
-```
+```text
 POST /admin/vip/invite-codes         # Generate invite codes for Founders Circle tier
 POST /admin/artists/{id}/vip/grant   # Grant VIP directly (no invite code needed)
 DELETE /admin/artists/{id}/vip        # Revoke VIP membership
@@ -104,7 +106,7 @@ DELETE /admin/artists/{id}/vip        # Revoke VIP membership
 
 **Artist endpoints** (authenticated artist):
 
-```
+```text
 POST /invite/vip/claim                     # Claim an invite code to join Founders Circle
 GET  /artists/{id}/vip/status              # Check VIP membership status and tier
 GET  /artists/{id}/vip/drops               # List VIP Drop exclusives (feature catalog)
@@ -126,7 +128,7 @@ POST /artists/{id}/vip/referral           # Create a new VIP referral (invite a 
 ### VIP Features
 
 | Feature | Description | API Surface |
-|---------|-------------|-------------|
+| --- | --- | --- |
 | **Invite-Only Tier** | Hand-curated membership with exclusive perks | `POST /invite/vip/claim`, `GET /vip/status` |
 | **Weekly Strategic Brief** | AI-synthesized weekly digest: open claims, revenue forecast, anomalies, action items | `GET /weekly-brief`, `POST /generate` |
 | **XR7 Advisor Copilot** | Context-aware natural-language Q&A with confidence scoring and source citations | `POST /copilot/query`, feedback loop |
@@ -142,7 +144,7 @@ POST /artists/{id}/vip/referral           # Create a new VIP referral (invite a 
 
 **Claim an Invite Code:**
 
-```
+```text
 POST /invite/vip/claim
 
 Request:  {"artist_id": "37f25000-...", "invite_code": "abcd1234..."}
@@ -161,7 +163,7 @@ Response: {
 
 **Get VIP Status:**
 
-```
+```text
 GET /artists/{artist_id}/vip/status
 
 Response: {
@@ -185,7 +187,7 @@ Response: {
 
 **List VIP Drops:**
 
-```
+```text
 GET /artists/{artist_id}/vip/drops
 
 Response: [
@@ -202,7 +204,7 @@ Response: [
 
 **Copilot Query:**
 
-```
+```text
 POST /artists/{artist_id}/copilot/query
 
 Request: {
@@ -271,18 +273,19 @@ const drops = await vip.getVipDrops({ artistId: "37f25000-..." });
 drops.forEach(drop => console.log(`${drop.title}: ${drop.available_since}`));
 ```
 
----
+| --- |
 
 ### Data Ingestion — No API Keys Required
 
 The platform is **fully operational today** using the statement file upload workflow.  Artists download their royalty statements from distributors and PRO portals and upload them as CSV files:
 
-```
+```text
 POST /artists/{id}/statements/upload   # Upload a CSV/TSV/XLSX statement
 GET  /artists/{id}/statements          # See all uploaded statements
 ```
 
 Supported formats are auto-detected from the column headers:
+
 - **DistroKid** — monthly earnings reports
 - **TuneCore** — sale month reports
 - **CD Baby** — sales/earnings exports
@@ -302,7 +305,7 @@ Supported formats are auto-detected from the column headers:
 
 Get the full machine-readable format catalog (including key columns and descriptions):
 
-```
+```text
 GET /ingestion/supported-formats
 ```
 
@@ -310,20 +313,21 @@ After upload, anomaly detection runs automatically.
 
 Before upload, artists must accept the current Artist Recovery Services Agreement:
 
-```
+```text
 GET  /terms
 POST /artists/{id}/terms/accept
 ```
 
 ### Checking What's Configured
 
-```
+```text
 GET /health/readiness
 ```
 
 Returns the status of every connector and notification service.  Use this endpoint to see exactly which credentials are missing.
 
 The readiness payload now also includes:
+
 - `architecture` (market-readiness gate score for production hardening)
 - `global_social` (simulation toggle + API key presence)
 - `white_label` (enabled/disabled + deployment status)
@@ -345,13 +349,13 @@ Supported file types: `.csv`, `.tsv`, `.xlsx`. Files are parsed through the same
 
 Use the new fetcher for global social opportunity detection:
 
-```
+```text
 POST /artists/{id}/fetchers/global-social
 ```
 
 Serve the mobile-first dashboard shell:
 
-```
+```text
 GET /dashboard/ui
 ```
 
@@ -359,11 +363,12 @@ GET /dashboard/ui
 
 Track artist onboarding progression through the state machine:
 
-```
+```text
 GET /artists/{id}/onboarding/status
 ```
 
 Status flow:
+
 - `NEW` -> artist record created
 - `ONBOARDED` -> terms accepted
 - `ACTIVE` -> first statement successfully ingested
@@ -372,7 +377,7 @@ Status flow:
 
 Analyst queue (requires `ANALYST_API_KEY` and `X-Analyst-Email`):
 
-```
+```text
 GET  /review-queue/items
 POST /review-queue/items
 POST /review-queue/items/{id}/assign
@@ -383,7 +388,7 @@ POST /review-queue/threshold-check
 
 Admin operator console (requires `ADMIN_API_KEY` via `X-Admin-Key`):
 
-```
+```text
 GET /admin/overview
 GET /admin/artists
 GET /admin/claims
@@ -397,13 +402,13 @@ GET /admin/audit-logs
 
 Generate OpenAPI clients for Python and TypeScript:
 
-```
+```bash
 make sdks
 ```
 
 Or generate per-language:
 
-```
+```bash
 make sdk-python
 make sdk-typescript
 ```
@@ -412,7 +417,7 @@ make sdk-typescript
 
 Structured ML feedback ingestion endpoint:
 
-```
+```text
 POST /artists/{id}/intelligence/feedback
 GET  /artists/{id}/intelligence/feedback/events
 GET  /artists/{id}/intelligence/calibration
@@ -424,7 +429,7 @@ Calibration now includes posterior parameters, credible intervals, and scope-lev
 
 Set environment variables:
 
-```
+```bash
 HUBSPOT_ENABLED=true
 HUBSPOT_BASE_URL=https://api.hubapi.com
 HUBSPOT_PRIVATE_APP_TOKEN=...
@@ -446,7 +451,7 @@ When artists upload `CSV/TSV/XLSX` statements, XR7 extracts and syncs available 
 Mapped CRM objects:
 
 | HubSpot Object | XR7 Mapping |
-|---|---|
+| --- | --- |
 | Contact | `xr7_artist_id`, identity fields, distributor/pro identifiers, summary metrics |
 | Company | artist brand, label/publisher entities, distributor entities |
 | Deal | `XR7 Recovery - {artist_name}`, amount=`estimated_recoverable`, stage=`Discovery`, pipeline=`Artist Recovery` |
@@ -480,7 +485,7 @@ OAuth prefill stores only non-sensitive profile metadata and helps seed CRM cont
 ### Recovery Intelligence Feature Matrix
 
 | Capability | Primary Module(s) | API Surface |
-|---|---|---|
+| --- | --- | --- |
 | 1. Cash recovery forecast (per claim) | `XR7/recovery/cash_recovery_forecast.py` | `GET /claims/{claim_id}/forecast`, `GET /artists/{id}/claims` (includes `forecast`) |
 | 2. Automated payer-specific playbooks | `XR7/recovery/payer_playbooks/` | `GET /claims/{claim_id}/playbook`, `GET /artists/{id}/recovery/playbook-summary` |
 | 3. Deadline risk engine | `XR7/recovery/deadline_risk_engine.py` | `GET /artists/{id}/recovery/deadline-risk`, dashboard `deadlines.deadline_risk`; Celery: `xr7.pipeline.auto_escalate_claims`, `xr7.pipeline.notify_deadline_risk` |
@@ -496,7 +501,7 @@ OAuth prefill stores only non-sensitive profile metadata and helps seed CRM cont
 
 Partner connector environment variables are documented in `.env.example` (for example `STRIPE_CONNECT_TOKEN`, `CHARTMETRIC_TOKEN`, `SONGTRUST_TOKEN`, `ASCAP_TOKEN`, `BMI_TOKEN`, `SESAC_TOKEN`).
 
----
+| --- |
 
 ## Autonomous AI Onboarding & Recovery Agents
 
@@ -655,7 +660,7 @@ Metadata drift is one of the most common causes of future royalty leakage. If a 
 
 XR7 now runs a dedicated metadata repair phase during historical reconstruction:
 
-```
+```text
 POST /artists/{id}/earnings/reconstruct
 ```
 
@@ -707,11 +712,12 @@ Audit findings are written to `metadata_issues` with confidence, rationale, and 
 
 ### Metadata health endpoint
 
-```
+```text
 GET /artists/{id}/catalog/metadata-health
 ```
 
 Returns:
+
 - completeness score
 - consistency score
 - identifier coverage
@@ -821,7 +827,7 @@ XR7 supports optional OAuth-assisted intake prefill. This speeds onboarding whil
 ### Providers and Scopes
 
 | Provider | Purpose | Suggested Scopes | Prefilled Fields |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | **Google OAuth** | Basic profile prefill | `openid`, `email`, `profile` | Name, email, avatar |
 | **Apple Sign-In** | Privacy-forward identity prefill | `name`, `email` | Name, Apple relay email |
 | **Spotify for Artists OAuth** | Public artist profile and catalog hints | `user-read-email`, `user-read-private` (and partner-approved artist scopes when available) | Display name, artist URI, public catalog metadata |
@@ -856,7 +862,7 @@ XR7 auto-matches artist identity footprints across ingestion and public metadata
 ### Confidence and User Confirmation
 
 | Confidence Band | Behavior |
-|---|---|
+| --- | --- |
 | `>= 0.90` | Auto-accept with audit log entry |
 | `0.70 - 0.89` | Soft-confirm prompt in onboarding/dashboard |
 | `< 0.70` | Requires artist confirmation before linkage |
@@ -927,25 +933,25 @@ XR7 is designed so artists always understand what happened, why it happened, and
 ### Approval Model
 
 | Action Type | Autonomous | Explicit Approval Required |
-|---|---|---|
+| --- | --- | --- |
 | Read-only recommendations | Yes | No |
 | Draft generation | Yes | No |
 | Claim submission | Conditional | Yes |
 | Payment charge/disbursement initiation | No | Yes |
-
 
 ## Artist Recovery Dashboard
 
 Every artist has a single endpoint that gives them a complete, real-time
 view of their recovery status:
 
-```
+```text
 GET /artists/{id}/dashboard
 ```
 
 ### What the dashboard shows
 
 **1. Leakage discovered** — every anomaly XR7 has ever found for this artist
+
 ```json
 "leakage_discovered": {
   "total_anomalies": 14,
@@ -962,6 +968,7 @@ GET /artists/{id}/dashboard
 ```
 
 **2. In pursuit** — active claims being worked right now
+
 ```json
 "in_pursuit": {
   "active_claim_count": 9,
@@ -972,6 +979,7 @@ GET /artists/{id}/dashboard
 ```
 
 **3. Recovered & deposited** — actual money in the artist's account
+
 ```json
 "recovered_and_deposited": {
   "total_deposited": 4500.00,
@@ -989,6 +997,7 @@ GET /artists/{id}/dashboard
 ```
 
 **4. Balance still pursuing** — the headline number
+
 ```json
 "balance_still_pursuing": {
   "total_in_active_claims": 43875.00,
@@ -999,6 +1008,7 @@ GET /artists/{id}/dashboard
 ```
 
 **5. Deadlines** — statute-of-limitations urgency
+
 ```json
 "deadlines": {
   "expired_count": 1,
@@ -1020,6 +1030,7 @@ GET /artists/{id}/dashboard
 ```
 
 **6. Priority actions** — what to work on right now
+
 ```json
 "priority_actions": {
   "total_open_items": 12,
@@ -1038,6 +1049,7 @@ GET /artists/{id}/dashboard
 ```
 
 **7. Calibration health** — model confidence reliability from real outcomes
+
 ```json
 "calibration_health": {
   "overall": {
@@ -1058,6 +1070,7 @@ GET /artists/{id}/dashboard
 ```
 
 **8. Catalog health** — ML composite score
+
 ```json
 "catalog_health": {
   "health_score": 68,
@@ -1076,6 +1089,7 @@ GET /artists/{id}/dashboard
 ```
 
 **9. Earnings trend** — 90-day forecast
+
 ```json
 "earnings_trend": {
   "trend": "GROWING",
@@ -1088,6 +1102,7 @@ GET /artists/{id}/dashboard
 ```
 
 **10. Activity feed** — reverse-chronological log of everything that's happened
+
 ```json
 "activity_feed": [
   {
@@ -1113,6 +1128,7 @@ GET /artists/{id}/dashboard
 ```
 
 The dashboard updates automatically every time:
+
 - A new anomaly is detected (statement upload or manual detection)
 - A claim status changes
 - A Trolley disbursement is received (webhook `disbursement.settled`)
@@ -1149,7 +1165,7 @@ Example response (truncated):
 }
 ```
 
-2. Rank queue items by expected utility:
+1. Rank queue items by expected utility:
 
 ```http
 POST /artists/{id}/intelligence/rank-utility
@@ -1201,7 +1217,7 @@ Example response fields used by UI sorting/badges:
 }
 ```
 
----
+| --- |
 
 ## Claim Evidence and Legal Packet Workflow
 
@@ -1257,6 +1273,7 @@ scripts/export_evidence.sh --claim-id {claim_id} --format zip --expected-prior-h
 ```
 
 Verification checks include:
+
 - `packet_hash_matches`
 - `chain_hash_matches`
 - `line_hashes_match`
@@ -1281,6 +1298,7 @@ export XR7_EVIDENCE_PUBLIC_KEY_PEM="-----BEGIN PUBLIC KEY-----..."
 ```
 
 Each packet includes metadata:
+
 - `metadata.packet_version` (current: `1.1`)
 - `metadata.revision` (increments per regenerated packet)
 - `integrity.packet_hash`, `integrity.prior_packet_hash`, `integrity.chain_hash`, `integrity.signature`
@@ -1322,7 +1340,7 @@ Persist verification timestamp, claim id, packet hash, signer mode, and result f
 Detailed operational procedure:
 `docs/evidence_security_runbook.md`
 
----
+| --- |
 
 ## Trolley — Merchant of Record Integration
 
@@ -1336,7 +1354,7 @@ Trolley acts as the **Merchant of Record** for all XR7 payments:
 
 ### Payment flow
 
-```
+```text
 1. Claim recovered → status = PAID
        ↓
 2. POST /artists/{id}/trolley/charge
@@ -1358,6 +1376,7 @@ Trolley acts as the **Merchant of Record** for all XR7 payments:
 Request a sandbox merchant key from the Trolley developer portal.
 
 **Step 2** — Set environment variables:
+
 ```bash
 export TROLLEY_API_KEY="your-key-from-trolley"
 export TROLLEY_SECRET_KEY="your-webhook-secret"
@@ -1366,7 +1385,8 @@ export TROLLEY_SECRET_KEY="your-webhook-secret"
 ```
 
 **Step 3** — Configure webhook URL in Trolley merchant dashboard:
-```
+
+```text
 Settings → Webhooks → Add Endpoint
 URL: https://your-domain.com/webhooks/trolley
 Events: transaction.approved, transaction.declined, transaction.void,
@@ -1381,11 +1401,12 @@ Events: transaction.approved, transaction.declined, transaction.void,
 
 ### Check integration status
 
-```
+```text
 GET /health/readiness
 ```
 
 Look for the `merchant_of_record` section:
+
 ```json
 {
   "merchant_of_record": {
@@ -1398,7 +1419,7 @@ Look for the `merchant_of_record` section:
 }
 ```
 
----
+| --- |
 
 ## Features
 
@@ -1439,7 +1460,7 @@ Look for the `merchant_of_record` section:
 
 ## Architecture
 
-```
+```text
 XR7/
 ├── models/         # SQLAlchemy ORM models + Pydantic schemas
 ├── ingestion/      # CSV statement parser + connector architecture (PRO, DSP, Ticketing, Platform)
@@ -1457,7 +1478,7 @@ XR7/
 
 Additional architecture assets:
 
-```
+```text
 xr7_common/                 # shared settings/logging/schemas package
 alembic/                    # migration environment and versions
 openapi/openapi.json        # generated OpenAPI output
@@ -1468,6 +1489,7 @@ Makefile                    # standard build/run/test/migrate targets
 ```
 
 Universal schema implementation:
+
 - Pydantic schemas: `xr7_common/schemas/universal.py`
 - SQLAlchemy tables: `XR7/models/universal_royalty_event.py`, `XR7/models/catalog_graph.py`
 - Alembic baseline migration: `alembic/versions/20260314_0001_onboarding_architecture.py`
@@ -1475,12 +1497,14 @@ Universal schema implementation:
 - JSON examples: `docs/examples/universal_royalty_event.json`, `docs/examples/catalog_graph.json`
 
 Background jobs and storage integration:
+
 - Celery app: `XR7/celery_app.py`
 - Sync job tasks: `XR7/tasks/sync_jobs.py`
 - Retry orchestration helpers: `XR7/ingestion/sync_jobs.py`
 - MinIO/S3 storage service: `XR7/services/storage_service.py`
 
 Celery beat schedule:
+
 - `xr7.sync_jobs.requeue_due` is scheduled every `XR7_SYNC_REQUEUE_SECONDS` seconds (minimum 15 seconds) to requeue due retry jobs.
 
 ## Setup
@@ -1504,6 +1528,7 @@ source .env
 ```
 
 Key variables:
+
 - `XR7_ENV` — set to `production` to enable real Twilio/SMTP and enforce CORS allowlist
 - `XR7_ENFORCE_AUTH_GLOBALLY` — set to `1` to require bearer auth on staged soft-guard endpoints (`/artists/{id}/earnings`, `/artists/{id}/earnings/history`, `/artists/{id}/anomalies`, `/artists/{id}/claims`)
 - `WIDGET_ADMIN_KEY` — secret key for `GET /widget/leads` admin endpoint
@@ -1534,6 +1559,7 @@ Key variables:
 See `.env.example` for the full list including connector API key variable names.
 
 Production scaffold included in this repository:
+
 - `docker-compose.yml` (FastAPI + PostgreSQL + Redis + Celery worker/beat + MinIO)
 - `Makefile` (`make run`, `make test`, `make migrate-up`, `make openapi`, `make seed`)
 - `alembic/` + `alembic.ini` for migrations
@@ -1568,7 +1594,7 @@ docker compose ps
 Expected healthy shape:
 
 | Service | Expected State |
-|---|---|
+| --- | --- |
 | `api` | healthy / running |
 | `postgres` | healthy / accepting connections |
 | `redis` | healthy / ready |
@@ -1593,7 +1619,7 @@ curl "http://localhost:8000/artists/{seeded_artist_id}/dashboard"
 ### Common Local Failures and Fixes
 
 | Symptom | Likely Cause | Fix |
-|---|---|---|
+| --- | --- | --- |
 | Port bind failure | Local service already on `5432/6379/9000/8000` | Stop conflicting process or remap ports in compose |
 | API boots but jobs stall | Redis not ready when worker starts | Restart worker after Redis healthy |
 | Celery tasks not picked up | Wrong broker URL/env mismatch | Verify `REDIS_URL`, `CELERY_BROKER_URL`, restart worker/beat |
@@ -1606,6 +1632,7 @@ pytest --cov=XR7 --cov-report=term-missing
 ```
 
 Coverage interpretation:
+
 - prioritize low-coverage business-critical modules (`recovery`, `billing`, `trolley`, `anomaly`, `ingestion`)
 - enforce thresholds in CI (see Integration Test Harness section)
 
@@ -1636,7 +1663,7 @@ Artist -> Statement -> AnomalyEvent -> Claim -> EvidencePacket -> TrolleyTransac
 ### Immutability Rules
 
 | Table/Entity | Mutability | Why |
-|---|---|---|
+| --- | --- | --- |
 | Evidence anchors / chain hashes | Append-only | Legal integrity + provenance |
 | Admin/audit logs | Append-only | Compliance and forensic replay |
 | Lineage events | Append-only | End-to-end traceability |
@@ -1673,7 +1700,7 @@ If no explicit parser matches, XR7 applies generic schema detection using date/s
 Duplicate heuristic uses statement identity hash over source, period, row signature, and normalized totals.
 
 | Duplicate Outcome | Behavior |
-|---|---|
+| --- | --- |
 | Exact duplicate | Reject ingest, return duplicate reference |
 | Partial overlap | Ingest delta rows only |
 | Conflict | Queue analyst review |
@@ -1717,7 +1744,7 @@ Full catalog: `docs/anomaly_rule_catalog.md`
 ### Rule Catalog Contract
 
 | Field | Description |
-|---|---|
+| --- | --- |
 | `rule_id` | Stable identifier |
 | `category` | Royalty/touring/sync/etc. |
 | `subtype` | Specific anomaly class |
@@ -1727,6 +1754,7 @@ Full catalog: `docs/anomaly_rule_catalog.md`
 ### Rule Combination and Weighting
 
 When multiple rules fire on same row:
+
 - weighted aggregation computes final anomaly score
 - highest severity contributes to escalation threshold
 - duplicate semantic rules are deduplicated before claim drafting
@@ -1760,7 +1788,7 @@ IDENTIFIED -> VALIDATED -> IN_DISPUTE -> NEGOTIATING -> ACCEPTED -> PAID -> CLOS
 ### Transition Authorities
 
 | Transition Type | Trigger |
-|---|---|
+| --- | --- |
 | Manual advance | Analyst/authorized role |
 | Webhook-driven | Trolley event handlers |
 | Agent-driven | Orchestrator node action |
@@ -1774,7 +1802,7 @@ IDENTIFIED -> VALIDATED -> IN_DISPUTE -> NEGOTIATING -> ACCEPTED -> PAID -> CLOS
 ### Required Fields by State
 
 | State | Required Fields |
-|---|---|
+| --- | --- |
 | IDENTIFIED | anomaly link, estimated recoverable |
 | NEGOTIATING | evidence packet, counterparty context |
 | ACCEPTED | settlement metadata |
@@ -1788,12 +1816,14 @@ Evidence packet version increments at major lifecycle checkpoints. ESCALATED cla
 Model cards index: `docs/ml_model_cards.md`
 
 Covered models:
+
 - Isolation Forest anomaly detector
 - Earnings forecaster
 - Catalog scorer
 - Rate benchmarker
 
 Each model card includes:
+
 - training data windows and labels
 - features + preprocessing
 - benchmark metrics and baselines
@@ -1808,7 +1838,7 @@ Playbook: `docs/trolley_failure_playbook.md`
 ### Failure Scenarios
 
 | Scenario | Default Behavior |
-|---|---|
+| --- | --- |
 | Charge declined | Keep claim payable state, queue retry/analyst path |
 | Disbursement failed | Mark txn failed, queue retry and notify artist |
 | Stuck non-terminal transaction | Reconciliation task + operator intervention path |
@@ -1841,7 +1871,7 @@ Attorneys can override classification for a specific anomaly with audit logging.
 XR7 uses header-based role access for operator and scoped routes plus endpoint-specific flows.
 
 | Header | Purpose | Typical Route Groups |
-|---|---|---|
+| --- | --- | --- |
 | `X-Admin-Key` | Admin console authentication | `/admin/*`, widget lead admin views |
 | `X-Analyst-Email` (+ analyst key) | Analyst attribution and review ownership | `/review-queue/*` |
 | `X-Actor-Email` | Artist/team member scoping | expansion + support + artist-scoped protected routes |
@@ -1875,7 +1905,7 @@ XR7 uses header-based role access for operator and scoped routes plus endpoint-s
 ### Domain Error Codes
 
 | Error Code | Meaning | Retryable |
-|---|---|---|
+| --- | --- | --- |
 | `TERMS_NOT_ACCEPTED` | Terms gate not satisfied | No |
 | `SOL_EXPIRED` | Claim window expired | No |
 | `TROLLEY_RECIPIENT_NOT_FOUND` | Missing Trolley recipient profile | No (until registration complete) |
@@ -1915,7 +1945,7 @@ Long-running Celery flows expose status via job/activity endpoints and reflected
 ### Pagination Mode Guidance
 
 | Endpoint Class | Mode |
-|---|---|
+| --- | --- |
 | Activity/history feeds | Cursor preferred |
 | Bounded admin lists | Offset/page |
 | Large event logs | Cursor required |
@@ -1925,7 +1955,7 @@ Long-running Celery flows expose status via job/activity endpoints and reflected
 ### Rate Tier Defaults
 
 | Tier | Intended Surface |
-|---|---|
+| --- | --- |
 | Widget funnel | strict anti-abuse limits |
 | Artist-scoped | moderate |
 | Analyst/admin | higher trusted quotas |
@@ -1938,6 +1968,7 @@ Long-running Celery flows expose status via job/activity endpoints and reflected
 ### Rate Headers
 
 On throttled or tracked responses:
+
 - `X-RateLimit-Limit`
 - `X-RateLimit-Remaining`
 - `Retry-After`
@@ -1949,7 +1980,7 @@ Current versioning: URL namespace and OpenAPI contract version (`v1` route strat
 ### Change Classification
 
 | Change Type | Classification |
-|---|---|
+| --- | --- |
 | Add optional field | Non-breaking |
 | Add endpoint | Non-breaking |
 | Remove/rename required field | Breaking |
@@ -2023,7 +2054,7 @@ Stored PII includes artist contact profile and Trolley vault references (tokeniz
 ### Retention Policy Matrix
 
 | Entity | Retention Baseline |
-|---|---|
+| --- | --- |
 | Statements | contractual + audit window |
 | Anomalies/claims | lifecycle + legal window |
 | Evidence packets | immutable legal retention |
@@ -2057,7 +2088,7 @@ Reference: `docs/white_label_deployment_guide.md`
 ### Tenant Branding Controls
 
 | Setting | Purpose |
-|---|---|
+| --- | --- |
 | Logo URL | Brand display |
 | Color scheme | UI theming |
 | Tenant domain | Branded entrypoint |
@@ -2215,7 +2246,7 @@ Governance reference: `docs/ai_agent_governance_framework.md`
 ### Decision Authority Matrix
 
 | Action | Autonomous | Human Approval |
-|---|---|---|
+| --- | --- |
 | Recommendations/explanations | Yes | No |
 | Draft generation | Yes | No |
 | Financial/destructive actions | No | Yes |
@@ -2299,6 +2330,7 @@ Postman collection can be generated from OpenAPI and published with SDK artifact
 Changelog lives in `CHANGELOG.md`.
 
 Initial structure should include:
+
 - universal schema migrations (`20260314_0001`, `20260314_0002`)
 - LangGraph orchestra rollout
 - expansion endpoints release
@@ -2311,7 +2343,7 @@ Deployment reference: `docs/production_deployment_guide.md`
 ### Kubernetes Component Mapping
 
 | Component | Recommended Workload Type |
-|---|---|
+| --- | --- |
 | FastAPI API | Deployment |
 | Celery workers | Deployment |
 | Celery beat | Singleton Deployment |
@@ -2409,7 +2441,7 @@ net_disbursed = gross_recovered - fee
 ### Worked Example
 
 | Gross | Fee (12%) | Net |
-|---:|---:|---:|
+| ---: | ---: | ---: |
 | 45,000.00 | 4,500.00 | 40,500.00 |
 
 ### Partial Recovery Handling
@@ -2453,7 +2485,7 @@ Lineage summaries are embedded in exported evidence manifests.
 ## Regulatory Compliance Matrix
 
 | Regulation | Applicability to XR7 | Current Status / Implementation | Gaps / Next Steps |
-|---|---|---|---|
+| --- | --- | --- |
 | PCI DSS | XR7 avoids raw card handling; Trolley vault integration | Out of direct card-data scope by architecture | Maintain integration controls and annual assessment |
 | GDPR | Artist profile and account metadata may be personal data | Data subject workflows and retention policies implemented at platform level | Expand jurisdiction-specific workflows |
 | CCPA / CPRA | California artist data may qualify | Service-provider style processing posture | Improve self-service DSAR tooling |
@@ -2485,7 +2517,7 @@ Threat model reference: `docs/security_threat_model.md`
 ### Key Threat Scenarios and Mitigations
 
 | Threat | Mitigation |
-|---|---|
+| --- | --- |
 | Unauthorized claim manipulation | role-scoped auth + immutable audit logs |
 | Evidence packet tampering | chain hash + signature verification |
 | Analyst impersonation | header key controls + actor audit |
@@ -2503,7 +2535,7 @@ Benchmarks reference: `docs/performance_scalability_benchmarks.md`
 ### Target SLO Bands
 
 | Operation | p50 | p95 | p99 |
-|---|---:|---:|---:|
+| --- | ---: | ---: | ---: |
 | Dashboard load | <= 300ms | <= 900ms | <= 1500ms |
 | Statement upload accept | <= 500ms | <= 1500ms | <= 2500ms |
 | Evidence export start | <= 700ms | <= 2000ms | <= 3500ms |
@@ -2521,6 +2553,7 @@ Known bottlenecks and mitigations are tracked in roadmap backlog.
 Runbook index reference: `docs/incident_response_runbook_index.md`
 
 Runbook stubs:
+
 - failed disbursement recovery
 - compromised signing key rotation
 - corrupt evidence packet investigation
@@ -2536,7 +2569,7 @@ Support reference: `docs/support_slas_escalation_paths.md`
 ### Support Tiers
 
 | Tier | Coverage |
-|---|---|
+| --- | --- |
 | Self-serve | docs + guides |
 | Standard | email SLA |
 | Premium | dedicated analyst |
@@ -2622,7 +2655,7 @@ Reference: `docs/partner_distributor_integration_guide.md`
 ### Partner Tiers
 
 | Tier | Description |
-|---|---|
+| --- | --- |
 | Data partner | file export agreement |
 | API partner | direct connector integration |
 | White-label partner | tenant deployment |
@@ -2676,7 +2709,7 @@ Include error and success states with confidence-building copy.
 ### Agent Comfort Messaging
 
 > WelcomeSummaryAgent: "You are fully onboarded. We found 3 immediate opportunities worth reviewing first."
-
+>
 > ArtistComfortAgent: "No action is required right now; we are monitoring payer responses and deadlines for you."
 
 ### Mobile and Accessibility
@@ -2719,6 +2752,7 @@ Widget demo mode supports OTP simulation path for non-production demos.
 Reference: `docs/competitive_positioning_summary.md`
 
 XR7 differentiation:
+
 - automation scale beyond manual royalty audit firms
 - end-to-end recovery workflow beyond accounting-only SaaS tooling
 - defensible moat: evidence-chain integrity + calibrated ML prioritization
@@ -2757,7 +2791,7 @@ Roadmap phases should map to measurable adoption, recovery yield, and partner ex
 ## Glossary
 
 | Term | Definition |
-|---|---|
+| --- | --- |
 | Leakage | Recoverable earnings discrepancy between expected and paid amounts |
 | Anomaly | Detected outlier or rule-triggered discrepancy candidate |
 | Claim | Structured recovery action tied to one or more anomalies |
@@ -2819,7 +2853,7 @@ Detailed phased implementation plan and acceptance criteria:
 ## API Endpoints
 
 | Method | Path | Description |
-|--------|------|-------------|
+| --- | --- | --- |
 | GET | `/health` | Health check |
 | GET | `/health/readiness` | Connector and credential readiness status |
 | GET | `/dashboard/ui` | Serve the standalone recovery dashboard frontend |
@@ -2847,7 +2881,7 @@ Detailed phased implementation plan and acceptance criteria:
 | GET | `/claims/{id}` | Get claim detail |
 | POST | `/claims/{id}/advance` | Advance claim status |
 | POST | `/claims/{id}/evidence` | Generate evidence packet |
-| GET | `/claims/{id}/evidence/export` | Export attorney-ready evidence package (`format=zip|pdf`, optional `refresh=true`) |
+| GET | `/claims/{id}/evidence/export` | Export attorney-ready evidence package (`format=zip\|pdf`, optional `refresh=true`) |
 | GET | `/claims/{id}/evidence/verify` | Verify evidence packet integrity, signature, and optional prior hash link |
 | POST | `/claims/{id}/reconcile` | Reconcile recovered amount |
 | GET | `/artists/{id}/billing` | Billing summary |
@@ -2889,6 +2923,7 @@ Detailed phased implementation plan and acceptance criteria:
 The roadmap capabilities below are implemented and available in the API:
 
 Team access enforcement note:
+
 - After at least one team member exists for an artist, artist-scoped expansion endpoints require `X-Actor-Email` (and optional `X-Actor-Role`) matching a team member.
 - Bootstrap rule: the first `POST /artists/{id}/team/members` entry must use role `artist`.
 - Only `artist` role can add/remove team members; `manager` and `attorney` are read/operations roles.
@@ -2896,17 +2931,19 @@ Team access enforcement note:
 ### OpenAPI Role Matrix (Expansion)
 
 Security headers used by protected artist-scoped expansion routes:
+
 - `X-Actor-Email` — required once team membership exists for the artist.
 - `X-Actor-Role` — optional validation header; when present, must match the role assigned to `X-Actor-Email`.
 
 Bootstrap behavior:
+
 - If no team members exist for an artist, protected routes allow access without role headers.
 - First team member creation must use role `artist`.
 
 Protected artist-scoped routes and allowed roles:
 
 | Method | Path | Allowed roles (when team exists) |
-|--------|------|-----------------------------------|
+| --- | --- | --- |
 | GET | `/artists/{id}/notifications/preferences` | `artist`, `manager`, `attorney` |
 | PUT | `/artists/{id}/notifications/preferences` | `artist`, `manager` |
 | POST | `/artists/{id}/notifications/dispatch` | `artist`, `manager` |
@@ -2925,6 +2962,7 @@ Protected artist-scoped routes and allowed roles:
 | GET | `/artists/{id}/recovery/audit-demand-letter` | `artist`, `manager`, `attorney` |
 
 Public/non-artist-scoped expansion routes (no team headers required):
+
 - `GET /stats/public/recovery`
 - `POST /claims/{claim_id}/evidence/anchor`
 - `GET /education/guides`
@@ -2964,6 +3002,7 @@ Public/non-artist-scoped expansion routes (no team headers required):
 `POST /artists/{id}/fetchers/social`
 
 Provider fetcher execution mode:
+
 - If provider API base URL + key env vars are configured, fetchers attempt live pulls.
 - If not configured, fetchers return deterministic simulated payloads so local/dev pipelines stay testable.
 
@@ -2975,6 +3014,7 @@ Provider fetcher execution mode:
 `POST /artists/{id}/ingestion/upload-any`
 
 Ingestion hardening:
+
 - ClamAV scan is attempted first (configurable with `XR7_USE_CLAMAV`, `CLAMAV_HOST`, `CLAMAV_PORT`), with signature fallback when daemon is unavailable.
 - Strict extension-vs-magic validation is enforced by default (`strict_validation=true`), blocking suspicious uploads.
 
@@ -2985,14 +3025,17 @@ Ingestion hardening:
 `POST /artists/{id}/parsers/mlc`
 
 Parser plugin persistence:
+
 - `PUT /artists/{id}/parsers/plugins` (register/update plugin metadata)
 - `GET /artists/{id}/parsers/plugins` (list plugin registrations)
 
 Parser plugin sandbox policy:
+
 - Entry points are restricted to `XR7_PLUGIN_ALLOWED_PREFIXES` and denied when matching `XR7_PLUGIN_BLOCKED_PREFIXES`.
 - When `XR7_PLUGIN_SIGNATURE_SECRET` is set, each plugin requires `plugin_signature` and is verified as `HMAC_SHA256(secret, plugin_entrypoint)`.
 
 Async sync jobs with retries + status tracking:
+
 - `POST /artists/{id}/sync/jobs` (enqueue job; optional async execution)
 - `GET /artists/{id}/sync/jobs` (list job statuses)
 - `GET /artists/{id}/sync/jobs/{job_id}` (single job detail)
@@ -3000,6 +3043,7 @@ Async sync jobs with retries + status tracking:
 - `POST /artists/{id}/sync/jobs/requeue-due` (scan + enqueue due retry jobs)
 
 Queue backend behavior for `POST /artists/{id}/sync/jobs`:
+
 - `queue_backend=inline` runs immediately in the request
 - `queue_backend=background` uses FastAPI background tasks
 - `queue_backend=celery` enqueues to Celery worker, with safe fallback to background mode if unavailable
@@ -3030,6 +3074,7 @@ Queue backend behavior for `POST /artists/{id}/sync/jobs`:
 `POST /artists/{id}/workflow/run`
 
 OAuth connector mode behavior:
+
 - If provider OAuth credentials are configured (env vars above), exchange/refresh calls use live provider token endpoints.
 - If credentials are not configured, endpoints run in safe simulated mode so local development and tests still work.
 
@@ -3119,6 +3164,7 @@ Contingency fee baseline is now 12%, with additional hard-cap controls for advan
 ### Frontend Sovereignty Components
 
 Added reusable dashboard components in frontend:
+
 - `frontend/src/components/ConfidenceMeter.tsx`
 - `frontend/src/components/SolUrgencyHeatmap.tsx`
 - `frontend/src/components/RecoverableWaterfallChart.tsx`
