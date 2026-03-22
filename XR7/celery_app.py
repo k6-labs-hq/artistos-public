@@ -71,6 +71,11 @@ celery_app.conf.update(
             "task": "fp.anomaly_detection_sweep",
             "schedule": 86400,
         },
+        # ── Black-box / unclaimed royalties ────────────────────────────────
+        "xr7-blackbox-weekly-sweep": {
+            "task": "xr7.tasks.blackbox.scan_all_artists_blackbox",
+            "schedule": 604800,  # weekly
+        },
     },
 )
 

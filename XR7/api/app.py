@@ -58,6 +58,10 @@ from XR7.api.routers import slo as slo_router
 from XR7.api.routers import batch_ingestion as batch_ingestion_router
 from XR7.api.routers import enterprise_analysis as enterprise_analysis_router
 from XR7.api.routers import fingerprinting as fingerprinting_router
+from XR7.api.routers import catalog_health as catalog_health_router
+from XR7.api.routers import benchmarks as benchmarks_router
+from XR7.api.routers import blackbox as blackbox_router
+from XR7.api.routers import ugc_scanner as ugc_scanner_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -116,6 +120,10 @@ async def lifespan(app: FastAPI):
     import XR7.models.xr7_idempotency  # noqa: F401
     import XR7.models.fingerprint_job  # noqa: F401
     import XR7.models.fingerprint_match  # noqa: F401
+    import XR7.models.catalog_fix_issue  # noqa: F401
+    import XR7.models.benchmark_aggregate  # noqa: F401
+    import XR7.models.blackbox_match  # noqa: F401
+    import XR7.models.ugc_opportunity  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -267,6 +275,10 @@ app.include_router(slo_router.router)
 app.include_router(batch_ingestion_router.router)
 app.include_router(enterprise_analysis_router.router)
 app.include_router(fingerprinting_router.router)
+app.include_router(catalog_health_router.router)
+app.include_router(benchmarks_router.router)
+app.include_router(blackbox_router.router)
+app.include_router(ugc_scanner_router.router)
 
 
 @app.get("/health")

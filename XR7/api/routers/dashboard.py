@@ -41,6 +41,7 @@ from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.support_message import SupportMessage, SupportMessageRole
+from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus
 from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
@@ -73,6 +74,76 @@ def _support_proactive_tip(dashboard: dict) -> str:
     )
 
   return "Ask Support for a quick summary of your highest-value recovery opportunities."
+
+
+def _catalog_health_card(artist_id: str, db: Session) -> dict:
+  """Build the lightweight catalog_health dashboard card (no heavy ML recompute)."""
+  from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus, FixPriority
+
+  # Pull existing pending/requested fix issues
+  issues = (
+    db.query(CatalogFixIssue)
+    .filter(
+      CatalogFixIssue.artist_id == artist_id,
+      CatalogFixIssue.status.in_([
+        CatalogFixStatus.PENDING.value,
+        CatalogFixStatus.REQUESTED.value,
+      ]),
+    )
+    .order_by(CatalogFixIssue.estimated_recoverable_usd.desc())
+    .limit(3)
+    .all()
+  )
+
+  top_issues_summary = [
+    {
+      "id": iss.id,
+      "category": iss.category,
+      "priority": iss.priority,
+      "description": iss.description[:120],
+      "estimated_recoverable_usd": iss.estimated_recoverable_usd,
+      "suggested_action": iss.suggested_action,
+      "status": iss.status,
+    }
+    for iss in issues
+  ]
+
+  total_recoverable = sum(float(i.estimated_recoverable_usd) for i in issues)
+
+  return {
+    "top_issues_summary": top_issues_summary,
+    "total_estimated_recoverable_from_fixes": round(total_recoverable, 2),
+    "open_fix_count": len(issues),
+    "full_health_url": f"/artists/{artist_id}/catalog/health",
+    "fixes_url": f"/artists/{artist_id}/catalog/fixes",
+  }
+
+
+def _predicted_recoverable_card(artist_id: str, db: Session) -> dict:
+  """Build the 12-month predicted recoverable card for the dashboard."""
+  try:
+    from XR7.ml.predictive_recoverable import PredictiveRecoverableModel
+    model = PredictiveRecoverableModel()
+    result = model.predict(artist_id=artist_id, horizon_months=12, db=db)
+    return {
+      "horizon_months": 12,
+      "low_usd": result["low_usd"],
+      "mid_usd": result["mid_usd"],
+      "high_usd": result["high_usd"],
+      "confidence": result["confidence"],
+      "key_drivers": result["key_drivers"][:3],
+      "detail_url": f"/artists/{artist_id}/ml/predict-recoverable",
+    }
+  except Exception:
+    return {
+      "horizon_months": 12,
+      "low_usd": None,
+      "mid_usd": None,
+      "high_usd": None,
+      "confidence": None,
+      "key_drivers": [],
+      "detail_url": f"/artists/{artist_id}/ml/predict-recoverable",
+    }
 
 
 @router.get("/dashboard/ui")
@@ -198,6 +269,11 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
         else f"Contingency fee: {fee_percent:.2f}%"
       ),
     }
+
+    # ── New feature cards ──────────────────────────────────────────────────
+    dashboard["catalog_health"] = _catalog_health_card(artist_id, db)
+    dashboard["predicted_recoverable"] = _predicted_recoverable_card(artist_id, db)
+
     state = get_latest_artist_state(artist_id)
     if not state:
       dashboard.setdefault("agent_orchestra_status", {
