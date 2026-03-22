@@ -25,7 +25,7 @@ _ADMIN_HEADER = "X-Admin-Key"
 _EXPECTED_KEY = "admin-secret"
 
 
-def _require_admin(x_admin_key: str | None = Header(default=None, alias=_ADMIN_HEADER)):
+def _require_admin(x_admin_key: str = Header(alias=_ADMIN_HEADER)):
     if x_admin_key != _EXPECTED_KEY:
         raise HTTPException(status_code=403, detail="Admin key required")
 
@@ -64,6 +64,7 @@ def upsert_policy(
     "/{org_id}/data-residency",
     response_model=DataResidencyPolicySchema,
     summary="Get data residency policy for an org",
+    dependencies=[Depends(_require_admin)],
 )
 def get_org_policy(org_id: str, db: Session = Depends(get_db)) -> DataResidencyPolicy:
     policy = get_policy(org_id, db)
@@ -76,8 +77,11 @@ def get_org_policy(org_id: str, db: Session = Depends(get_db)) -> DataResidencyP
     "/{org_id}/data-residency/check",
     summary="Check whether a storage region is permitted",
 )
-def check_region(org_id: str, region: str, db: Session = Depends(get_db)) -> dict:
+def check_region(org_id: str, body: dict, db: Session = Depends(get_db)) -> dict:
     """Returns {allowed: bool} — useful for pre-flight checks before writes."""
+    region = (body or {}).get("target_region") or (body or {}).get("region")
+    if not region:
+        raise HTTPException(status_code=422, detail="target_region is required")
     try:
         assert_region_allowed(org_id, region, db)
         return inject_branding_metadata(db, {"allowed": True, "org_id": org_id, "region": region})

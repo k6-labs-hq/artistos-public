@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import JSON, DateTime, Enum as SQLEnum, Index, String, Text, Unicode, func
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -109,7 +109,7 @@ class Invite(Base):
 
     def is_expired(self) -> bool:
         """Check if invite token has expired."""
-        return datetime.utcnow() > self.token_expiration
+        return datetime.now(timezone.utc).replace(tzinfo=None) > self.token_expiration
 
     def is_valid(self) -> bool:
         """Check if invite is valid for redemption."""
@@ -216,6 +216,8 @@ class InviteRedeemRequest(BaseModel):
 class InviteSchema(BaseModel):
     """Invite response model."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     recipient_name: str
     recipient_email: Optional[str]
@@ -230,9 +232,6 @@ class InviteSchema(BaseModel):
     token_expiration: datetime
     campaign: Optional[str]
     referring_agent_id: Optional[str]
-
-    class Config:
-        from_attributes = True
 
 
 class InviteWithTokenSchema(InviteSchema):
@@ -253,6 +252,8 @@ class InviteValidationResponse(BaseModel):
 class InviteAnalyticsSchema(BaseModel):
     """Analytics response."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     campaign: Optional[str]
     date: datetime
     invites_created: int
@@ -262,6 +263,3 @@ class InviteAnalyticsSchema(BaseModel):
     open_rate: Optional[float]
     redemption_rate: Optional[float]
     role_distribution: Optional[dict]
-
-    class Config:
-        from_attributes = True

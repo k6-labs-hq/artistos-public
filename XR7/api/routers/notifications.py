@@ -108,9 +108,6 @@ def get_delivery_log(
     db: Session = Depends(get_db),
 ):
     """Return persisted delivery log rows for audit and debugging."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
     q = db.query(NotificationDeliveryLog).filter(
         NotificationDeliveryLog.artist_id == artist_id
     )

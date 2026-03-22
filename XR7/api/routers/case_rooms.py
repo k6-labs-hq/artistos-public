@@ -65,8 +65,16 @@ def _require_min_role(
     actor_email: str | None,
     required_role: CaseRoomMemberRole,
     db: Session,
+    actor_role_claim: str | None = None,
 ) -> None:
-    """Raise 403 if actor does not have at least required_role in the room."""
+    """Raise 403 if actor does not have at least required_role in the room.
+
+    Role resolution order:
+    1. If the actor is a DB member of the room, use their stored role.
+    2. Otherwise fall back to the ``actor_role_claim`` header value (e.g.
+       from a verified JWT or dev-mode ``X-Actor-Role`` header).
+    3. If neither is available, raise 403.
+    """
     if not actor_email:
         return  # unauthenticated callers allowed in dev; tighten per deployment
     role_order = {
@@ -83,9 +91,16 @@ def _require_min_role(
         )
         .first()
     )
-    if not member:
+    if member:
+        effective_role = member.role
+    elif actor_role_claim:
+        try:
+            effective_role = CaseRoomMemberRole(actor_role_claim)
+        except ValueError:
+            raise HTTPException(status_code=403, detail="Invalid role claim")
+    else:
         raise HTTPException(status_code=403, detail="Not a member of this case room")
-    if role_order.get(member.role, -1) < role_order.get(required_role, 99):
+    if role_order.get(effective_role, -1) < role_order.get(required_role, 99):
         raise HTTPException(status_code=403, detail="Insufficient role for this action")
 
 
@@ -167,10 +182,11 @@ def update_case_room_status(
     room_id: str,
     body: dict,
     x_actor_email: Optional[str] = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: Optional[str] = Header(default=None, alias="X-Actor-Role"),
     db: Session = Depends(get_db),
 ) -> CaseRoom:
     room = _get_room_or_404(room_id, db)
-    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db)
+    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
     new_status = body.get("status")
     if new_status:
         room.status = new_status
@@ -195,10 +211,11 @@ def add_member(
     room_id: str,
     body: AddMemberRequest,
     x_actor_email: Optional[str] = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: Optional[str] = Header(default=None, alias="X-Actor-Role"),
     db: Session = Depends(get_db),
 ) -> CaseRoomMember:
     room = _get_room_or_404(room_id, db)
-    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db)
+    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
     existing = (
         db.query(CaseRoomMember)
         .filter(CaseRoomMember.room_id == room_id, CaseRoomMember.email == body.email)
@@ -235,21 +252,23 @@ def list_members(room_id: str, db: Session = Depends(get_db)) -> List[CaseRoomMe
 
 @router.delete(
     "/case-rooms/{room_id}/members/{email}",
-    status_code=204,
+    status_code=200,
     summary="Remove a member from a case room",
 )
 def remove_member(
     room_id: str,
     email: str,
     x_actor_email: Optional[str] = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: Optional[str] = Header(default=None, alias="X-Actor-Role"),
     db: Session = Depends(get_db),
 ):
     _get_room_or_404(room_id, db)
-    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db)
+    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
     db.query(CaseRoomMember).filter(
         CaseRoomMember.room_id == room_id, CaseRoomMember.email == email
     ).delete()
     db.commit()
+    return {"deleted": True}
 
 
 # ---------------------------------------------------------------------------
@@ -265,12 +284,14 @@ def remove_member(
 def post_comment(
     room_id: str,
     body: PostCommentRequest,
+    x_actor_email: Optional[str] = Header(default=None, alias="X-Actor-Email"),
     db: Session = Depends(get_db),
 ) -> CaseComment:
     _get_room_or_404(room_id, db)
+    author = body.author_email or x_actor_email
     comment = CaseComment(
         room_id=room_id,
-        author_email=body.author_email,
+        author_email=author,
         body=body.body,
         mentions=body.mentions,
         parent_id=body.parent_id,
@@ -387,12 +408,14 @@ def list_attachments(
 def request_approval(
     room_id: str,
     body: RequestApprovalRequest,
+    x_actor_email: Optional[str] = Header(default=None, alias="X-Actor-Email"),
     db: Session = Depends(get_db),
 ) -> CaseApproval:
     room = _get_room_or_404(room_id, db)
+    requester = body.requested_by or x_actor_email
     approval = CaseApproval(
         room_id=room_id,
-        requested_by=body.requested_by,
+        requested_by=requester,
         approver_email=body.approver_email,
         due_at=body.due_at,
     )

@@ -239,7 +239,7 @@ class CaseCommentSchema(BaseModel):
 
 
 class PostCommentRequest(BaseModel):
-    author_email: str
+    author_email: str | None = None
     body: str
     mentions: str | None = None
     parent_id: str | None = None
@@ -272,8 +272,9 @@ class CaseApprovalSchema(BaseModel):
 
 
 class RequestApprovalRequest(BaseModel):
-    requested_by: str
+    requested_by: str | None = None
     approver_email: str
+    notes: str | None = None
     due_at: datetime | None = None
 
 
