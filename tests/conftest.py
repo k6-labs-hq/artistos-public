@@ -78,3 +78,8 @@ def override_get_db():
 
 # Register the override once, globally, for all tests
 app.dependency_overrides[get_db] = override_get_db
+
+# Patch the module-level SessionLocal used by two_agent_orchestrator_graph
+# so that query_handoffs() (and other direct-session callers) use the test DB.
+import XR7.agents.two_agent_orchestrator_graph as _two_agent_graph  # noqa: E402
+_two_agent_graph.SessionLocal = TestSession
