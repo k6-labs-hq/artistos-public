@@ -2,7 +2,7 @@
 
 This file is generated from openapi/openapi.json. Do not hand-edit.
 
-Total endpoints: 429
+Total endpoints: 433
 
 ## Endpoint Table
 
@@ -31,6 +31,8 @@ Total endpoints: 429
 | connector-reliability | POST | /admin/connectors/webhook/{event_id}/replay | Replay Webhook Event | replay_webhook_event_admin_connectors_webhook__event_id__replay_post | - | WebhookEventSchema | curl -X POST http://localhost:8000/admin/connectors/webhook/{event_id}/replay |
 | admin | PUT | /admin/founder/cohort-limit | Update Founder Cohort Limit | update_founder_cohort_limit_admin_founder_cohort_limit_put | FounderCohortLimitUpdateRequest | - | curl -X PUT http://localhost:8000/admin/founder/cohort-limit -H 'Content-Type: application/json' -d '{}' |
 | admin | GET | /admin/founders | Founder Roster | founder_roster_admin_founders_get | - | - | curl -X GET http://localhost:8000/admin/founders |
+| admin | GET | /admin/ops/backup-report | Backup Report | backup_report_admin_ops_backup_report_get | - | - | curl -X GET http://localhost:8000/admin/ops/backup-report |
+| admin | POST | /admin/ops/validate-backup | Trigger Backup Validation | trigger_backup_validation_admin_ops_validate_backup_post | - | - | curl -X POST http://localhost:8000/admin/ops/validate-backup |
 | slo | GET | /admin/orgs/{org_id}/cost-telemetry | Get Cost Telemetry | get_cost_telemetry_admin_orgs__org_id__cost_telemetry_get | - | array | curl -X GET http://localhost:8000/admin/orgs/{org_id}/cost-telemetry |
 | slo | POST | /admin/orgs/{org_id}/cost-telemetry | Record Period Costs | record_period_costs_admin_orgs__org_id__cost_telemetry_post | TenantCostLedgerCreate | TenantCostLedgerSchema | curl -X POST http://localhost:8000/admin/orgs/{org_id}/cost-telemetry -H 'Content-Type: application/json' -d '{}' |
 | slo | GET | /admin/orgs/{org_id}/cost-telemetry/alert-check | Cost Alert Check | cost_alert_check_admin_orgs__org_id__cost_telemetry_alert_check_get | - | - | curl -X GET http://localhost:8000/admin/orgs/{org_id}/cost-telemetry/alert-check |
@@ -385,6 +387,8 @@ Total endpoints: 429
 | b2b | GET | /management/{org_id}/dashboard | Management Dashboard | management_dashboard_management__org_id__dashboard_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/dashboard |
 | b2b | GET | /management/{org_id}/dashboard/v2 | Management Dashboard V2 | management_dashboard_v2_management__org_id__dashboard_v2_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/dashboard/v2 |
 | b2b | GET | /management/{org_id}/forecast | Management Forecast | management_forecast_management__org_id__forecast_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/forecast |
+| b2b | GET | /management/{org_id}/legal/export | Export Legal Packets Csv | export_legal_packets_csv_management__org_id__legal_export_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/legal/export |
+| b2b | GET | /management/{org_id}/portfolio/export | Export Portfolio Csv | export_portfolio_csv_management__org_id__portfolio_export_get | - | - | curl -X GET http://localhost:8000/management/{org_id}/portfolio/export |
 | b2b | GET | /org/{org_id}/portfolio | Org Portfolio | org_portfolio_org__org_id__portfolio_get | - | - | curl -X GET http://localhost:8000/org/{org_id}/portfolio |
 | expansion | GET | /partnerships/targets | Partnership Targets | partnership_targets_partnerships_targets_get | - | - | curl -X GET http://localhost:8000/partnerships/targets |
 | payers | GET | /payers/{payer_id}/behavior | Payer Behavior | payer_behavior_payers__payer_id__behavior_get | - | - | curl -X GET http://localhost:8000/payers/{payer_id}/behavior |

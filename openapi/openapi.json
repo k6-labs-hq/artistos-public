@@ -11490,6 +11490,134 @@
         }
       }
     },
+    "/admin/ops/backup-report": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Backup Report",
+        "description": "Return the most recent backup/restore validation audit entries.\n\nValidation records are created by the weekly Celery task\n``xr7.tasks.ops.validate_backup_restore`` and stored in ``AdminAuditLog``.",
+        "operationId": "backup_report_admin_ops_backup_report_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Admin-Key"
+            }
+          },
+          {
+            "name": "X-Admin-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/ops/validate-backup": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Trigger Backup Validation",
+        "description": "Trigger an on-demand backup/restore validation (same logic as the Celery task).",
+        "operationId": "trigger_backup_validation_admin_ops_validate_backup_post",
+        "parameters": [
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Admin-Key"
+            }
+          },
+          {
+            "name": "X-Admin-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Admin-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/payers/{payer_id}/behavior": {
       "get": {
         "tags": [
@@ -13196,6 +13324,148 @@
                   "type": "null"
                 }
               ],
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/portfolio/export": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Export Portfolio Csv",
+        "description": "Export a CSV summary of the org's portfolio.\n\nScoped to artists that belong to *this org only* via\n``OrgDashboardService.scoped_artists_for_org()``.\n\nAllowed roles: org_admin, publisher_admin, org_analyst, publisher_analyst.",
+        "operationId": "export_portfolio_csv_management__org_id__portfolio_export_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Org Id"
+            }
+          },
+          {
+            "name": "X-Org-Key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Key"
+            }
+          },
+          {
+            "name": "X-Org-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Role"
+            }
+          },
+          {
+            "name": "X-Org-Actor",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "X-Org-Actor"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/management/{org_id}/legal/export": {
+      "get": {
+        "tags": [
+          "b2b"
+        ],
+        "summary": "Export Legal Packets Csv",
+        "description": "Export a CSV of active claims with SOL risk metadata for legal/attorney review.\n\nScoped to the org's artists.  Allowed roles: attorney, org_admin, publisher_admin.",
+        "operationId": "export_legal_packets_csv_management__org_id__legal_export_get",
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
               "title": "Org Id"
             }
           },

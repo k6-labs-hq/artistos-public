@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import csv
+import io
 import os
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
+from XR7.models.claim import Claim
 from XR7.services.org_dashboard_service import OrgDashboardService
 from XR7.services.branding import branding_metadata, get_branding_profile, org_help_articles
 
@@ -371,3 +376,169 @@ def xr7_operator_dashboard(
         "actor": x_org_actor or None,
         "role": role,
     }
+
+
+# ---------------------------------------------------------------------------
+# PARTNER-301 — Portfolio scoped export endpoints
+# ---------------------------------------------------------------------------
+
+# Roles that may export the full portfolio summary (CSV).
+_EXPORT_ROLES: set[str] = {"org_admin", "publisher_admin", "org_analyst", "publisher_analyst"}
+
+# Roles that may export legal/attorney packet summaries (CSV).
+_LEGAL_EXPORT_ROLES: set[str] = {"attorney", "org_admin", "publisher_admin"}
+
+
+@router.get("/management/{org_id}/portfolio/export")
+def export_portfolio_csv(
+    org_id: str,
+    x_org_key: str = Header(default="", alias="X-Org-Key"),
+    x_org_role: str = Header(default="", alias="X-Org-Role"),
+    x_org_actor: str = Header(default="", alias="X-Org-Actor"),
+    db: Session = Depends(get_db),
+):
+    """
+    Export a CSV summary of the org's portfolio.
+
+    Scoped to artists that belong to *this org only* via
+    ``OrgDashboardService.scoped_artists_for_org()``.
+
+    Allowed roles: org_admin, publisher_admin, org_analyst, publisher_analyst.
+    """
+    _require_org_access(
+        x_org_key=x_org_key,
+        x_org_role=x_org_role,
+        allowed_roles=_EXPORT_ROLES,
+    )
+
+    service = OrgDashboardService(db)
+    artists = service.scoped_artists_for_org(org_id)
+    artist_ids = [a.id for a in artists]
+
+    # Aggregate per-artist anomaly and claim counts.
+    anomaly_counts: dict[str, int] = {}
+    recoverable_totals: dict[str, float] = {}
+    for a in (
+        db.query(Anomaly.artist_id, Anomaly.estimated_recoverable)
+        .filter(Anomaly.artist_id.in_(artist_ids))
+        .all()
+        if artist_ids
+        else []
+    ):
+        anomaly_counts[a.artist_id] = anomaly_counts.get(a.artist_id, 0) + 1
+        recoverable_totals[a.artist_id] = (
+            recoverable_totals.get(a.artist_id, 0.0) + float(a.estimated_recoverable or 0.0)
+        )
+
+    claim_counts: dict[str, int] = {}
+    for c in (
+        db.query(Claim.artist_id)
+        .filter(Claim.artist_id.in_(artist_ids))
+        .all()
+        if artist_ids
+        else []
+    ):
+        claim_counts[c.artist_id] = claim_counts.get(c.artist_id, 0) + 1
+
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "artist_id",
+        "artist_name",
+        "total_anomalies",
+        "total_estimated_recoverable_usd",
+        "total_claims",
+        "export_org_id",
+        "exported_at",
+    ])
+    exported_at = datetime.now(timezone.utc).isoformat()
+    for artist in artists:
+        writer.writerow([
+            artist.id,
+            artist.name or "",
+            anomaly_counts.get(artist.id, 0),
+            round(recoverable_totals.get(artist.id, 0.0), 2),
+            claim_counts.get(artist.id, 0),
+            org_id,
+            exported_at,
+        ])
+
+    return StreamingResponse(
+        io.BytesIO(out.getvalue().encode("utf-8")),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="portfolio_{org_id}.csv"',
+            "X-Partner-Scope": org_id,
+        },
+    )
+
+
+@router.get("/management/{org_id}/legal/export")
+def export_legal_packets_csv(
+    org_id: str,
+    x_org_key: str = Header(default="", alias="X-Org-Key"),
+    x_org_role: str = Header(default="", alias="X-Org-Role"),
+    x_org_actor: str = Header(default="", alias="X-Org-Actor"),
+    db: Session = Depends(get_db),
+):
+    """
+    Export a CSV of active claims with SOL risk metadata for legal/attorney review.
+
+    Scoped to the org's artists.  Allowed roles: attorney, org_admin, publisher_admin.
+    """
+    _require_org_access(
+        x_org_key=x_org_key,
+        x_org_role=x_org_role,
+        allowed_roles=_LEGAL_EXPORT_ROLES,
+    )
+
+    service = OrgDashboardService(db)
+    artists = service.scoped_artists_for_org(org_id)
+    artist_ids = [a.id for a in artists]
+
+    claims = (
+        db.query(Claim)
+        .filter(Claim.artist_id.in_(artist_ids))
+        .order_by(Claim.sol_deadline.asc().nullslast())
+        .all()
+        if artist_ids
+        else []
+    )
+
+    out = io.StringIO()
+    writer = csv.writer(out)
+    writer.writerow([
+        "claim_id",
+        "artist_id",
+        "status",
+        "recovered_amount",
+        "sol_deadline",
+        "governing_law_state",
+        "contract_type",
+        "attorney_review_required",
+        "export_org_id",
+        "exported_at",
+    ])
+    exported_at = datetime.now(timezone.utc).isoformat()
+    for claim in claims:
+        writer.writerow([
+            claim.id,
+            claim.artist_id,
+            str(claim.status.value if hasattr(claim.status, "value") else claim.status),
+            round(float(claim.recovered_amount or 0.0), 2),
+            claim.sol_deadline.isoformat() if claim.sol_deadline else "",
+            claim.governing_law_state or "",
+            claim.contract_type or "",
+            claim.attorney_review_required,
+            org_id,
+            exported_at,
+        ])
+
+    return StreamingResponse(
+        io.BytesIO(out.getvalue().encode("utf-8")),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="legal_packets_{org_id}.csv"',
+            "X-Partner-Scope": org_id,
+        },
+    )

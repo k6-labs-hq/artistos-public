@@ -581,3 +581,51 @@ def update_founder_cohort_limit(
         "slots_remaining": max(0, int(cfg.founder_cohort_limit) - int(cfg.founder_slots_filled)),
         "cohort_open": int(cfg.founder_slots_filled) < int(cfg.founder_cohort_limit),
     }
+
+
+# ---------------------------------------------------------------------------
+# OPS-401 — Backup / restore validation report
+# ---------------------------------------------------------------------------
+
+@router.get("/ops/backup-report")
+def backup_report(
+    actor: str = Depends(_require_admin),
+    db: Session = Depends(get_db),
+    limit: int = Query(default=10, ge=1, le=100),
+):
+    """
+    Return the most recent backup/restore validation audit entries.
+
+    Validation records are created by the weekly Celery task
+    ``xr7.tasks.ops.validate_backup_restore`` and stored in ``AdminAuditLog``.
+    """
+    rows = (
+        db.query(AdminAuditLog)
+        .filter(AdminAuditLog.action == "backup_restore_validation")
+        .order_by(AdminAuditLog.created_at.desc())
+        .limit(limit)
+        .all()
+    )
+
+    entries = [AdminAuditLogSchema.model_validate(r) for r in rows]
+    latest = entries[0] if entries else None
+
+    return {
+        "total_records": len(entries),
+        "latest": latest.model_dump() if latest else None,
+        "history": [e.model_dump() for e in entries],
+        "schedule": "weekly (xr7.tasks.ops.validate_backup_restore)",
+    }
+
+
+@router.post("/ops/validate-backup")
+def trigger_backup_validation(
+    actor: str = Depends(_require_admin),
+    db: Session = Depends(get_db),
+):
+    """Trigger an on-demand backup/restore validation (same logic as the Celery task)."""
+    from XR7.tasks.ops import run_backup_restore_validation
+
+    result = run_backup_restore_validation(db)
+    _log(db, actor, "triggered", "backup_restore_validation", result)
+    return result

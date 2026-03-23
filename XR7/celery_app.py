@@ -76,6 +76,11 @@ celery_app.conf.update(
             "task": "xr7.tasks.blackbox.scan_all_artists_blackbox",
             "schedule": 604800,  # weekly
         },
+        # ── Ops: backup / restore validation ─────────────────────────────
+        "xr7-ops-backup-restore-validation-weekly": {
+            "task": "xr7.tasks.ops.validate_backup_restore",
+            "schedule": 604800,  # weekly
+        },
     },
 )
 
