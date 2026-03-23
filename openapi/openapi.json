@@ -6779,10 +6779,15 @@
     "/artists/{artist_id}/recovery/benchmark-percentiles": {
       "get": {
         "tags": [
-          "expansion"
+          "benchmarks"
         ],
-        "summary": "Benchmark Percentiles",
-        "operationId": "benchmark_percentiles_artists__artist_id__recovery_benchmark_percentiles_get",
+        "summary": "Artist's percentile rank vs. anonymised peer cohort",
+        "operationId": "get_benchmark_percentiles_artists__artist_id__recovery_benchmark_percentiles_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -6792,38 +6797,6 @@
               "type": "string",
               "title": "Artist Id"
             }
-          },
-          {
-            "name": "X-Actor-Email",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Actor-Email"
-            }
-          },
-          {
-            "name": "X-Actor-Role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Actor-Role"
-            }
           }
         ],
         "responses": {
@@ -6831,7 +6804,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/BenchmarkPercentileResponse"
+                }
               }
             }
           },
@@ -7034,10 +7009,16 @@
     "/artists/{artist_id}/ml/predict-recoverable": {
       "post": {
         "tags": [
-          "expansion"
+          "ml_suite"
         ],
-        "summary": "Predict Total Recoverable",
-        "operationId": "predict_total_recoverable_artists__artist_id__ml_predict_recoverable_post",
+        "summary": "Ensemble prediction of total recoverable value over a time horizon",
+        "description": "Returns low / mid / high total recoverable USD estimates with a confidence\nscore and human-readable key drivers.  Uses an ensemble of:\n\n- Deterministic earnings growth forecaster (DeterministicGrowthV1)\n- Bayesian posterior success rate from historical claim outcomes\n- SOL decay curve for open anomalies near their deadline windows\n- Active claim pipeline multiplier",
+        "operationId": "predict_recoverable_artists__artist_id__ml_predict_recoverable_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
         "parameters": [
           {
             "name": "artist_id",
@@ -7047,38 +7028,6 @@
               "type": "string",
               "title": "Artist Id"
             }
-          },
-          {
-            "name": "X-Actor-Email",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Actor-Email"
-            }
-          },
-          {
-            "name": "X-Actor-Role",
-            "in": "header",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "X-Actor-Role"
-            }
           }
         ],
         "requestBody": {
@@ -7086,7 +7035,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/PredictRecoverableRequest"
+                "$ref": "#/components/schemas/XR7__api__routers__ml_suite__PredictRecoverableRequest"
               }
             }
           }
@@ -7096,7 +7045,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "$ref": "#/components/schemas/PredictRecoverableResponse"
+                }
               }
             }
           },
@@ -19827,6 +19778,22 @@
               ],
               "title": "X-Actor-Email"
             }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
           }
         ],
         "requestBody": {
@@ -19896,6 +19863,22 @@
                 }
               ],
               "title": "X-Actor-Email"
+            }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
             }
           }
         ],
@@ -20018,11 +20001,32 @@
               ],
               "title": "X-Actor-Email"
             }
+          },
+          {
+            "name": "X-Actor-Role",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
           }
         ],
         "responses": {
-          "204": {
-            "description": "Successful Response"
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -20052,6 +20056,22 @@
             "schema": {
               "type": "string",
               "title": "Room Id"
+            }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
             }
           }
         ],
@@ -20302,6 +20322,22 @@
               "type": "string",
               "title": "Room Id"
             }
+          },
+          {
+            "name": "X-Actor-Email",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
           }
         ],
         "requestBody": {
@@ -20479,16 +20515,9 @@
           {
             "name": "X-Admin-Key",
             "in": "header",
-            "required": false,
+            "required": true,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
+              "type": "string",
               "title": "X-Admin-Key"
             }
           }
@@ -20541,6 +20570,15 @@
               "type": "string",
               "title": "Org Id"
             }
+          },
+          {
+            "name": "X-Admin-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "X-Admin-Key"
+            }
           }
         ],
         "responses": {
@@ -20584,17 +20622,20 @@
               "type": "string",
               "title": "Org Id"
             }
-          },
-          {
-            "name": "region",
-            "in": "query",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Region"
-            }
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true,
+                "title": "Body"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -21582,6 +21623,975 @@
         }
       }
     },
+    "/artists/{artist_id}/fingerprints/identify": {
+      "post": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Synchronous audio fingerprint identification",
+        "description": "Identify audio synchronously.  Returns normalized match results immediately.\n\nThis endpoint is intended for low-latency use cases such as real-time\nmonitoring dashboards.  For large batch jobs use the ``/async`` variant.",
+        "operationId": "identify_audio_artists__artist_id__fingerprints_identify_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_identify_audio_artists__artist_id__fingerprints_identify_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NormalizedMatchResult"
+                  },
+                  "title": "Response Identify Audio Artists  Artist Id  Fingerprints Identify Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fingerprints/identify/async": {
+      "post": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Queue asynchronous audio fingerprint identification",
+        "description": "Queue a fingerprinting job for background processing.\n\nEither ``audio_url`` or ``audio_s3_key`` must be provided.\nReturns a ``job_id`` that can be polled via ``GET .../jobs/{job_id}``.",
+        "operationId": "identify_audio_async_artists__artist_id__fingerprints_identify_async_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_identify_audio_async_artists__artist_id__fingerprints_identify_async_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsyncJobEnqueuedResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fingerprints/references": {
+      "post": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Register a reference track with fingerprinting providers",
+        "description": "Register a reference track for monitoring / broadcast detection.",
+        "operationId": "register_reference_artists__artist_id__fingerprints_references_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_register_reference_artists__artist_id__fingerprints_references_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReferenceRegistrationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fingerprints/jobs": {
+      "get": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "List fingerprinting jobs for an artist",
+        "description": "Paginated list of FingerprintJob rows for an artist.",
+        "operationId": "list_fingerprint_jobs_artists__artist_id__fingerprints_jobs_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by job status",
+              "title": "Status"
+            },
+            "description": "Filter by job status"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response List Fingerprint Jobs Artists  Artist Id  Fingerprints Jobs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fingerprints/jobs/{job_id}": {
+      "get": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Get a fingerprinting job with its match results",
+        "description": "Return a FingerprintJob and all associated FingerprintMatch rows.",
+        "operationId": "get_fingerprint_job_artists__artist_id__fingerprints_jobs__job_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Fingerprint Job Artists  Artist Id  Fingerprints Jobs  Job Id  Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fingerprints/reconcile": {
+      "post": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Trigger matching engine reconciliation",
+        "description": "Queue a matching-engine reconciliation task for an artist.\n\nThe task will cross-reference detected fingerprint matches against the\nartist's royalty records and flag discrepancies.",
+        "operationId": "trigger_reconcile_artists__artist_id__fingerprints_reconcile_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_trigger_reconcile_artists__artist_id__fingerprints_reconcile_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconcileJobResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fingerprints/report": {
+      "get": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Run matching engine and return synchronous report",
+        "description": "Run the matching engine synchronously and return a compiled report.\n\nThis is intended for on-demand dashboard reads.  For large catalogs,\nuse the ``/reconcile`` endpoint to queue an async task instead.",
+        "operationId": "get_fingerprint_report_artists__artist_id__fingerprints_report_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Get Fingerprint Report Artists  Artist Id  Fingerprints Report Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fingerprints/providers/health": {
+      "get": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Health-check all configured fingerprinting providers",
+        "description": "Check health for all enabled fingerprinting providers concurrently.",
+        "operationId": "provider_health_fingerprints_providers_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderHealthStatus"
+                  },
+                  "type": "array",
+                  "title": "Response Provider Health Fingerprints Providers Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fingerprints/providers/circuit-breakers": {
+      "get": {
+        "tags": [
+          "fingerprinting"
+        ],
+        "summary": "Return circuit-breaker state for all fingerprinting providers",
+        "description": "Return the current circuit-breaker state for every active provider.\n\nIntended for use by the XR7 operations dashboard.",
+        "operationId": "circuit_breaker_status_fingerprints_providers_circuit_breakers_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CircuitBreakerStatusResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Circuit Breaker Status Fingerprints Providers Circuit Breakers Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/artists/{artist_id}/catalog/health": {
+      "get": {
+        "tags": [
+          "catalog_health"
+        ],
+        "summary": "Catalog health score + top 5 ranked fix opportunities",
+        "operationId": "get_catalog_health_artists__artist_id__catalog_health_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogHealthResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/catalog/fixes": {
+      "get": {
+        "tags": [
+          "catalog_health"
+        ],
+        "summary": "List all catalog fix issues with current status",
+        "operationId": "list_catalog_fixes_artists__artist_id__catalog_fixes_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/CatalogFixStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CatalogFixListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/catalog/fixes/{fix_id}/request": {
+      "post": {
+        "tags": [
+          "catalog_health"
+        ],
+        "summary": "Request a fix \u2014 generates pre-filled template and logs in activity feed",
+        "operationId": "request_catalog_fix_artists__artist_id__catalog_fixes__fix_id__request_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "fix_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Fix Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FixRequestResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/blackbox/matches": {
+      "get": {
+        "tags": [
+          "blackbox"
+        ],
+        "summary": "List black-box / unclaimed royalty matches for the artist",
+        "operationId": "list_blackbox_matches_artists__artist_id__blackbox_matches_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/BlackboxMatchStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by match status",
+              "title": "Status"
+            },
+            "description": "Filter by match status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlackboxMatchListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/blackbox/scan": {
+      "post": {
+        "tags": [
+          "blackbox"
+        ],
+        "summary": "Trigger an on-demand black-box scan for this artist",
+        "operationId": "trigger_blackbox_scan_artists__artist_id__blackbox_scan_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BlackboxScanTriggerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/fetchers/ugc/scan": {
+      "post": {
+        "tags": [
+          "ugc_scanner"
+        ],
+        "summary": "Scan connected accounts for un-monetized UGC matches",
+        "description": "Scans connected YouTube / TikTok / Meta accounts for unauthorized uses\nor un-monetized Content ID matches.  Creates ``ugc_opportunity`` anomalies\nfor each new match found.",
+        "operationId": "scan_ugc_opportunities_artists__artist_id__fetchers_ugc_scan_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UGCScanRequest",
+                "default": {
+                  "platforms": [
+                    "youtube",
+                    "tiktok",
+                    "meta"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UGCScanResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/ugc/claims/{ugc_opportunity_id}/draft": {
+      "post": {
+        "tags": [
+          "ugc_scanner"
+        ],
+        "summary": "Auto-draft a Content ID / DMCA claim for a UGC opportunity",
+        "description": "Generates a platform-appropriate claim draft payload (Content ID asset\nclaim for YouTube, DMCA-style takedown for others).  Marks the opportunity\nstatus as ``claim_drafted`` and logs the action.",
+        "operationId": "draft_ugc_claim_artists__artist_id__ugc_claims__ugc_opportunity_id__draft_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "ugc_opportunity_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ugc Opportunity Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UGCClaimDraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/artists/{artist_id}/ugc/opportunities": {
+      "get": {
+        "tags": [
+          "ugc_scanner"
+        ],
+        "summary": "List all UGC revenue opportunities for the artist",
+        "operationId": "list_ugc_opportunities_artists__artist_id__ugc_opportunities_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "artist_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artist Id"
+            }
+          },
+          {
+            "name": "platform",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UGCPlatform"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Platform"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/UGCOpportunityStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UGCOpportunityListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/health": {
       "get": {
         "summary": "Health",
@@ -21958,6 +22968,30 @@
           "conversation_history"
         ],
         "title": "AdviceResponse"
+      },
+      "AffectedWork": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "title": "AffectedWork"
       },
       "AgentHandoffListResponse": {
         "properties": {
@@ -22562,6 +23596,22 @@
           "CLOSED"
         ],
         "title": "AnomalyStatus"
+      },
+      "AnomalyType": {
+        "type": "string",
+        "enum": [
+          "usage_no_royalty",
+          "royalty_no_usage",
+          "foreign_usage_no_pro",
+          "live_no_pro_performance",
+          "social_no_distributor",
+          "catalog_mismatch",
+          "isrc_conflict",
+          "iswc_conflict",
+          "ipi_conflict",
+          "none"
+        ],
+        "title": "AnomalyType"
       },
       "AnomalyWithRecoverabilitySchema": {
         "properties": {
@@ -23422,6 +24472,29 @@
         ],
         "title": "AssignReviewItemRequest"
       },
+      "AsyncJobEnqueuedResponse": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "queued"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Fingerprinting job queued for async processing."
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id"
+        ],
+        "title": "AsyncJobEnqueuedResponse"
+      },
       "AttorneyEvidenceRequest": {
         "properties": {
           "additional_notes": {
@@ -23680,6 +24753,58 @@
         ],
         "title": "BatchIngestionJobSchema"
       },
+      "BenchmarkPercentileResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "cohort": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Cohort",
+            "description": "genre, role_type, catalog_size_bucket"
+          },
+          "cohort_sample_size": {
+            "type": "integer",
+            "title": "Cohort Sample Size"
+          },
+          "metrics": {
+            "items": {
+              "$ref": "#/components/schemas/PercentileResult"
+            },
+            "type": "array",
+            "title": "Metrics"
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Computed At"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "cohort",
+          "cohort_sample_size",
+          "metrics",
+          "computed_at"
+        ],
+        "title": "BenchmarkPercentileResponse"
+      },
       "BlackBoxExpirationSchema": {
         "properties": {
           "payer_or_society": {
@@ -23874,6 +24999,207 @@
         "type": "object",
         "title": "BlackBoxRequest"
       },
+      "BlackboxMatchListResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "matches": {
+            "items": {
+              "$ref": "#/components/schemas/BlackboxMatchSchema"
+            },
+            "type": "array",
+            "title": "Matches"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "total_value_low": {
+            "type": "number",
+            "title": "Total Value Low"
+          },
+          "total_value_high": {
+            "type": "number",
+            "title": "Total Value High"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "matches",
+          "total",
+          "total_value_low",
+          "total_value_high"
+        ],
+        "title": "BlackboxMatchListResponse"
+      },
+      "BlackboxMatchSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "society": {
+            "type": "string",
+            "title": "Society"
+          },
+          "match_type": {
+            "$ref": "#/components/schemas/BlackboxMatchType"
+          },
+          "matched_identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Identifier"
+          },
+          "source_list": {
+            "$ref": "#/components/schemas/BlackboxSourceList"
+          },
+          "amount_range_low": {
+            "type": "number",
+            "title": "Amount Range Low"
+          },
+          "amount_range_high": {
+            "type": "number",
+            "title": "Amount Range High"
+          },
+          "territory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Territory"
+          },
+          "redistribution_window_end_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Redistribution Window End Date"
+          },
+          "urgency_days_remaining": {
+            "type": "integer",
+            "title": "Urgency Days Remaining"
+          },
+          "status": {
+            "$ref": "#/components/schemas/BlackboxMatchStatus"
+          },
+          "anomaly_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anomaly Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "society",
+          "match_type",
+          "source_list",
+          "amount_range_low",
+          "amount_range_high",
+          "redistribution_window_end_date",
+          "urgency_days_remaining",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "BlackboxMatchSchema"
+      },
+      "BlackboxMatchStatus": {
+        "type": "string",
+        "enum": [
+          "new",
+          "claimed",
+          "expired",
+          "dismissed"
+        ],
+        "title": "BlackboxMatchStatus"
+      },
+      "BlackboxMatchType": {
+        "type": "string",
+        "enum": [
+          "name_alias",
+          "ipi_cae",
+          "pro_writer_id",
+          "title_fuzzy"
+        ],
+        "title": "BlackboxMatchType"
+      },
+      "BlackboxScanTriggerResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "task_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Task Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "task_id",
+          "status",
+          "message"
+        ],
+        "title": "BlackboxScanTriggerResponse"
+      },
+      "BlackboxSourceList": {
+        "type": "string",
+        "enum": [
+          "mlc_blackbox",
+          "foreign_redistribution",
+          "pro_unclaimed_pool"
+        ],
+        "title": "BlackboxSourceList"
+      },
       "Body_analyze_enterprise_historical_file_enterprise_historical_analyze_file_post": {
         "properties": {
           "organization_name": {
@@ -24007,6 +25333,116 @@
         ],
         "title": "Body_extract_contract_terms_upload_artists__artist_id__intelligence_contracts_extract_upload_post"
       },
+      "Body_identify_audio_artists__artist_id__fingerprints_identify_post": {
+        "properties": {
+          "audio": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Audio",
+            "description": "Audio file (WAV/MP3/FLAC, \u226410 MB)"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providers",
+            "description": "Comma-separated provider names"
+          },
+          "tenant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenant Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio"
+        ],
+        "title": "Body_identify_audio_artists__artist_id__fingerprints_identify_post"
+      },
+      "Body_identify_audio_async_artists__artist_id__fingerprints_identify_async_post": {
+        "properties": {
+          "audio_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio Url"
+          },
+          "audio_s3_key": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio S3 Key"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          },
+          "providers": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providers"
+          },
+          "tenant_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenant Id"
+          }
+        },
+        "type": "object",
+        "title": "Body_identify_audio_async_artists__artist_id__fingerprints_identify_async_post"
+      },
       "Body_parse_statement_with_engine_artists__artist_id__parsers__parser_type__post": {
         "properties": {
           "file": {
@@ -24050,6 +25486,66 @@
         ],
         "title": "Body_queue_file_ingestion_artists__artist_id__xr7_queue_file_ingestion_post"
       },
+      "Body_register_reference_artists__artist_id__fingerprints_references_post": {
+        "properties": {
+          "audio": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "Audio",
+            "description": "Reference audio file (WAV/MP3/FLAC, \u226410 MB)"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "artist_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist Name"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider",
+            "description": "Target provider name (default: first active)"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audio"
+        ],
+        "title": "Body_register_reference_artists__artist_id__fingerprints_references_post"
+      },
       "Body_run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post": {
         "properties": {
           "source_system": {
@@ -24073,6 +25569,26 @@
           "file"
         ],
         "title": "Body_run_file_ingestion_artists__artist_id__xr7_pipelines_file_ingestion_post"
+      },
+      "Body_trigger_reconcile_artists__artist_id__fingerprints_reconcile_post": {
+        "properties": {
+          "providers": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Providers"
+          }
+        },
+        "type": "object",
+        "title": "Body_trigger_reconcile_artists__artist_id__fingerprints_reconcile_post"
       },
       "Body_tvfilm_ingestion_commit_tvfilm_artists__artist_id__ingestion_commit_post": {
         "properties": {
@@ -24882,6 +26398,309 @@
         ],
         "title": "CatalogConfirmationSchema"
       },
+      "CatalogFixCategory": {
+        "type": "string",
+        "enum": [
+          "metadata_completeness",
+          "registration_status",
+          "split_conflicts",
+          "identifier_mismatches",
+          "content_id_issues"
+        ],
+        "title": "CatalogFixCategory"
+      },
+      "CatalogFixIssueSchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "category": {
+            "$ref": "#/components/schemas/CatalogFixCategory"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/FixPriority"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "affected_works": {
+            "items": {
+              "$ref": "#/components/schemas/AffectedWork"
+            },
+            "type": "array",
+            "title": "Affected Works",
+            "default": []
+          },
+          "estimated_recoverable_usd": {
+            "type": "number",
+            "title": "Estimated Recoverable Usd"
+          },
+          "suggested_action": {
+            "$ref": "#/components/schemas/FixSuggestedAction"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CatalogFixStatus"
+          },
+          "requested_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested At"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "template_payload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Payload"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "category",
+          "priority",
+          "description",
+          "estimated_recoverable_usd",
+          "suggested_action",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CatalogFixIssueSchema"
+      },
+      "CatalogFixListResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "fixes": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogFixIssueSchema"
+            },
+            "type": "array",
+            "title": "Fixes"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "fixes",
+          "total"
+        ],
+        "title": "CatalogFixListResponse"
+      },
+      "CatalogFixStatus": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "requested",
+          "resolved",
+          "expired"
+        ],
+        "title": "CatalogFixStatus"
+      },
+      "CatalogHealthResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "health_score": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Health Score"
+          },
+          "grade": {
+            "type": "string",
+            "title": "Grade"
+          },
+          "category_breakdown": {
+            "$ref": "#/components/schemas/CategoryBreakdown"
+          },
+          "top_issues": {
+            "items": {
+              "$ref": "#/components/schemas/CatalogIssueOut"
+            },
+            "type": "array",
+            "title": "Top Issues"
+          },
+          "total_estimated_recoverable_usd": {
+            "type": "number",
+            "title": "Total Estimated Recoverable Usd"
+          },
+          "issues_count": {
+            "type": "integer",
+            "title": "Issues Count"
+          },
+          "computed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Computed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "health_score",
+          "grade",
+          "category_breakdown",
+          "top_issues",
+          "total_estimated_recoverable_usd",
+          "issues_count",
+          "computed_at"
+        ],
+        "title": "CatalogHealthResponse"
+      },
+      "CatalogIssueOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "category": {
+            "$ref": "#/components/schemas/CatalogFixCategory"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/FixPriority"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "affected_works": {
+            "items": {
+              "$ref": "#/components/schemas/AffectedWork"
+            },
+            "type": "array",
+            "title": "Affected Works"
+          },
+          "estimated_recoverable_usd": {
+            "type": "number",
+            "title": "Estimated Recoverable Usd"
+          },
+          "suggested_action": {
+            "$ref": "#/components/schemas/FixSuggestedAction"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CatalogFixStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "category",
+          "priority",
+          "description",
+          "affected_works",
+          "estimated_recoverable_usd",
+          "suggested_action",
+          "status"
+        ],
+        "title": "CatalogIssueOut"
+      },
+      "CategoryBreakdown": {
+        "properties": {
+          "metadata_completeness": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Metadata Completeness",
+            "description": "Score 0\u2013100"
+          },
+          "registration_status": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Registration Status"
+          },
+          "split_conflicts": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Split Conflicts"
+          },
+          "identifier_mismatches": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Identifier Mismatches"
+          },
+          "content_id_issues": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Content Id Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metadata_completeness",
+          "registration_status",
+          "split_conflicts",
+          "identifier_mismatches",
+          "content_id_issues"
+        ],
+        "title": "CategoryBreakdown"
+      },
       "ChatRequest": {
         "properties": {
           "message": {
@@ -24894,6 +26713,40 @@
           "message"
         ],
         "title": "ChatRequest"
+      },
+      "CircuitBreakerStatusResponse": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "failure_count": {
+            "type": "integer",
+            "title": "Failure Count"
+          },
+          "last_failure_time": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Failure Time"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provider",
+          "state",
+          "failure_count"
+        ],
+        "title": "CircuitBreakerStatusResponse"
       },
       "ClaimCreateRequest": {
         "properties": {
@@ -26605,6 +28458,55 @@
         ],
         "title": "FingerprintingRequest"
       },
+      "FixPriority": {
+        "type": "string",
+        "enum": [
+          "high",
+          "medium",
+          "low"
+        ],
+        "title": "FixPriority"
+      },
+      "FixRequestResponse": {
+        "properties": {
+          "fix_id": {
+            "type": "string",
+            "title": "Fix Id"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CatalogFixStatus"
+          },
+          "template_payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Template Payload"
+          },
+          "requested_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Requested At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fix_id",
+          "status",
+          "template_payload",
+          "requested_at"
+        ],
+        "title": "FixRequestResponse"
+      },
+      "FixSuggestedAction": {
+        "type": "string",
+        "enum": [
+          "email_distributor",
+          "register_ml",
+          "fix_splits",
+          "claim_content_id",
+          "other"
+        ],
+        "title": "FixSuggestedAction"
+      },
       "ForensicUniversalRoyaltyEventCreate": {
         "properties": {
           "work_id": {
@@ -28129,6 +30031,22 @@
         ],
         "title": "MarkReadResponse"
       },
+      "MatchType": {
+        "type": "string",
+        "enum": [
+          "broadcast",
+          "radio",
+          "social",
+          "venue",
+          "ugc",
+          "sync",
+          "stream",
+          "download",
+          "live",
+          "unknown"
+        ],
+        "title": "MatchType"
+      },
       "MetadataRepairApplyRequest": {
         "properties": {
           "tenant_id": {
@@ -28213,6 +30131,171 @@
           "script"
         ],
         "title": "NegotiationScriptResponse"
+      },
+      "NormalizedMatchResult": {
+        "properties": {
+          "track_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Track Id"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          },
+          "iswc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Iswc"
+          },
+          "ipi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ipi"
+          },
+          "confidence_score": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence Score",
+            "default": 0.0
+          },
+          "match_type": {
+            "$ref": "#/components/schemas/MatchType",
+            "default": "unknown"
+          },
+          "platform": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Platform"
+          },
+          "territory": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Territory"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "royalty_status": {
+            "$ref": "#/components/schemas/RoyaltyStatus",
+            "default": "unknown"
+          },
+          "anomaly_type": {
+            "$ref": "#/components/schemas/AnomalyType",
+            "default": "none"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "artist_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artist Name"
+          },
+          "album": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Album"
+          },
+          "duration_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Seconds"
+          },
+          "external_track_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "External Track Url"
+          },
+          "raw_provider_payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Raw Provider Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "provider"
+        ],
+        "title": "NormalizedMatchResult",
+        "description": "Universal match result produced by every provider adapter."
       },
       "NotificationDeliveryLogSchema": {
         "properties": {
@@ -28870,6 +30953,51 @@
         ],
         "title": "ParserPluginUpsertRequest"
       },
+      "PercentileResult": {
+        "properties": {
+          "metric": {
+            "type": "string",
+            "title": "Metric"
+          },
+          "value": {
+            "type": "number",
+            "title": "Value",
+            "description": "Artist's raw metric value"
+          },
+          "percentile": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Percentile",
+            "description": "Artist's percentile rank (0\u2013100)"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label",
+            "description": "Human-readable label e.g. 'Top 18%'"
+          },
+          "comparison": {
+            "type": "string",
+            "title": "Comparison",
+            "description": "Comparison sentence for UI display"
+          },
+          "cohort_p50": {
+            "type": "number",
+            "title": "Cohort P50",
+            "description": "Cohort median for this metric"
+          }
+        },
+        "type": "object",
+        "required": [
+          "metric",
+          "value",
+          "percentile",
+          "label",
+          "comparison",
+          "cohort_p50"
+        ],
+        "title": "PercentileResult"
+      },
       "PersonaProfileSchema": {
         "properties": {
           "id": {
@@ -29080,7 +31208,14 @@
       "PostCommentRequest": {
         "properties": {
           "author_email": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Author Email"
           },
           "body": {
@@ -29112,7 +31247,6 @@
         },
         "type": "object",
         "required": [
-          "author_email",
           "body"
         ],
         "title": "PostCommentRequest"
@@ -29130,20 +31264,75 @@
         ],
         "title": "PreSignatureContractReviewRequest"
       },
-      "PredictRecoverableRequest": {
+      "PredictRecoverableResponse": {
         "properties": {
-          "catalog_size": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "horizon_months": {
+            "type": "integer",
+            "title": "Horizon Months"
+          },
+          "low_usd": {
+            "type": "number",
+            "title": "Low Usd"
+          },
+          "mid_usd": {
+            "type": "number",
+            "title": "Mid Usd"
+          },
+          "high_usd": {
+            "type": "number",
+            "title": "High Usd"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "key_drivers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Key Drivers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "horizon_months",
+          "low_usd",
+          "mid_usd",
+          "high_usd",
+          "confidence",
+          "key_drivers"
+        ],
+        "title": "PredictRecoverableResponse"
+      },
+      "ProviderHealthStatus": {
+        "properties": {
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ProviderStatus"
+          },
+          "latency_ms": {
             "anyOf": [
               {
-                "type": "integer"
+                "type": "number"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Catalog Size"
+            "title": "Latency Ms"
           },
-          "genre": {
+          "error_message": {
             "anyOf": [
               {
                 "type": "string"
@@ -29152,11 +31341,53 @@
                 "type": "null"
               }
             ],
-            "title": "Genre"
+            "title": "Error Message"
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Checked At"
           }
         },
         "type": "object",
-        "title": "PredictRecoverableRequest"
+        "required": [
+          "provider",
+          "status",
+          "checked_at"
+        ],
+        "title": "ProviderHealthStatus"
+      },
+      "ProviderStatus": {
+        "type": "string",
+        "enum": [
+          "healthy",
+          "degraded",
+          "down"
+        ],
+        "title": "ProviderStatus"
+      },
+      "ReconcileJobResponse": {
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "title": "Task Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "queued"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message",
+            "default": "Matching engine reconciliation task queued."
+          }
+        },
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "title": "ReconcileJobResponse"
       },
       "ReconcileRequest": {
         "properties": {
@@ -29383,6 +31614,35 @@
         ],
         "title": "RecoverySubmitResponse"
       },
+      "ReferenceRegistrationResponse": {
+        "properties": {
+          "reference_id": {
+            "type": "string",
+            "title": "Reference Id"
+          },
+          "provider": {
+            "type": "string",
+            "title": "Provider"
+          },
+          "isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Isrc"
+          }
+        },
+        "type": "object",
+        "required": [
+          "reference_id",
+          "provider"
+        ],
+        "title": "ReferenceRegistrationResponse"
+      },
       "ReferralRequest": {
         "properties": {
           "referred_artist_id": {
@@ -29477,12 +31737,30 @@
       "RequestApprovalRequest": {
         "properties": {
           "requested_by": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Requested By"
           },
           "approver_email": {
             "type": "string",
             "title": "Approver Email"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
           },
           "due_at": {
             "anyOf": [
@@ -29499,7 +31777,6 @@
         },
         "type": "object",
         "required": [
-          "requested_by",
           "approver_email"
         ],
         "title": "RequestApprovalRequest"
@@ -29856,6 +32133,17 @@
           "record_type"
         ],
         "title": "RoyaltyLedgerEntryCreate"
+      },
+      "RoyaltyStatus": {
+        "type": "string",
+        "enum": [
+          "paid",
+          "unpaid",
+          "underpaid",
+          "mismatched",
+          "unknown"
+        ],
+        "title": "RoyaltyStatus"
       },
       "SendConciergeMessageRequest": {
         "properties": {
@@ -31787,6 +34075,307 @@
         ],
         "title": "TrolleyTxnType"
       },
+      "UGCClaimDraftResponse": {
+        "properties": {
+          "ugc_opportunity_id": {
+            "type": "string",
+            "title": "Ugc Opportunity Id"
+          },
+          "anomaly_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anomaly Id"
+          },
+          "platform": {
+            "type": "string",
+            "title": "Platform"
+          },
+          "claim_draft": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Claim Draft"
+          },
+          "drafted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Drafted At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ugc_opportunity_id",
+          "anomaly_id",
+          "platform",
+          "claim_draft",
+          "drafted_at"
+        ],
+        "title": "UGCClaimDraftResponse"
+      },
+      "UGCOpportunityListResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "opportunities": {
+            "items": {
+              "$ref": "#/components/schemas/UGCOpportunitySchema"
+            },
+            "type": "array",
+            "title": "Opportunities"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "total_estimated_recoverable": {
+            "type": "number",
+            "title": "Total Estimated Recoverable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "opportunities",
+          "total",
+          "total_estimated_recoverable"
+        ],
+        "title": "UGCOpportunityListResponse"
+      },
+      "UGCOpportunitySchema": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "anomaly_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anomaly Id"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/UGCPlatform"
+          },
+          "video_url": {
+            "type": "string",
+            "title": "Video Url"
+          },
+          "video_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Id"
+          },
+          "video_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Title"
+          },
+          "channel_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Channel Name"
+          },
+          "matched_work_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Work Title"
+          },
+          "matched_isrc": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Isrc"
+          },
+          "estimated_views": {
+            "type": "integer",
+            "title": "Estimated Views"
+          },
+          "estimated_recoverable": {
+            "type": "number",
+            "title": "Estimated Recoverable"
+          },
+          "status": {
+            "$ref": "#/components/schemas/UGCOpportunityStatus"
+          },
+          "is_monetized": {
+            "type": "boolean",
+            "title": "Is Monetized"
+          },
+          "content_id_asset_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Id Asset Id"
+          },
+          "detected_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Detected At"
+          },
+          "last_scanned_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Scanned At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "artist_id",
+          "platform",
+          "video_url",
+          "estimated_views",
+          "estimated_recoverable",
+          "status",
+          "is_monetized",
+          "detected_at",
+          "last_scanned_at",
+          "updated_at"
+        ],
+        "title": "UGCOpportunitySchema"
+      },
+      "UGCOpportunityStatus": {
+        "type": "string",
+        "enum": [
+          "detected",
+          "claim_drafted",
+          "claim_submitted",
+          "monetized",
+          "dismissed",
+          "expired"
+        ],
+        "title": "UGCOpportunityStatus"
+      },
+      "UGCPlatform": {
+        "type": "string",
+        "enum": [
+          "youtube",
+          "tiktok",
+          "meta",
+          "instagram",
+          "other"
+        ],
+        "title": "UGCPlatform"
+      },
+      "UGCScanRequest": {
+        "properties": {
+          "platforms": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Platforms",
+            "description": "Platforms to scan. Defaults to all supported.",
+            "default": [
+              "youtube",
+              "tiktok",
+              "meta"
+            ]
+          }
+        },
+        "type": "object",
+        "title": "UGCScanRequest"
+      },
+      "UGCScanResponse": {
+        "properties": {
+          "artist_id": {
+            "type": "string",
+            "title": "Artist Id"
+          },
+          "platforms_scanned": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Platforms Scanned"
+          },
+          "new_opportunities": {
+            "type": "integer",
+            "title": "New Opportunities"
+          },
+          "total_estimated_recoverable": {
+            "type": "number",
+            "title": "Total Estimated Recoverable"
+          },
+          "opportunities": {
+            "items": {
+              "$ref": "#/components/schemas/UGCOpportunitySchema"
+            },
+            "type": "array",
+            "title": "Opportunities"
+          },
+          "scanned_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Scanned At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artist_id",
+          "platforms_scanned",
+          "new_opportunities",
+          "total_estimated_recoverable",
+          "opportunities",
+          "scanned_at"
+        ],
+        "title": "UGCScanResponse"
+      },
       "UGCSignalIngestRequest": {
         "properties": {
           "tenant_id": {
@@ -32707,6 +35296,34 @@
         "type": "object",
         "title": "ForecastRequest"
       },
+      "XR7__api__routers__expansion__PredictRecoverableRequest": {
+        "properties": {
+          "catalog_size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Catalog Size"
+          },
+          "genre": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Genre"
+          }
+        },
+        "type": "object",
+        "title": "PredictRecoverableRequest"
+      },
       "XR7__api__routers__forensic__CatalogConfirmRequest": {
         "properties": {
           "artist_id": {
@@ -32727,6 +35344,20 @@
           "artist_id"
         ],
         "title": "CatalogConfirmRequest"
+      },
+      "XR7__api__routers__ml_suite__PredictRecoverableRequest": {
+        "properties": {
+          "horizon_months": {
+            "type": "integer",
+            "title": "Horizon Months",
+            "description": "Forecast horizon in months. Allowed: 6, 12, 24, 36, 60"
+          }
+        },
+        "type": "object",
+        "required": [
+          "horizon_months"
+        ],
+        "title": "PredictRecoverableRequest"
       },
       "XR7__api__routers__onboarding__CatalogConfirmRequest": {
         "properties": {
