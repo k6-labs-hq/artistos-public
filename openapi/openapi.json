@@ -22894,6 +22894,208 @@
           }
         }
       }
+    },
+    "/artists/{artist_id}/earnings/time-machine": {
+      "post": {
+        "tags": ["earnings-time-machine"],
+        "summary": "Run Earnings Time Machine Analysis",
+        "operationId": "run_earnings_time_machine",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/TimeMachineRequest"}}}, "required": false},
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/earnings/time-machine/result": {
+      "get": {
+        "tags": ["earnings-time-machine"],
+        "summary": "Get Latest Earnings Time Machine Result",
+        "operationId": "get_earnings_time_machine_result",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/catalog/ghost-scan": {
+      "post": {
+        "tags": ["ghost-catalog"],
+        "summary": "Trigger Ghost Catalog Scan",
+        "operationId": "run_ghost_catalog_scan",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/catalog/ghosts": {
+      "get": {
+        "tags": ["ghost-catalog"],
+        "summary": "List Ghost Works",
+        "operationId": "list_ghost_works",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/anomalies/countdown": {
+      "get": {
+        "tags": ["black-box-countdown"],
+        "summary": "Get All Anomaly Countdowns",
+        "operationId": "get_anomaly_countdowns",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/anomalies/{anomaly_id}/countdown": {
+      "get": {
+        "tags": ["black-box-countdown"],
+        "summary": "Get Single Anomaly Countdown",
+        "operationId": "get_single_anomaly_countdown",
+        "parameters": [
+          {"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "anomaly_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/admin/society-rules/freeze": {
+      "post": {
+        "tags": ["black-box-countdown"],
+        "summary": "Freeze Society Redistribution Rule",
+        "operationId": "freeze_society_rule",
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/FreezeRequest"}}}, "required": true},
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/profile/dna": {
+      "post": {
+        "tags": ["royalty-dna"],
+        "summary": "Generate Royalty DNA Profile",
+        "operationId": "generate_royalty_dna_profile",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/profile/dna/insights": {
+      "get": {
+        "tags": ["royalty-dna"],
+        "summary": "Get Royalty DNA Insights",
+        "operationId": "get_royalty_dna_insights",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/payers/health": {
+      "get": {
+        "tags": ["payer-health"],
+        "summary": "Get Payer Health Scores",
+        "operationId": "get_payer_health_scores",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/payers/{payer_id}/health": {
+      "get": {
+        "tags": ["payer-health"],
+        "summary": "Get Single Payer Health Score",
+        "operationId": "get_single_payer_health_score",
+        "parameters": [
+          {"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "payer_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/payers/health/global": {
+      "get": {
+        "tags": ["payer-health"],
+        "summary": "Get Global Payer Health Leaderboard",
+        "operationId": "get_global_payer_health",
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/contracts/drift": {
+      "get": {
+        "tags": ["contract-drift"],
+        "summary": "Analyze Contract Drift",
+        "operationId": "get_contract_drift",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/contracts/{contract_id}/drift": {
+      "get": {
+        "tags": ["contract-drift"],
+        "summary": "Analyze Single Contract Drift",
+        "operationId": "get_single_contract_drift",
+        "parameters": [
+          {"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "contract_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/contracts/{contract_id}/drift/dispute": {
+      "post": {
+        "tags": ["contract-drift"],
+        "summary": "Initiate Contract Drift Dispute",
+        "operationId": "initiate_contract_drift_dispute",
+        "parameters": [
+          {"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}},
+          {"name": "contract_id", "in": "path", "required": true, "schema": {"type": "string"}}
+        ],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/catalog/value-appraisal": {
+      "post": {
+        "tags": ["catalog-value"],
+        "summary": "Run Catalog Value Appraisal",
+        "operationId": "run_catalog_value_appraisal",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "requestBody": {"content": {"application/json": {"schema": {"$ref": "#/components/schemas/AppraisalRequest"}}}, "required": false},
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/catalog/value-appraisal/history": {
+      "get": {
+        "tags": ["catalog-value"],
+        "summary": "Get Catalog Value Appraisal History",
+        "operationId": "get_catalog_value_appraisal_history",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/recovery-score": {
+      "get": {
+        "tags": ["recovery-credit-score"],
+        "summary": "Get Recovery Credit Score",
+        "operationId": "get_recovery_credit_score",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/recovery-score/history": {
+      "get": {
+        "tags": ["recovery-credit-score"],
+        "summary": "Get Recovery Credit Score History",
+        "operationId": "get_recovery_credit_score_history",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/artists/{artist_id}/recovery-score/actions": {
+      "get": {
+        "tags": ["recovery-credit-score"],
+        "summary": "Get Recovery Score Improvement Actions",
+        "operationId": "get_recovery_score_actions",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
+    },
+    "/admin/advances/recovery-score/{artist_id}": {
+      "post": {
+        "tags": ["recovery-credit-score"],
+        "summary": "Evaluate Advance Eligibility",
+        "operationId": "evaluate_advance_eligibility",
+        "parameters": [{"name": "artist_id", "in": "path", "required": true, "schema": {"type": "string"}}],
+        "responses": {"200": {"description": "Successful Response", "content": {"application/json": {"schema": {}}}}}
+      }
     }
   },
   "components": {
@@ -35693,6 +35895,37 @@
         },
         "type": "object",
         "title": "ForecastRequest"
+      },
+      "TimeMachineRequest": {
+        "properties": {
+          "granularity": {"type": "string", "enum": ["monthly", "quarterly", "yearly"], "default": "yearly", "title": "Granularity"},
+          "metadata_repair_log": {"type": "array", "items": {"type": "object"}, "default": [], "title": "Metadata Repair Log"},
+          "anomaly_history": {"type": "array", "items": {"type": "object"}, "default": [], "title": "Anomaly History"},
+          "split_verification_history": {"type": "array", "items": {"type": "object"}, "default": [], "title": "Split Verification History"},
+          "catalog_health_scores": {"type": "array", "items": {"type": "object"}, "default": [], "title": "Catalog Health Scores"}
+        },
+        "type": "object",
+        "title": "TimeMachineRequest"
+      },
+      "FreezeRequest": {
+        "properties": {
+          "society": {"type": "string", "title": "Society"},
+          "freeze_until": {"type": "string", "format": "date-time", "title": "Freeze Until"},
+          "reason": {"type": "string", "default": "", "title": "Reason"}
+        },
+        "required": ["society", "freeze_until"],
+        "type": "object",
+        "title": "FreezeRequest"
+      },
+      "AppraisalRequest": {
+        "properties": {
+          "catalog_health_score": {"type": "number", "default": 0.5, "title": "Catalog Health Score"},
+          "concentration_score": {"type": "number", "default": 0.5, "title": "Concentration Score"},
+          "territory_coverage_ratio": {"type": "number", "default": 0.3, "title": "Territory Coverage Ratio"},
+          "trajectory": {"type": "string", "enum": ["GROWING", "STABLE", "DECLINING"], "default": "STABLE", "title": "Trajectory"}
+        },
+        "type": "object",
+        "title": "AppraisalRequest"
       }
     },
     "securitySchemes": {

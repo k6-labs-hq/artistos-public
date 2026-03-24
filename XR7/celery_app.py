@@ -81,7 +81,24 @@ celery_app.conf.update(
             "task": "xr7.tasks.ops.validate_backup_restore",
             "schedule": 604800,  # weekly
         },
+        # ── XR7 Engine 2 — new modules ────────────────────────────────────
+        "xr7-black-box-countdown-hourly": {
+            "task": "xr7.modules.black_box_countdown.refresh_countdowns_all",
+            "schedule": 3600,  # hourly
+        },
+        "xr7-payer-health-score-weekly": {
+            "task": "xr7.modules.payer_health.refresh_scores_all",
+            "schedule": 604800,  # weekly
+        },
+        "xr7-contract-drift-quarterly": {
+            "task": "xr7.modules.contract_drift.run_quarterly_analysis_all",
+            "schedule": 7776000,  # ~90 days
+        },
+        "xr7-recovery-score-daily": {
+            "task": "xr7.modules.recovery_score.recalculate_all",
+            "schedule": 86400,  # daily
+        },
     },
 )
 
-celery_app.autodiscover_tasks(["XR7.tasks", "XR7.fingerprinting"])
+celery_app.autodiscover_tasks(["XR7.tasks", "XR7.fingerprinting", "XR7.modules"])

@@ -3,6 +3,27 @@ import { useEffect, useState } from "react";
 import { api } from "@/api";
 import { SovereigntyInsightsPanel } from "./SovereigntyInsightsPanel";
 import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
+import { EarningsTimeMachineCard } from "./EarningsTimeMachineCard";
+import { GhostCatalogDetectorCard } from "./GhostCatalogDetectorCard";
+import { BlackBoxCountdownCard } from "./BlackBoxCountdownCard";
+import { RoyaltyDNAProfileCard } from "./RoyaltyDNAProfileCard";
+import { PayerHealthScoreCard } from "./PayerHealthScoreCard";
+import { ContractDriftMonitorCard } from "./ContractDriftMonitorCard";
+import { CatalogValueAppraiserCard } from "./CatalogValueAppraiserCard";
+import { RecoveryCreditScoreCard } from "./RecoveryCreditScoreCard";
+
+const ALL_MODULES = [
+  { id: "earnings_time_machine", label: "Earnings Time Machine" },
+  { id: "ghost_catalog_detector", label: "Ghost Catalog Detector" },
+  { id: "black_box_countdown", label: "Black Box Countdown" },
+  { id: "royalty_dna_profile", label: "Royalty DNA Profile" },
+  { id: "payer_health_score", label: "Payer Health Score" },
+  { id: "contract_drift_monitor", label: "Contract Drift Monitor" },
+  { id: "catalog_value_appraiser", label: "Catalog Value Appraiser" },
+  { id: "recovery_credit_score", label: "Recovery Credit Score", alwaysOn: true },
+] as const;
+
+type ModuleId = typeof ALL_MODULES[number]["id"];
 
 type DashboardViewProps = {
   artistId: string;
@@ -21,6 +42,20 @@ export function DashboardView({ artistId }: DashboardViewProps) {
   const [dashboard, setDashboard] = useState<DashboardPayload | null>(null);
   const [agentStatus, setAgentStatus] = useState<AgentStatusPayload | null>(null);
   const [error, setError] = useState("");
+
+  const defaultEnabled = new Set<ModuleId>(["recovery_credit_score"]);
+  const [enabledModules, setEnabledModules] = useState<Set<ModuleId>>(defaultEnabled);
+  const [selectorOpen, setSelectorOpen] = useState(false);
+
+  function toggleModule(id: ModuleId, alwaysOn?: boolean) {
+    if (alwaysOn) return;
+    setEnabledModules((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -158,6 +193,68 @@ export function DashboardView({ artistId }: DashboardViewProps) {
         waterfall={waterfall}
         payerRows={payerRows}
       />
+
+      {/* ── Module Selector ── */}
+      <div style={{ marginTop: 32, borderTop: "1px solid #2D2D4E", paddingTop: 20 }}>
+        <div
+          style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: 12 }}
+          onClick={() => setSelectorOpen((o) => !o)}
+        >
+          <span style={{ fontWeight: 700, fontSize: 15, color: "#F1F1F3" }}>Intelligence Modules</span>
+          <span style={{ fontSize: 12, color: "#9CA3AF" }}>({enabledModules.size} active)</span>
+          <span style={{ marginLeft: "auto", color: "#9CA3AF" }}>{selectorOpen ? "▲" : "▼"}</span>
+        </div>
+
+        {selectorOpen && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+            {ALL_MODULES.map((m) => {
+              const on = enabledModules.has(m.id);
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => toggleModule(m.id, "alwaysOn" in m && m.alwaysOn)}
+                  style={{
+                    background: on ? "#C89B3C22" : "#1F2937",
+                    border: `1px solid ${on ? "#C89B3C" : "#374151"}`,
+                    color: on ? "#C89B3C" : "#9CA3AF",
+                    borderRadius: 20, padding: "5px 14px", fontSize: 12, cursor: "alwaysOn" in m && m.alwaysOn ? "default" : "pointer",
+                    fontWeight: on ? 600 : 400,
+                  }}
+                >
+                  {m.label}{"alwaysOn" in m && m.alwaysOn ? " (always on)" : ""}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
+          {enabledModules.has("recovery_credit_score") && (
+            <RecoveryCreditScoreCard artistId={artistId} />
+          )}
+          {enabledModules.has("earnings_time_machine") && (
+            <EarningsTimeMachineCard artistId={artistId} />
+          )}
+          {enabledModules.has("ghost_catalog_detector") && (
+            <GhostCatalogDetectorCard artistId={artistId} />
+          )}
+          {enabledModules.has("black_box_countdown") && (
+            <BlackBoxCountdownCard artistId={artistId} />
+          )}
+          {enabledModules.has("royalty_dna_profile") && (
+            <RoyaltyDNAProfileCard artistId={artistId} />
+          )}
+          {enabledModules.has("payer_health_score") && (
+            <PayerHealthScoreCard artistId={artistId} />
+          )}
+          {enabledModules.has("contract_drift_monitor") && (
+            <ContractDriftMonitorCard artistId={artistId} />
+          )}
+          {enabledModules.has("catalog_value_appraiser") && (
+            <CatalogValueAppraiserCard artistId={artistId} />
+          )}
+        </div>
+      </div>
     </section>
   );
 }

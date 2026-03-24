@@ -62,6 +62,14 @@ from XR7.api.routers import catalog_health as catalog_health_router
 from XR7.api.routers import benchmarks as benchmarks_router
 from XR7.api.routers import blackbox as blackbox_router
 from XR7.api.routers import ugc_scanner as ugc_scanner_router
+from XR7.api.routers import earnings_time_machine as earnings_time_machine_router
+from XR7.api.routers import ghost_catalog as ghost_catalog_router
+from XR7.api.routers import black_box_countdown as black_box_countdown_router
+from XR7.api.routers import royalty_dna as royalty_dna_router
+from XR7.api.routers import payer_health as payer_health_router
+from XR7.api.routers import contract_drift as contract_drift_router
+from XR7.api.routers import catalog_value as catalog_value_router
+from XR7.api.routers import recovery_credit_score as recovery_credit_score_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -279,6 +287,14 @@ app.include_router(catalog_health_router.router)
 app.include_router(benchmarks_router.router)
 app.include_router(blackbox_router.router)
 app.include_router(ugc_scanner_router.router)
+app.include_router(earnings_time_machine_router.router)
+app.include_router(ghost_catalog_router.router)
+app.include_router(black_box_countdown_router.router)
+app.include_router(royalty_dna_router.router)
+app.include_router(payer_health_router.router)
+app.include_router(contract_drift_router.router)
+app.include_router(catalog_value_router.router)
+app.include_router(recovery_credit_score_router.router)
 
 
 @app.get("/health")
