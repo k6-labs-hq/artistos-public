@@ -47,15 +47,15 @@ def test_score_all_returns_required_keys(db_session, artist):
     scorer = PayerHealthScorer(db_session)
     result = scorer.score_all(artist.id)
 
-    assert "payers" in result
-    assert "scored_at" in result
+    assert "payer_scores" in result
+    assert "computed_at" in result
     assert "chain_of_custody_hash" in result
 
 
 def test_no_payments_returns_empty_payers(db_session, artist):
     scorer = PayerHealthScorer(db_session)
     result = scorer.score_all(artist.id)
-    assert result["payers"] == []
+    assert result["payer_scores"] == []
 
 
 def test_score_range_0_to_100(db_session, artist):
@@ -65,8 +65,8 @@ def test_score_range_0_to_100(db_session, artist):
 
     scorer = PayerHealthScorer(db_session)
     result = scorer.score_all(artist.id)
-    for p in result["payers"]:
-        assert 0 <= p["total_score"] <= 100
+    for p in result["payer_scores"]:
+        assert 0 <= p["composite_score"] <= 100
 
 
 def test_sub_scores_within_range(db_session, artist):
@@ -75,7 +75,7 @@ def test_sub_scores_within_range(db_session, artist):
 
     scorer = PayerHealthScorer(db_session)
     result = scorer.score_all(artist.id)
-    for p in result["payers"]:
+    for p in result["payer_scores"]:
         ss = p["sub_scores"]
         assert 0 <= ss["payment_accuracy"] <= 25
         assert 0 <= ss["redistribution_timing"] <= 20
@@ -91,7 +91,7 @@ def test_risk_tier_assigned(db_session, artist):
     scorer = PayerHealthScorer(db_session)
     result = scorer.score_all(artist.id)
     valid_tiers = {"TRUSTED", "RELIABLE", "WATCH", "ELEVATED_RISK", "HIGH_RISK"}
-    for p in result["payers"]:
+    for p in result["payer_scores"]:
         assert p["risk_tier"] in valid_tiers
 
 
@@ -112,5 +112,5 @@ def test_single_payer_is_scored(db_session, artist):
 
     scorer = PayerHealthScorer(db_session)
     result = scorer.score_all(artist.id)
-    payer_names = [p["payer_name"] for p in result["payers"]]
+    payer_names = [p["payer_name"] for p in result["payer_scores"]]
     assert "Tidal" in payer_names

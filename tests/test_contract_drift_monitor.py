@@ -65,7 +65,7 @@ def test_analyze_all_returns_required_keys(db_session, artist):
     result = monitor.analyze_all(artist.id)
 
     assert "contracts" in result
-    assert "total_cumulative_underpayment" in result
+    assert "total_cumulative_drift_cost" in result
     assert "chain_of_custody_hash" in result
 
 
@@ -95,7 +95,7 @@ def test_classification_is_valid_value(db_session, artist):
     result = monitor.analyze_all(artist.id)
     valid = {"WITHIN_VARIANCE", "SOFT_DRIFT", "HARD_DRIFT", "BREACH_RISK"}
     for c in result["contracts"]:
-        assert c["classification"] in valid
+        assert c["latest_classification"] in valid
 
 
 def test_drift_trend_is_valid(db_session, artist):
@@ -117,7 +117,7 @@ def test_cumulative_underpayment_non_negative(db_session, artist):
 
     monitor = ContractDriftMonitor(db_session)
     result = monitor.analyze_all(artist.id)
-    assert result["total_cumulative_underpayment"] >= 0
+    assert result["total_cumulative_drift_cost"] >= 0
 
 
 def test_chain_of_custody_hash_format(db_session, artist):

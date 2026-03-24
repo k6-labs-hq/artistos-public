@@ -49,7 +49,7 @@ def test_compute_all_returns_required_keys(db_session, artist):
     result = bbc.compute_all(artist.id)
 
     assert "countdowns" in result
-    assert "summary" in result
+    assert "critical_count" in result
     assert "chain_of_custody_hash" in result
 
 
@@ -91,12 +91,12 @@ def test_redistribution_rules_have_expected_societies():
 def test_freeze_event_logic():
     future = datetime.now(timezone.utc) + timedelta(days=30)
     apply_freeze("TEST_SOCIETY", future)
-    assert is_frozen("TEST_SOCIETY")
+    assert is_frozen("TEST_SOCIETY", datetime.now(timezone.utc))
 
 
 def test_society_not_frozen_by_default():
     # Use a society name unlikely to be frozen in test env
-    assert not is_frozen("SOCIETY_NOT_FROZEN_XYZZ")
+    assert not is_frozen("SOCIETY_NOT_FROZEN_XYZZ", datetime.now(timezone.utc))
 
 
 def test_chain_of_custody_hash_format(db_session, artist):
@@ -113,6 +113,6 @@ def test_summary_counts_by_tier(db_session, artist):
 
     bbc = BlackBoxCountdown(db_session)
     result = bbc.compute_all(artist.id)
-    summary = result["summary"]
+    summary = result
     assert "critical_count" in summary
-    assert "total_at_risk_value" in summary
+    assert "at_risk_value_next_30_days" in summary

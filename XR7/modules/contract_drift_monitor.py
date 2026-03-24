@@ -204,7 +204,7 @@ class ContractDriftMonitor:
 
         # Audit rights window check
         audit_rights_days = int(terms.get("audit_rights_days", 1095))
-        effective_date = _ensure_utc(contract.created_at)
+        effective_date = _ensure_utc(getattr(contract, "effective_date", None) or getattr(contract, "created_at", None))
         audit_expiry = effective_date.replace(year=effective_date.year + max(1, audit_rights_days // 365))
         now = datetime.now(timezone.utc)
         audit_days_remaining = (audit_expiry - now).days
