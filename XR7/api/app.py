@@ -70,6 +70,7 @@ from XR7.api.routers import payer_health as payer_health_router
 from XR7.api.routers import contract_drift as contract_drift_router
 from XR7.api.routers import catalog_value as catalog_value_router
 from XR7.api.routers import recovery_credit_score as recovery_credit_score_router
+from XR7.api.routers import collaborator_share as collaborator_share_router
 from xr7_common.settings import settings
 from XR7.services.hubspot_client import HubSpotClient
 
@@ -132,6 +133,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.benchmark_aggregate  # noqa: F401
     import XR7.models.blackbox_match  # noqa: F401
     import XR7.models.ugc_opportunity  # noqa: F401
+    import XR7.models.collaborator_share_lead  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -295,6 +297,7 @@ app.include_router(payer_health_router.router)
 app.include_router(contract_drift_router.router)
 app.include_router(catalog_value_router.router)
 app.include_router(recovery_credit_score_router.router)
+app.include_router(collaborator_share_router.router)
 
 
 @app.get("/health")

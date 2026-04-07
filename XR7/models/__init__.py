@@ -62,6 +62,7 @@ from XR7.models.xr7_royalty import (
     XR7SplitSheetImport,
     XR7AIDecisionAuditLog,
 )
+from XR7.models.collaborator_share_lead import CollaboratorShareLead, CollaboratorRole
 
 __all__ = [
     "Base", "engine", "SessionLocal", "get_db",
@@ -91,4 +92,5 @@ __all__ = [
     "XR7IdentityNode", "XR7IdentityEdge", "XR7ConnectorCredential",
     "XR7CatalogValuationSnapshot", "XR7RecoveryForecast", "XR7SplitSheetImport",
     "XR7AIDecisionAuditLog",
+    "CollaboratorShareLead", "CollaboratorRole",
 ]

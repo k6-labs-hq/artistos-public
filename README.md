@@ -87,6 +87,7 @@ POST /tvfilm/trust/explain
 | **Observability Pipeline** | ✅ Ready | OTel collector, Prometheus SLO rules, Grafana dashboard — wired to API and worker services |
 | **Disaster Recovery** | ✅ Ready | Nightly backup cron, weekly restore drill tooling, DR and incident runbooks |
 | **Platform Security** | ✅ Ready | Network policies, pod security, dependency audit (pip-audit) and CVE scan (Trivy) in CI |
+| **Collaborator Share (Viral Loop)** | ✅ Ready | Post-analysis panel generates personalised invite messages for co-writers, producers, and publishers; each collaborator logged in HubSpot CRM as a pipeline lead |
 
 | --- |
 
@@ -272,6 +273,94 @@ console.log(`VIP: ${status.is_vip}, Tier: ${status.tier_level}`);
 const drops = await vip.getVipDrops({ artistId: "37f25000-..." });
 drops.forEach(drop => console.log(`${drop.title}: ${drop.available_since}`));
 ```
+
+| --- |
+
+## Collaborator Share — Viral Invite Loop
+
+After a creator's analysis completes, XR7 displays a **"Invite Your Collaborators"** panel that turns every finished analysis into new pipeline. Because royalties on most works are split across multiple rights-holders, co-writers, producers, and publishers on the same catalog are high-intent leads who can immediately benefit from running their own analysis.
+
+### How it works
+
+1. The creator enters the names (and optional emails) of their co-writers, producers, publishers, managers, and labels — or the panel is pre-populated from split-sheet metadata detected during the analysis.
+2. Clicking **"Generate Share Message"** calls the backend, which:
+   - Creates an individual `Invite` record for each collaborator (unique JWT token, 72-hour expiry).
+   - Upserts each collaborator into HubSpot CRM as a new lead tagged with their role and the referring artist's ID, so the growth team can follow up.
+   - Persists a `CollaboratorShareLead` row in the database for attribution tracking and audit trail.
+   - Returns a composed, copy-paste-ready message the creator can forward via text, email, or DM.
+3. The creator copies the message and sends it — each collaborator gets their own personal invite link that routes them directly into onboarding with the referring artist pre-attributed.
+
+### API Endpoint
+
+```text
+POST /artists/{artist_id}/collaborator-share
+```
+
+**Request:**
+
+```json
+{
+  "collaborators": [
+    { "name": "Jordan Lee", "email": "jordan@example.com", "role": "co_writer" },
+    { "name": "Marcus Dev",  "email": null,                 "role": "producer"  },
+    { "name": "Bright Songs Publishing",                    "role": "publisher" }
+  ]
+}
+```
+
+**Response:**
+
+```json
+{
+  "share_message": "Hey Jordan Lee, Marcus Dev, and Bright Songs Publishing,\n\nI just ran an XR7 royalty analysis...",
+  "collaborators": [
+    {
+      "collaborator_name": "Jordan Lee",
+      "role": "co_writer",
+      "invite_link": "/invite/<token>",
+      "invite_token": "<jwt>",
+      "lead_id": "<uuid>",
+      "hubspot_logged": true
+    }
+  ],
+  "total_logged": 3
+}
+```
+
+Supported roles: `co_writer`, `producer`, `publisher`, `manager`, `label`, `other`.
+
+### CRM Logging
+
+Each collaborator is upserted into HubSpot with:
+
+| Property | Value |
+| --- | --- |
+| `xr7_collaborator_role` | Role supplied by the creator  |
+| `xr7_referred_by_artist_id` | Artist ID of the referring creator |
+| `xr7_referred_by_artist_name` | Display name of the referring creator |
+| `xr7_lead_source` | `collaborator_share_panel` |
+| `hs_lead_status` | `NEW` |
+
+The `CollaboratorShareLead` table records: the invite ID, the HubSpot contact ID, collaborator name/email/role, the referring artist, and the exact share message text for a full audit trail.
+
+### Frontend Component
+
+```tsx
+import { CollaboratorSharePanel } from "@/components/CollaboratorSharePanel";
+
+// After analysis completes:
+<CollaboratorSharePanel
+  artistId={artist.id}
+  detectedCollaborators={analysisResult.collaborators}
+  onDismiss={() => setShowSharePanel(false)}
+/>
+```
+
+The component:
+- Accepts up to 50 collaborators per submission (name required, email optional, role defaults to `co_writer`)
+- Can be pre-populated from split-sheet or persona metadata detected during analysis
+- Shows a copyable message block after submission with per-person invite link copy buttons
+- Displays a **CRM ✓** badge on each row confirming HubSpot logging succeeded
 
 | --- |
 

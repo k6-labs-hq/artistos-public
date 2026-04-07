@@ -190,3 +190,30 @@ class HubSpotClient:
     def link_contact_to_deal(self, *, contact_id: str, deal_id: str) -> dict:
         path = f"/crm/v3/objects/deals/{deal_id}/associations/contacts/{contact_id}/3"
         return self._request("PUT", path, payload={})
+
+    def log_collaborator_lead(
+        self,
+        *,
+        name: str,
+        email: str | None,
+        role: str,
+        source_artist_id: str,
+        source_artist_name: str | None,
+    ) -> dict:
+        """Upsert a collaborator identified from a creator's analysis as a CRM contact.
+
+        The contact is tagged with the referring artist and their role
+        (co_writer, producer, publisher, etc.) so the growth team can follow up.
+        """
+        return self.upsert_contact(
+            email=email,
+            name=name,
+            properties={
+                "firstname": name,
+                "xr7_collaborator_role": role,
+                "xr7_referred_by_artist_id": source_artist_id,
+                "xr7_referred_by_artist_name": source_artist_name or "",
+                "xr7_lead_source": "collaborator_share_panel",
+                "hs_lead_status": "NEW",
+            },
+        )
