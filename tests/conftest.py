@@ -83,3 +83,13 @@ app.dependency_overrides[get_db] = override_get_db
 # so that query_handoffs() (and other direct-session callers) use the test DB.
 import XR7.agents.two_agent_orchestrator_graph as _two_agent_graph  # noqa: E402
 _two_agent_graph.SessionLocal = TestSession
+
+# Configure Celery to run tasks synchronously in-process so tests don't
+# attempt real Redis/broker connections (which cause ~20-second retry loops).
+from XR7.celery_app import celery_app as _celery_app  # noqa: E402
+_celery_app.conf.update(
+    task_always_eager=True,
+    task_eager_propagates=False,
+    broker_url="memory://",
+    result_backend="cache+memory://",
+)

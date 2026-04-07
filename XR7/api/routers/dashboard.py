@@ -271,7 +271,9 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     }
 
     # ── New feature cards ──────────────────────────────────────────────────
-    dashboard["catalog_health"] = _catalog_health_card(artist_id, db)
+    # Merge card data into existing catalog_health (from DashboardEngine) so
+    # health_score / grade / signals are preserved alongside the fix-issue fields.
+    dashboard["catalog_health"].update(_catalog_health_card(artist_id, db))
     dashboard["predicted_recoverable"] = _predicted_recoverable_card(artist_id, db)
 
     state = get_latest_artist_state(artist_id)
