@@ -7,7 +7,7 @@
 `███████████████████░` **96%** — 2026-03-22
 
 | Signal | Detail | Weight |
-|--------|--------|--------|
+| -------- | -------- | -------- |
 | 🚀 Market Readiness | 18 ✅&nbsp; 4 🔑&nbsp; 0 ⚠️&nbsp; (91% of 22 components) | 45% |
 | 🧪 Test Coverage | 738/300 test functions (100%) | 25% |
 | 📚 Documentation | 54/54 docs complete (100%) | 20% |
@@ -335,7 +335,7 @@ Each collaborator is upserted into HubSpot with:
 
 | Property | Value |
 | --- | --- |
-| `xr7_collaborator_role` | Role supplied by the creator  |
+| `xr7_collaborator_role` | Role supplied by the creator |
 | `xr7_referred_by_artist_id` | Artist ID of the referring creator |
 | `xr7_referred_by_artist_name` | Display name of the referring creator |
 | `xr7_lead_source` | `collaborator_share_panel` |
@@ -357,6 +357,7 @@ import { CollaboratorSharePanel } from "@/components/CollaboratorSharePanel";
 ```
 
 The component:
+
 - Accepts up to 50 collaborators per submission (name required, email optional, role defaults to `co_writer`)
 - Can be pre-populated from split-sheet or persona metadata detected during analysis
 - Shows a copyable message block after submission with per-person invite link copy buttons
