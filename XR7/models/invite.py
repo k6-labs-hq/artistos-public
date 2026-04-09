@@ -7,7 +7,7 @@ from enum import Enum
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
-from sqlalchemy import JSON, DateTime, Enum as SQLEnum, Index, String, Text, Unicode, func
+from sqlalchemy import JSON, DateTime, Enum as SQLEnum, Index, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base

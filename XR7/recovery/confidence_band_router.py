@@ -15,6 +15,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from XR7.core.scoring.confidence_band import HIGH, MEDIUM, classify_band
 from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.review_queue import ReviewSourceType
@@ -27,22 +28,18 @@ logger = get_logger(__name__)
 class ConfidenceBandRouter:
     """Routes anomalies to appropriate workflows based on confidence bands."""
 
-    # Confidence thresholds
-    HIGH_CONFIDENCE_THRESHOLD = 0.90
-    MEDIUM_CONFIDENCE_THRESHOLD = 0.70
+    # Thresholds are defined in XR7.core.scoring.confidence_band; re-exported
+    # here as class attributes for backwards-compatible callers.
+    HIGH_CONFIDENCE_THRESHOLD = HIGH
+    MEDIUM_CONFIDENCE_THRESHOLD = MEDIUM
 
     def __init__(self, db: Session):
         self.db = db
 
     @staticmethod
     def classify_band(confidence: float) -> str:
-        """Classify confidence score into a band."""
-        if confidence >= ConfidenceBandRouter.HIGH_CONFIDENCE_THRESHOLD:
-            return "high"
-        elif confidence >= ConfidenceBandRouter.MEDIUM_CONFIDENCE_THRESHOLD:
-            return "medium"
-        else:
-            return "low"
+        """Delegates to the pure core implementation."""
+        return classify_band(confidence)
 
     def route_anomaly(
         self,

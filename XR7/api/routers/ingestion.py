@@ -46,12 +46,13 @@ from XR7.models.notification_preference import NotificationPreference
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement, StatementSchema
 from XR7.api.routers.terms import require_terms_accepted
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.recovery.orchestrator import ClaimsOrchestrator
 from XR7.services.artist_lifecycle import promote_to_active
 from XR7.services.founder_program import handle_founder_notifications
-from XR7.services.identity_matching import persist_identity_match
-from XR7.services.statement_signal_extractor import extract_statement_signals, merge_statement_signals, to_json
+from XR7.fingerprinting.matching.identity_matching import persist_identity_match
+from XR7.ingestion.statement_signal_extractor import extract_statement_signals, merge_statement_signals, to_json
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
@@ -214,9 +215,7 @@ async def upload_statement(
     ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint
     returns HTTP 403 until the artist has agreed to the terms.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     # Gate: artist must have accepted the current T&C before submitting data.
     require_terms_accepted(artist_id, db)
@@ -463,9 +462,7 @@ async def upload_statement_batch(
     db: Session = Depends(get_db),
 ):
     """Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     require_terms_accepted(artist_id, db)
 
@@ -627,9 +624,7 @@ async def upload_statement_batch(
 
 @router.post("/artists/{artist_id}/connect/soundexchange-mlc")
 async def connect_soundexchange_mlc(artist_id: str, years_back: int = 10, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     connector = SoundExchangeMLCConnector()
     rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
     anomalies = await connector.detect_unreported_uses(["USRC17607839", "USRC17607840"])
@@ -654,9 +649,7 @@ def soundexchange_mlc_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/connect/regional-global")
 async def connect_regional_global(artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     connector = RegionalGlobalConnector()
     rows = await connector.fetch_statements(artist_id, genre, territory)
     anomalies = await connector.auto_detect_genre_specific_anomalies(artist_id, genre, territory)
@@ -694,9 +687,7 @@ def list_statements(artist_id: str, db: Session = Depends(get_db)):
     """
     Return all statement uploads for an artist, newest first.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     return (
         db.query(Statement)

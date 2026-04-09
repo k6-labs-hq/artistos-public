@@ -1,0 +1,318 @@
+{
+  "name": "XR7 — PRO Reconciliation Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": ["monday"],
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "id": "trigger-weekly",
+      "name": "Schedule Trigger (Weekly Monday 03:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/auth/login/artist",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "email", "value": "={{ $env.XR7_SERVICE_EMAIL }}" },
+            { "name": "password", "value": "={{ $env.XR7_SERVICE_PASSWORD }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "authenticate",
+      "name": "Authenticate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $input.item.json.access_token;\nif (!token) throw new Error('Auth failed');\n\n// Compute reconciliation period: prior calendar month\nconst now = new Date();\nconst firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);\nconst periodTo = new Date(firstOfMonth - 1);\nconst periodFrom = new Date(periodTo.getFullYear(), periodTo.getMonth(), 1);\n\nconst fmt = (d) => d.toISOString().split('T')[0];\n\nreturn [{\n  json: {\n    bearer_token: token,\n    period_from: fmt(periodFrom),\n    period_to: fmt(periodTo)\n  }\n}];"
+      },
+      "id": "compute-period",
+      "name": "Compute Reconciliation Period",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.XR7_BASE_URL }}/artists?active=true&page=1&page_size=200",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-active-artists",
+      "name": "Fetch Active Artists",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $('Compute Reconciliation Period').item.json.bearer_token;\nconst period_from = $('Compute Reconciliation Period').item.json.period_from;\nconst period_to = $('Compute Reconciliation Period').item.json.period_to;\nconst artists = $input.item.json.items || [];\n\nreturn artists.map(artist => ({\n  json: {\n    bearer_token: token,\n    artist_id: artist.artist_id,\n    artist_name: artist.name,\n    period_from,\n    period_to\n  }\n}));"
+      },
+      "id": "expand-artist-tasks",
+      "name": "Expand Artist Reconciliation Tasks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/artists/{{ $json.artist_id }}/reconciliation/trigger",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "period_from", "value": "={{ $json.period_from }}" },
+            { "name": "period_to", "value": "={{ $json.period_to }}" }
+          ]
+        },
+        "options": {
+          "retry": {
+            "enabled": true,
+            "maxRetries": 3,
+            "waitBetweenRetries": 10000
+          }
+        }
+      },
+      "id": "trigger-reconciliation",
+      "name": "Trigger Reconciliation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "amount": 10,
+        "unit": "seconds"
+      },
+      "id": "wait-initial",
+      "name": "Wait 10s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.XR7_BASE_URL }}/jobs/{{ $json.job_id }}/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "poll-status",
+      "name": "Poll Reconciliation Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        }
+      },
+      "id": "check-complete",
+      "name": "Reconciliation Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.gaps_found }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        }
+      },
+      "id": "check-gaps",
+      "name": "Gaps Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2220, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/claims",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "artist_id", "value": "={{ $json.artist_id }}" },
+            { "name": "period_from", "value": "={{ $json.period_from }}" },
+            { "name": "period_to", "value": "={{ $json.period_to }}" },
+            { "name": "source", "value": "pro_reconciliation_pipeline" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "auto-create-claims",
+      "name": "Auto-Create Claims for Gaps",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2440, 160]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $env.NOTIFICATION_FROM_EMAIL }}",
+        "toEmail": "={{ $env.ANALYST_EMAIL }}",
+        "subject": "=XR7 PRO Reconciliation: {{ $json.gaps_found }} gaps found for {{ $json.artist_id }} ({{ $json.period_from }} – {{ $json.period_to }})",
+        "text": "=Reconciliation complete.\n\nArtist: {{ $json.artist_id }}\nPeriod: {{ $json.period_from }} – {{ $json.period_to }}\nGaps found: {{ $json.gaps_found }}\nTotal delta: ${{ $json.total_delta_usd }}\n\nClaims have been auto-created. Review in XR7: {{ $env.XR7_BASE_URL }}/review-queue",
+        "options": {}
+      },
+      "id": "email-analyst",
+      "name": "Email Analyst — Gaps Summary",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [2660, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=:x: *XR7 PRO Reconciliation FAILED*\nArtist: {{ $json.artist_id }} | Period: {{ $json.period_from }}\nError: {{ $json.error }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-failure",
+      "name": "Slack — Failure Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2220, 440]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (Weekly Monday 03:00)": {
+      "main": [[{ "node": "Authenticate", "type": "main", "index": 0 }]]
+    },
+    "Authenticate": {
+      "main": [[{ "node": "Compute Reconciliation Period", "type": "main", "index": 0 }]]
+    },
+    "Compute Reconciliation Period": {
+      "main": [[{ "node": "Fetch Active Artists", "type": "main", "index": 0 }]]
+    },
+    "Fetch Active Artists": {
+      "main": [[{ "node": "Expand Artist Reconciliation Tasks", "type": "main", "index": 0 }]]
+    },
+    "Expand Artist Reconciliation Tasks": {
+      "main": [[{ "node": "Trigger Reconciliation", "type": "main", "index": 0 }]]
+    },
+    "Trigger Reconciliation": {
+      "main": [[{ "node": "Wait 10s", "type": "main", "index": 0 }]]
+    },
+    "Wait 10s": {
+      "main": [[{ "node": "Poll Reconciliation Status", "type": "main", "index": 0 }]]
+    },
+    "Poll Reconciliation Status": {
+      "main": [[{ "node": "Reconciliation Complete?", "type": "main", "index": 0 }]]
+    },
+    "Reconciliation Complete?": {
+      "main": [
+        [{ "node": "Gaps Found?", "type": "main", "index": 0 }],
+        [{ "node": "Slack — Failure Alert", "type": "main", "index": 0 }]
+      ]
+    },
+    "Gaps Found?": {
+      "main": [
+        [{ "node": "Auto-Create Claims for Gaps", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Auto-Create Claims for Gaps": {
+      "main": [[{ "node": "Email Analyst — Gaps Summary", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": "XR7 — Error Handler"
+  },
+  "tags": ["xr7", "reconciliation", "pro"],
+  "meta": {
+    "description": "Weekly PRO performance data reconciliation. Computes gaps for the prior month, auto-creates claims, and emails an analyst digest.",
+    "xr7_api_version": "2.0",
+    "required_env": [
+      "XR7_BASE_URL",
+      "XR7_SERVICE_EMAIL",
+      "XR7_SERVICE_PASSWORD",
+      "SLACK_WEBHOOK_URL",
+      "ANALYST_EMAIL",
+      "NOTIFICATION_FROM_EMAIL"
+    ]
+  }
+}

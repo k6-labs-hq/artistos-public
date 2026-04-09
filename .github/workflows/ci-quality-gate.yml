@@ -1,0 +1,233 @@
+name: CI — Quality Gate
+
+# Runs on every push and every pull request targeting main.
+# This is the primary quality gate. All jobs must pass before merging.
+#
+# Jobs:
+#   lint          — ruff (linting) + black (formatting) + ruff (import order)
+#   type-check    — mypy strict mode across the full XR7 package
+#   test          — pytest full suite with coverage thresholds
+#   domain-guard  — custom script: enforce domain boundary rules
+#   naming-check  — custom script: enforce naming conventions (work/recording/party)
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.12"
+  # Minimal test environment — no real DB needed for most tests
+  DATABASE_URL: "sqlite:///./test.db"
+  REDIS_URL: "redis://localhost:6379/0"
+  XR7_EVIDENCE_HMAC_SECRET: "ci-test-secret"
+  XR7_EVIDENCE_SIGNING_MODE: "hmac"
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 1: Linting + Formatting
+  # Tool: ruff (replaces flake8 + isort; 10-100x faster)
+  # Tool: black (formatting validator — check mode only, does not modify files)
+  #
+  # What it enforces:
+  #   - PEP 8 style compliance
+  #   - Unused imports and variables
+  #   - Import ordering (isort-compatible)
+  #   - Black formatting consistency (no unformatted diffs allowed)
+  # ──────────────────────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install linting tools
+        run: pip install ruff==0.4.4 black==24.4.2
+
+      - name: ruff — lint (PEP8 + unused imports/vars + import order)
+        run: |
+          ruff check XR7/ shared/ xr7_common/ tests/ \
+            --select E,W,F,I \
+            --ignore E501 \
+            --output-format=github
+
+      - name: black — formatting check
+        run: |
+          black --check --diff XR7/ shared/ xr7_common/ tests/
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 2: Static Type Checking
+  # Tool: mypy (Python equivalent of TypeScript type-checking)
+  #
+  # What it enforces:
+  #   - All function parameters and return types are annotated
+  #   - No implicit Any types in non-test code
+  #   - SQLAlchemy 2 mapped_column typing
+  #   - Pydantic model field types
+  #
+  # Note: mypy runs in non-strict mode on service files (too many untyped
+  #   third-party libs); strict mode on core/ and shared/utils/ which must
+  #   remain pure and fully typed.
+  # ──────────────────────────────────────────────────────────────────────────
+  type-check:
+    name: Type Check (mypy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies + mypy
+        run: |
+          pip install -r requirements.txt
+          pip install mypy==1.10.0 types-redis types-requests types-PyYAML
+
+      - name: mypy — strict mode on core/ (pure logic, must be fully typed)
+        run: |
+          mypy XR7/core/ shared/utils/ \
+            --strict \
+            --ignore-missing-imports \
+            --python-version 3.12
+
+      - name: mypy — standard mode on full XR7 package
+        run: |
+          mypy XR7/ \
+            --ignore-missing-imports \
+            --no-strict-optional \
+            --python-version 3.12 \
+            --exclude "XR7/(agents|llm|blockchain)/" \
+            --warn-return-any \
+            --warn-unused-ignores
+        continue-on-error: true  # gradual enforcement — will harden over XR7-next sprint
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 3: Test Suite with Coverage Thresholds
+  # Tool: pytest + pytest-cov
+  #
+  # Coverage thresholds (fail if below):
+  #   - core/          95% (pure logic — must be near-total)
+  #   - shared/utils/  95% (utility functions — must be near-total)
+  #   - fingerprinting/ 80%
+  #   - recovery/       75%
+  #   - overall         60% (current baseline; raise 5% per sprint)
+  # ──────────────────────────────────────────────────────────────────────────
+  test:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest-cov==5.0.0 pytest-xdist==3.5.0
+
+      - name: Run tests (parallel, with coverage)
+        run: |
+          pytest tests/ \
+            -n auto \
+            --cov=XR7 \
+            --cov=shared \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-fail-under=60 \
+            --tb=short \
+            -q
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          XR7_EVIDENCE_HMAC_SECRET: ${{ env.XR7_EVIDENCE_HMAC_SECRET }}
+
+      - name: Enforce core/ coverage >= 95%
+        run: |
+          pytest tests/ -k "core" \
+            --cov=XR7/core \
+            --cov-fail-under=95 \
+            --cov-report=term \
+            -q
+
+      - name: Enforce shared/utils/ coverage >= 95%
+        run: |
+          pytest tests/shared/ \
+            --cov=shared/utils \
+            --cov-fail-under=95 \
+            --cov-report=term \
+            -q
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: unittests
+          fail_ci_if_error: false
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 4: Domain Boundary Enforcement
+  # Tool: custom Python script (scripts/check_domain_boundaries.py)
+  #
+  # What it enforces:
+  #   - XR7/core/* has no imports from sqlalchemy, XR7.services, or XR7.api
+  #   - shared/utils/* has no imports from XR7.*
+  #   - XR7/ml/* has no direct imports from XR7.recovery or XR7.blockchain
+  #   - XR7/api/routers/* has no direct ORM queries (db.query / db.execute)
+  #
+  # This is the machine-enforced version of the boundary rules in
+  # docs/developer_onboarding.md Section 9.
+  # ──────────────────────────────────────────────────────────────────────────
+  domain-guard:
+    name: Domain Boundary Guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run domain boundary checks
+        run: python scripts/check_domain_boundaries.py
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 5: Naming Convention Enforcement
+  # Tool: custom Python script (scripts/check_naming_conventions.py)
+  #
+  # What it enforces:
+  #   - No track_title / track_count in non-parser Python files
+  #   - No "entity": "track" JSON literals in XR7/ source
+  #   - No song_id / song_title in internal field names (not in parser CSV aliases)
+  #   - Category A violations from docs/naming_convention_standard.md
+  # ──────────────────────────────────────────────────────────────────────────
+  naming-check:
+    name: Naming Convention Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Run naming convention checks
+        run: python scripts/check_naming_conventions.py

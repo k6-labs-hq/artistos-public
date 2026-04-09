@@ -58,7 +58,6 @@ def _check_s3() -> dict[str, Any]:
 
     try:
         import boto3
-        from botocore.exceptions import BotoCoreError, ClientError
 
         s3 = boto3.client(
             "s3",

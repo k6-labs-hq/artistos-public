@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.api.deps import get_artist_or_404
 from XR7.modules.catalog_value_appraiser import CatalogValueAppraiser
 from XR7.services.branding import inject_branding_metadata
 
@@ -37,9 +38,7 @@ def trigger_appraisal(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Trigger catalog value appraisal for this artist."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     appraiser = CatalogValueAppraiser(db)
     result = appraiser.appraise(
         artist_id=artist_id,
@@ -58,9 +57,7 @@ def get_appraisal_result(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Retrieve the latest catalog value appraisal."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     appraiser = CatalogValueAppraiser(db)
     result = appraiser.appraise(artist_id=artist_id)
     return inject_branding_metadata(db, result)
@@ -73,9 +70,7 @@ def get_appraisal_history(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Historical appraisals over time (tracks catalog value growth)."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     # Historical appraisals stored in the immutable ledger
     from XR7.recovery.immutable_ledger import ImmutableLedgerService
     ledger = ImmutableLedgerService(db)

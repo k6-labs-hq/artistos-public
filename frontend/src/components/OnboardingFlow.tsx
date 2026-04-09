@@ -2,6 +2,7 @@ import type { ChangeEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { api } from "@/api";
+import type { AgentStatus } from "@/shared/types";
 import AnalysisProgressScreen, {
   type AnalysisProgressThemeTokens,
   type AnalysisProgressThemeVariant,
@@ -17,14 +18,6 @@ type FlowState = {
   statementUploaded: boolean;
   firstClaimDrafted: boolean;
   message: string;
-};
-
-type AgentStatusPayload = {
-  agent_orchestra_status?: {
-    current_step?: string | null;
-  };
-  comfort_messages?: string[];
-  portal_guidance?: string[];
 };
 
 const STATUS_MESSAGE_BY_STEP: Record<string, string> = {
@@ -92,15 +85,15 @@ export function OnboardingFlow({ onReady }: OnboardingFlowProps) {
     };
   };
 
-  const fetchAgentStatus = async (artistId: string): Promise<AgentStatusPayload> => {
+  const fetchAgentStatus = async (artistId: string): Promise<AgentStatus> => {
     const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"}/artists/${artistId}/agents/status`);
     if (!response.ok) {
       throw new Error(`Unable to read agent status (${response.status})`);
     }
-    return (await response.json()) as AgentStatusPayload;
+    return (await response.json()) as AgentStatus;
   };
 
-  const mapAgentStatusToMessages = (payload: AgentStatusPayload): string[] => {
+  const mapAgentStatusToMessages = (payload: AgentStatus): string[] => {
     const dynamic = new Set<string>();
     const step = payload.agent_orchestra_status?.current_step?.toLowerCase().trim() || "";
 

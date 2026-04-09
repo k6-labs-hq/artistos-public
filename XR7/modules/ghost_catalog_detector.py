@@ -34,13 +34,7 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-def _ensure_utc(dt: datetime | None) -> datetime:
-    now = datetime.now(timezone.utc)
-    if dt is None:
-        return now
-    return dt if dt.tzinfo else dt.replace(tzinfo=timezone.utc)
-
-
+from shared.utils.dates import ensure_utc as _ensure_utc
 SUSPECTED_CAUSES = [
     "metadata_mismatch",
     "registration_gap",

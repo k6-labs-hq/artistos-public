@@ -12,6 +12,7 @@ from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.event import Event
+from XR7.api.deps import get_artist_or_404
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.post_repair_forecast_pipeline import (
     FORECAST_DISCLAIMER,
@@ -37,9 +38,7 @@ def get_earnings_summary(
     db: Session = Depends(get_db),
     _auth: dict | None = Depends(get_optional_auth_payload),
 ):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     engine = get_engine()
     result = engine.get_earnings_summary(artist_id, db)
     if isinstance(result, dict):
@@ -57,9 +56,7 @@ def get_earnings_history(
     db: Session = Depends(get_db),
     _auth: dict | None = Depends(get_optional_auth_payload),
 ):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     engine = get_engine()
     end = datetime.now(timezone.utc)
     result = engine.reconstruct_historical(artist_id, _DEFAULT_HISTORICAL_START_DATE, end, db)
@@ -79,9 +76,7 @@ class ReconstructRequest(BaseModel):
 
 @router.post("/artists/{artist_id}/earnings/reconstruct")
 def reconstruct_earnings(artist_id: str, body: ReconstructRequest, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     engine = get_engine()
     results = engine.reconstruct_historical(artist_id, body.start_date, body.end_date, db)
 
@@ -151,9 +146,7 @@ class ForecastRequest(BaseModel):
 
 @router.get("/artists/{artist_id}/earnings/forecast")
 def get_post_repair_forecast(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     end = datetime.now(timezone.utc)
     pipeline = PostRepairForecastPipeline(db).run(
@@ -195,9 +188,7 @@ def forecast_earnings(artist_id: str, body: ForecastRequest, db: Session = Depen
 
     Set ``by_category=true`` to receive a per-event-type breakdown.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     engine = get_engine()
     end = datetime.now(timezone.utc)

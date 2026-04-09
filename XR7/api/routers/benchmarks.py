@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
 from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.artist import Artist
@@ -210,9 +211,7 @@ def get_benchmark_percentiles(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> BenchmarkPercentileResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     _ensure_seed_data(db)
 

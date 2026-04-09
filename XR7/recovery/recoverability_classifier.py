@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from shared.utils.numbers import safe_float as _safe_float
 from XR7.recovery.black_box_expiration import evaluate_black_box_expiration_for_anomaly
 
 
@@ -25,13 +26,6 @@ _JURISDICTION_RULES: dict[str, dict[str, Any]] = {
 
 def _contains_any(text: str, terms: tuple[str, ...]) -> bool:
     return any(t in text for t in terms)
-
-
-def _safe_float(value: Any, default: float = 0.0) -> float:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:

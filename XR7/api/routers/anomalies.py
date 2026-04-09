@@ -24,8 +24,9 @@ from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.trust_defensibility import TrustDefensibilityService
 from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
 from XR7.services.review_queue import enqueue_review_item
-from XR7.services.gap_explainer_service import GapExplainerService
+from XR7.recovery.gap_explainer import GapExplainerService
 from XR7.models.xr7_royalty import XR7AIDecisionAuditLog
+from XR7.api.deps import get_artist_or_404
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -132,9 +133,7 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
 
 @router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
 def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     rg = RightsGraph()
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
@@ -177,9 +176,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ai-music/scan-influence")
 async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     detector = InfluenceDetector(db)
     matches = await detector.scan_new_ai_releases(artist_id)
@@ -201,9 +198,7 @@ async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/anomalies/fraud-scan")
 def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     result = FraudInflationDetector().flag_anomalies_for_report(artist_id)
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})

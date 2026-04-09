@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from XR7.api.routers.auth import get_optional_auth_payload, require_artist_access
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.api.deps import get_artist_or_404
 from XR7.modules.earnings_time_machine import EarningsTimeMachine
 from XR7.services.branding import inject_branding_metadata
 
@@ -37,9 +38,7 @@ def trigger_time_machine(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Trigger Earnings Time Machine analysis for this artist."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     engine = EarningsTimeMachine(db)
     result = engine.run(
         artist_id=artist_id,
@@ -60,9 +59,7 @@ def get_time_machine_result(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Retrieve the latest Earnings Time Machine result."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     engine = EarningsTimeMachine(db)
     result = engine.run(artist_id=artist_id, granularity=granularity)
     return inject_branding_metadata(db, result)

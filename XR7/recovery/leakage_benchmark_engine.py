@@ -33,10 +33,10 @@ class LeakageBenchmarkEngine:
         return labels[-1]
 
     def cohort_key(self, profile: dict[str, Any]) -> BenchmarkCohortKey:
-        tracks = float(profile.get("track_count") or 0.0)
+        work_count = float(profile.get("work_count") or 0.0)
         catalog_age = float(profile.get("catalog_age_years") or 0.0)
         return BenchmarkCohortKey(
-            catalog_size_band=self._band(tracks, [200, 1000, 5000], ["micro", "small", "mid", "large"]),
+            catalog_size_band=self._band(work_count, [200, 1000, 5000], ["micro", "small", "mid", "large"]),
             primary_territory=str(profile.get("primary_territory") or "GLOBAL").upper(),
             channels="|".join(sorted([str(c).upper() for c in (profile.get("distribution_channels") or ["DSP"])])),
             society_profile="|".join(sorted([str(s).upper() for s in (profile.get("societies") or ["GENERIC"])])),

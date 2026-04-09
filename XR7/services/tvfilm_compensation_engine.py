@@ -18,21 +18,11 @@ from __future__ import annotations
 
 from typing import Any
 
+from shared.utils.numbers import safe_float as _safe_float
+
 # ---------------------------------------------------------------------------
 # Helper utilities
 # ---------------------------------------------------------------------------
-
-def _safe_float(value: Any, *, default: float = 0.0) -> float:
-    if value is None:
-        return default
-    text = str(value).strip().replace(",", "").replace("$", "")
-    if text in {"", "-", "N/A", "na", "None"}:
-        return default
-    try:
-        return float(text)
-    except ValueError:
-        return default
-
 
 def _label(value: Any) -> str:
     return str(value or "").strip().upper()

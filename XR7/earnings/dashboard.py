@@ -96,6 +96,58 @@ _ACTIVE_CLAIM_STATUSES = {
 # Trolley disbursement statuses that represent money deposited to the artist
 _DEPOSITED_STATUSES = {TrolleyTxnStatus.PAID}
 
+# ---------------------------------------------------------------------------
+# Placeholder: per-platform global social recovery estimates.
+# TODO(#1234): replace with live connector data once global-social sync ships.
+# ---------------------------------------------------------------------------
+_GLOBAL_SOCIAL_SUMMARY_STUB = {
+    "platform_breakdown": {
+        "youtube": {"estimated_recoverable": 4200.0, "status": "oauth_ready_fallback_csv"},
+        "tiktok": {"estimated_recoverable": 5100.0, "status": "portal_csv_guided"},
+        "instagram": {"estimated_recoverable": 2300.0, "status": "meta_graph_limited"},
+        "soundcloud": {"estimated_recoverable": 2800.0, "status": "oauth_or_statement_sync"},
+        "melon": {"estimated_recoverable": 900.0, "status": "csv_only"},
+        "boomplay": {"estimated_recoverable": 780.0, "status": "csv_only"},
+        "tencent": {"estimated_recoverable": 1100.0, "status": "csv_only"},
+    }
+}
+
+
+# ---------------------------------------------------------------------------
+# Pure serialisation helpers — used by multiple section builders
+# ---------------------------------------------------------------------------
+
+def _to_anomaly_dict(a: "Anomaly") -> dict:
+    """Serialise an Anomaly ORM row into the dict shape expected by rule engines."""
+    return {
+        "id": a.id,
+        "category": str(a.category),
+        "subtype": a.subtype,
+        "severity": str(a.severity),
+        "status": str(a.status),
+        "estimated_recoverable": a.estimated_recoverable,
+        "confidence_score": a.confidence_score,
+        "territory": a.territory,
+        "created_at": a.created_at.isoformat() if a.created_at else None,
+    }
+
+
+def _aggregate_by(items: list, key_fn, value_fn) -> dict:
+    """
+    Group *items* by ``key_fn(item)`` and sum ``value_fn(item)`` per group.
+
+    Returns ``{key: {"count": int, "estimated_recoverable": float}}``.
+    Avoids repeating the same dict-accumulation pattern across section builders.
+    """
+    result: dict[str, dict] = {}
+    for item in items:
+        key = key_fn(item)
+        if key not in result:
+            result[key] = {"count": 0, "estimated_recoverable": 0.0}
+        result[key]["count"] += 1
+        result[key]["estimated_recoverable"] += value_fn(item)
+    return result
+
 
 class DashboardEngine:
     """
@@ -226,17 +278,7 @@ class DashboardEngine:
                     "Show me evidence hashes for my top claim.",
                 ]
             },
-            "global_social_summary": {
-                "platform_breakdown": {
-                    "youtube": {"estimated_recoverable": 4200.0, "status": "oauth_ready_fallback_csv"},
-                    "tiktok": {"estimated_recoverable": 5100.0, "status": "portal_csv_guided"},
-                    "instagram": {"estimated_recoverable": 2300.0, "status": "meta_graph_limited"},
-                    "soundcloud": {"estimated_recoverable": 2800.0, "status": "oauth_or_statement_sync"},
-                    "melon": {"estimated_recoverable": 900.0, "status": "csv_only"},
-                    "boomplay": {"estimated_recoverable": 780.0, "status": "csv_only"},
-                    "tencent": {"estimated_recoverable": 1100.0, "status": "csv_only"},
-                }
-            },
+            "global_social_summary": _GLOBAL_SOCIAL_SUMMARY_STUB,
         }
 
     def _ugc_opportunities_section(self, artist_id: str) -> list[dict[str, Any]]:
@@ -334,7 +376,7 @@ class DashboardEngine:
             "recovered": recovered,
             "expired": expired,
             "total_estimated_earnings": max(leaked * 3.5, 1.0),
-            "track_count": len(self.db.query(Work).filter(Work.artist_id == artist_id).all()),
+            "work_count": len(self.db.query(Work).filter(Work.artist_id == artist_id).all()),
             "primary_territory": str(getattr(artist, "primary_jurisdiction", None) or "US"),
             "distribution_channels": ["DSP", "SYNC"],
             "societies": ["ASCAP", "BMI", "MLC"],
@@ -425,21 +467,17 @@ class DashboardEngine:
         total_estimated = sum(a.estimated_recoverable or 0.0 for a in anomalies)
         open_count = sum(1 for a in anomalies if a.status == AnomalyStatus.OPEN)
 
-        by_category: dict[str, dict] = {}
-        for a in anomalies:
-            cat = a.category
-            if cat not in by_category:
-                by_category[cat] = {"count": 0, "estimated_recoverable": 0.0}
-            by_category[cat]["count"] += 1
-            by_category[cat]["estimated_recoverable"] += a.estimated_recoverable or 0.0
-
-        by_severity: dict[str, dict] = {}
-        for a in anomalies:
-            sev = a.severity
-            if sev not in by_severity:
-                by_severity[sev] = {"count": 0, "estimated_recoverable": 0.0}
-            by_severity[sev]["count"] += 1
-            by_severity[sev]["estimated_recoverable"] += a.estimated_recoverable or 0.0
+        # Group by category and severity using the shared accumulator.
+        by_category = _aggregate_by(
+            anomalies,
+            key_fn=lambda a: a.category,
+            value_fn=lambda a: a.estimated_recoverable or 0.0,
+        )
+        by_severity = _aggregate_by(
+            anomalies,
+            key_fn=lambda a: a.severity,
+            value_fn=lambda a: a.estimated_recoverable or 0.0,
+        )
 
         recent = [
             {
@@ -537,7 +575,7 @@ class DashboardEngine:
         self,
         in_pursuit: dict,
         deposited: dict,
-        all_claims: list[Claim],
+        _all_claims: list[Claim],
         artist_id: str,
     ) -> dict:
         """
@@ -594,25 +632,16 @@ class DashboardEngine:
         This section surfaces the most time-sensitive items so artists never
         miss a filing deadline and permanently lose their right to recover.
         """
-        anomaly_dicts = [
-            {
-                "id": a.id,
-                "category": str(a.category),
-                "subtype": a.subtype,
-                "severity": str(a.severity),
-                "status": str(a.status),
-                "estimated_recoverable": a.estimated_recoverable,
-                "confidence_score": a.confidence_score,
-                "territory": a.territory,
-                "created_at": a.created_at.isoformat() if a.created_at else None,
-            }
+        # Exclude closed anomalies — SOL tracking only applies to open items.
+        open_anomaly_dicts = [
+            _to_anomaly_dict(a)
             for a in anomalies
             if a.status != AnomalyStatus.CLOSED
         ]
-        summary = sol_summary(anomaly_dicts)
+        summary = sol_summary(open_anomaly_dicts)
 
         # Surface the top 5 most urgent items with enough detail to act on
-        classified = classify_anomalies(anomaly_dicts)
+        classified = classify_anomalies(open_anomaly_dicts)
         urgent_items = [
             {
                 "id": item.get("id"),
@@ -629,7 +658,7 @@ class DashboardEngine:
         urgent_items.sort(key=lambda x: x.get("days_remaining") or 9999)
 
         deadline_risk = evaluate_deadline_risk(
-            anomalies=anomaly_dicts,
+            anomalies=open_anomaly_dicts,
             claims=[
                 {
                     "id": c.id,
@@ -684,17 +713,7 @@ class DashboardEngine:
         and returns the highest-ROI actions.  The artist's "do-this-now" list.
         """
         open_anomaly_dicts = [
-            {
-                "id": a.id,
-                "category": str(a.category),
-                "subtype": a.subtype,
-                "severity": str(a.severity),
-                "status": str(a.status),
-                "estimated_recoverable": a.estimated_recoverable,
-                "confidence_score": a.confidence_score,
-                "territory": a.territory,
-                "created_at": a.created_at.isoformat() if a.created_at else None,
-            }
+            _to_anomaly_dict(a)
             for a in anomalies
             if a.status != AnomalyStatus.CLOSED
         ]

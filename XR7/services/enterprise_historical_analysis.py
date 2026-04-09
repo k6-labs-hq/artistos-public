@@ -3,17 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any
 
-
-def _safe_float(value: Any) -> float:
-    if value is None:
-        return 0.0
-    text = str(value).strip().replace(",", "").replace("$", "")
-    if text in {"", "-", "N/A", "na", "None"}:
-        return 0.0
-    try:
-        return float(text)
-    except ValueError:
-        return 0.0
+from shared.utils.numbers import safe_float as _safe_float
 
 
 def _risk_bucket(value: Any) -> str:

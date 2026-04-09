@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { api } from "@/api";
+import type { AgentStatus, Dashboard } from "@/shared/types";
 import { SovereigntyInsightsPanel } from "./SovereigntyInsightsPanel";
 import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
 import { EarningsTimeMachineCard } from "./EarningsTimeMachineCard";
@@ -29,18 +30,9 @@ type DashboardViewProps = {
   artistId: string;
 };
 
-type DashboardPayload = Record<string, unknown>;
-
-type AgentStatusPayload = {
-  agent_orchestra_status?: { current_step?: string | null; confidence?: number | null; trace_url?: string | null };
-  comfort_messages?: string[];
-  portal_guidance?: string[];
-  follow_up_actions?: Array<Record<string, unknown>>;
-};
-
 export function DashboardView({ artistId }: DashboardViewProps) {
-  const [dashboard, setDashboard] = useState<DashboardPayload | null>(null);
-  const [agentStatus, setAgentStatus] = useState<AgentStatusPayload | null>(null);
+  const [dashboard, setDashboard] = useState<Dashboard | null>(null);
+  const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null);
   const [error, setError] = useState("");
 
   const defaultEnabled = new Set<ModuleId>(["recovery_credit_score"]);
@@ -66,8 +58,8 @@ export function DashboardView({ artistId }: DashboardViewProps) {
           fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:8000"}/artists/${artistId}/agents/status`).then((r) => r.json()),
         ]);
         if (!mounted) return;
-        setDashboard((d as DashboardPayload) || {});
-        setAgentStatus((a as AgentStatusPayload) || {});
+        setDashboard((d as Dashboard) ?? {});
+        setAgentStatus((a as AgentStatus) ?? {});
       } catch (e) {
         if (!mounted) return;
         setError(String(e));
@@ -87,31 +79,31 @@ export function DashboardView({ artistId }: DashboardViewProps) {
     return <section className="panel">Loading dashboard...</section>;
   }
 
-  const leakage = (dashboard.leakage_discovered || {}) as Record<string, unknown>;
-  const pursuit = (dashboard.in_pursuit || {}) as Record<string, unknown>;
-  const recovered = (dashboard.recovered_and_deposited || {}) as Record<string, unknown>;
-  const deadlines = (dashboard.deadlines || {}) as Record<string, unknown>;
-  const catalogHealth = (dashboard.catalog_health || {}) as Record<string, unknown>;
-  const trend = (dashboard.earnings_trend || {}) as Record<string, unknown>;
-  const recoverability = (dashboard.recoverability_breakdown || {}) as Record<string, unknown>;
-  const probabilityNarrative = String((recoverability.probability_narrative as string | undefined) || "");
-  const contractClauseCitation = String((recoverability.contract_clause_citation as string | undefined) || "");
+  const leakage = dashboard.leakage_discovered ?? {};
+  const pursuit = dashboard.in_pursuit ?? {};
+  const recovered = dashboard.recovered_and_deposited ?? {};
+  const deadlines = dashboard.deadlines ?? {};
+  const catalogHealth = dashboard.catalog_health ?? {};
+  const trend = dashboard.earnings_trend ?? {};
+  const recoverability = dashboard.recoverability_breakdown ?? {};
+  const probabilityNarrative = recoverability.probability_narrative ?? "";
+  const contractClauseCitation = recoverability.contract_clause_citation ?? "";
 
   const confidence = Number(
     agentStatus.agent_orchestra_status?.confidence ??
-      ((dashboard as Record<string, unknown>).forecast_confidence as number | undefined) ??
+      dashboard.forecast_confidence ??
       0,
   );
   const solCells = [
-    { label: "Urgent", value: Number(deadlines.urgent_count || 0) },
-    { label: "Soon", value: Number(deadlines.upcoming_count || 0) },
-    { label: "Missed", value: Number(deadlines.overdue_count || 0) },
-    { label: "Safe", value: Math.max(0, 10 - Number(deadlines.urgent_count || 0) - Number(deadlines.overdue_count || 0)) },
+    { label: "Urgent", value: deadlines.urgent_count ?? 0 },
+    { label: "Soon", value: deadlines.upcoming_count ?? 0 },
+    { label: "Missed", value: deadlines.overdue_count ?? 0 },
+    { label: "Safe", value: Math.max(0, 10 - (deadlines.urgent_count ?? 0) - (deadlines.overdue_count ?? 0)) },
   ];
   const waterfall = [
-    { label: "Leakage", amount: Number(leakage.total_estimated_recoverable || 0) },
-    { label: "In Pursuit", amount: -Number(pursuit.total_amount_in_pursuit || 0) },
-    { label: "Recovered", amount: Number(recovered.total_deposited || 0) },
+    { label: "Leakage", amount: leakage.total_estimated_recoverable ?? 0 },
+    { label: "In Pursuit", amount: -(pursuit.total_amount_in_pursuit ?? 0) },
+    { label: "Recovered", amount: recovered.total_deposited ?? 0 },
   ];
   const payerRows = [
     { payer: "Primary", responsiveness: Math.max(0, Math.min(1, confidence)), resistance: Math.max(0, Math.min(1, 1 - confidence)) },
@@ -148,7 +140,7 @@ export function DashboardView({ artistId }: DashboardViewProps) {
         <article className="panel nested">
           <h3>Priority actions</h3>
           <ul>
-            {((dashboard.priority_actions as Record<string, unknown>)?.top_10_actions as Array<Record<string, unknown>> | undefined)?.slice(0, 5).map((item, index) => (
+            {dashboard.priority_actions?.top_10_actions?.slice(0, 5).map((item, index) => (
               <li key={`${index}-${String(item.id || index)}`}>
                 <strong>{String(item.kind || "action")}</strong> · {String(item.title || item.subtype || "Review item")}
               </li>
@@ -179,9 +171,9 @@ export function DashboardView({ artistId }: DashboardViewProps) {
 
       <RecoverabilityExplainer
         title="Post Black-Box Recoverability"
-        recoverableAmount={Number((recoverability.recoverable_total as number | undefined) || 0)}
-        expiredAmount={Number((recoverability.expired_total as number | undefined) || 0)}
-        byClass={(recoverability.by_class as Record<string, { count?: number; amount?: number; estimated_recoverable?: number }> | undefined) || {}}
+        recoverableAmount={recoverability.recoverable_total ?? 0}
+        expiredAmount={recoverability.expired_total ?? 0}
+        byClass={recoverability.by_class ?? {}}
         claimWindowLabel="Recoverable, contract-based, and copyright-damages classes are draftable"
         probabilityNarrative={probabilityNarrative || undefined}
         contractClauseCitation={contractClauseCitation || undefined}

@@ -1,0 +1,363 @@
+name: Nightly Static Analysis
+
+# Runs every night at 02:00 UTC.
+# Can also be triggered manually via workflow_dispatch for ad-hoc analysis.
+#
+# Jobs (run in parallel):
+#   dead-code       — vulture: finds dead code, unused functions, unreachable branches
+#   duplication     — pylint --duplicate-code: cross-file clone detection
+#   circular-deps   — import-linter: checks for circular import chains
+#   security-scan   — bandit: OWASP-aligned static security analysis
+#   dependency-audit— pip-audit: known CVEs in installed packages
+#   report          — collects all outputs and posts a summary issue/comment
+
+on:
+  schedule:
+    - cron: "0 2 * * *"  # 02:00 UTC daily
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Specific directory to scan (blank = all)"
+        required: false
+        default: ""
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 1: Dead Code Detection
+  # Tool: vulture
+  # Report: any function/class/variable that is defined but never referenced.
+  # Min confidence: 80% (reduces false positives from dynamic dispatch).
+  # ──────────────────────────────────────────────────────────────────────────
+  dead-code:
+    name: Dead Code (vulture)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install vulture
+        run: pip install vulture==2.11
+
+      - name: Run vulture
+        run: |
+          vulture XR7/ shared/ xr7_common/ \
+            --min-confidence 80 \
+            --exclude "*/migrations/*,*/alembic/*,*/test*,*/__pycache__/*" \
+            | tee dead_code_report.txt || true
+          DEAD_COUNT=$(wc -l < dead_code_report.txt)
+          echo "dead_code_count=$DEAD_COUNT" >> "$GITHUB_OUTPUT"
+          echo "## Dead Code: $DEAD_COUNT items" >> "$GITHUB_STEP_SUMMARY"
+          # Fail if more than 50 dead code items (adjust threshold as codebase matures)
+          if [ "$DEAD_COUNT" -gt 50 ]; then
+            echo "::error::Dead code count ($DEAD_COUNT) exceeds threshold of 50"
+            exit 1
+          fi
+        id: vulture
+
+      - name: Upload dead code report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dead-code-report
+          path: dead_code_report.txt
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 2: Code Duplication Detection
+  # Tool: pylint --duplicate-code (via pylint)
+  # What it finds: copy-paste code blocks shared across service files, which
+  # should instead be extracted into shared/utils/ or XR7/core/.
+  # ──────────────────────────────────────────────────────────────────────────
+  duplication:
+    name: Code Duplication (pylint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install pylint
+        run: pip install pylint==3.2.2
+
+      - name: Run duplication check
+        run: |
+          pylint XR7/ shared/ \
+            --disable=all \
+            --enable=duplicate-code \
+            --min-similarity-lines=8 \
+            --ignore-imports=yes \
+            --output-format=text \
+            | tee duplication_report.txt || true
+          echo "## Code Duplication Report" >> "$GITHUB_STEP_SUMMARY"
+          grep -c "Similar lines" duplication_report.txt \
+            | xargs -I{} echo "Duplicate block count: {}" >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Upload duplication report
+        uses: actions/upload-artifact@v4
+        with:
+          name: duplication-report
+          path: duplication_report.txt
+          retention-days: 30
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 3: Circular Import Detection
+  # Tool: import-linter
+  # Config: sets/xr7-import-rules.ini (created below if missing)
+  # What it finds: import cycles that prevent clean module loading and
+  # indicate domain boundary violations (e.g., core→services→core).
+  # ──────────────────────────────────────────────────────────────────────────
+  circular-deps:
+    name: Circular Imports (import-linter)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install import-linter
+        run: pip install import-linter==2.1
+
+      - name: Write import-linter configuration
+        run: |
+          cat > .importlinter <<'CONF'
+          [importlinter]
+          root_packages =
+              XR7
+              shared
+
+          [importlinter:contract:no-core-upward-deps]
+          name = Core must not import from services or api
+          type = forbidden
+          source_modules =
+              XR7.core
+          forbidden_modules =
+              XR7.services
+              XR7.api
+              XR7.recovery
+              sqlalchemy
+
+          [importlinter:contract:no-shared-upward-deps]
+          name = shared/utils must not import from XR7
+          type = forbidden
+          source_modules =
+              shared.utils
+          forbidden_modules =
+              XR7
+
+          [importlinter:contract:layered-architecture]
+          name = Layered import order: api → services → core
+          type = layers
+          layers =
+              XR7.api
+              XR7.services
+              XR7.core
+          CONF
+
+      - name: Run import-linter
+        run: lint-imports
+        continue-on-error: true  # report but don't block — some legacy cycles are tracked
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 4: Security Static Analysis
+  # Tool: bandit (OWASP-aligned Python SAST tool)
+  #
+  # Severity levels scanned: MEDIUM and above
+  # Confidence: HIGH
+  #
+  # Key checks (mapping to OWASP Top 10):
+  #   B101 — assert_used (A05: Security Misconfiguration)
+  #   B106 — hardcoded_password_funcarg (A02: Cryptographic Failures)
+  #   B324 — hashlib — weak hashes like MD5/SHA1 (A02)
+  #   B501 — ssl/tls weak versions (A02)
+  #   B602,B603 — subprocess injection (A03: Injection)
+  #   B608 — sql_injection (A03: Injection)
+  # ──────────────────────────────────────────────────────────────────────────
+  security-scan:
+    name: Security Scan (bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install bandit
+        run: pip install bandit==1.7.8
+
+      - name: Run bandit security scan
+        run: |
+          bandit -r XR7/ shared/ xr7_common/ \
+            --severity-level medium \
+            --confidence-level high \
+            --exclude "./.venv,./alembic,./tests" \
+            --format json \
+            -o bandit_report.json || true
+
+          bandit -r XR7/ shared/ xr7_common/ \
+            --severity-level medium \
+            --confidence-level high \
+            --exclude "./.venv,./alembic,./tests" \
+            --format txt || true
+
+      - name: Fail on HIGH severity issues
+        run: |
+          bandit -r XR7/ shared/ xr7_common/ \
+            --severity-level high \
+            --confidence-level medium \
+            --exclude "./.venv,./alembic,./tests" \
+            --exit-zero
+          HIGHS=$(python -c "
+          import json, sys
+          with open('bandit_report.json') as f:
+              r = json.load(f)
+          highs = [x for x in r.get('results', []) if x['issue_severity'] == 'HIGH']
+          print(len(highs))
+          ")
+          echo "High severity issues: $HIGHS" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$HIGHS" -gt 0 ]; then
+            echo "::error::$HIGHS HIGH severity security issues found"
+            exit 1
+          fi
+
+      - name: Upload bandit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-security-report
+          path: bandit_report.json
+          retention-days: 90
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 5: Dependency Vulnerability Audit
+  # Tool: pip-audit (CVE database lookup for all installed packages)
+  # ──────────────────────────────────────────────────────────────────────────
+  dependency-audit:
+    name: Dependency Audit (pip-audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+
+      - name: Install pip-audit
+        run: pip install pip-audit==2.7.3
+
+      - name: Audit requirements.txt
+        run: |
+          pip-audit \
+            -r requirements.txt \
+            --format json \
+            -o pip_audit_report.json \
+            --progress-spinner=off || true
+
+          pip-audit \
+            -r requirements.txt \
+            --progress-spinner=off \
+            --desc | tee pip_audit_summary.txt || true
+
+          echo "## Dependency Audit" >> "$GITHUB_STEP_SUMMARY"
+          cat pip_audit_summary.txt >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-report
+          path: |
+            pip_audit_report.json
+            pip_audit_summary.txt
+          retention-days: 90
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # JOB 6: Report Summary
+  # Aggregates all findings and creates/updates a GitHub Issue
+  # titled "Nightly Analysis — <date>" for engineering review.
+  # ──────────────────────────────────────────────────────────────────────────
+  report:
+    name: Report Summary
+    needs:
+      - dead-code
+      - duplication
+      - circular-deps
+      - security-scan
+      - dependency-audit
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all analysis artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: analysis-artifacts/
+
+      - name: Create nightly summary issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date().toISOString().split('T')[0];
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const jobs = {
+              'dead-code': '${{ needs.dead-code.result }}',
+              'duplication': '${{ needs.duplication.result }}',
+              'circular-deps': '${{ needs.circular-deps.result }}',
+              'security-scan': '${{ needs.security-scan.result }}',
+              'dependency-audit': '${{ needs.dependency-audit.result }}'
+            };
+            const statusEmoji = (s) => s === 'success' ? '✅' : s === 'skipped' ? '⏭️' : '❌';
+            const rows = Object.entries(jobs)
+              .map(([name, status]) => `| ${name} | ${statusEmoji(status)} ${status} |`)
+              .join('\n');
+            const body = [
+              `## Nightly Static Analysis — ${date}`,
+              '',
+              `[Full run →](${runUrl})`,
+              '',
+              '| Analysis | Status |',
+              '|----------|--------|',
+              rows,
+              '',
+              '> Review artifacts attached to the workflow run for full details.',
+            ].join('\n');
+
+            // Find existing open issue for today, or create new one
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'nightly-analysis',
+              state: 'open',
+            });
+            const existing = issues.find(i => i.title.startsWith(`Nightly Analysis — ${date}`));
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existing.number,
+                body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Nightly Analysis — ${date}`,
+                body,
+                labels: ['nightly-analysis', 'automated'],
+              });
+            }

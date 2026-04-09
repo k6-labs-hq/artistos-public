@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from XR7.api.routers.auth import get_auth_payload, require_analyst, require_artist_access, require_executive, require_legal
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.api.deps import get_artist_or_404
 from XR7.services.analyst_gated_advance import (
     add_failed_packet_signature,
     analyst_decision,
@@ -269,9 +270,7 @@ def list_artist_offers(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> dict:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     offers = list_visible_artist_offers(db, artist_id=artist_id)
     return inject_branding_metadata(

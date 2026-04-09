@@ -24,6 +24,7 @@ from XR7.models.base import get_db
 from XR7.models.oauth_connector import ConnectorAccountLink
 from XR7.models.ugc_opportunity import UGCOpportunity, UGCOpportunitySchema, UGCOpportunityStatus, UGCPlatform
 from XR7.models.work import Work
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
 
@@ -242,9 +243,7 @@ def scan_ugc_opportunities(
     or un-monetized Content ID matches.  Creates ``ugc_opportunity`` anomalies
     for each new match found.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     _SUPPORTED = {"youtube", "tiktok", "meta", "instagram"}
     platforms = [p.lower() for p in body.platforms if p.lower() in _SUPPORTED]
@@ -315,9 +314,7 @@ def draft_ugc_claim(
     claim for YouTube, DMCA-style takedown for others).  Marks the opportunity
     status as ``claim_drafted`` and logs the action.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     opp = (
         db.query(UGCOpportunity)
@@ -463,9 +460,7 @@ def list_ugc_opportunities(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> UGCOpportunityListResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     q = db.query(UGCOpportunity).filter(UGCOpportunity.artist_id == artist_id)
     if platform:

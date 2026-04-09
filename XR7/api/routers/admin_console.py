@@ -20,6 +20,7 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.review_queue import ReviewItem, ReviewItemSchema
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 from XR7.services.founder_program import founder_status_payload, get_or_create_platform_config
 
@@ -510,9 +511,7 @@ def assign_founder_manually(
     actor: str = Depends(_require_admin),
     db: Session = Depends(get_db),
 ):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     cfg = get_or_create_platform_config(db, for_update=True)
     if artist.is_founder and artist.founder_slot_number is not None:

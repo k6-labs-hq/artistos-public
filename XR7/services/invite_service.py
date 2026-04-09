@@ -8,7 +8,7 @@ from typing import Optional
 from uuid import uuid4
 
 import jwt
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, func
 from sqlalchemy.orm import Session
 
 from XR7.models.invite import (

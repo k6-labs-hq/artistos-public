@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.api.deps import get_artist_or_404
 from XR7.modules.payer_health_score import PayerHealthScorer, global_aggregate_scores
 from XR7.services.branding import inject_branding_metadata
 
@@ -28,9 +29,7 @@ def get_all_payer_scores(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """All payer health scores for this artist."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     scorer = PayerHealthScorer(db)
     result = scorer.score_all(artist_id)
     return inject_branding_metadata(db, result)
@@ -44,9 +43,7 @@ def get_single_payer_score(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Health score for a specific payer."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     scorer = PayerHealthScorer(db)
     result = scorer.score_single(artist_id, payer_id)
     if result is None:

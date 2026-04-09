@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+from shared.utils.numbers import safe_float as _safe_float
 from XR7.models.anomaly import AnomalyCategory, AnomalySeverity
 from XR7.services.tvfilm_compensation_engine import calculate_expected_compensation
 
@@ -172,19 +173,6 @@ def _normalize_season(value: str | None) -> str | None:
         return None
     digits = re.sub(r"[^0-9]", "", value)
     return f"S{digits}" if digits else None
-
-
-def _safe_float(value: Any, *, default: float = 0.0) -> float:
-    if value is None:
-        return default
-    text = str(value).strip().replace(",", "")
-    text = text.replace("$", "")
-    if text in {"", "-", "N/A", "na", "None"}:
-        return default
-    try:
-        return float(text)
-    except ValueError:
-        return default
 
 
 def _decode_text(raw: bytes) -> str:

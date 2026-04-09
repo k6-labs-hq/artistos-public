@@ -64,8 +64,8 @@ class InfluenceDetector:
         self._simulated = os.environ.get("XR7_AI_MUSIC_SIMULATED", "1").strip().lower() in {"1", "true", "yes"}
 
     @staticmethod
-    def _fingerprint(track_title: str, artist_id: str) -> str:
-        base = f"{artist_id}:{track_title}".encode("utf-8")
+    def _fingerprint(work_title: str, artist_id: str) -> str:
+        base = f"{artist_id}:{work_title}".encode("utf-8")
         return hashlib.sha256(base).hexdigest()
 
     async def _fetch_public_releases(self, artist_id: str) -> list[dict[str, Any]]:

@@ -1,0 +1,255 @@
+{
+  "name": "XR7 — Recovery Claim Export Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "xr7-claim-export",
+        "httpMethod": "POST",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook — Analyst Triggers Export",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "xr7-claim-export"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Validate the incoming webhook payload\nconst body = $input.item.json.body;\nconst required = ['claim_ids', 'analyst_id', 'export_mode'];\nconst missing = required.filter(f => !body[f]);\nif (missing.length > 0) {\n  throw new Error(`Missing required fields: ${missing.join(', ')}`);\n}\nif (!Array.isArray(body.claim_ids) || body.claim_ids.length === 0) {\n  throw new Error('claim_ids must be a non-empty array');\n}\nif (!['standard', 'expert', 'attorney'].includes(body.export_mode)) {\n  throw new Error('export_mode must be one of: standard, expert, attorney');\n}\nreturn [{ json: body }];"
+      },
+      "id": "validate-payload",
+      "name": "Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/auth/login/artist",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "email", "value": "={{ $env.XR7_SERVICE_EMAIL }}" },
+            { "name": "password", "value": "={{ $env.XR7_SERVICE_PASSWORD }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "authenticate",
+      "name": "Authenticate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $input.item.json.access_token;\nif (!token) throw new Error('Auth failed');\nconst payload = $('Validate Payload').item.json;\nreturn [{\n  json: {\n    bearer_token: token,\n    claim_ids: payload.claim_ids,\n    analyst_id: payload.analyst_id,\n    export_mode: payload.export_mode\n  }\n}];"
+      },
+      "id": "merge-context",
+      "name": "Merge Token + Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expand each claim_id into its own task item\nconst ctx = $input.item.json;\nreturn ctx.claim_ids.map(claim_id => ({\n  json: {\n    bearer_token: ctx.bearer_token,\n    analyst_id: ctx.analyst_id,\n    export_mode: ctx.export_mode,\n    claim_id\n  }\n}));"
+      },
+      "id": "expand-claims",
+      "name": "Expand Claim IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/claims/{{ $json.claim_id }}/evidence",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            }
+          ]
+        },
+        "options": {
+          "retry": {
+            "enabled": true,
+            "maxRetries": 3,
+            "waitBetweenRetries": 5000
+          }
+        }
+      },
+      "id": "generate-evidence",
+      "name": "Generate Evidence Package",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "amount": 15,
+        "unit": "seconds"
+      },
+      "id": "wait-evidence",
+      "name": "Wait 15s (evidence generation)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.XR7_BASE_URL }}/claims/{{ $json.claim_id }}/evidence",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-evidence",
+      "name": "Fetch Evidence Packet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/claims/{{ $json.claim_id }}/evidence/export",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "export_mode", "value": "={{ $json.export_mode }}" },
+            { "name": "analyst_id", "value": "={{ $json.analyst_id }}" },
+            { "name": "include_hmac_proof", "value": "=true" },
+            { "name": "include_earnings_table", "value": "=true" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "export-evidence",
+      "name": "Export Evidence Packet",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2000, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate all export results\nconst results = $input.all();\nconst successful = results.filter(r => r.json.export_url);\nconst failed = results.filter(r => !r.json.export_url);\nreturn [{\n  json: {\n    total: results.length,\n    successful: successful.length,\n    failed: failed.length,\n    failed_claim_ids: failed.map(r => r.json.claim_id),\n    export_urls: successful.map(r => ({ claim_id: r.json.claim_id, url: r.json.export_url }))\n  }\n}];"
+      },
+      "id": "aggregate-exports",
+      "name": "Aggregate Export Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2220, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=:white_check_mark: *XR7 Claim Export Complete*\nAnalyst: {{ $json.analyst_id }}\nExported: {{ $json.successful }} / {{ $json.total }} claims\n{{ $json.failed > 0 ? ':warning: Failed: ' + $json.failed_claim_ids.join(', ') : '' }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-complete",
+      "name": "Slack — Export Complete",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2440, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "webhook-response",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2660, 300]
+    }
+  ],
+  "connections": {
+    "Webhook — Analyst Triggers Export": {
+      "main": [[{ "node": "Validate Payload", "type": "main", "index": 0 }]]
+    },
+    "Validate Payload": {
+      "main": [[{ "node": "Authenticate", "type": "main", "index": 0 }]]
+    },
+    "Authenticate": {
+      "main": [[{ "node": "Merge Token + Payload", "type": "main", "index": 0 }]]
+    },
+    "Merge Token + Payload": {
+      "main": [[{ "node": "Expand Claim IDs", "type": "main", "index": 0 }]]
+    },
+    "Expand Claim IDs": {
+      "main": [[{ "node": "Generate Evidence Package", "type": "main", "index": 0 }]]
+    },
+    "Generate Evidence Package": {
+      "main": [[{ "node": "Wait 15s (evidence generation)", "type": "main", "index": 0 }]]
+    },
+    "Wait 15s (evidence generation)": {
+      "main": [[{ "node": "Fetch Evidence Packet", "type": "main", "index": 0 }]]
+    },
+    "Fetch Evidence Packet": {
+      "main": [[{ "node": "Export Evidence Packet", "type": "main", "index": 0 }]]
+    },
+    "Export Evidence Packet": {
+      "main": [[{ "node": "Aggregate Export Results", "type": "main", "index": 0 }]]
+    },
+    "Aggregate Export Results": {
+      "main": [[{ "node": "Slack — Export Complete", "type": "main", "index": 0 }]]
+    },
+    "Slack — Export Complete": {
+      "main": [[{ "node": "Webhook Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": "XR7 — Error Handler"
+  },
+  "tags": ["xr7", "claims", "recovery", "export"],
+  "meta": {
+    "description": "Analyst-triggered pipeline. Accepts a list of claim IDs via webhook, generates and seals evidence packages for each, exports them, and notifies the analyst via Slack.",
+    "xr7_api_version": "2.0",
+    "webhook_path": "/webhook/xr7-claim-export",
+    "required_env": [
+      "XR7_BASE_URL",
+      "XR7_SERVICE_EMAIL",
+      "XR7_SERVICE_PASSWORD",
+      "SLACK_WEBHOOK_URL"
+    ]
+  }
+}

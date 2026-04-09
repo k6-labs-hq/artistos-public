@@ -15,30 +15,14 @@ class IngestionConnector(BaseConnector):
     synchronous historical/recent/normalize protocol.  Subclasses only
     need to override the methods they support."""
 
-    def connect(self) -> bool:  # type: ignore[override]
+    def connect(self) -> bool:
         return True
 
-    def fetch_historical(self, artist_id: str, start_date, end_date) -> list[dict]:  # type: ignore[override]
-        return []
-
-    def fetch_recent(self, artist_id: str, since) -> list[dict]:  # type: ignore[override]
-        return []
-
-    def normalize(self, raw_data: list[dict]) -> list[dict]:  # type: ignore[override]
-        return raw_data
-
-    @abstractmethod
-    def connect(self) -> bool:
-        ...
-
-    @abstractmethod
     def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
-        ...
+        return []
 
-    @abstractmethod
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
-        ...
+        return []
 
-    @abstractmethod
     def normalize(self, raw_data: list[dict]) -> list[dict]:
-        ...
+        return raw_data

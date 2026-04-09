@@ -52,6 +52,7 @@ from XR7.services.branding import (
   get_branding_profile,
   inject_branding_metadata,
 )
+from XR7.api.deps import get_artist_or_404
 
 router = APIRouter(tags=["dashboard"])
 
@@ -79,7 +80,6 @@ def _support_proactive_tip(dashboard: dict) -> str:
 def _catalog_health_card(artist_id: str, db: Session) -> dict:
   """Build the lightweight catalog_health dashboard card (no heavy ML recompute)."""
   from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus, FixPriority
-
   # Pull existing pending/requested fix issues
   issues = (
     db.query(CatalogFixIssue)
@@ -221,9 +221,7 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     - Up to 50 timestamped events: leakage discoveries, claim updates,
       and payment deposits, newest first.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     engine = DashboardEngine(db)
     dashboard = engine.compute(artist_id)
@@ -450,9 +448,7 @@ def export_guidance(artist_id: str, platform: str = "youtube", db: Session = Dep
 
 @router.post("/artists/{artist_id}/chat/royalties")
 async def chat_royalties(artist_id: str, question: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     dashboard = DashboardEngine(db).compute(artist_id)
     result = await royalty_chat_agent.handle_query(artist_id, question, context=dashboard)
     if isinstance(result, dict):
@@ -462,9 +458,7 @@ async def chat_royalties(artist_id: str, question: str, db: Session = Depends(ge
 
 @router.get("/artists/{artist_id}/export/full-transparency")
 async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     dashboard = DashboardEngine(db).compute(artist_id)
     brand = get_branding_for_artist(db, artist_id)

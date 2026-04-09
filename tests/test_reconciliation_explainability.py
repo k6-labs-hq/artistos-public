@@ -22,7 +22,7 @@ from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.xr7_idempotency import IdempotencyService, XR7IdempotencyRecord
 from XR7.models.xr7_royalty import XR7AIDecisionAuditLog
 from XR7.recovery.confidence_band_router import ConfidenceBandRouter
-from XR7.services.gap_explainer_service import GapExplainerService
+from XR7.recovery.gap_explainer import GapExplainerService
 from tests.conftest import TestSession
 
 

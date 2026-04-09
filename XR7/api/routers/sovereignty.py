@@ -10,6 +10,7 @@ from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.liquidity_advance import AdvanceStatus, RecoverableLiquidityAdvance
 from XR7.models.rights_scan import RightsScanResult
+from XR7.api.deps import get_artist_or_404
 from XR7.services.advance_offer_engine import accept_advance, compute_advance_offer
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.rights_scanner import persist_and_generate_packets, scan_rights_gaps
@@ -28,9 +29,7 @@ def scan_rights(
     _: dict = Depends(require_artist_access),
 ) -> dict:
     """Scan catalog for missing ISRC/ISWC/UPC/PRO/foreign registrations."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     gaps = scan_rights_gaps(db, artist_id)
     return inject_branding_metadata(db, {
@@ -47,9 +46,7 @@ def register_rights_packets(
     _: dict = Depends(require_artist_access),
 ) -> dict:
     """Generate and persist auto-registration packets for all detected gaps."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     gaps = scan_rights_gaps(db, artist_id)
     results = persist_and_generate_packets(db, artist_id, gaps)

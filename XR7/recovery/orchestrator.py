@@ -1,15 +1,11 @@
 import uuid
 from datetime import datetime, timezone
-import hashlib
-import hmac
-import json
-import os
-import base64
-import subprocess
-import tempfile
 
 from sqlalchemy.orm import Session
 
+from XR7.core.claims.state_machine import contract_type_for_category, next_status
+from XR7.core.integrity.evidence_crypto import seal_packet
+from XR7.core.integrity.evidence_crypto import verify_packet_integrity as _core_verify_integrity
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
@@ -19,22 +15,9 @@ from XR7.models.event import Event
 from XR7.billing.engine import BillingEngine
 from XR7.models.payment import Payment
 from XR7.models.recovery_intelligence import RoyaltyLedgerEntry
-from XR7.services.metadata_repair_engine import MetadataRepairEngine
 
 
 class ClaimsOrchestrator:
-    CLAIM_TRANSITIONS = {
-        ClaimStatus.IDENTIFIED: ClaimStatus.PREPARED,
-        # Keep SUBMITTED as an explicit intermediate state for compatibility
-        # with existing dashboard and recovery workflows.
-        ClaimStatus.PREPARED: ClaimStatus.SUBMITTED,
-        ClaimStatus.SUBMITTED: ClaimStatus.FILED,
-        ClaimStatus.FILED: ClaimStatus.IN_REVIEW,
-        ClaimStatus.IN_REVIEW: ClaimStatus.ACCEPTED,
-        ClaimStatus.ACCEPTED: ClaimStatus.PAID,
-        ClaimStatus.PAID: ClaimStatus.CLOSED,
-    }
-
     def __init__(self, db_session: Session):
         self.db_session = db_session
 
@@ -46,150 +29,12 @@ class ClaimsOrchestrator:
     def _enum_value(value):
         return value.value if hasattr(value, "value") else value
 
-    @staticmethod
-    def _contract_type_for_category(category: str | None) -> str | None:
-        if category is None:
-            return None
-        mapping = {
-            "ROYALTY": "LABEL",
-            "TOURING": "TOURING",
-            "MERCH": "MERCH",
-            "SYNC": "SYNC",
-            "PLATFORM": "LABEL",
-            "BRAND": "BRAND",
-            "GRANT": "GRANT",
-        }
-        return mapping.get(str(category))
-
-    @staticmethod
-    def _sha256_hex(raw: bytes) -> str:
-        return hashlib.sha256(raw).hexdigest()
-
-    @staticmethod
-    def _signing_mode() -> str:
-        return os.environ.get("XR7_EVIDENCE_SIGNING_MODE", "hmac").strip().lower()
-
-    @staticmethod
-    def _openssl_rsa_sign(message: str, private_key_pem: str) -> str:
-        with tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file:
-            key_file.write(private_key_pem)
-            key_file.flush()
-            proc = subprocess.run(
-                ["openssl", "dgst", "-sha256", "-sign", key_file.name],
-                input=message.encode("utf-8"),
-                capture_output=True,
-                check=False,
-            )
-        if proc.returncode != 0:
-            raise ValueError(f"openssl sign failed: {proc.stderr.decode('utf-8', errors='ignore').strip()}")
-        return base64.b64encode(proc.stdout).decode("ascii")
-
-    @staticmethod
-    def _openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) -> bool:
-        try:
-            signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
-        except Exception:
-            return False
-
-        with tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file, tempfile.NamedTemporaryFile(mode="wb", delete=True) as sig_file:
-            key_file.write(public_key_pem)
-            key_file.flush()
-            sig_file.write(signature)
-            sig_file.flush()
-            proc = subprocess.run(
-                ["openssl", "dgst", "-sha256", "-verify", key_file.name, "-signature", sig_file.name],
-                input=message.encode("utf-8"),
-                capture_output=True,
-                check=False,
-            )
-        return proc.returncode == 0
-
-    def _seal_packet(self, base_packet: dict, prior_packet_hash: str | None) -> dict:
-        canonical = json.dumps(base_packet, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        packet_hash = self._sha256_hex(canonical)
-        chain_input = f"{prior_packet_hash or 'GENESIS'}:{packet_hash}".encode("utf-8")
-        chain_hash = self._sha256_hex(chain_input)
-        mode = self._signing_mode()
-
-        if mode == "rsa":
-            private_key_pem = os.environ.get("XR7_EVIDENCE_PRIVATE_KEY_PEM")
-            if private_key_pem:
-                signature = self._openssl_rsa_sign(chain_hash, private_key_pem)
-                signature_algorithm = "RSA-SHA256"
-                key_source = "env:XR7_EVIDENCE_PRIVATE_KEY_PEM"
-            else:
-                mode = "hmac"
-        if mode == "hmac":
-            secret = os.environ.get("XR7_EVIDENCE_HMAC_SECRET", "xr7-dev-evidence-secret")
-            signature = hmac.new(secret.encode("utf-8"), chain_hash.encode("utf-8"), hashlib.sha256).hexdigest()
-            signature_algorithm = "HMAC-SHA256"
-            key_source = "env:XR7_EVIDENCE_HMAC_SECRET" if os.environ.get("XR7_EVIDENCE_HMAC_SECRET") else "default-dev-secret"
-
-        line_hashes = [
-            self._sha256_hex(json.dumps(line, sort_keys=True, separators=(",", ":")).encode("utf-8"))
-            for line in base_packet.get("proof", {}).get("ledger_evidence", [])
-        ]
-        return {
-            "packet_hash": packet_hash,
-            "prior_packet_hash": prior_packet_hash,
-            "chain_hash": chain_hash,
-            "signature": signature,
-            "signature_algorithm": signature_algorithm,
-            "hash_algorithm": "SHA-256",
-            "signed_at": datetime.now(timezone.utc).isoformat(),
-            "line_hashes": line_hashes,
-            "key_source": key_source,
-        }
+    # _contract_type_for_category → XR7.core.claims.state_machine.contract_type_for_category
+    # Cryptography helpers        → XR7.core.integrity.evidence_crypto
 
     def verify_packet_integrity(self, packet: dict) -> dict:
-        if not isinstance(packet, dict):
-            return {"valid": False, "error": "packet is not a dict"}
-
-        integrity = packet.get("integrity")
-        if not isinstance(integrity, dict):
-            return {"valid": False, "error": "integrity block missing"}
-
-        base_packet = {k: v for k, v in packet.items() if k != "integrity"}
-        canonical = json.dumps(base_packet, sort_keys=True, separators=(",", ":")).encode("utf-8")
-        expected_packet_hash = self._sha256_hex(canonical)
-
-        packet_hash_matches = expected_packet_hash == integrity.get("packet_hash")
-        prior_packet_hash = integrity.get("prior_packet_hash")
-        expected_chain_hash = self._sha256_hex(f"{prior_packet_hash or 'GENESIS'}:{expected_packet_hash}".encode("utf-8"))
-        chain_hash_matches = expected_chain_hash == integrity.get("chain_hash")
-
-        expected_line_hashes = [
-            self._sha256_hex(json.dumps(line, sort_keys=True, separators=(",", ":")).encode("utf-8"))
-            for line in base_packet.get("proof", {}).get("ledger_evidence", [])
-        ]
-        line_hashes_match = expected_line_hashes == (integrity.get("line_hashes") or [])
-
-        algorithm = str(integrity.get("signature_algorithm") or "")
-        signature = str(integrity.get("signature") or "")
-        if algorithm == "RSA-SHA256":
-            public_key_pem = os.environ.get("XR7_EVIDENCE_PUBLIC_KEY_PEM", "")
-            signature_valid = bool(public_key_pem) and self._openssl_rsa_verify(expected_chain_hash, signature, public_key_pem)
-            signature_mode = "rsa"
-        else:
-            secret = os.environ.get("XR7_EVIDENCE_HMAC_SECRET", "xr7-dev-evidence-secret")
-            expected_sig = hmac.new(secret.encode("utf-8"), expected_chain_hash.encode("utf-8"), hashlib.sha256).hexdigest()
-            signature_valid = hmac.compare_digest(expected_sig, signature)
-            signature_mode = "hmac"
-
-        valid = packet_hash_matches and chain_hash_matches and line_hashes_match and signature_valid
-        return {
-            "valid": valid,
-            "checks": {
-                "packet_hash_matches": packet_hash_matches,
-                "chain_hash_matches": chain_hash_matches,
-                "line_hashes_match": line_hashes_match,
-                "signature_valid": signature_valid,
-            },
-            "signature_mode": signature_mode,
-            "packet_hash": integrity.get("packet_hash"),
-            "prior_packet_hash": prior_packet_hash,
-            "chain_hash": integrity.get("chain_hash"),
-        }
+        """Delegates to the pure core implementation (no DB required)."""
+        return _core_verify_integrity(packet)
 
     def _ledger_rows_for_anomaly(self, anomaly: Anomaly | None, artist_id: str) -> list[RoyaltyLedgerEntry]:
         query = self.db_session.query(RoyaltyLedgerEntry).filter(RoyaltyLedgerEntry.artist_id == artist_id)
@@ -283,11 +128,7 @@ class ClaimsOrchestrator:
         claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
         if not claim:
             raise ValueError(f"Claim {claim_id} not found")
-        current_status = ClaimStatus(claim.status)
-        next_status = self.CLAIM_TRANSITIONS.get(current_status)
-        if next_status is None:
-            raise ValueError(f"No transition available from status {claim.status}")
-        claim.status = next_status
+        claim.status = next_status(ClaimStatus(claim.status))
         claim.updated_at = datetime.now(timezone.utc)
         self.db_session.commit()
         self.db_session.refresh(claim)
@@ -305,7 +146,7 @@ class ClaimsOrchestrator:
 
         ledger_rows = self._ledger_rows_for_anomaly(anomaly, artist_id)
         proof_lines, proof_totals = self._build_ledger_proof(ledger_rows)
-        metadata_logs = MetadataRepairEngine(self.db_session).recent_repair_logs(artist_id, limit=150)
+        metadata_logs: list[dict] = []  # Fetch via GET /artists/{id}/metadata-health if needed
 
         anomaly_expected = self._money(anomaly.expected_amount if anomaly else 0.0)
         anomaly_actual = self._money(anomaly.actual_amount if anomaly else 0.0)
@@ -316,7 +157,7 @@ class ClaimsOrchestrator:
         discrepancy_amount = self._money(abs(proof_shortfall - model_shortfall))
 
         anomaly_category = self._enum_value(anomaly.category) if anomaly else None
-        target_contract_type = self._contract_type_for_category(str(anomaly_category) if anomaly else None)
+        target_contract_type = contract_type_for_category(str(anomaly_category) if anomaly else None)
         relevant_contracts = [
             c for c in contracts
             if target_contract_type is None or self._enum_value(c.contract_type) == target_contract_type
@@ -407,7 +248,7 @@ class ClaimsOrchestrator:
             },
         }
 
-        packet["integrity"] = self._seal_packet(packet, prior_packet_hash)
+        packet["integrity"] = seal_packet(packet, prior_packet_hash)
 
         claim.evidence = packet
         claim.updated_at = datetime.now(timezone.utc)

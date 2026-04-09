@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from XR7.services.statement_signal_extractor import extract_statement_signals
+from XR7.ingestion.statement_signal_extractor import extract_statement_signals
 
 
 def test_extract_statement_signals_identity_and_catalog_fields():

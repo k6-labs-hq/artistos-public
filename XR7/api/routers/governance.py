@@ -11,6 +11,7 @@ from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
 from XR7.models.work import Work
+from XR7.api.deps import get_artist_or_404
 from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["governance"])
@@ -44,9 +45,7 @@ def export_artist_data(
     db: Session = Depends(get_db),
     auth_payload: dict = Depends(require_artist_access),
 ) -> dict:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     works = db.query(Work).filter(Work.artist_id == artist_id).all()
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
@@ -96,9 +95,7 @@ def erase_artist_data(
     db: Session = Depends(get_db),
     auth_payload: dict = Depends(require_artist_access),
 ) -> dict:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     artist.name = f"ERASED-{artist.id[:8]}"
     artist.email = None

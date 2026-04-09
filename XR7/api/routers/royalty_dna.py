@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.api.deps import get_artist_or_404
 from XR7.modules.royalty_dna_profile import RoyaltyDNAProfile
 from XR7.services.branding import inject_branding_metadata
 
@@ -28,9 +29,7 @@ def trigger_dna_profile(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Trigger Royalty DNA Profile generation for this artist."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     profiler = RoyaltyDNAProfile(db)
     result = profiler.generate(artist_id)
     return inject_branding_metadata(db, result)
@@ -43,9 +42,7 @@ def get_dna_result(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Retrieve the Royalty DNA Profile result."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     profiler = RoyaltyDNAProfile(db)
     result = profiler.generate(artist_id)
     return inject_branding_metadata(db, result)
@@ -58,9 +55,7 @@ def get_dna_insights(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Plain-language insights only from the Royalty DNA Profile."""
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     profiler = RoyaltyDNAProfile(db)
     result = profiler.generate(artist_id)
     return inject_branding_metadata(db, {

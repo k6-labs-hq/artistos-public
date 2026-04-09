@@ -13,6 +13,7 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema, TrolleyTxnStatus, TrolleyTxnType
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.branding import inject_branding_metadata
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
@@ -46,9 +47,7 @@ def _split_name(name: str) -> tuple[str, str]:
 
 @router.post("/artists/{artist_id}/trolley/recipient")
 def create_trolley_recipient(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     if artist.trolley_recipient_id:
         return inject_branding_metadata(db, {
             "artist_id": artist_id,
@@ -93,9 +92,7 @@ def create_trolley_recipient(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/artists/{artist_id}/trolley/widget-url")
 def get_trolley_widget_url(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     if not artist.trolley_recipient_id:
         raise HTTPException(status_code=400, detail="Artist has no Trolley recipient")
 
@@ -113,9 +110,7 @@ def get_trolley_widget_url(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/artists/{artist_id}/trolley/status")
 def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     if not artist.trolley_recipient_id:
         return inject_branding_metadata(db, {
@@ -158,9 +153,7 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/claims/{claim_id}/manual-remittance")
 def manual_remittance(artist_id: str, claim_id: str, body: ManualRemittanceRequest, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
     if not claim:

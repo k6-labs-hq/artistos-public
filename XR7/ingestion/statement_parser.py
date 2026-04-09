@@ -457,316 +457,175 @@ def _col(row: dict[str, str], *names: str) -> str:
     return ""
 
 
-def _parse_distrokid(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "month", "sale month", "date")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "quantity"))
-    amount_str = _col(row, "earnings", "net", "amount")
-    amount = _parse_amount(amount_str)
+@dataclass(frozen=True)
+class _DistributorCols:
+    """
+    Column-name alternatives and fixed defaults for one distributor format.
+
+    Each tuple is tried left-to-right by ``_col()``; the first non-empty
+    value wins.  ``source_label`` is the human-readable prefix written into
+    ``payment["source"]`` (e.g. ``"DistroKid"`` → ``"DistroKid / Spotify"``).
+    """
+
+    date: tuple[str, ...]
+    quantity: tuple[str, ...]
+    amount: tuple[str, ...]
+    platform: tuple[str, ...]
+    territory: tuple[str, ...]
+    title: tuple[str, ...]
+    default_platform: str
+    source_label: str
+    fmt_key: str
+    event_type: str = "STREAM"
+
+
+# One entry per supported distributor.  PROs (ASCAP/BMI), DSPs (Spotify/
+# SoundCloud), and Bandcamp keep dedicated parsers below because their
+# field semantics differ materially (fixed territory, per-performance
+# quantity, item-type source label, etc.).
+_DISTRIBUTOR_COLS: dict[str, _DistributorCols] = {
+    "distrokid": _DistributorCols(
+        date=("month", "sale month", "date"),
+        quantity=("quantity",),
+        amount=("earnings", "net", "amount"),
+        platform=("store", "platform", "source"),
+        territory=("country", "territory"),
+        title=("title", "track name", "song"),
+        default_platform="DistroKid",
+        source_label="DistroKid",
+        fmt_key="distrokid",
+    ),
+    "tunecore": _DistributorCols(
+        date=("sale month", "month", "date"),
+        quantity=("quantity",),
+        amount=("net revenue", "amount", "earnings"),
+        platform=("store", "platform"),
+        territory=("country", "territory"),
+        title=("title", "track name", "song"),
+        default_platform="TuneCore",
+        source_label="TuneCore",
+        fmt_key="tunecore",
+    ),
+    "cdbaby": _DistributorCols(
+        date=("sale date", "date", "month"),
+        quantity=("quantity",),
+        amount=("total earnings", "royalty", "amount"),
+        platform=("store", "platform"),
+        territory=("country", "territory"),
+        title=("title", "track name", "song"),
+        default_platform="CD Baby",
+        source_label="CD Baby",
+        fmt_key="cdbaby",
+    ),
+    "amuse": _DistributorCols(
+        date=("reporting period", "period", "date", "month"),
+        quantity=("streams", "plays", "quantity"),
+        amount=("revenue", "revenue (usd)", "net revenue", "amount"),
+        platform=("platform", "store"),
+        territory=("country", "territory"),
+        title=("track title", "title", "track name", "song"),
+        default_platform="Amuse",
+        source_label="Amuse",
+        fmt_key="amuse",
+    ),
+    "unitedmasters": _DistributorCols(
+        date=("period", "date", "month"),
+        quantity=("units", "streams", "quantity"),
+        amount=("total revenue", "net revenue", "revenue", "amount"),
+        platform=("store", "platform", "retailer"),
+        territory=("country/region", "country", "territory"),
+        title=("track", "track title", "title", "track name", "song"),
+        default_platform="United Masters",
+        source_label="United Masters",
+        fmt_key="unitedmasters",
+    ),
+    "onerpm": _DistributorCols(
+        date=("sale date", "date", "period", "month"),
+        quantity=("qty", "quantity", "streams"),
+        amount=("net amount", "amount", "revenue", "net revenue"),
+        platform=("retailer", "store", "platform"),
+        territory=("country", "territory"),
+        title=("track title", "title", "track name", "song"),
+        default_platform="ONErpm",
+        source_label="ONErpm",
+        fmt_key="onerpm",
+    ),
+    "stem": _DistributorCols(
+        date=("period", "date", "month"),
+        quantity=("streams", "plays", "quantity"),
+        amount=("net revenue", "revenue", "amount"),
+        platform=("platform", "store"),
+        territory=("country code", "country", "territory"),
+        title=("track name", "track title", "title", "song"),
+        default_platform="Stem",
+        source_label="Stem",
+        fmt_key="stem",
+    ),
+    "landr": _DistributorCols(
+        date=("month", "period", "date"),
+        quantity=("net quantity", "quantity", "streams"),
+        amount=("net revenue", "net revenue (usd)", "revenue", "amount"),
+        platform=("store", "platform", "retailer"),
+        territory=("territory", "country"),
+        title=("track name", "track title", "title", "song"),
+        default_platform="LANDR",
+        source_label="LANDR",
+        fmt_key="landr",
+    ),
+    "ditto": _DistributorCols(
+        date=("month", "period", "date"),
+        quantity=("streams", "plays", "quantity"),
+        amount=("net revenue", "revenue", "amount"),
+        platform=("store", "platform"),
+        territory=("country", "territory"),
+        title=("title", "track name", "track title", "song"),
+        default_platform="Ditto Music",
+        source_label="Ditto Music",
+        fmt_key="ditto",
+    ),
+    "reverbnation": _DistributorCols(
+        date=("date", "period", "month"),
+        quantity=("streams", "plays", "quantity"),
+        amount=("revenue", "net revenue", "amount"),
+        platform=("platform", "store"),
+        territory=("country", "territory"),
+        title=("song", "title", "track name", "track title"),
+        default_platform="ReverbNation",
+        source_label="ReverbNation",
+        fmt_key="reverbnation",
+    ),
+}
+
+
+def _parse_distributor_row(
+    spec: _DistributorCols,
+    row: dict,
+    artist_id: str,
+) -> tuple[dict | None, dict | None]:
+    """
+    Generic distributor parser driven by a ``_DistributorCols`` config.
+
+    All 10 mainstream distributor formats share the same shape:
+    (date, quantity, amount, platform, territory, title, ISRC, currency).
+    Only the column name alternatives and defaults differ.
+    """
+    dt = _parse_date(_col(row, *spec.date)) or datetime.now(timezone.utc)
+    quantity = _parse_int(_col(row, *spec.quantity))
+    amount = _parse_amount(_col(row, *spec.amount))
     if amount is None:
         return None, None
 
-    store = _col(row, "store", "platform", "source") or "DistroKid"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "title", "track name", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": store,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"DistroKid / {store}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "distrokid"),
-    }
-    return event, payment
-
-
-def _parse_tunecore(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "sale month", "month", "date")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "quantity"))
-    amount_str = _col(row, "net revenue", "amount", "earnings")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    store = _col(row, "store", "platform") or "TuneCore"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "title", "track name", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": store,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"TuneCore / {store}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "tunecore"),
-    }
-    return event, payment
-
-
-def _parse_cdbaby(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "sale date", "date", "month")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "quantity"))
-    amount_str = _col(row, "total earnings", "royalty", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    store = _col(row, "store", "platform") or "CD Baby"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "title", "track name", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": store,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"CD Baby / {store}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "cdbaby"),
-    }
-    return event, payment
-
-
-def _parse_amuse(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "reporting period", "period", "date", "month")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "streams", "plays", "quantity"))
-    amount_str = _col(row, "revenue", "revenue (usd)", "net revenue", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    platform = _col(row, "platform", "store") or "Amuse"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "track title", "title", "track name", "song")
+    platform = _col(row, *spec.platform) or spec.default_platform
+    territory = _col(row, *spec.territory) or "US"
+    title = _col(row, *spec.title)
     isrc = _col(row, "isrc")
     currency = _col(row, "currency") or "USD"
     unit_value = _calc_unit_value(amount, quantity)
 
     event = {
-        "event_type": "STREAM",
+        "event_type": spec.event_type,
         "artist_id": artist_id,
         "platform": platform,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"Amuse / {platform}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "amuse"),
-    }
-    return event, payment
-
-
-def _parse_unitedmasters(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "period", "date", "month")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "units", "streams", "quantity"))
-    amount_str = _col(row, "total revenue", "net revenue", "revenue", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    store = _col(row, "store", "platform", "retailer") or "United Masters"
-    country = _col(row, "country/region", "country", "territory") or "US"
-    title = _col(row, "track", "track title", "title", "track name", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": store,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"United Masters / {store}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "unitedmasters"),
-    }
-    return event, payment
-
-
-def _parse_onerpm(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "sale date", "date", "period", "month")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "qty", "quantity", "streams"))
-    amount_str = _col(row, "net amount", "amount", "revenue", "net revenue")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    retailer = _col(row, "retailer", "store", "platform") or "ONErpm"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "track title", "title", "track name", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": retailer,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"ONErpm / {retailer}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "onerpm"),
-    }
-    return event, payment
-
-
-def _parse_stem(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "period", "date", "month")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "streams", "plays", "quantity"))
-    amount_str = _col(row, "net revenue", "revenue", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    platform = _col(row, "platform", "store") or "Stem"
-    country = _col(row, "country code", "country", "territory") or "US"
-    title = _col(row, "track name", "track title", "title", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": platform,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"Stem / {platform}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "stem"),
-    }
-    return event, payment
-
-
-def _parse_landr(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "month", "period", "date")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "net quantity", "quantity", "streams"))
-    amount_str = _col(row, "net revenue", "net revenue (usd)", "revenue", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    store = _col(row, "store", "platform", "retailer") or "LANDR"
-    territory = _col(row, "territory", "country") or "US"
-    title = _col(row, "track name", "track title", "title", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": store,
         "territory": territory.upper()[:2] if territory else None,
         "timestamp": dt,
         "quantity": quantity,
@@ -780,12 +639,38 @@ def _parse_landr(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
         "artist_id": artist_id,
         "amount": round(amount, 6),
         "currency": currency,
-        "source": f"LANDR / {store}",
+        "source": f"{spec.source_label} / {platform}",
         "period_start": date(dt.year, dt.month, 1),
         "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "landr"),
+        "reference_id": _row_hash(row, spec.fmt_key),
     }
     return event, payment
+
+
+# Thin wrappers so that _FORMAT_PARSERS entries remain plain callables.
+# Each lambda closes over the frozen spec — no per-call allocation.
+_parse_distrokid = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["distrokid"], row, artist_id)  # noqa: E731
+
+
+_parse_tunecore = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["tunecore"], row, artist_id)  # noqa: E731
+
+
+_parse_cdbaby = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["cdbaby"], row, artist_id)  # noqa: E731
+
+
+_parse_amuse = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["amuse"], row, artist_id)  # noqa: E731
+
+
+_parse_unitedmasters = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["unitedmasters"], row, artist_id)  # noqa: E731
+
+
+_parse_onerpm = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["onerpm"], row, artist_id)  # noqa: E731
+
+
+_parse_stem = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["stem"], row, artist_id)  # noqa: E731
+
+
+_parse_landr = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["landr"], row, artist_id)  # noqa: E731
 
 
 def _parse_ditto(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
@@ -797,77 +682,8 @@ def _parse_ditto(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
     if amount is None:
         return None, None
 
-    store = _col(row, "store", "platform") or "Ditto Music"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "title", "track name", "track title", "song")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": store,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"Ditto Music / {store}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "ditto"),
-    }
-    return event, payment
-
-
-def _parse_reverbnation(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "date", "period", "month")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "streams", "plays", "quantity"))
-    amount_str = _col(row, "revenue", "net revenue", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
-
-    platform = _col(row, "platform", "store") or "ReverbNation"
-    country = _col(row, "country", "territory") or "US"
-    title = _col(row, "song", "title", "track name", "track title")
-    isrc = _col(row, "isrc")
-    currency = _col(row, "currency") or "USD"
-    unit_value = _calc_unit_value(amount, quantity)
-
-    event = {
-        "event_type": "STREAM",
-        "artist_id": artist_id,
-        "platform": platform,
-        "territory": country.upper()[:2] if country else None,
-        "timestamp": dt,
-        "quantity": quantity,
-        "unit_value": round(unit_value, 8),
-        "currency": currency,
-        "work_title": title,
-        "isrc": isrc,
-    }
-    payment = {
-        "payment_type": "ROYALTY",
-        "artist_id": artist_id,
-        "amount": round(amount, 6),
-        "currency": currency,
-        "source": f"ReverbNation / {platform}",
-        "period_start": date(dt.year, dt.month, 1),
-        "period_end": _month_end(dt),
-        "reference_id": _row_hash(row, "reverbnation"),
-    }
-    return event, payment
+_parse_ditto = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["ditto"], row, artist_id)  # noqa: E731
+_parse_reverbnation = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["reverbnation"], row, artist_id)  # noqa: E731
 
 
 def _parse_bandcamp(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
@@ -1154,24 +970,22 @@ def _parse_generic(row: dict, artist_id: str) -> tuple[dict | None, dict | None]
     return event, payment
 
 
-_FORMAT_PARSERS = {
-    "distrokid": _parse_distrokid,
-    "tunecore": _parse_tunecore,
-    "cdbaby": _parse_cdbaby,
-    "amuse": _parse_amuse,
-    "unitedmasters": _parse_unitedmasters,
-    "onerpm": _parse_onerpm,
-    "stem": _parse_stem,
-    "landr": _parse_landr,
-    "ditto": _parse_ditto,
-    "reverbnation": _parse_reverbnation,
-    "bandcamp": _parse_bandcamp,
-    "ascap": _parse_ascap,
-    "bmi": _parse_bmi,
-    "spotify": _parse_spotify,
-    "soundcloud": _parse_soundcloud,
-    "generic": _parse_generic,
+_FORMAT_PARSERS: dict[str, Any] = {
+    # Distributor formats — handled by the unified config-driven parser.
+    fmt: (lambda spec: lambda row, artist_id: _parse_distributor_row(spec, row, artist_id))(
+        _DISTRIBUTOR_COLS[fmt]
+    )
+    for fmt in _DISTRIBUTOR_COLS
 }
+# PRO / DSP formats with non-standard field semantics keep dedicated parsers.
+_FORMAT_PARSERS.update({
+    "bandcamp": _parse_bandcamp,   # SALE event, item_type source label
+    "ascap": _parse_ascap,         # per-performance, fixed territory US
+    "bmi": _parse_bmi,             # per-performance, fixed territory US
+    "spotify": _parse_spotify,     # stream revenue column name
+    "soundcloud": _parse_soundcloud,  # extra SC-specific metadata fields
+    "generic": _parse_generic,     # column-sniffing fallback
+})
 
 
 # ---------------------------------------------------------------------------
@@ -1199,7 +1013,7 @@ def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> Pa
     try:
         text = content.decode(encoding)
     except UnicodeDecodeError:
-        # Fallback to latin-1 which accepts any byte value
+        # Fallback to latin-1, which accepts any byte value.
         text = content.decode("latin-1")
 
     reader = csv.DictReader(io.StringIO(text))
@@ -1210,51 +1024,7 @@ def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> Pa
             errors=["CSV file has no header row or is empty."],
         )
 
-    headers = list(reader.fieldnames)
-    fmt = detect_format(headers)
-    parser = _FORMAT_PARSERS[fmt]
-
-    events: list[dict] = []
-    payments: list[dict] = []
-    skipped = 0
-    errors: list[str] = []
-    rows = list(reader)
-
-    for i, row in enumerate(rows, start=2):
-        try:
-            event, payment = parser(row, artist_id)
-        except Exception as exc:  # noqa: BLE001
-            skipped += 1
-            errors.append(f"Row {i}: {exc}")
-            continue
-
-        if event is None or payment is None:
-            skipped += 1
-            continue
-
-        # Skip rows with zero amounts — these are informational totals
-        if payment["amount"] == 0.0 and event["quantity"] == 0:
-            skipped += 1
-            continue
-
-        events.append(event)
-        payments.append(payment)
-
-    if not events and not errors and rows:
-        errors.append(
-            f"No parseable rows found for format '{fmt}'.  "
-            "Ensure the file has the expected column headers.  "
-            "See the API documentation for supported formats."
-        )
-
-    return ParseResult(
-        format_detected=fmt,
-        row_count=len(rows),
-        events=events,
-        payments=payments,
-        skipped_rows=skipped,
-        errors=errors,
-    )
+    return _parse_table_rows(list(reader), list(reader.fieldnames), artist_id)
 
 
 def _parse_table_rows(rows: list[dict[str, str]], headers: list[str], artist_id: str) -> ParseResult:

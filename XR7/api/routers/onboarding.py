@@ -33,6 +33,7 @@ from XR7.models.statement import Statement
 from XR7.models.sync_job import SyncJob, SyncJobSchema
 from XR7.models.terms_acceptance import TermsAcceptance
 from XR7.models.work import Work
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.recovery_automation_engine import automate_recovery
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
@@ -90,9 +91,7 @@ class SplitRepairRequest(BaseModel):
 
 
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     return artist
 
 @router.get("/artists/{artist_id}/onboarding/status")

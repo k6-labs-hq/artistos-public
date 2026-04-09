@@ -22,6 +22,7 @@ from XR7.models.base import SessionLocal
 from XR7.models.payment import Payment
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from shared.utils.dates import period_key as _period_key
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -41,14 +42,6 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     raw = json.dumps({"artist_id": artist_id, "payload": payload}, sort_keys=True)
     return hashlib.sha256(raw.encode()).hexdigest()
 
-
-def _period_key(dt: datetime, granularity: str) -> str:
-    if granularity == "month":
-        return dt.strftime("%Y-%m")
-    if granularity == "quarter":
-        q = (dt.month - 1) // 3 + 1
-        return f"{dt.year}-Q{q}"
-    return str(dt.year)
 
 
 def _ensure_utc(dt: datetime | None) -> datetime | None:

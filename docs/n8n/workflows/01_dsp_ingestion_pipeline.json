@@ -1,0 +1,366 @@
+{
+  "name": "XR7 — DSP Ingestion Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "trigger-schedule",
+      "name": "Schedule Trigger (Nightly)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/auth/login/artist",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "email",
+              "value": "={{ $env.XR7_SERVICE_EMAIL }}"
+            },
+            {
+              "name": "password",
+              "value": "={{ $env.XR7_SERVICE_PASSWORD }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "authenticate",
+      "name": "Authenticate (Get Bearer Token)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract bearer token from auth response\nconst token = $input.item.json.access_token;\nif (!token) throw new Error('No access_token in auth response');\nreturn [{ json: { bearer_token: token } }];"
+      },
+      "id": "extract-token",
+      "name": "Extract Bearer Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Expand active artists × DSP combinations into individual ingestion tasks\n// In production, replace with GET /artists?active=true\nconst token = $('Extract Bearer Token').item.json.bearer_token;\nconst dsps = ['spotify', 'apple_music', 'soundcloud', 'amazon_music'];\n\n// Placeholder artist list — replace with API call in production\nconst artists = [\n  { artist_id: '{{ artist_id_1 }}', name: 'Artist 1' },\n  { artist_id: '{{ artist_id_2 }}', name: 'Artist 2' }\n];\n\nconst tasks = [];\nfor (const artist of artists) {\n  for (const dsp of dsps) {\n    tasks.push({\n      json: {\n        bearer_token: token,\n        artist_id: artist.artist_id,\n        artist_name: artist.name,\n        dsp\n      }\n    });\n  }\n}\nreturn tasks;"
+      },
+      "id": "expand-tasks",
+      "name": "Expand Ingestion Tasks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/ingestion/trigger",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "artist_id",
+              "value": "={{ $json.artist_id }}"
+            },
+            {
+              "name": "dsp",
+              "value": "={{ $json.dsp }}"
+            }
+          ]
+        },
+        "options": {
+          "retry": {
+            "enabled": true,
+            "maxRetries": 3,
+            "waitBetweenRetries": 5000
+          }
+        }
+      },
+      "id": "trigger-ingestion",
+      "name": "Trigger Ingestion Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "amount": 5,
+        "unit": "seconds"
+      },
+      "id": "wait-for-job",
+      "name": "Wait 5s (initial)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.XR7_BASE_URL }}/jobs/{{ $json.job_id }}/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "poll-job-status",
+      "name": "Poll Job Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true
+          },
+          "conditions": [
+            {
+              "id": "status-complete",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "check-job-complete",
+      "name": "Job Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.anomaly_count }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ]
+        }
+      },
+      "id": "check-anomalies",
+      "name": "Anomalies Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=:warning: *XR7 Ingestion Alert*\nArtist: {{ $json.artist_id }} | DSP: {{ $json.dsp }}\nAnomalies detected: {{ $json.anomaly_count }}\n<{{ $env.XR7_BASE_URL }}/artists/{{ $json.artist_id }}/anomalies | View in XR7>"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-anomaly-alert",
+      "name": "Slack — Anomaly Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2220, 160]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=:x: *XR7 Ingestion FAILED*\nArtist: {{ $json.artist_id }} | DSP: {{ $json.dsp }}\nError: {{ $json.error }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-failure-alert",
+      "name": "Slack — Failure Alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2000, 460]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (Nightly)": {
+      "main": [
+        [
+          {
+            "node": "Authenticate (Get Bearer Token)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Authenticate (Get Bearer Token)": {
+      "main": [
+        [
+          {
+            "node": "Extract Bearer Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Bearer Token": {
+      "main": [
+        [
+          {
+            "node": "Expand Ingestion Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Ingestion Tasks": {
+      "main": [
+        [
+          {
+            "node": "Trigger Ingestion Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger Ingestion Job": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s (initial)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s (initial)": {
+      "main": [
+        [
+          {
+            "node": "Poll Job Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Job Status": {
+      "main": [
+        [
+          {
+            "node": "Job Complete?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Job Complete?": {
+      "main": [
+        [
+          {
+            "node": "Anomalies Found?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Slack — Failure Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomalies Found?": {
+      "main": [
+        [
+          {
+            "node": "Slack — Anomaly Alert",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "XR7 — Error Handler"
+  },
+  "tags": ["xr7", "ingestion", "dsp"],
+  "meta": {
+    "description": "Nightly DSP statement ingestion for all active artists. Polls for job completion and sends Slack alerts on anomaly detection or failure.",
+    "xr7_api_version": "2.0",
+    "required_env": [
+      "XR7_BASE_URL",
+      "XR7_SERVICE_EMAIL",
+      "XR7_SERVICE_PASSWORD",
+      "SLACK_WEBHOOK_URL"
+    ]
+  }
+}

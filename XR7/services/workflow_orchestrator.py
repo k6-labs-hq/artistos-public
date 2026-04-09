@@ -1,23 +1,25 @@
 from __future__ import annotations
 
 import json
+import uuid
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
 
+from XR7.anomaly.variance_detection_engine import run_variance_scan
+from XR7.core.workflow.variance_rows import event_to_universal_row, event_to_variance_row
+from XR7.graph.catalog_graph_builder import build_catalog_graph
+from XR7.ml.auto_inference_engine import infer_catalog_relationships
 from XR7.models.artist import Artist
+from XR7.models.catalog_graph import CatalogGraphSnapshot
 from XR7.models.event import Event
 from XR7.models.statement import Statement
+from XR7.models.universal_royalty_event import UniversalRoyaltyEvent
 from XR7.models.work import Work
-from XR7.services.modules import (
-    AutoInferenceService,
-    CatalogGraphService,
-    ImmutableLedgerModuleService,
-    RecoveryAutomationService,
-    UniversalEventService,
-    VarianceDetectionService,
-)
+from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from XR7.recovery.recovery_automation_engine import automate_recovery
 
 # XR7 event flow (orchestrator-level):
 # connect_accounts -> fetch_catalog/statements -> upload_statements -> parse_normalize
@@ -43,6 +45,52 @@ class XR7WorkflowService:
             raise ValueError("Artist not found")
         return artist
 
+    def _build_and_persist_catalog_graph(
+        self,
+        artist_id: str,
+        *,
+        works: list[dict[str, Any]],
+        registrations: list[dict[str, Any]],
+        statements: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        graph = build_catalog_graph(artist_id, works=works, registrations=registrations, statements=statements)
+        snapshot = CatalogGraphSnapshot(
+            artist_id=artist_id,
+            version=str(uuid.uuid4()),
+            graph_json=json.dumps(graph, default=str),
+        )
+        self.db.add(snapshot)
+        self.db.commit()
+        return graph
+
+    def _persist_universal_events(self, rows: list[dict[str, Any]]) -> int:
+        count = 0
+        for row in rows:
+            self.db.add(
+                UniversalRoyaltyEvent(
+                    artist_id=row["artist_id"],
+                    source_type=row["source_type"],
+                    source_name=row["source_name"],
+                    record_type=row["record_type"],
+                    event_type=row["event_type"],
+                    amount=float(row.get("amount") or 0.0),
+                    quantity=float(row.get("quantity") or 0.0),
+                    unit_value=float(row.get("unit_value") or 0.0),
+                    currency=row.get("currency") or "USD",
+                    territory=row.get("territory"),
+                    work_id=row.get("work_id"),
+                    work_title=row.get("work_title"),
+                    isrc=row.get("isrc"),
+                    ipi=row.get("ipi"),
+                    statement_period=row.get("statement_period"),
+                    source_ref=row.get("source_ref"),
+                    metadata_json=json.dumps(row.get("metadata") or {}, sort_keys=True),
+                )
+            )
+            count += 1
+        self.db.commit()
+        return count
+
     def run(self, artist_id: str) -> WorkflowRunResult:
         self._artist_or_404(artist_id)
         steps: list[dict[str, Any]] = []
@@ -50,7 +98,7 @@ class XR7WorkflowService:
         # Step 1: fetch graph inputs from existing data.
         works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
         statements = self.db.query(Statement).filter(Statement.artist_id == artist_id).all()
-        graph = CatalogGraphService(self.db).build_and_persist(
+        graph = self._build_and_persist_catalog_graph(
             artist_id,
             works=[
                 {
@@ -68,7 +116,7 @@ class XR7WorkflowService:
         steps.append({"name": "build_catalog_graph", "nodes": len(graph.get("nodes") or [])})
 
         # Step 2: infer missing catalog relationships.
-        inference = AutoInferenceService().infer(
+        inference = infer_catalog_relationships(
             [{"work_id": w.id, "contributors": [], "streams": 0.0, "owner": artist_id} for w in works]
         )
         steps.append({"name": "infer_catalog", "count": inference.get("count", 0)})
@@ -76,46 +124,37 @@ class XR7WorkflowService:
         # Step 3: variance scan from basic event projections.
         events = self.db.query(Event).filter(Event.artist_id == artist_id).limit(1000).all()
         variance_rows = [
-            {
-                "streams": float(e.quantity or 0.0),
-                "payout": float((e.quantity or 0.0) * (e.unit_value or 0.0)),
-                "expected_payout": float((e.quantity or 0.0) * (e.unit_value or 0.0) * 1.2),
-                "has_registration": True,
-                "reported_usage": float(e.quantity or 0.0),
-            }
+            event_to_variance_row(
+                float(e.quantity or 0.0),
+                float(e.unit_value or 0.0),
+            )
             for e in events
         ]
-        variance = VarianceDetectionService().run(variance_rows)
+        variance = run_variance_scan(variance_rows)
         steps.append({"name": "variance_scan", "findings": variance.get("finding_count", 0)})
 
         # Step 4: persist universal events from current events (normalization bridge).
         universal_rows = [
-            {
-                "artist_id": artist_id,
-                "source_type": "event",
-                "source_name": e.platform or "unknown",
-                "record_type": "EVENT",
-                "event_type": str(e.event_type),
-                "amount": float((e.quantity or 0.0) * (e.unit_value or 0.0)),
-                "quantity": float(e.quantity or 0.0),
-                "unit_value": float(e.unit_value or 0.0),
-                "currency": e.currency or "USD",
-                "territory": e.territory,
-                "work_id": None,
-                "work_title": None,
-                "isrc": None,
-                "metadata": {"event_id": e.id},
-            }
+            event_to_universal_row(
+                artist_id=artist_id,
+                source_name=e.platform or "unknown",
+                event_type=str(e.event_type),
+                amount=float((e.quantity or 0.0) * (e.unit_value or 0.0)),
+                quantity=float(e.quantity or 0.0),
+                unit_value=float(e.unit_value or 0.0),
+                currency=e.currency or "USD",
+                territory=e.territory,
+                event_id=e.id,
+            )
             for e in events
         ]
-        persisted = UniversalEventService(self.db).persist_many(universal_rows) if universal_rows else 0
+        persisted = self._persist_universal_events(universal_rows) if universal_rows else 0
         steps.append({"name": "persist_universal_events", "count": persisted})
 
         # Step 5: recovery automation + immutable ledger.
         findings = variance.get("findings") or []
-        recovery = RecoveryAutomationService().run(artist_id, findings[:25])
-        ledger_service = ImmutableLedgerModuleService(self.db)
-        ledger = ledger_service.append(
+        recovery = automate_recovery(artist_id, findings[:25])
+        ledger = ImmutableLedgerService(self.db).append(
             artist_id,
             "workflow_run",
             {

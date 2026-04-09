@@ -6,12 +6,11 @@ from sqlalchemy.orm import Session
 
 from XR7.models.artist import Artist
 from XR7.models.team_access import TeamMember, TeamRole
+from XR7.api.deps import get_artist_or_404
 
 
 def artist_or_404(artist_id: str, db: Session) -> Artist:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     return artist
 
 

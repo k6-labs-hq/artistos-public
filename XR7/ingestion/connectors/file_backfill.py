@@ -1,18 +1,11 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 from XR7.ingestion.statement_parser import parse_statement_file
-
-
-def _as_utc(dt: datetime | None) -> datetime | None:
-    if dt is None:
-        return None
-    if dt.tzinfo is None:
-        return dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(timezone.utc)
+from XR7.utils.datetime_utils import as_utc as _as_utc
 
 
 def _parse_timestamp(value: Any) -> datetime | None:

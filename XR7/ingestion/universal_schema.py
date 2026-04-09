@@ -4,10 +4,6 @@ from datetime import datetime, timezone
 from typing import Any
 
 
-def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
-
-
 def to_universal_royalty_event(
     *,
     artist_id: str,
@@ -46,6 +42,6 @@ def to_universal_royalty_event(
         "ipi": ipi,
         "statement_period": statement_period,
         "source_ref": source_ref,
-        "ingested_at": utc_now().isoformat(),
+        "ingested_at": datetime.now(timezone.utc).isoformat(),
         "metadata": metadata or {},
     }

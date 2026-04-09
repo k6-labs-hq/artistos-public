@@ -6,7 +6,6 @@ import functools
 from typing import Any, Callable
 
 from fastapi import Header, HTTPException
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from XR7.models.xr7_idempotency import IdempotencyService

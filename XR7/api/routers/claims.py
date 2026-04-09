@@ -28,6 +28,7 @@ from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorModel
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.review_queue import ReviewSourceType
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.cash_recovery_forecast import build_claim_forecast
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.evidence_strength import score_evidence_strength
@@ -331,6 +332,37 @@ def list_claims(
     return payload
 
 
+def _anomaly_to_payload(anomaly: Anomaly) -> dict:
+    """Serialize an Anomaly ORM row to the standard payload dict used by trust/recoverability services."""
+    return {
+        "id": anomaly.id,
+        "artist_id": anomaly.artist_id,
+        "category": str(anomaly.category),
+        "subtype": anomaly.subtype,
+        "severity": str(anomaly.severity),
+        "estimated_recoverable": anomaly.estimated_recoverable,
+        "confidence_score": anomaly.confidence_score,
+        "time_window_start": anomaly.time_window_start,
+        "time_window_end": anomaly.time_window_end,
+        "description": anomaly.description,
+        "feature_snapshot": anomaly.feature_snapshot,
+        "created_at": anomaly.created_at,
+    }
+
+
+def _compute_anomaly_trust(anomaly_payload: dict) -> tuple[dict, dict]:
+    """Return (recoverability_payload, trust_result) for an anomaly payload dict."""
+    recoverability = build_recoverability_payload(anomaly_payload)
+    discovery = DiscoveryRuleEngine().evaluate(anomaly_payload)
+    trust = TrustDefensibilityService().trust_score(
+        data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
+        model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
+        contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
+        sol_risk=1.0 if discovery.get("urgent_flag") else 0.25,
+    )
+    return recoverability, trust
+
+
 @router.get("/claims/{claim_id}", response_model=ClaimSchema)
 def get_claim(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
@@ -346,9 +378,7 @@ def create_claim_for_artist(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     anomaly = (
         db.query(Anomaly)
@@ -362,28 +392,8 @@ def create_claim_for_artist(
     if existing:
         raise HTTPException(status_code=409, detail="Claim already exists for anomaly")
 
-    anomaly_payload = {
-        "id": anomaly.id,
-        "artist_id": anomaly.artist_id,
-        "category": str(anomaly.category),
-        "subtype": anomaly.subtype,
-        "severity": str(anomaly.severity),
-        "estimated_recoverable": anomaly.estimated_recoverable,
-        "confidence_score": anomaly.confidence_score,
-        "time_window_start": anomaly.time_window_start,
-        "time_window_end": anomaly.time_window_end,
-        "description": anomaly.description,
-        "feature_snapshot": anomaly.feature_snapshot,
-        "created_at": anomaly.created_at,
-    }
-    recoverability = build_recoverability_payload(anomaly_payload)
-    discovery = DiscoveryRuleEngine().evaluate(anomaly_payload)
-    trust = TrustDefensibilityService().trust_score(
-        data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
-        model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
-        contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
-        sol_risk=1.0 if discovery.get("urgent_flag") else 0.25,
-    )
+    anomaly_payload = _anomaly_to_payload(anomaly)
+    recoverability, trust = _compute_anomaly_trust(anomaly_payload)
     if not bool(recoverability.get("claim_draft_allowed")):
         raise HTTPException(
             status_code=422,
@@ -524,25 +534,8 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
             )
             anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
             if anomaly:
-                anomaly_payload = {
-                    "id": anomaly.id,
-                    "artist_id": anomaly.artist_id,
-                    "category": str(anomaly.category),
-                    "subtype": anomaly.subtype,
-                    "severity": str(anomaly.severity),
-                    "estimated_recoverable": anomaly.estimated_recoverable,
-                    "confidence_score": anomaly.confidence_score,
-                    "time_window_end": anomaly.time_window_end,
-                    "description": anomaly.description,
-                    "created_at": anomaly.created_at,
-                }
-                recoverability = build_recoverability_payload(anomaly_payload)
-                trust = TrustDefensibilityService().trust_score(
-                    data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
-                    model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
-                    contract_evidence_quality=0.7 if recoverability.get("contract_recoverability") else 0.45,
-                    sol_risk=1.0 if bool((DiscoveryRuleEngine().evaluate(anomaly_payload)).get("urgent_flag")) else 0.25,
-                )
+                anomaly_payload = _anomaly_to_payload(anomaly)
+                recoverability, trust = _compute_anomaly_trust(anomaly_payload)
                 package = ClaimsEvidencePackageBuilder().build(
                     claim={
                         "id": claim.id,

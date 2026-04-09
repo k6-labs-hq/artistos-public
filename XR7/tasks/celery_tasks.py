@@ -4,10 +4,15 @@ from datetime import datetime, timedelta, timezone
 
 from XR7.agents.orchestrator import run_xr7_recovery_orchestra_sync
 from XR7.celery_app import celery_app
-from XR7.models.artist import Artist, ArtistLifecycleStatus
 from XR7.models.base import SessionLocal
-from XR7.models.statement import Statement
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
+from XR7.services.artist_query import (
+    active_soundcloud_artist_ids_since,
+    all_artist_ids,
+    artist_ids_with_new_statements,
+    artist_ids_with_soundcloud_statements,
+    artists_pending_onboarding,
+)
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -58,46 +63,37 @@ def run_recovery_for_new_data(self) -> dict:  # noqa: ANN001
 def run_nightly_preparation_scan(self=None) -> dict:  # noqa: ANN001
     db = SessionLocal()
     try:
-        artists = db.query(Artist).filter(Artist.status != ArtistLifecycleStatus.ACTIVE.value).all()
-        triggered = 0
-        for artist in artists:
-            run_artist_workflow.delay(artist.id)
-            triggered += 1
-        return {"triggered": triggered, "scope": "nightly_preparation_scan", "agent": "onboarding_preparation"}
+        artist_ids = artists_pending_onboarding(db)
     finally:
         db.close()
+    for artist_id in artist_ids:
+        run_artist_workflow.delay(artist_id)
+    return {"triggered": len(artist_ids), "scope": "nightly_preparation_scan", "agent": "onboarding_preparation"}
 
 
 @celery_app.task(name="xr7.workflow.run_daily_recovery_scan", bind=True)
 def run_daily_recovery_scan(self=None) -> dict:  # noqa: ANN001
-    threshold = datetime.now(timezone.utc) - timedelta(hours=6)
+    since = datetime.now(timezone.utc) - timedelta(hours=6)
     db = SessionLocal()
     try:
-        rows = (
-            db.query(Statement)
-            .join(Artist, Artist.id == Statement.artist_id)
-            .filter(Statement.uploaded_at >= threshold)
-            .filter(Artist.status == ArtistLifecycleStatus.ACTIVE.value)
-            .all()
-        )
-        artist_ids = sorted({r.artist_id for r in rows})
-        for artist_id in artist_ids:
-            run_artist_workflow.delay(artist_id)
-        return {"triggered": len(artist_ids), "scope": "daily_recovery_scan", "agent": "recovery_execution"}
+        artist_ids = artist_ids_with_new_statements(db, since)
     finally:
         db.close()
+    for artist_id in artist_ids:
+        run_artist_workflow.delay(artist_id)
+    return {"triggered": len(artist_ids), "scope": "daily_recovery_scan", "agent": "recovery_execution"}
 
 
 @celery_app.task(name="xr7.workflow.run_follow_up_and_readiness", bind=True)
 def run_follow_up_and_readiness(self) -> dict:  # noqa: ANN001
     db = SessionLocal()
     try:
-        artist_ids = [a.id for a in db.query(Artist.id).all()]
-        for artist_id in artist_ids:
-            run_artist_workflow.delay(artist_id)
-        return {"triggered": len(artist_ids), "scope": "follow_up_readiness"}
+        artist_ids = all_artist_ids(db)
     finally:
         db.close()
+    for artist_id in artist_ids:
+        run_artist_workflow.delay(artist_id)
+    return {"triggered": len(artist_ids), "scope": "follow_up_readiness"}
 
 
 @celery_app.task(name="xr7.workflow.on_statement_upload", bind=True)
@@ -126,24 +122,22 @@ def on_soundcloud_statement_upload(self, artist_id: str, statement_id: str | Non
 def run_soundcloud_sync_daily(self) -> dict:  # noqa: ANN001
     db = SessionLocal()
     try:
-        rows = db.query(Statement).filter(Statement.format_detected == "soundcloud").all()
-        artist_ids = sorted({r.artist_id for r in rows})
-        for artist_id in artist_ids:
-            run_artist_workflow.delay(artist_id)
-        return {"triggered": len(artist_ids), "scope": "soundcloud_daily_sync"}
+        artist_ids = artist_ids_with_soundcloud_statements(db)
     finally:
         db.close()
+    for artist_id in artist_ids:
+        run_artist_workflow.delay(artist_id)
+    return {"triggered": len(artist_ids), "scope": "soundcloud_daily_sync"}
 
 
 @celery_app.task(name="xr7.workflow.run_soundcloud_healthcheck_hourly", bind=True)
 def run_soundcloud_healthcheck_hourly(self) -> dict:  # noqa: ANN001
+    since = datetime.now(timezone.utc) - timedelta(days=30)
     db = SessionLocal()
     try:
-        threshold = datetime.now(timezone.utc) - timedelta(days=30)
-        rows = db.query(Statement).filter(Statement.format_detected == "soundcloud", Statement.uploaded_at >= threshold).all()
-        artist_ids = sorted({r.artist_id for r in rows})
-        for artist_id in artist_ids:
-            run_artist_workflow.delay(artist_id)
-        return {"triggered": len(artist_ids), "scope": "soundcloud_hourly_healthcheck"}
+        artist_ids = active_soundcloud_artist_ids_since(db, since)
     finally:
         db.close()
+    for artist_id in artist_ids:
+        run_artist_workflow.delay(artist_id)
+    return {"triggered": len(artist_ids), "scope": "soundcloud_hourly_healthcheck"}

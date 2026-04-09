@@ -12,6 +12,7 @@ from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
 from XR7.ml.predictive_recoverable import PredictiveRecoverableModel
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
+from XR7.api.deps import get_artist_or_404
 from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["ml_suite"])
@@ -66,9 +67,7 @@ def predict_recoverable(
     - SOL decay curve for open anomalies near their deadline windows
     - Active claim pipeline multiplier
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     if body.horizon_months not in _ALLOWED_HORIZONS:
         raise HTTPException(
@@ -100,9 +99,7 @@ def ml_explain(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> dict:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     payload = explain_artist_ml_suite(db, artist_id)
     return inject_branding_metadata(db, payload)
@@ -114,9 +111,7 @@ def ml_calibration_dashboard(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> dict:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     summary = SuccessProbabilityCalibrator().calibration_summary(artist_id, db)
     return inject_branding_metadata(db, {

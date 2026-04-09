@@ -33,6 +33,7 @@ from XR7.models.catalog_fix_issue import (
 from XR7.models.claim import Claim
 from XR7.models.payment import Payment
 from XR7.models.work import Work
+from XR7.api.deps import get_artist_or_404
 from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.branding import inject_branding_metadata
@@ -441,9 +442,7 @@ def get_catalog_health(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> CatalogHealthResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     works: list[Work] = db.query(Work).filter(Work.artist_id == artist_id).all()
     anomalies: list[Anomaly] = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
@@ -522,9 +521,7 @@ def list_catalog_fixes(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> CatalogFixListResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     q = db.query(CatalogFixIssue).filter(CatalogFixIssue.artist_id == artist_id)
     if status is not None:
@@ -546,9 +543,7 @@ def request_catalog_fix(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> FixRequestResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     fix = (
         db.query(CatalogFixIssue)

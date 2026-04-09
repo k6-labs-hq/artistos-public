@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import math
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from difflib import SequenceMatcher
@@ -9,6 +8,12 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from XR7.core.scoring.metadata_match import (
+    confidence_score,
+    metadata_triangulation_score,
+    normalize_text as _norm,
+    text_similarity as _similarity,
+)
 from XR7.ingestion.connectors.xr7_platform_clients import XR7PlatformAPIClient, XR7RateLimitScheduler
 from XR7.ingestion.file_ingestion_pipeline import FileIngestionPipeline
 from XR7.models.sync_job import SyncJob
@@ -32,61 +37,6 @@ from XR7.services.xr7_crypto_vault import open_sealed, seal
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
-
-
-def _norm(text: str | None) -> str:
-    if not text:
-        return ""
-    cleaned = "".join(ch.lower() if ch.isalnum() or ch.isspace() else " " for ch in text)
-    return " ".join(cleaned.split())
-
-
-def _similarity(a: str | None, b: str | None) -> float:
-    return SequenceMatcher(None, _norm(a), _norm(b)).ratio()
-
-
-def metadata_triangulation_score(
-    *,
-    title_a: str | None,
-    title_b: str | None,
-    artist_a: str | None,
-    artist_b: str | None,
-    duration_ms_a: int | None,
-    duration_ms_b: int | None,
-    id_match: bool,
-    context_match: bool,
-) -> float:
-    title_score = _similarity(title_a, title_b)
-    artist_score = _similarity(artist_a, artist_b)
-
-    if duration_ms_a is None or duration_ms_b is None or duration_ms_a <= 0 or duration_ms_b <= 0:
-        duration_score = 0.5
-    else:
-        delta = abs(duration_ms_a - duration_ms_b)
-        duration_score = math.exp(-((delta / 1500.0) ** 2))
-
-    id_score = 1.0 if id_match else 0.0
-    context_score = 1.0 if context_match else 0.0
-
-    score = (
-        0.35 * title_score
-        + 0.2 * artist_score
-        + 0.15 * duration_score
-        + 0.2 * id_score
-        + 0.1 * context_score
-    )
-    return max(0.0, min(1.0, score))
-
-
-def confidence_score(
-    metadata_score: float,
-    fingerprint_score: float,
-    history_score: float,
-    contract_score: float,
-    conflict_penalty: float,
-) -> float:
-    linear = (1.6 * metadata_score) + (1.8 * fingerprint_score) + (0.8 * history_score) + (0.9 * contract_score) - (1.2 * conflict_penalty)
-    return 1.0 / (1.0 + math.exp(-linear))
 
 
 @dataclass

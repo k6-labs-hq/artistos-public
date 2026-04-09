@@ -20,6 +20,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -207,9 +208,7 @@ def run_recovery_autopilot(
     Executes payer chasing, evidence packet generation, SOL monitoring,
     settlement tracking, and optionally rights registration planning.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     state: dict = {
         "artist_id": artist_id,
@@ -252,9 +251,7 @@ def sol_status(artist_id: str, db: Session = Depends(get_db)):
     (90–180 days), or OK (>180 days remaining), sorted most-urgent first.
     Also returns an overall SOL exposure summary.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     anomalies = [
         _anomaly_to_dict(a)
@@ -280,9 +277,7 @@ def rate_benchmark(artist_id: str, db: Session = Depends(get_db)):
     underpayment amounts, and a tier classification
     (ABOVE_MARKET, AT_MARKET, BELOW_MARKET, CRITICAL).
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     events = [
         _event_to_dict(e)
@@ -305,9 +300,7 @@ def audit_eligibility(artist_id: str, db: Session = Depends(get_db)):
     Contracts are ranked by estimated potential recovery and eligibility
     status (NEVER_AUDITED, ELIGIBLE, ELIGIBLE_SOON, NOT_YET_ELIGIBLE).
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     contracts = [
         _contract_to_dict(c)
@@ -338,9 +331,7 @@ def recoupment(artist_id: str, db: Session = Depends(get_db)):
     the counterparty-reported balance, and EXCESS_RECOUPMENT when more than
     the advance has been recouped.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     contracts = [
         _contract_to_dict(c)
@@ -371,9 +362,7 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
     The artist (or their representative) should work through this list
     top-to-bottom to maximise recovery.
     """
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     anomalies_raw = [
         _anomaly_to_dict(a)
@@ -476,9 +465,7 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/playbook-summary")
 def playbook_summary(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
     anomaly_rows = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
@@ -492,9 +479,7 @@ def playbook_summary(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/deadline-risk")
 def deadline_risk(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     anomalies = [
         {
@@ -529,9 +514,7 @@ def deadline_risk(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/splits/verification")
 async def split_verification(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     works = db.query(Work).filter(Work.artist_id == artist_id).all()
     contracts = db.query(Contract).filter(Contract.artist_id == artist_id).all()
@@ -603,9 +586,7 @@ async def split_verification(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/splits/conflicts")
 def split_conflicts(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     rows = (
         db.query(Anomaly)
@@ -632,9 +613,7 @@ def split_conflicts(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/expected-value")
 def recovery_expected_value(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
@@ -663,9 +642,7 @@ def recovery_expected_value(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/funnel")
 def recovery_funnel(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
     claims = [
         {
@@ -687,9 +664,7 @@ def recovery_funnel(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/catalog/integrity")
 def catalog_integrity(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     works = [
         {
             "id": w.id,
@@ -718,9 +693,7 @@ def catalog_integrity(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/rate-benchmark-advanced")
 def rate_benchmark_advanced(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     events = [
         {
             "platform": e.platform,
@@ -739,9 +712,7 @@ def rate_benchmark_advanced(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/fraud-scan")
 def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     claims = [
         {
             "id": c.id,
@@ -760,9 +731,7 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/sla/status")
 def sla_status(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
@@ -773,9 +742,7 @@ def sla_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/heatmap")
 def underpayment_heatmap(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
@@ -787,9 +754,7 @@ def underpayment_heatmap(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/roi")
 def recovery_roi(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
@@ -801,9 +766,7 @@ def recovery_roi(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/recovery/reconstruct-historical")
 def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     events = [
         {
@@ -852,9 +815,7 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/attribution")
 def recovery_attribution(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
     claims = [
         {
@@ -873,9 +834,7 @@ def recovery_attribution(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/benchmarking")
 def artist_benchmarking(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     artists = db.query(Artist).all()
     peer_population = []
@@ -908,9 +867,7 @@ def artist_benchmarking(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/recovery/playbook")
 def recovery_playbook(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     queue = priority_queue(artist_id, db)
     deadline = deadline_risk(artist_id, db)
@@ -932,9 +889,7 @@ def recovery_playbook(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/ugc/monitor")
 async def ugc_monitor(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     monitor = UGCUsageMonitor()
     uses = await monitor.scan_for_uses(artist_id, days_back=30)
     return {
@@ -950,9 +905,7 @@ async def ugc_monitor(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/ugc/claim")
 async def ugc_claim(artist_id: str, use_data: dict, platform: str = "tiktok", db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     generator = UGCClaimGenerator(db)
     claim_id = await generator.create_claim(artist_id, platform, use_data)
     return inject_branding_metadata(
@@ -967,9 +920,7 @@ async def ugc_claim(artist_id: str, use_data: dict, platform: str = "tiktok", db
 
 @router.post("/{artist_id}/ugc/global-scan")
 async def ugc_global_scan(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     scanner = GlobalUGCScanner()
     uses = await scanner.scan_global_uses(artist_id)
     packets = [scanner.auto_generate_evidence_packet(u) for u in uses]
@@ -984,9 +935,7 @@ async def ugc_global_scan(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/recovery/ugc-auto-claim")
 async def ugc_auto_claim(artist_id: str, platform: str, use_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     use_data = {"use_id": use_id, "platform": platform, "views": 1000000, "url": f"https://example.com/{platform}/{use_id}"}
     claim_id = await UGCClaimGenerator(db).create_claim(artist_id, platform, use_data)
     return inject_branding_metadata(
@@ -1001,9 +950,7 @@ async def ugc_auto_claim(artist_id: str, platform: str, use_id: str, db: Session
 
 @router.post("/{artist_id}/recovery/touring-audit")
 async def touring_audit(artist_id: str, settlement_csv: str = "", merch_csv: str = "", db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     auditor = TouringRecoupmentAuditor(db)
     discrepancies = auditor.detect_settlement_discrepancies(settlement_csv, merch_csv)
     overages = auditor.analyze_recoupment_overages(artist_id)
@@ -1021,9 +968,7 @@ async def touring_audit(artist_id: str, settlement_csv: str = "", merch_csv: str
 
 @router.get("/{artist_id}/recovery/recoupment-deep-audit")
 def recoupment_deep_audit(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     payload = TouringRecoupmentAuditor(db).analyze_recoupment_overages(artist_id)
     return {
         "artist_id": artist_id,
@@ -1034,9 +979,7 @@ def recoupment_deep_audit(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/recovery/hiphop-brand-audit")
 async def hiphop_brand_audit(artist_id: str, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     auditor = HipHopBrandAuditor(db)
     rows = await auditor.scan_brand_deals_and_ugc(artist_id)
     claim_ids = [await auditor.auto_create_claim(artist_id, item) for item in rows]
@@ -1088,18 +1031,14 @@ def pooled_claim(artist_id: str, anomaly_ids: list[str], db: Session = Depends(g
 
 @router.post("/{artist_id}/recovery/discovery-rule")
 def run_discovery_rule(artist_id: str, anomaly: dict[str, Any], db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     result = DiscoveryRuleEngine(db=db).evaluate({**anomaly, "artist_id": artist_id})
     return inject_branding_metadata(db, {"artist_id": artist_id, **result})
 
 
 @router.post("/{artist_id}/recovery/black-box/train")
 def train_black_box_model(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     csv_path = str(payload.get("csv_path") or "")
     if csv_path:
@@ -1115,9 +1054,7 @@ def train_black_box_model(artist_id: str, payload: dict[str, Any], db: Session =
 
 @router.post("/{artist_id}/recovery/leakage-benchmark")
 def leakage_benchmark(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     engine = LeakageBenchmarkEngine(epsilon=float(payload.get("epsilon") or 1.0))
     client_profile = payload.get("client_profile") or {}
@@ -1128,9 +1065,7 @@ def leakage_benchmark(artist_id: str, payload: dict[str, Any], db: Session = Dep
 
 @router.post("/{artist_id}/recovery/society-signal")
 def ingest_society_signal(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
     feed = SocietySignalFeed()
@@ -1150,9 +1085,7 @@ def ingest_society_signal(artist_id: str, payload: dict[str, Any], db: Session =
 
 @router.post("/{artist_id}/claims/{claim_id}/evidence-package")
 def build_claim_evidence_package(artist_id: str, claim_id: str, payload: dict[str, Any] | None = None, db: Session = Depends(get_db)):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")

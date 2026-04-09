@@ -1,25 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+import type { Anomaly, RecoverabilityResult } from "@/shared/types";
 import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
-
-type AnomalyPayload = {
-  id: string;
-  artist_id: string;
-  subtype?: string;
-  category?: string;
-  severity?: string;
-  estimated_recoverable?: number;
-  created_at?: string;
-};
-
-type RecoverabilityPayload = {
-  black_box_expiration?: {
-    expiration_date?: string | null;
-  };
-  recoverability?: {
-    recoverability_class?: string;
-  };
-};
 
 type AnomalyDetailPageProps = {
   anomalyId: string;
@@ -29,8 +11,8 @@ export function AnomalyDetailPage({ anomalyId }: AnomalyDetailPageProps): JSX.El
   const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [anomaly, setAnomaly] = useState<AnomalyPayload | null>(null);
-  const [explain, setExplain] = useState<RecoverabilityPayload | null>(null);
+  const [anomaly, setAnomaly] = useState<Anomaly | null>(null);
+  const [explain, setExplain] = useState<RecoverabilityResult | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -41,13 +23,13 @@ export function AnomalyDetailPage({ anomalyId }: AnomalyDetailPageProps): JSX.El
         if (!anomalyResp.ok) {
           throw new Error(`Failed to load anomaly ${anomalyId}`);
         }
-        const anomalyData = (await anomalyResp.json()) as AnomalyPayload;
+        const anomalyData = (await anomalyResp.json()) as Anomaly;
 
-        let explainData: RecoverabilityPayload | null = null;
+        let explainData: RecoverabilityResult | null = null;
         if (anomalyData.artist_id) {
           const explainResp = await fetch(`${apiBase}/artists/${anomalyData.artist_id}/anomalies/${anomalyId}/explain`);
           if (explainResp.ok) {
-            explainData = (await explainResp.json()) as RecoverabilityPayload;
+            explainData = (await explainResp.json()) as RecoverabilityResult;
           }
         }
 

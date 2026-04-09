@@ -15,8 +15,9 @@ from XR7.models.identity_match import (
     IdentityDecisionStatus,
 )
 from XR7.models.statement import Statement
+from XR7.api.deps import get_artist_or_404
 from XR7.services.branding import inject_branding_metadata
-from XR7.services.identity_matching import apply_identity_decision, persist_identity_match
+from XR7.fingerprinting.matching.identity_matching import apply_identity_decision, persist_identity_match
 
 router = APIRouter(tags=["identity"])
 
@@ -33,9 +34,7 @@ class IdentityMatchRequest(BaseModel):
 
 
 def _artist_or_404(db: Session, artist_id: str) -> Artist:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     return artist
 
 

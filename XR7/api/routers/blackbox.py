@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -61,9 +62,7 @@ def list_blackbox_matches(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> BlackboxMatchListResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     q = db.query(BlackboxMatch).filter(BlackboxMatch.artist_id == artist_id)
     if status is not None:
@@ -94,9 +93,7 @@ def trigger_blackbox_scan(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> BlackboxScanTriggerResponse:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     try:
         from XR7.tasks.blackbox import scan_artist_blackbox

@@ -1,0 +1,275 @@
+{
+  "name": "XR7 — MLC Metadata Alignment Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 4
+            }
+          ]
+        }
+      },
+      "id": "trigger-daily",
+      "name": "Schedule Trigger (Daily 04:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/auth/login/artist",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "email", "value": "={{ $env.XR7_SERVICE_EMAIL }}" },
+            { "name": "password", "value": "={{ $env.XR7_SERVICE_PASSWORD }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "authenticate",
+      "name": "Authenticate",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $input.item.json.access_token;\nif (!token) throw new Error('Auth failed — check XR7_SERVICE_EMAIL / XR7_SERVICE_PASSWORD');\nreturn [{ json: { bearer_token: token } }];"
+      },
+      "id": "extract-token",
+      "name": "Extract Bearer Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $env.XR7_BASE_URL }}/catalog?misaligned=true&page=1&page_size=500",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fetch-misaligned-works",
+      "name": "Fetch Misaligned Works",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        }
+      },
+      "id": "check-misaligned",
+      "name": "Any Misaligned Works?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const token = $('Extract Bearer Token').item.json.bearer_token;\nconst works = $input.item.json.items || [];\nreturn works.map(work => ({\n  json: {\n    bearer_token: token,\n    iswc: work.iswc,\n    work_title: work.work_title,\n    artist_id: work.artist_id,\n    misalignment_type: work.misalignment_type\n  }\n}));"
+      },
+      "id": "expand-works",
+      "name": "Expand Work Alignment Tasks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.XR7_BASE_URL }}/catalog/align",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.bearer_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "iswc", "value": "={{ $json.iswc }}" },
+            { "name": "work_title", "value": "={{ $json.work_title }}" },
+            { "name": "artist_id", "value": "={{ $json.artist_id }}" },
+            { "name": "target_registry", "value": "mlc" }
+          ]
+        },
+        "options": {
+          "retry": {
+            "enabled": true,
+            "maxRetries": 2,
+            "waitBetweenRetries": 5000
+          }
+        }
+      },
+      "id": "align-work",
+      "name": "Align Work with MLC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [1560, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.aligned }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ]
+        }
+      },
+      "id": "check-aligned",
+      "name": "Aligned Successfully?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1780, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate alignment results for summary report\nconst allResults = $input.all();\nconst aligned = allResults.filter(r => r.json.aligned === true);\nconst failed = allResults.filter(r => r.json.aligned !== true);\nreturn [{\n  json: {\n    total_processed: allResults.length,\n    aligned_count: aligned.length,\n    failed_count: failed.length,\n    failed_iswcs: failed.map(r => r.json.iswc)\n  }\n}];"
+      },
+      "id": "aggregate-results",
+      "name": "Aggregate Alignment Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2000, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "conditions": [
+            {
+              "leftValue": "={{ $json.failed_count }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        }
+      },
+      "id": "check-failures",
+      "name": "Any Failures?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2220, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SLACK_WEBHOOK_URL }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=:warning: *XR7 MLC Alignment — Failures*\nProcessed: {{ $json.total_processed }} | Aligned: {{ $json.aligned_count }} | Failed: {{ $json.failed_count }}\nFailed ISWCs: {{ $json.failed_iswcs.join(', ') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "slack-failure-alert",
+      "name": "Slack — Alignment Failures",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [2440, 160]
+    },
+    {
+      "parameters": {
+        "jsCode": "// No misaligned works — log success and exit cleanly\nconsole.log('MLC Alignment: no misaligned works found, skipping');\nreturn [{ json: { status: 'no_work_needed' } }];"
+      },
+      "id": "no-work-needed",
+      "name": "No Work Needed — Exit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1340, 460]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (Daily 04:00)": {
+      "main": [[{ "node": "Authenticate", "type": "main", "index": 0 }]]
+    },
+    "Authenticate": {
+      "main": [[{ "node": "Extract Bearer Token", "type": "main", "index": 0 }]]
+    },
+    "Extract Bearer Token": {
+      "main": [[{ "node": "Fetch Misaligned Works", "type": "main", "index": 0 }]]
+    },
+    "Fetch Misaligned Works": {
+      "main": [[{ "node": "Any Misaligned Works?", "type": "main", "index": 0 }]]
+    },
+    "Any Misaligned Works?": {
+      "main": [
+        [{ "node": "Expand Work Alignment Tasks", "type": "main", "index": 0 }],
+        [{ "node": "No Work Needed — Exit", "type": "main", "index": 0 }]
+      ]
+    },
+    "Expand Work Alignment Tasks": {
+      "main": [[{ "node": "Align Work with MLC", "type": "main", "index": 0 }]]
+    },
+    "Align Work with MLC": {
+      "main": [[{ "node": "Aligned Successfully?", "type": "main", "index": 0 }]]
+    },
+    "Aligned Successfully?": {
+      "main": [
+        [{ "node": "Aggregate Alignment Results", "type": "main", "index": 0 }],
+        [{ "node": "Aggregate Alignment Results", "type": "main", "index": 0 }]
+      ]
+    },
+    "Aggregate Alignment Results": {
+      "main": [[{ "node": "Any Failures?", "type": "main", "index": 0 }]]
+    },
+    "Any Failures?": {
+      "main": [
+        [{ "node": "Slack — Alignment Failures", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "errorWorkflow": "XR7 — Error Handler"
+  },
+  "tags": ["xr7", "mlc", "metadata", "catalog"],
+  "meta": {
+    "description": "Daily MLC metadata alignment. Fetches works with misaligned catalog data and submits them for MLC registry alignment. Reports failures to Slack.",
+    "xr7_api_version": "2.0",
+    "required_env": [
+      "XR7_BASE_URL",
+      "XR7_SERVICE_EMAIL",
+      "XR7_SERVICE_PASSWORD",
+      "SLACK_WEBHOOK_URL"
+    ]
+  }
+}

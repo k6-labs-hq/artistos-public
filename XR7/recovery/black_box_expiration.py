@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Any
 
+from shared.utils.numbers import safe_float as _safe_float
+
 
 @dataclass(frozen=True)
 class BlackBoxRule:
@@ -74,13 +76,6 @@ def _add_days(dt: datetime, days: int) -> datetime:
 
 def _clamp(value: float, low: float = 0.0, high: float = 1.0) -> float:
     return max(low, min(high, value))
-
-
-def _safe_float(value: Any, default: float = 0.0) -> float:
-    try:
-        return float(value)
-    except (TypeError, ValueError):
-        return default
 
 
 def _quantile(sorted_values: list[float], q: float) -> float:

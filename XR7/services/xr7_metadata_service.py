@@ -34,7 +34,7 @@ def suggest_metadata_repairs(
             proposal: dict[str, object] | None = None
             if track.title != track.title.strip():
                 proposal = {
-                    "entity": "track",
+                    "entity": "recording",
                     "entity_id": track.id,
                     "field": "title",
                     "current_value": track.title,
@@ -44,7 +44,7 @@ def suggest_metadata_repairs(
                 }
             elif track.metadata_quality_score < 0.6:
                 proposal = {
-                    "entity": "track",
+                    "entity": "recording",
                     "entity_id": track.id,
                     "field": "metadata_quality_score",
                     "current_value": track.metadata_quality_score,
@@ -111,7 +111,7 @@ def apply_metadata_repairs(
             skipped_count += 1
             continue
         entity, entity_id = parts
-        if entity != "track":
+        if entity != "recording":
             skipped_count += 1
             continue
 

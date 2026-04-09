@@ -21,6 +21,7 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.statement import Statement
 from XR7.models.tvfilm_portfolio_job import TVFilmPortfolioJob, TVFilmPortfolioJobStatus
+from XR7.api.deps import get_artist_or_404
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.tvfilm_compensation_engine import calculate_expected_compensation
@@ -123,9 +124,7 @@ class TVFilmTrustExplainResponse(BaseModel):
 
 
 def _artist_or_404(db: Session, artist_id: str) -> Artist:
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
     return artist
 
 
