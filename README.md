@@ -9,7 +9,7 @@
 `████████████████████` **97%** — 2026-04-09
 
 | Signal | Detail | Weight |
-|--------|--------|--------|
+| ------ | ------ | ------ |
 | Market Readiness | 18 ✅  4 🔑  0 ⚠️  (91% of 22 components) | 45% |
 | Test Coverage | 106 test files / 1,348+ test functions | 25% |
 | Documentation | 72 docs complete | 20% |
@@ -40,7 +40,7 @@
 
 XR7 Engine 2 detects, recovers, and prevents earning discrepancies for artists across music royalties, TV/Film residuals, touring settlements, sync licensing, brand partnerships, and platform payments.
 
-```
+```text
 [Ingest]  Statement upload (CSV/TSV/XLSX, 15+ named formats)
     ↓
 [Normalise]  ingestion/parser → UniversalRoyaltyEvent
@@ -63,6 +63,7 @@ XR7 Engine 2 detects, recovers, and prevents earning discrepancies for artists a
 ```
 
 **Key characteristics:**
+
 - Multi-tenant: tenant namespace isolated via JWT `tenant_id` claim
 - Multi-vertical: Music and TV/Film workflows share infrastructure; role-specific rules diverge at the anomaly and claim layers
 - ML-augmented: confidence scoring, isolation-forest anomaly detection, earnings forecasting built into the core pipeline
@@ -74,7 +75,7 @@ XR7 Engine 2 detects, recovers, and prevents earning discrepancies for artists a
 ## 2. Domain Descriptions
 
 | Domain | Package | Responsibility |
-|--------|---------|----------------|
+| ------ | ------- | -------------- |
 | **API Gateway** | `XR7/api/` | FastAPI app, 75 routers (436 paths), middleware, auth deps |
 | **Core Logic** | `XR7/core/` | Pure business rules: claims FSM, evidence crypto, confidence scoring, variance row modelling. No ORM. No service imports. |
 | **Models** | `XR7/models/` | 69 SQLAlchemy 2.0 `Mapped` ORM models — canonical data definitions |
@@ -105,7 +106,7 @@ XR7 Engine 2 detects, recovers, and prevents earning discrepancies for artists a
 
 ## 3. Folder Structure
 
-```
+```text
 ArtistOS/
 ├── XR7/                        # Main source — 428 Python files
 │   ├── api/
@@ -168,13 +169,14 @@ ArtistOS/
 These conventions are enforced by `scripts/check_naming_conventions.py` (runs in CI):
 
 | Term | Correct | Forbidden |
-|------|---------|-----------|
+| ---- | ------- | --------- |
 | Work name field | `work_title` | ~~`track_title`~~ |
 | Work count field | `work_count` | ~~`track_count`~~ |
 | Entity type value | `'recording'` | ~~`'track'`~~ |
 | JSON entity key | `"entity": "recording"` | ~~`"entity": "track"`~~ |
 
 **Python code standards:**
+
 - Models use SQLAlchemy 2.0 `Mapped[T]` annotations (no legacy `Column()`)
 - Schemas use Pydantic v2 `model_config = ConfigDict(from_attributes=True, ...)`
 - IDs are UUID strings (`str` type, not `uuid.UUID`)
@@ -182,6 +184,7 @@ These conventions are enforced by `scripts/check_naming_conventions.py` (runs in
 - Timezone-aware datetimes required everywhere (`datetime.now(timezone.utc)`)
 
 **Domain boundary rules** (enforced by `scripts/check_domain_boundaries.py`):
+
 - `XR7/core/` — may NOT import from `services`, `api`, `recovery`, `fingerprinting`, `ml`, or `sqlalchemy`
 - `shared/utils/` — may NOT import from `XR7.*`
 - `XR7/api/routers/` — **target state**: all DB access via service layer (active refactor: v2.1)
@@ -191,6 +194,7 @@ These conventions are enforced by `scripts/check_naming_conventions.py` (runs in
 ## 5. Dev Workflow
 
 ### Prerequisites
+
 - Python 3.12+
 - PostgreSQL 16
 - Redis 7
@@ -262,7 +266,7 @@ pytest -m "not integration"
 **Test layout:**
 
 | Area | Test Files | Coverage Notes |
-|------|-----------|----------------|
+| ---- | --------- | -------------- |
 | `XR7/core/` | 4 files | Full (state machine, evidence crypto, scoring, variance) |
 | API routers | 15+ files | Major CRUD paths; TV/Film and VIP routers included |
 | `XR7/fingerprinting/` | 15 files | Unit + integration for all adapters |
@@ -279,7 +283,7 @@ pytest -m "not integration"
 Six production-ready n8n workflow JSON templates live in `docs/n8n/workflows/`:
 
 | File | Purpose |
-|------|---------|
+| ---- | ------- |
 | `artist_onboarding.json` | Automated artist signup → connector link → first statement ingest |
 | `statement_ingestion.json` | Scheduled statement fetch + normalisation trigger |
 | `anomaly_alert.json` | Anomaly webhook → analyst Slack alert → ticket creation |
@@ -303,7 +307,7 @@ Six production-ready n8n workflow JSON templates live in `docs/n8n/workflows/`:
 ### Core Endpoint Groups
 
 | Group | Prefix | Description |
-|-------|--------|-------------|
+| ----- | ------ | ----------- |
 | Artists | `/artists/` | CRUD, onboarding, recovery dashboard |
 | Statements | `/statements/` | Upload, parse, normalise |
 | Anomalies | `/anomalies/` | Scan, list, review |
@@ -318,6 +322,7 @@ Six production-ready n8n workflow JSON templates live in `docs/n8n/workflows/`:
 | Webhooks | `/webhooks/` | Inbound partner/DSP event hooks |
 
 ### n+1 Safety Note
+
 Endpoints that return collections (e.g. `GET /artists/{id}/works`) use `joinedload` to avoid n+1 queries. When adding new collection endpoints, always profile with `SQLALCHEMY_ECHO=1`.
 
 ---
@@ -379,7 +384,7 @@ make check       # runs check_naming_conventions.py + check_domain_boundaries.py
 ## 10. Production-Readiness Checklist
 
 | Category | Item | Status |
-|----------|------|--------|
+| -------- | ---- | ------ |
 | **Infrastructure** | EKS manifests + Kustomize overlays | ✅ |
 | | Terraform AWS module (VPC, RDS, ElastiCache, S3, KMS) | ✅ |
 | | Autoscaling (HPA + cluster autoscaler) | ✅ |
@@ -417,7 +422,7 @@ make check       # runs check_naming_conventions.py + check_domain_boundaries.py
 ## 11. Market Readiness
 
 | Component | Status | Notes |
-|-----------|--------|-------|
+| --------- | ------ | ----- |
 | Artist Recovery Dashboard | ✅ Ready | Leakage, in-pursuit totals, deposits received, calibration health |
 | Royalty Estimator Widget | ✅ Ready | MFA-gated, lead capture, results email, CTA |
 | Earnings Engine | ✅ Ready | Full historical reconstruction + real-time calculation |
@@ -447,7 +452,7 @@ make check       # runs check_naming_conventions.py + check_domain_boundaries.py
 ## 12. Glossary
 
 | Term | Definition |
-|------|-----------|
+| ---- | ---------- |
 | **Work** | A musical composition or TV/Film production work. Field: `work_title` (not `track_title`). |
 | **Recording** | A specific recorded version of a Work. `entity_type = 'recording'` (not `'track'`). |
 | **UniversalRoyaltyEvent** | The canonical normalised row after ingestion — every statement row maps to one or more `UniversalRoyaltyEvent` records. |
@@ -496,7 +501,7 @@ make check
 ## Key Documentation
 
 | Document | Location |
-|----------|---------|
+| -------- | -------- |
 | Final Architecture Summary | [docs/final_architecture_summary.md](docs/final_architecture_summary.md) |
 | Handoff Packet | [docs/HANDOFF.md](docs/HANDOFF.md) |
 | API Maintenance Guide | [docs/openapi_maintenance_guide.md](docs/openapi_maintenance_guide.md) |
