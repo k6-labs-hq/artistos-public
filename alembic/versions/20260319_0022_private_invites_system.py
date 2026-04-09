@@ -1,6 +1,6 @@
 """Create invites system tables.
 
-Revision ID: 20260319_0022_private_invites_system
+Revision ID: 20260319_0022
 Revises: 20260318_0021_tvfilm_enterprise_foundation
 Create Date: 2026-03-19 00:00:00.000000
 
@@ -11,7 +11,7 @@ from sqlalchemy.dialects import postgresql
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "20260319_0022_private_invites_system"
+revision = "20260319_0022"
 down_revision = "20260318_0021"
 branch_labels = None
 depends_on = None

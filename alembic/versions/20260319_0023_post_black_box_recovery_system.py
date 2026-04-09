@@ -1,7 +1,7 @@
 """Post black-box recovery system schema extensions.
 
 Revision ID: 20260319_0023
-Revises: 20260319_0022_private_invites_system
+Revises: 20260319_0022
 Create Date: 2026-03-19
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 revision = "20260319_0023"
-down_revision = "20260319_0022_private_invites_system"
+down_revision = "20260319_0022"
 branch_labels = None
 depends_on = None
 
