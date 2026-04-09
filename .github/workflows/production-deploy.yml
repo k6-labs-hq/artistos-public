@@ -88,6 +88,9 @@ jobs:
     name: Docker Build & Scan
     needs: full-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     outputs:
       image_tag: ${{ steps.meta.outputs.tags }}
       image_digest: ${{ steps.push.outputs.digest }}
