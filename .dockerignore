@@ -1,0 +1,41 @@
+# Version control
+.git
+.gitignore
+
+# Frontend — node_modules contains Go binaries (esbuild) that trigger CVEs
+# The frontend is a separate SPA; only the built dist/ is needed if served here
+frontend/node_modules
+
+# Python dev/test artifacts
+__pycache__
+**/__pycache__
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache
+.ruff_cache
+.mypy_cache
+htmlcov
+.coverage
+coverage.xml
+
+# Local env and secrets
+.env
+.env.*
+!.env.example
+.venv
+venv
+
+# IDE
+.vscode
+.idea
+
+# Non-runtime files
+docs/
+artifacts/
+sdk/
+infrastructure/
+tests/
+
+# CI
+.github/
