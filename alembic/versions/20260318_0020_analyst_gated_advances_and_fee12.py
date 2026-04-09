@@ -46,7 +46,7 @@ def upgrade() -> None:
     if _table_exists("artists") and _column_exists("artists", "contingency_fee_percent"):
         op.execute(
             "UPDATE artists SET contingency_fee_percent = 12.0 "
-            "WHERE is_founder = 1 AND contingency_fee_percent IS NOT NULL AND contingency_fee_percent > 12.0"
+            "WHERE is_founder IS TRUE AND contingency_fee_percent IS NOT NULL AND contingency_fee_percent > 12.0"
         )
 
     if not _table_exists("advance_opportunities"):

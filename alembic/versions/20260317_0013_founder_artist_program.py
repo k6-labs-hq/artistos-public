@@ -76,7 +76,7 @@ def upgrade() -> None:
         op.create_check_constraint(
             "ck_artists_founder_fee_max",
             "artists",
-            "is_founder = 0 OR contingency_fee_percent <= 10",
+            "(NOT is_founder) OR contingency_fee_percent <= 10",
         )
 
     if not _table_exists("platform_config"):
