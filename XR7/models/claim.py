@@ -48,7 +48,7 @@ class Claim(Base):
     trolley_local_currency: Mapped[str | None] = mapped_column(String, nullable=True)
     payout_retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     payout_failure_reason: Mapped[str | None] = mapped_column(String, nullable=True)
-    evidence: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    evidence: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     payer_name: Mapped[str | None] = mapped_column(String, nullable=True)
     payer_contact: Mapped[str | None] = mapped_column(String, nullable=True)
     original_due_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -98,7 +98,7 @@ class ClaimSchema(BaseModel):
     trolley_local_currency: str | None = None
     payout_retry_count: int = 0
     payout_failure_reason: str | None = None
-    evidence: dict | None = None
+    evidence: dict[str, Any] | None = None
     payer_name: str | None = None
     payer_contact: str | None = None
     original_due_date: datetime | None = None

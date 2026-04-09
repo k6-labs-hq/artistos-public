@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 
 from sqlalchemy import JSON, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
@@ -20,5 +21,5 @@ class AgentHandoffRecord(Base):
     to_agent: Mapped[str] = mapped_column(String, nullable=False)
     readiness_score: Mapped[float] = mapped_column(nullable=False)
     readiness_threshold: Mapped[float] = mapped_column(nullable=False)
-    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)

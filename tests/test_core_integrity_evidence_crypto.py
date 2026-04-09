@@ -355,3 +355,119 @@ class TestVerifyPacketIntegrity:
         assert "packet_hash" in result
         assert "chain_hash" in result
         assert "prior_packet_hash" in result
+
+
+# ---------------------------------------------------------------------------
+# RSA sign / verify round-trip
+# ---------------------------------------------------------------------------
+
+# Minimal 2048-bit RSA key pair for testing only — never used in production.
+_TEST_RSA_PRIVATE_KEY = """\
+-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCqbwdPM1DqGBUV
+d3EF6Sn1mAmaWbhDLckQdMTdhOBgw5NFN5Kv4g0BcQJSIwyFJwP+Xy4A2VeEHQ3J
+zJSSS7lZxbOYHaYlwzCoiKMPnydm8kf+g1wDJJukeR2718Itla9EZ/m2jZ2zKFpo
+1KNXH3h3zUvtOB56KeKdAPXRqBh3HkwPHN01sjiOO/0LwhzCEXUmHFHqDeEFPs/p
+Znki+x2MYVwGG9Qr17qvI6lGnLpKWmeR0yFDZZJrgH0GhkGb3vVST0ouXX5DnXBq
+UfHLmJty6Uz/AH8I61+Ah17srAbAn63R91mtuWJEbNDcYFHVcOkZ6RPo6AcOdD6J
+VfcpUi+rAgMBAAECggEAP7YfomDJh6kXAJ5U1uPRtqhuNpABjMNp3Uf5a+HHSwTx
+YbejkzJKsFZBitjlTkVGfemwtcqJp66AwAZFJ+c8061PNLcorAcqgmYJpsZVIWvC
+tAcA93/Q2wwXrGe8g/PnwAeqVq7b2+Ri37tVkDUIgKhzEKug4QQVXaHFQum2s5g3
+QsMifMiHN1O0pcAahsOi1MjUZkbNw+gxq6erWT/vaZd9RWBJAt1iv0XzWFI5bGFI
+dEsRWfMsL0HqBbIjX5xHZ3kZFU1vzQGWUjO4/uZVAE6OQw0fvNRZ+r/L4v483m4g
+xX15nvpjBPFTkRpCS4QcrBVElQGCG7RlHRQJx2zzqQKBgQDum38Df19iZnWZPWIU
+EVbI+V2hwV797OMzXHbIcVUMebI4NcrCQYoCo+ZS+oJMkcyrPInPGx40bUe85ks5
+92kO/gkmvi49sbpxm5bphyx9LQl8toIzTFXEw+v7raNuqU9o2wGUaUjArwkTZ8r6
+n+gzK0ukJ85bjN3ZnOr4kXCA7wKBgQC222KxmQiipC0Li7M4AbMvP2vn784Oprs/
+uDbUaS3ZjL6jRulgYNZmtZQaPeAqVjpR3ls0HXf3SAZZnw2oZhIeQctPb72CZYEH
+W3vPsrkMPbUchAUDBQzS3rH+WVVbXNKyX7vRJ26tW0mMbBxXw+nTUwDIVL/bKell
+UM3GNBUFBQKBgB2WvM5zOiHasNSa7xGsAMYVXk4Ty7LTcG1LFxPOMgzE/pvH1+f0
+9qdTKdm6ZPQX1Hibnj9HjpxTvOSo7kU28BlC2WGrjdJqusMh1zoIYDT5o8aKX2T7
+H1uyLA5evviXGFjZZ72+vJ3gVtDIOzyPHd1SjiPCJ+3kbxJwShce+gOTAoGACBGu
+TT//jY3JHxVPF02b5p3Z2SZP5X2eDbXHVaA+kbcQQoxCiCo9y9J/cpkAZ13evPYe
++DHEtXjMLvBB3giDDCrDGgJITpTEGNsEn6m3WL7wWw3IWtXCNxv0ptCyX5G9CnoH
+A7fFvoikujmbFpRioRyskCqNPNKgpgPm0LRDqTECgYEAnUP4Vgz8gwNt821XwZVS
+GF3ZbPgzP4qzW52p7LGJ11uRBj9o1HQ60GNU1/5vY2Ere4QQBSml5uqKOcjOqUAJ
+DCLQkE71mnVQHlVGfftjoUFcQL/g87rw0QhFfMNyR9w08ga7XbfI1ZpYbRuDAm8M
+kwHjWfgd4sTh01lO0TYFv1A=
+-----END PRIVATE KEY-----
+"""
+
+_TEST_RSA_PUBLIC_KEY = """\
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqm8HTzNQ6hgVFXdxBekp
+9ZgJmlm4Qy3JEHTE3YTgYMOTRTeSr+INAXECUiMMhScD/l8uANlXhB0NycyUkku5
+WcWzmB2mJcMwqIijD58nZvJH/oNcAySbpHkdu9fCLZWvRGf5to2dsyhaaNSjVx94
+d81L7TgeeininQD10agYdx5MDxzdNbI4jjv9C8IcwhF1JhxR6g3hBT7P6WZ5Ivsd
+jGFcBhvUK9e6ryOpRpy6SlpnkdMhQ2WSa4B9BoZBm971Uk9KLl1+Q51walHxy5ib
+culM/wB/COtfgIde7KwGwJ+t0fdZrbliRGzQ3GBR1XDpGekT6OgHDnQ+iVX3KVIv
+qwIDAQAB
+-----END PUBLIC KEY-----
+"""
+
+
+class TestRsaSignVerify:
+    """Tests for openssl_rsa_sign / openssl_rsa_verify using a test key pair."""
+
+    def test_rsa_sign_returns_base64_string(self):
+        from XR7.core.integrity.evidence_crypto import openssl_rsa_sign
+        sig = openssl_rsa_sign("test_message", _TEST_RSA_PRIVATE_KEY)
+        import base64
+        # Must be valid base64
+        decoded = base64.b64decode(sig.encode("ascii"), validate=True)
+        assert len(decoded) > 0
+
+    def test_rsa_verify_accepts_valid_signature(self):
+        from XR7.core.integrity.evidence_crypto import openssl_rsa_sign, openssl_rsa_verify
+        message = "chain_hash_for_rsa_test"
+        sig = openssl_rsa_sign(message, _TEST_RSA_PRIVATE_KEY)
+        assert openssl_rsa_verify(message, sig, _TEST_RSA_PUBLIC_KEY) is True
+
+    def test_rsa_verify_rejects_wrong_message(self):
+        from XR7.core.integrity.evidence_crypto import openssl_rsa_sign, openssl_rsa_verify
+        sig = openssl_rsa_sign("original_message", _TEST_RSA_PRIVATE_KEY)
+        assert openssl_rsa_verify("tampered_message", sig, _TEST_RSA_PUBLIC_KEY) is False
+
+    def test_rsa_verify_rejects_invalid_base64(self):
+        from XR7.core.integrity.evidence_crypto import openssl_rsa_verify
+        # Non-base64 signature should return False, not raise
+        assert openssl_rsa_verify("message", "not!valid!base64!!!", _TEST_RSA_PUBLIC_KEY) is False
+
+    def test_seal_packet_uses_rsa_when_mode_is_rsa_and_key_is_present(self, monkeypatch):
+        monkeypatch.setenv("XR7_EVIDENCE_SIGNING_MODE", "rsa")
+        monkeypatch.setenv("XR7_EVIDENCE_PRIVATE_KEY_PEM", _TEST_RSA_PRIVATE_KEY)
+        integrity = seal_packet({"amount": 100.0}, None)
+        assert integrity["signature_algorithm"] == "RSA-SHA256"
+        assert integrity["key_source"] == "env:XR7_EVIDENCE_PRIVATE_KEY_PEM"
+
+    def test_seal_packet_falls_back_to_hmac_when_rsa_key_missing(self, monkeypatch):
+        monkeypatch.setenv("XR7_EVIDENCE_SIGNING_MODE", "rsa")
+        monkeypatch.delenv("XR7_EVIDENCE_PRIVATE_KEY_PEM", raising=False)
+        integrity = seal_packet({"amount": 100.0}, None)
+        # Falls back silently to HMAC
+        assert integrity["signature_algorithm"] == "HMAC-SHA256"
+
+    def test_verify_rsa_signed_packet_is_valid(self, monkeypatch):
+        monkeypatch.setenv("XR7_EVIDENCE_SIGNING_MODE", "rsa")
+        monkeypatch.setenv("XR7_EVIDENCE_PRIVATE_KEY_PEM", _TEST_RSA_PRIVATE_KEY)
+        monkeypatch.setenv("XR7_EVIDENCE_PUBLIC_KEY_PEM", _TEST_RSA_PUBLIC_KEY)
+        base = {"artist_id": "rsa-artist", "amount": 500.0}
+        integrity = seal_packet(base, None)
+        packet = {**base, "integrity": integrity}
+        result = verify_packet_integrity(packet)
+        assert result["valid"] is True
+        assert result["signature_mode"] == "rsa"
+
+    def test_verify_rsa_packet_without_public_key_is_invalid(self, monkeypatch):
+        monkeypatch.setenv("XR7_EVIDENCE_SIGNING_MODE", "rsa")
+        monkeypatch.setenv("XR7_EVIDENCE_PRIVATE_KEY_PEM", _TEST_RSA_PRIVATE_KEY)
+        monkeypatch.delenv("XR7_EVIDENCE_PUBLIC_KEY_PEM", raising=False)
+        base = {"artist_id": "rsa-artist", "amount": 500.0}
+        integrity = seal_packet(base, None)
+        # Manually mark as RSA-SHA256 so verify takes the RSA path
+        integrity["signature_algorithm"] = "RSA-SHA256"
+        packet = {**base, "integrity": integrity}
+        result = verify_packet_integrity(packet)
+        # No public key → signature_valid is False
+        assert result["checks"]["signature_valid"] is False
+

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from sqlalchemy import JSON, DateTime, Index, String, Text, func
@@ -100,7 +100,7 @@ class Invite(Base):
     is_single_use_consumed: Mapped[bool] = mapped_column(default=False)
     redemption_ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)  # IPv4 or IPv6
 
-    custom_metadata: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)  # Custom tracking data
+    custom_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Custom tracking data
 
     __table_args__ = (
         Index("ix_invites_token_status", "invite_token", "status"),
@@ -130,7 +130,7 @@ class InviteEvent(Base):
     invite_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
 
     event_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # "created", "sent", "opened", "redeemed", etc.
-    event_data: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    event_data: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -163,7 +163,7 @@ class InviteAnalytics(Base):
     redemption_rate: Mapped[Optional[float]] = mapped_column(nullable=True)  # redeemed / opened
 
     # Role breakdown (JSON)
-    role_distribution: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    role_distribution: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
@@ -263,4 +263,4 @@ class InviteAnalyticsSchema(BaseModel):
     invites_redeemed: int
     open_rate: Optional[float]
     redemption_rate: Optional[float]
-    role_distribution: Optional[dict]
+    role_distribution: Optional[dict[str, Any]]

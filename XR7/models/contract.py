@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import date
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, Date, Enum, ForeignKey, String
@@ -28,7 +29,7 @@ class Contract(Base):
     counterparty: Mapped[str] = mapped_column(String, nullable=False)
     effective_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     expiry_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    terms: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    terms: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     territory: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
@@ -41,5 +42,5 @@ class ContractSchema(BaseModel):
     counterparty: str
     effective_date: date | None = None
     expiry_date: date | None = None
-    terms: dict | None = None
+    terms: dict[str, Any] | None = None
     territory: str | None = None

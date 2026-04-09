@@ -1,6 +1,7 @@
 import enum
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Boolean, DateTime, Enum, Float, ForeignKey, Integer, String
@@ -84,7 +85,7 @@ class AnomalySchema(BaseModel):
     legal_basis: str | None = None
     redistribution_risk_score: int | None = None
     trust_score: float | None = None
-    urgent_flag: bool = False
+    urgent_flag: bool | None = False
     created_at: datetime
 
 
@@ -103,7 +104,7 @@ class BlackBoxExpirationSchema(BaseModel):
     p90_expiration_date: str | None = None
     redistribution_risk_score: int | None = None
     probability_narrative: str | None = None
-    freeze_event: dict | None = None
+    freeze_event: dict[str, Any] | None = None
     model_version: str | None = None
 
 
@@ -119,17 +120,17 @@ class RecoverabilityPayloadSchema(BaseModel):
     black_box_expiration: BlackBoxExpirationSchema
     recoverability: RecoverabilityClassificationSchema
     legal_basis: str
-    contract_recoverability: dict | None = None
+    contract_recoverability: dict[str, Any] | None = None
     recoverability_explainer_line: str | None = None
     claim_draft_allowed: bool
 
 
 class AnomalyWithRecoverabilitySchema(AnomalySchema):
-    recovery_probability: dict
+    recovery_probability: dict[str, Any]
     black_box_expiration: BlackBoxExpirationSchema
     recoverability: RecoverabilityClassificationSchema
     legal_basis: str
-    contract_recoverability: dict | None = None
+    contract_recoverability: dict[str, Any] | None = None
     recoverability_explainer_line: str | None = None
     redistribution_risk_score: int | None = None
     trust_score: float | None = None
@@ -139,7 +140,7 @@ class AnomalyWithRecoverabilitySchema(AnomalySchema):
 
 class DetectAnomaliesResponseSchema(BaseModel):
     artist_id: str
-    detected: list[dict]
+    detected: list[dict[str, Any]]
 
 
 class AnomalyRecoveryProbabilityResponseSchema(BaseModel):
@@ -151,7 +152,7 @@ class AnomalyRecoveryProbabilityResponseSchema(BaseModel):
     black_box_expiration: BlackBoxExpirationSchema
     recoverability: RecoverabilityClassificationSchema
     legal_basis: str
-    contract_recoverability: dict | None = None
+    contract_recoverability: dict[str, Any] | None = None
     recoverability_explainer_line: str | None = None
     redistribution_risk_score: int | None = None
     trust_score: float | None = None
@@ -165,7 +166,7 @@ class AnomalyExplainWithRecoverabilitySchema(BaseModel):
     black_box_expiration: BlackBoxExpirationSchema | None = None
     recoverability: RecoverabilityClassificationSchema | None = None
     legal_basis: str | None = None
-    contract_recoverability: dict | None = None
+    contract_recoverability: dict[str, Any] | None = None
     recoverability_explainer_line: str | None = None
     redistribution_risk_score: int | None = None
     trust_score: float | None = None

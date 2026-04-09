@@ -7,12 +7,14 @@ they can be driven by n8n, LangGraph, or unit tests without a DB session.
 """
 from __future__ import annotations
 
+from typing import Any
+
 #: Multiplier applied to reported payout to produce the expected payout.
 #: Set to 1.2 (i.e. 20% above reported) as the baseline for variance detection.
 EXPECTED_PAYOUT_UPLIFT: float = 1.2
 
 
-def event_to_variance_row(quantity: float, unit_value: float) -> dict:
+def event_to_variance_row(quantity: float, unit_value: float) -> dict[str, Any]:
     """Build a variance-detection input row from raw event values.
 
     Parameters
@@ -45,7 +47,7 @@ def event_to_universal_row(
     currency: str = "USD",
     territory: str | None = None,
     event_id: str | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Build a universal-event row ready for ``UniversalEventService.persist_many()``.
 
     All parameters are plain primitives — extract them from your ORM objects

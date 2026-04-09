@@ -1,3 +1,5 @@
+from collections.abc import Generator
+from typing import Any
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
@@ -7,7 +9,7 @@ from xr7_common.settings import settings
 DATABASE_URL = settings.database_url
 
 
-def _engine_connect_args(url: str) -> dict:
+def _engine_connect_args(url: str) -> dict[str, object]:
     if url.startswith("sqlite"):
         return {"check_same_thread": False}
     return {}
@@ -20,7 +22,7 @@ class Base(DeclarativeBase):
     """Declarative base for all SQLAlchemy models."""
 
 
-def get_db():
+def get_db() -> Generator[Any, None, None]:
     db = SessionLocal()
     try:
         yield db

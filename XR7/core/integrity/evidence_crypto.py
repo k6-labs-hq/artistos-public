@@ -22,12 +22,13 @@ import os
 import subprocess
 import tempfile
 from datetime import datetime, timezone
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # Low-level primitives
 # ---------------------------------------------------------------------------
 
-def canonicalize(data: dict) -> bytes:
+def canonicalize(data: dict[str, Any]) -> bytes:
     """Stable JSON serialisation used as the input to all hash operations."""
     return json.dumps(data, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
@@ -36,7 +37,7 @@ def sha256_hex(raw: bytes) -> str:
     return hashlib.sha256(raw).hexdigest()
 
 
-def compute_packet_hash(packet_data: dict) -> str:
+def compute_packet_hash(packet_data: dict[str, Any]) -> str:
     """SHA-256 of the canonical JSON representation of *packet_data*."""
     return sha256_hex(canonicalize(packet_data))
 
@@ -123,7 +124,7 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
 # High-level packet helpers
 # ---------------------------------------------------------------------------
 
-def seal_packet(base_packet: dict, prior_packet_hash: str | None) -> dict:
+def seal_packet(base_packet: dict[str, Any], prior_packet_hash: str | None) -> dict[str, Any]:
     """Compute and return the integrity block for *base_packet*.
 
     The returned dict is meant to be attached as ``packet["integrity"]``.
@@ -164,7 +165,7 @@ def seal_packet(base_packet: dict, prior_packet_hash: str | None) -> dict:
     }
 
 
-def verify_packet_integrity(packet: dict) -> dict:
+def verify_packet_integrity(packet: dict[str, Any]) -> dict[str, Any]:
     """Verify all integrity fields of a sealed evidence packet.
 
     Returns a dict with ``valid: bool`` and a ``checks`` breakdown.

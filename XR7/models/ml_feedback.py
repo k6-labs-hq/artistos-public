@@ -3,6 +3,7 @@ from __future__ import annotations
 import enum
 import uuid
 from datetime import datetime, timezone
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, DateTime, Float, Integer, String
@@ -38,7 +39,7 @@ class MLFeedbackEvent(Base):
     outcome: Mapped[str | None] = mapped_column(String, nullable=True)
     estimated_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     actual_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
-    payload: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    payload: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 
@@ -75,7 +76,7 @@ class MLFeedbackEventCreate(BaseModel):
     outcome: str | None = None
     estimated_amount: float | None = None
     actual_amount: float | None = None
-    payload: dict | None = None
+    payload: dict[str, Any] | None = None
 
 
 class MLFeedbackEventSchema(BaseModel):
@@ -97,7 +98,7 @@ class MLFeedbackEventSchema(BaseModel):
     outcome: str | None = None
     estimated_amount: float | None = None
     actual_amount: float | None = None
-    payload: dict | None = None
+    payload: dict[str, Any] | None = None
     created_at: datetime
 
 

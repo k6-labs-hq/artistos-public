@@ -61,8 +61,18 @@ def upgrade() -> None:
 
     # PostgreSQL enum type alignment.
     if _dialect_name() == "postgresql":
-        op.execute("CREATE TYPE IF NOT EXISTS sync_job_status AS ENUM ('PENDING','RUNNING','RETRYING','FAILED','COMPLETED')")
-        op.execute("CREATE TYPE IF NOT EXISTS sync_queue_backend AS ENUM ('inline','background','celery')")
+        op.execute("""
+            DO $$ BEGIN
+                CREATE TYPE sync_job_status AS ENUM ('PENDING','RUNNING','RETRYING','FAILED','COMPLETED');
+            EXCEPTION WHEN duplicate_object THEN NULL;
+            END $$;
+        """)
+        op.execute("""
+            DO $$ BEGIN
+                CREATE TYPE sync_queue_backend AS ENUM ('inline','background','celery');
+            EXCEPTION WHEN duplicate_object THEN NULL;
+            END $$;
+        """)
         op.execute("ALTER TABLE sync_jobs ALTER COLUMN status TYPE sync_job_status USING status::sync_job_status")
         op.execute("ALTER TABLE sync_jobs ALTER COLUMN queue_backend TYPE sync_queue_backend USING queue_backend::sync_queue_backend")
 

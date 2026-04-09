@@ -106,7 +106,7 @@ class TestSafeFloatErrorPaths:
         assert safe_float("1e3") == 1000.0
 
     def test_returns_float_type(self):
-        assert type(safe_float("5")) is float
+        assert isinstance(safe_float("5"), float)
 
 
 # ---------------------------------------------------------------------------
@@ -212,7 +212,7 @@ class TestSafeFloatAdditional:
     def test_integer_input_returns_float(self):
         # int input → str() → parse → float; return type must be float.
         result = safe_float(7)
-        assert type(result) is float
+        assert isinstance(result, float)
 
 
 class TestMoneyRoundAdditional:

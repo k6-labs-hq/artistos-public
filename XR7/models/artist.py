@@ -1,3 +1,4 @@
+
 import enum
 import uuid
 from datetime import datetime, timezone
@@ -29,7 +30,7 @@ class Artist(Base):
     email: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     role: Mapped[str | None] = mapped_column(String, nullable=True)
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
-    stage_names: Mapped[list | None] = mapped_column(JSON, nullable=True)
+    stage_names: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     status: Mapped[str] = mapped_column(String, default=ArtistLifecycleStatus.NEW.value, index=True)
     onboarded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
