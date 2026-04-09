@@ -6,7 +6,6 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.blockchain.evidence_anchor import EvidenceAnchor
 from XR7.ml.forecaster import EarningsForecaster
 from XR7.models.claim import Claim
 from XR7.models.payment import Payment
@@ -63,7 +62,5 @@ class CatalogValuationEngine:
         value = self.calculate_catalog_value(artist_id)
         terms = self.market.generate_financing_terms(value)
         payload = {"valuation": value, "terms": terms}
-        # Anchor packet in a claim-linked flow if available; else return unanchored report.
-        anchors = await EvidenceAnchor().store_on_ipfs(payload)
-        payload["ipfs_cid"] = anchors
+        # Anchoring is handled by the service layer; return unanchored report here.
         return payload

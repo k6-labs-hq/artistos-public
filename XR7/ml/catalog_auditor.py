@@ -14,7 +14,6 @@ from XR7.models.catalog_graph import CatalogGraphSnapshot
 from XR7.models.claim import Claim
 from XR7.models.payment import Payment
 from XR7.models.work import Work
-from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
 
 try:
@@ -277,7 +276,6 @@ class AutomatedRegistrationFixer:
                 "status": "simulated",
             },
         }
-        ImmutableLedgerService(self.db).append(artist_id, "catalog_registration_fixes", package)
         return package
 
     def run_preventive_audit(self, artist_id: str) -> dict[str, Any]:

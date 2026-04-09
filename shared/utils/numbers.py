@@ -16,7 +16,7 @@ from typing import Any
 _EMPTY_TOKENS: frozenset[str] = frozenset({"", "-", "N/A", "na", "None", "n/a"})
 
 
-def safe_float(value: Any, *, default: float = 0.0) -> float:
+def safe_float(value: Any, default: float = 0.0) -> float:
     """Coerce *value* to ``float``, stripping common formatting artefacts.
 
     Handles:
