@@ -69,6 +69,37 @@ def upgrade() -> None:
     op.create_index("ix_artists_tvfilm_role", "artists", ["tvfilm_role"])
     op.create_index("ix_artists_organization_type", "artists", ["organization_type"])
 
+    # ── works ─────────────────────────────────────────────────────────────────
+    op.create_table(
+        "works",
+        sa.Column("id", sa.String(), nullable=False),
+        sa.Column("title", sa.String(), nullable=False),
+        sa.Column("isrc", sa.String(), nullable=True),
+        sa.Column("iswc", sa.String(), nullable=True),
+        sa.Column("work_type", sa.String(), nullable=False),
+        sa.Column("artist_id", sa.String(), nullable=False),
+        sa.ForeignKeyConstraint(["artist_id"], ["artists.id"]),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
+    # ── events ────────────────────────────────────────────────────────────────
+    op.create_table(
+        "events",
+        sa.Column("id", sa.String(), nullable=False),
+        sa.Column("event_type", sa.String(), nullable=False),
+        sa.Column("work_id", sa.String(), nullable=True),
+        sa.Column("artist_id", sa.String(), nullable=False),
+        sa.Column("platform", sa.String(), nullable=True),
+        sa.Column("territory", sa.String(), nullable=True),
+        sa.Column("timestamp", sa.DateTime(), nullable=False),
+        sa.Column("quantity", sa.Integer(), nullable=False, server_default="1"),
+        sa.Column("unit_value", sa.Float(), nullable=False, server_default="0"),
+        sa.Column("currency", sa.String(), nullable=False, server_default="USD"),
+        sa.ForeignKeyConstraint(["artist_id"], ["artists.id"]),
+        sa.ForeignKeyConstraint(["work_id"], ["works.id"]),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
     # ── anomalies ─────────────────────────────────────────────────────────────
     op.create_table(
         "anomalies",
@@ -173,6 +204,8 @@ def downgrade() -> None:
     op.drop_index("ix_claims_trolley_payment_id", table_name="claims")
     op.drop_table("claims")
     op.drop_table("anomalies")
+    op.drop_table("events")
+    op.drop_table("works")
     op.drop_index("ix_artists_organization_type", table_name="artists")
     op.drop_index("ix_artists_tvfilm_role", table_name="artists")
     op.drop_index("ix_artists_primary_vertical", table_name="artists")
