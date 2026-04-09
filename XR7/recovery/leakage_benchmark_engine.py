@@ -36,11 +36,19 @@ class LeakageBenchmarkEngine:
         work_count = float(profile.get("work_count") or 0.0)
         catalog_age = float(profile.get("catalog_age_years") or 0.0)
         return BenchmarkCohortKey(
-            catalog_size_band=self._band(work_count, [200, 1000, 5000], ["micro", "small", "mid", "large"]),
+            catalog_size_band=self._band(
+                work_count, [200, 1000, 5000], ["micro", "small", "mid", "large"]
+            ),
             primary_territory=str(profile.get("primary_territory") or "GLOBAL").upper(),
-            channels="|".join(sorted([str(c).upper() for c in (profile.get("distribution_channels") or ["DSP"])])),
-            society_profile="|".join(sorted([str(s).upper() for s in (profile.get("societies") or ["GENERIC"])])),
-            catalog_age_band=self._band(catalog_age, [2, 7, 15], ["new", "growth", "mature", "legacy"]),
+            channels="|".join(
+                sorted([str(c).upper() for c in (profile.get("distribution_channels") or ["DSP"])])
+            ),
+            society_profile="|".join(
+                sorted([str(s).upper() for s in (profile.get("societies") or ["GENERIC"])])
+            ),
+            catalog_age_band=self._band(
+                catalog_age, [2, 7, 15], ["new", "growth", "mature", "legacy"]
+            ),
         )
 
     def _safe_ratio(self, a: float, b: float) -> float:
@@ -63,7 +71,9 @@ class LeakageBenchmarkEngine:
         }
 
     def aggregate_cohort(self, clients: list[dict[str, Any]]) -> dict[str, Any]:
-        rows = [self.compute_client_metrics(c) for c in clients if bool(c.get("benchmark_opt_in", True))]
+        rows = [
+            self.compute_client_metrics(c) for c in clients if bool(c.get("benchmark_opt_in", True))
+        ]
         if not rows:
             return {
                 "count": 0,
@@ -79,9 +89,15 @@ class LeakageBenchmarkEngine:
         scale = 1.0 / self.epsilon
         return {
             "count": len(rows),
-            "leakage_rate_pct": round(max(0.0, avg("leakage_rate_pct") + self._laplace_noise(scale)), 6),
-            "recovery_rate_pct": round(max(0.0, avg("recovery_rate_pct") + self._laplace_noise(scale)), 6),
-            "expiration_rate_pct": round(max(0.0, avg("expiration_rate_pct") + self._laplace_noise(scale)), 6),
+            "leakage_rate_pct": round(
+                max(0.0, avg("leakage_rate_pct") + self._laplace_noise(scale)), 6
+            ),
+            "recovery_rate_pct": round(
+                max(0.0, avg("recovery_rate_pct") + self._laplace_noise(scale)), 6
+            ),
+            "expiration_rate_pct": round(
+                max(0.0, avg("expiration_rate_pct") + self._laplace_noise(scale)), 6
+            ),
             "differential_privacy": {"epsilon": self.epsilon, "enabled": True},
         }
 
@@ -91,9 +107,13 @@ class LeakageBenchmarkEngine:
         below = sum(1 for v in values if v <= x)
         return round((below / len(values)) * 100.0, 2)
 
-    def compare_against_cohort(self, client: dict[str, Any], peers: list[dict[str, Any]]) -> dict[str, Any]:
+    def compare_against_cohort(
+        self, client: dict[str, Any], peers: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         client_metrics = self.compute_client_metrics(client)
-        peer_metrics = [self.compute_client_metrics(p) for p in peers if bool(p.get("benchmark_opt_in", True))]
+        peer_metrics = [
+            self.compute_client_metrics(p) for p in peers if bool(p.get("benchmark_opt_in", True))
+        ]
 
         leakage_dist = [m["leakage_rate_pct"] for m in peer_metrics]
         recovery_dist = [m["recovery_rate_pct"] for m in peer_metrics]
@@ -101,7 +121,9 @@ class LeakageBenchmarkEngine:
 
         leakage_percentile = self._percentile(leakage_dist, client_metrics["leakage_rate_pct"])
         recovery_percentile = self._percentile(recovery_dist, client_metrics["recovery_rate_pct"])
-        expiration_percentile = self._percentile(expiration_dist, client_metrics["expiration_rate_pct"])
+        expiration_percentile = self._percentile(
+            expiration_dist, client_metrics["expiration_rate_pct"]
+        )
 
         expiration_risk_rating = "LOW"
         if expiration_percentile >= 80:

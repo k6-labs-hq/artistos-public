@@ -220,7 +220,9 @@ async def tvfilm_ingestion_preview(file: UploadFile = File(...)):
 
 
 @router.post("/artists/{artist_id}/ingestion/commit")
-async def tvfilm_ingestion_commit(artist_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def tvfilm_ingestion_commit(
+    artist_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)
+):
     artist = _artist_or_404(db, artist_id)
     raw = await file.read()
     file_hash = hashlib.sha256(raw).hexdigest()
@@ -256,25 +258,34 @@ async def tvfilm_ingestion_commit(artist_id: str, file: UploadFile = File(...), 
     db.commit()
     db.refresh(statement)
 
-    return inject_branding_metadata(db, {
-        "statement_id": statement.id,
-        "artist_id": artist_id,
-        "format_detected": statement.format_detected,
-        "rows_committed": statement.row_count,
-        "automation": {
-            "auto_repair_applied": bool(preview.repaired_fields),
-            "episode_season_normalization": True,
-            "production_id_normalization": True,
-            "role_linking": True,
-            "union_studio_rule_engine": True,
+    return inject_branding_metadata(
+        db,
+        {
+            "statement_id": statement.id,
+            "artist_id": artist_id,
+            "format_detected": statement.format_detected,
+            "rows_committed": statement.row_count,
+            "automation": {
+                "auto_repair_applied": bool(preview.repaired_fields),
+                "episode_season_normalization": True,
+                "production_id_normalization": True,
+                "role_linking": True,
+                "union_studio_rule_engine": True,
+            },
         },
-    })
+    )
 
 
 @router.get("/artists/{artist_id}/calculation-audit")
 def tvfilm_calculation_audit(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(db, artist_id)
-    statements = db.query(Statement).filter(Statement.artist_id == artist_id).order_by(Statement.uploaded_at.desc()).limit(5).all()
+    statements = (
+        db.query(Statement)
+        .filter(Statement.artist_id == artist_id)
+        .order_by(Statement.uploaded_at.desc())
+        .limit(5)
+        .all()
+    )
     if not statements:
         raise HTTPException(status_code=400, detail="No statements found for artist")
 
@@ -299,17 +310,26 @@ def tvfilm_calculation_audit(artist_id: str, db: Session = Depends(get_db)):
                 }
             )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "rows_audited": len(calculations),
-        "calculation_profiles": calculations,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "rows_audited": len(calculations),
+            "calculation_profiles": calculations,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/anomalies/scan", response_model=TVFilmScanAnomaliesResponse)
 def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(db, artist_id)
-    statements = db.query(Statement).filter(Statement.artist_id == artist_id).order_by(Statement.uploaded_at.desc()).limit(10).all()
+    statements = (
+        db.query(Statement)
+        .filter(Statement.artist_id == artist_id)
+        .order_by(Statement.uploaded_at.desc())
+        .limit(10)
+        .all()
+    )
     if not statements:
         raise HTTPException(status_code=400, detail="No statements found for artist")
 
@@ -334,7 +354,11 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
                 continue
 
             severity = severity_for_delta(estimated)
-            confidence = float(row.get("calculation_confidence") or 0.78 if estimated == 0 else min(0.98, 0.72 + (estimated / 100000.0)))
+            confidence = float(
+                row.get("calculation_confidence") or 0.78
+                if estimated == 0
+                else min(0.98, 0.72 + (estimated / 100000.0))
+            )
 
             db.add(
                 Anomaly(
@@ -385,8 +409,13 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
                     },
                 }
             )
-            recoverability_class = str((recoverability.get("recoverability") or {}).get("recoverability_class") or "Unknown")
-            recoverability_counts[recoverability_class] = recoverability_counts.get(recoverability_class, 0) + 1
+            recoverability_class = str(
+                (recoverability.get("recoverability") or {}).get("recoverability_class")
+                or "Unknown"
+            )
+            recoverability_counts[recoverability_class] = (
+                recoverability_counts.get(recoverability_class, 0) + 1
+            )
             if len(recoverability_preview) < 25:
                 recoverability_preview.append(
                     {
@@ -400,18 +429,23 @@ def tvfilm_scan_anomalies(artist_id: str, db: Session = Depends(get_db)):
             created += 1
 
     db.commit()
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "signals_scanned": scanned_rows,
-        "anomalies_created": created,
-        "anomaly_rule_catalog": ANOMALY_RULE_CATALOG,
-        "recoverability_summary": recoverability_counts,
-        "recoverability_preview": recoverability_preview,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "signals_scanned": scanned_rows,
+            "anomalies_created": created,
+            "anomaly_rule_catalog": ANOMALY_RULE_CATALOG,
+            "recoverability_summary": recoverability_counts,
+            "recoverability_preview": recoverability_preview,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/claims/draft")
-def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Session = Depends(get_db)):
+def tvfilm_draft_claims(
+    artist_id: str, payload: TVFilmClaimDraftRequest, db: Session = Depends(get_db)
+):
     _artist_or_404(db, artist_id)
 
     if payload.union_template not in EVIDENCE_PACKET_TEMPLATES:
@@ -448,8 +482,12 @@ def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Se
             skipped.append(
                 {
                     "anomaly_id": anomaly.id,
-                    "recoverability_class": (recoverability_payload.get("recoverability") or {}).get("recoverability_class"),
-                    "rule_applied": (recoverability_payload.get("black_box_expiration") or {}).get("rule_applied"),
+                    "recoverability_class": (
+                        recoverability_payload.get("recoverability") or {}
+                    ).get("recoverability_class"),
+                    "rule_applied": (recoverability_payload.get("black_box_expiration") or {}).get(
+                        "rule_applied"
+                    ),
                 }
             )
             continue
@@ -464,9 +502,15 @@ def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Se
             payer_name="Pending Counterparty",
             evidence={
                 "template": payload.union_template,
-                "required_sections": EVIDENCE_PACKET_TEMPLATES[payload.union_template]["required_sections"],
+                "required_sections": EVIDENCE_PACKET_TEMPLATES[payload.union_template][
+                    "required_sections"
+                ],
                 "anomaly_subtype": anomaly.subtype,
-                "evidence_hashes": [hashlib.sha256(f"{artist_id}:{anomaly.id}:{payload.union_template}".encode("utf-8")).hexdigest()],
+                "evidence_hashes": [
+                    hashlib.sha256(
+                        f"{artist_id}:{anomaly.id}:{payload.union_template}".encode("utf-8")
+                    ).hexdigest()
+                ],
             },
             anomaly_report={
                 "vertical": "TV_FILM",
@@ -480,17 +524,22 @@ def tvfilm_draft_claims(artist_id: str, payload: TVFilmClaimDraftRequest, db: Se
         drafted_ids.append(claim.id)
 
     db.commit()
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "claims_drafted": len(drafted_ids),
-        "claim_ids": drafted_ids,
-        "evidence_template": payload.union_template,
-        "skipped": skipped,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "claims_drafted": len(drafted_ids),
+            "claim_ids": drafted_ids,
+            "evidence_template": payload.union_template,
+            "skipped": skipped,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/claims/bulk-draft")
-def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftRequest, db: Session = Depends(get_db)):
+def tvfilm_bulk_draft_claims(
+    artist_id: str, payload: TVFilmBulkClaimDraftRequest, db: Session = Depends(get_db)
+):
     _artist_or_404(db, artist_id)
 
     anomalies_q = db.query(Anomaly).filter(Anomaly.artist_id == artist_id)
@@ -523,7 +572,9 @@ def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftReques
             skipped.append(
                 {
                     "anomaly_id": anomaly.id,
-                    "recoverability_class": (recoverability_payload.get("recoverability") or {}).get("recoverability_class"),
+                    "recoverability_class": (
+                        recoverability_payload.get("recoverability") or {}
+                    ).get("recoverability_class"),
                 }
             )
             continue
@@ -540,9 +591,15 @@ def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftReques
             payer_name=str(feature_snapshot.get("platform") or "Pending Counterparty"),
             evidence={
                 "template": template,
-                "required_sections": EVIDENCE_PACKET_TEMPLATES.get(template, EVIDENCE_PACKET_TEMPLATES["STUDIO_GENERIC"])["required_sections"],
+                "required_sections": EVIDENCE_PACKET_TEMPLATES.get(
+                    template, EVIDENCE_PACKET_TEMPLATES["STUDIO_GENERIC"]
+                )["required_sections"],
                 "anomaly_subtype": anomaly.subtype,
-                "evidence_hashes": [hashlib.sha256(f"bulk:{artist_id}:{anomaly.id}:{template}".encode("utf-8")).hexdigest()],
+                "evidence_hashes": [
+                    hashlib.sha256(
+                        f"bulk:{artist_id}:{anomaly.id}:{template}".encode("utf-8")
+                    ).hexdigest()
+                ],
             },
         )
         db.add(claim)
@@ -555,13 +612,16 @@ def tvfilm_bulk_draft_claims(artist_id: str, payload: TVFilmBulkClaimDraftReques
     for item in drafted:
         template_groups[item["template"]] = template_groups.get(item["template"], 0) + 1
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "claims_drafted": len(drafted),
-        "drafts": drafted,
-        "template_groups": template_groups,
-        "skipped": skipped,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "claims_drafted": len(drafted),
+            "drafts": drafted,
+            "template_groups": template_groups,
+            "skipped": skipped,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/forecast")
@@ -577,8 +637,10 @@ def tvfilm_forecast(artist_id: str, payload: TVFilmForecastRequest, db: Session 
         raise HTTPException(status_code=400, detail="No anomalies available for forecasting")
 
     total = sum(float(a.estimated_recoverable or 0.0) for a in anomalies)
-    confidence = payload.confidence_override if payload.confidence_override is not None else (
-        sum(float(a.confidence_score or 0.0) for a in anomalies) / max(len(anomalies), 1)
+    confidence = (
+        payload.confidence_override
+        if payload.confidence_override is not None
+        else (sum(float(a.confidence_score or 0.0) for a in anomalies) / max(len(anomalies), 1))
     )
 
     forecast = forecast_from_amounts(base_amount=total, confidence=confidence)
@@ -597,27 +659,32 @@ def tvfilm_forecast(artist_id: str, payload: TVFilmForecastRequest, db: Session 
         by_production[production_id] = round(by_production.get(production_id, 0.0) + value, 2)
         by_platform[platform] = round(by_platform.get(platform, 0.0) + value, 2)
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "forecast": forecast,
-        "inputs": {
-            "anomaly_count": len(anomalies),
-            "historical_residuals": total,
-            "distribution_windows": True,
-            "platform_seasonality": True,
-            "syndication_cycles": True,
-            "foreign_society_lag_factors": True,
-            "contract_terms": True,
-            "metadata_repairs": True,
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "forecast": forecast,
+            "inputs": {
+                "anomaly_count": len(anomalies),
+                "historical_residuals": total,
+                "distribution_windows": True,
+                "platform_seasonality": True,
+                "syndication_cycles": True,
+                "foreign_society_lag_factors": True,
+                "contract_terms": True,
+                "metadata_repairs": True,
+            },
+            "per_role_forecast": by_role,
+            "per_production_forecast": by_production,
+            "per_platform_forecast": by_platform,
         },
-        "per_role_forecast": by_role,
-        "per_production_forecast": by_production,
-        "per_platform_forecast": by_platform,
-    })
+    )
 
 
 @router.post("/enterprise/portfolio/analyze")
-def tvfilm_enterprise_portfolio_analyze(payload: TVFilmPortfolioAnalysisRequest, db: Session = Depends(get_db)):
+def tvfilm_enterprise_portfolio_analyze(
+    payload: TVFilmPortfolioAnalysisRequest, db: Session = Depends(get_db)
+):
     if not payload.records:
         raise HTTPException(status_code=400, detail="Portfolio record list is empty")
 
@@ -676,16 +743,42 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
     anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
 
-    total_residuals = sum(float(a.estimated_recoverable or 0.0) for a in anomalies if "RESIDUAL" in str(a.subtype or ""))
-    production_payments = sum(float(a.estimated_recoverable or 0.0) for a in anomalies if "OVERTIME" in str(a.subtype or "") or "DAY_RATE" in str(a.subtype or ""))
-    licensing_distribution = sum(float(a.estimated_recoverable or 0.0) for a in anomalies if "SYNDICATION" in str(a.subtype or "") or "DISTRIBUTION" in str(a.subtype or "") or "BACKEND" in str(a.subtype or ""))
-    streaming_reuse = sum(float(a.estimated_recoverable or 0.0) for a in anomalies if "STREAMING" in str(a.subtype or ""))
-    ugc_clips = sum(float(a.estimated_recoverable or 0.0) for a in anomalies if "CLIP" in str(a.subtype or "") or "CONTENT_ID" in str(a.subtype or "") or "VIRAL" in str(a.subtype or ""))
-    metadata_health_total = sum(1 for a in anomalies if "MISMATCH" in str(a.subtype or "") or "METADATA" in str(a.subtype or ""))
-
-    backend_claims = sum(
-        1 for c in claims if "BACKEND" in str(c.claim_type or "")
+    total_residuals = sum(
+        float(a.estimated_recoverable or 0.0)
+        for a in anomalies
+        if "RESIDUAL" in str(a.subtype or "")
     )
+    production_payments = sum(
+        float(a.estimated_recoverable or 0.0)
+        for a in anomalies
+        if "OVERTIME" in str(a.subtype or "") or "DAY_RATE" in str(a.subtype or "")
+    )
+    licensing_distribution = sum(
+        float(a.estimated_recoverable or 0.0)
+        for a in anomalies
+        if "SYNDICATION" in str(a.subtype or "")
+        or "DISTRIBUTION" in str(a.subtype or "")
+        or "BACKEND" in str(a.subtype or "")
+    )
+    streaming_reuse = sum(
+        float(a.estimated_recoverable or 0.0)
+        for a in anomalies
+        if "STREAMING" in str(a.subtype or "")
+    )
+    ugc_clips = sum(
+        float(a.estimated_recoverable or 0.0)
+        for a in anomalies
+        if "CLIP" in str(a.subtype or "")
+        or "CONTENT_ID" in str(a.subtype or "")
+        or "VIRAL" in str(a.subtype or "")
+    )
+    metadata_health_total = sum(
+        1
+        for a in anomalies
+        if "MISMATCH" in str(a.subtype or "") or "METADATA" in str(a.subtype or "")
+    )
+
+    backend_claims = sum(1 for c in claims if "BACKEND" in str(c.claim_type or ""))
 
     trust_stream = [
         "Validating union residual schedules",
@@ -699,7 +792,9 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
     for anomaly in anomalies:
         snap = json.loads(anomaly.feature_snapshot or "{}")
         role = str(snap.get("role") or "Unspecified")
-        role_breakdown[role] = round(role_breakdown.get(role, 0.0) + float(anomaly.estimated_recoverable or 0.0), 2)
+        role_breakdown[role] = round(
+            role_breakdown.get(role, 0.0) + float(anomaly.estimated_recoverable or 0.0), 2
+        )
 
         recoverability = build_recoverability_payload(
             {
@@ -717,64 +812,90 @@ def tvfilm_dashboard(artist_id: str, db: Session = Depends(get_db)):
                 "created_at": anomaly.created_at,
             }
         )
-        cls = str((recoverability.get("recoverability") or {}).get("recoverability_class") or "Unclassified")
+        cls = str(
+            (recoverability.get("recoverability") or {}).get("recoverability_class")
+            or "Unclassified"
+        )
         if cls not in recoverability_by_class:
             recoverability_by_class[cls] = {"count": 0, "amount": 0.0}
         recoverability_by_class[cls]["count"] += 1
         recoverability_by_class[cls]["amount"] = round(
-            float(recoverability_by_class[cls]["amount"]) + float(anomaly.estimated_recoverable or 0.0),
+            float(recoverability_by_class[cls]["amount"])
+            + float(anomaly.estimated_recoverable or 0.0),
             2,
         )
 
     recoverable_amount = round(
-        sum(v["amount"] for k, v in recoverability_by_class.items() if k != "Expired (Black-Box Redistributed)"),
+        sum(
+            v["amount"]
+            for k, v in recoverability_by_class.items()
+            if k != "Expired (Black-Box Redistributed)"
+        ),
         2,
     )
-    expired_amount = round(float((recoverability_by_class.get("Expired (Black-Box Redistributed)") or {}).get("amount") or 0.0), 2)
+    expired_amount = round(
+        float(
+            (recoverability_by_class.get("Expired (Black-Box Redistributed)") or {}).get("amount")
+            or 0.0
+        ),
+        2,
+    )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "sections": {
-            "residuals_discovered": {"value": round(total_residuals, 2), "count": len(anomalies)},
-            "production_payments": {"value": round(production_payments, 2)},
-            "distribution_licensing": {"value": round(licensing_distribution, 2)},
-            "streaming_reuse": {"value": round(streaming_reuse, 2)},
-            "ugc_clips": {"value": round(ugc_clips, 2)},
-            "metadata_health_tvfilm": {"open_issues": metadata_health_total, "status": "healthy" if metadata_health_total < 5 else "at_risk"},
-            "backend_participation": {"active_claims": backend_claims},
-            "agency_portfolio_view": {"available": True, "path": "/tvfilm/enterprise/portfolio/{job_id}"},
-            "recoverability": {
-                "recoverable_amount": recoverable_amount,
-                "expired_amount": expired_amount,
-                "by_class": recoverability_by_class,
-            },
-        },
-        "trust_layer": {
-            "logo_state": "glowing",
-            "what_xr7_is_doing_now": trust_stream,
-            "recoverability_explainer": {
-                "here_is_what_you_can_still_recover": {
-                    "amount": recoverable_amount,
-                    "why": "Within claim windows or contract/damages pathways.",
-                    "next": "XR7 drafts claims, evidence packets, and negotiation playbooks.",
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "sections": {
+                "residuals_discovered": {
+                    "value": round(total_residuals, 2),
+                    "count": len(anomalies),
                 },
-                "here_is_what_expired": {
-                    "amount": expired_amount,
-                    "why": "Black-box redistribution windows elapsed under society/union rules.",
-                    "rule_note": "Examples: ASCAP 2-3 years, MLC 3 years, foreign residual societies 6-18 months.",
+                "production_payments": {"value": round(production_payments, 2)},
+                "distribution_licensing": {"value": round(licensing_distribution, 2)},
+                "streaming_reuse": {"value": round(streaming_reuse, 2)},
+                "ugc_clips": {"value": round(ugc_clips, 2)},
+                "metadata_health_tvfilm": {
+                    "open_issues": metadata_health_total,
+                    "status": "healthy" if metadata_health_total < 5 else "at_risk",
                 },
-                "here_is_what_xr7_prevents_going_forward": [
-                    "Metadata repair",
-                    "Identifier normalization",
-                    "Cross-system linking",
-                    "Future leakage prevention scoring",
-                    "UGC fingerprinting",
-                    "Foreign society crosswalks",
-                ],
+                "backend_participation": {"active_claims": backend_claims},
+                "agency_portfolio_view": {
+                    "available": True,
+                    "path": "/tvfilm/enterprise/portfolio/{job_id}",
+                },
+                "recoverability": {
+                    "recoverable_amount": recoverable_amount,
+                    "expired_amount": expired_amount,
+                    "by_class": recoverability_by_class,
+                },
             },
+            "trust_layer": {
+                "logo_state": "glowing",
+                "what_xr7_is_doing_now": trust_stream,
+                "recoverability_explainer": {
+                    "here_is_what_you_can_still_recover": {
+                        "amount": recoverable_amount,
+                        "why": "Within claim windows or contract/damages pathways.",
+                        "next": "XR7 drafts claims, evidence packets, and negotiation playbooks.",
+                    },
+                    "here_is_what_expired": {
+                        "amount": expired_amount,
+                        "why": "Black-box redistribution windows elapsed under society/union rules.",
+                        "rule_note": "Examples: ASCAP 2-3 years, MLC 3 years, foreign residual societies 6-18 months.",
+                    },
+                    "here_is_what_xr7_prevents_going_forward": [
+                        "Metadata repair",
+                        "Identifier normalization",
+                        "Cross-system linking",
+                        "Future leakage prevention scoring",
+                        "UGC fingerprinting",
+                        "Foreign society crosswalks",
+                    ],
+                },
+            },
+            "role_breakdown": role_breakdown,
         },
-        "role_breakdown": role_breakdown,
-    })
+    )
 
 
 @router.post("/trust/explain", response_model=TVFilmTrustExplainResponse)
@@ -820,14 +941,17 @@ def tvfilm_trust_explain(payload: TVFilmTrustExplainRequest):
 def run_tvfilm_agents(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(db, artist_id)
     state = run_tvfilm_vertical_orchestra_sync(artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "run_id": state.get("run_id"),
-        "current_step": state.get("current_step"),
-        "confidence_scores": state.get("confidence_scores", {}),
-        "evidence_hash_count": len(state.get("evidence_hashes") or []),
-        "agent_activity": state.get("agent_activity", []),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "run_id": state.get("run_id"),
+            "current_step": state.get("current_step"),
+            "confidence_scores": state.get("confidence_scores", {}),
+            "evidence_hash_count": len(state.get("evidence_hashes") or []),
+            "agent_activity": state.get("agent_activity", []),
+        },
+    )
 
 
 @router.get("/claims/{claim_id}/evidence/export")
@@ -848,7 +972,9 @@ def tvfilm_export_evidence_packet(
         return Response(
             content=build_tvfilm_packet_pdf(packet),
             media_type="application/pdf",
-            headers={"Content-Disposition": f'attachment; filename="tvfilm_evidence_{claim_id}.pdf"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="tvfilm_evidence_{claim_id}.pdf"'
+            },
         )
 
     return Response(
@@ -859,7 +985,9 @@ def tvfilm_export_evidence_packet(
 
 
 @router.post("/artists/{artist_id}/claims/bulk-export")
-def tvfilm_bulk_export_claims(artist_id: str, payload: TVFilmBulkExportRequest, db: Session = Depends(get_db)):
+def tvfilm_bulk_export_claims(
+    artist_id: str, payload: TVFilmBulkExportRequest, db: Session = Depends(get_db)
+):
     _artist_or_404(db, artist_id)
 
     claims_q = db.query(Claim).filter(Claim.artist_id == artist_id)
@@ -876,7 +1004,9 @@ def tvfilm_bulk_export_claims(artist_id: str, payload: TVFilmBulkExportRequest, 
     return Response(
         content=build_tvfilm_bulk_export_zip(items),
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="tvfilm_bulk_export_{artist_id}.zip"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="tvfilm_bulk_export_{artist_id}.zip"'
+        },
     )
 
 

@@ -61,9 +61,15 @@ class AnomalyEngine:
         return self.detect_rule_anomalies(artist_id, db_session)
 
     def detect_royalty_anomalies(self, artist_id: str, db_session: Session) -> list[dict]:
-        events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id == artist_id).all())
-        payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id == artist_id).all())
-        contracts = self._contracts_to_dicts(db_session.query(Contract).filter(Contract.artist_id == artist_id).all())
+        events = self._events_to_dicts(
+            db_session.query(Event).filter(Event.artist_id == artist_id).all()
+        )
+        payments = self._payments_to_dicts(
+            db_session.query(Payment).filter(Payment.artist_id == artist_id).all()
+        )
+        contracts = self._contracts_to_dicts(
+            db_session.query(Contract).filter(Contract.artist_id == artist_id).all()
+        )
         result = []
         result.extend(royalties.check_missing_royalty_payments(artist_id, events, payments))
         result.extend(royalties.check_incorrect_rates(artist_id, payments, contracts))
@@ -71,24 +77,42 @@ class AnomalyEngine:
         return result
 
     def detect_touring_anomalies(self, artist_id: str, db_session: Session) -> list[dict]:
-        events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id == artist_id).all())
-        payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id == artist_id).all())
-        contracts = self._contracts_to_dicts(db_session.query(Contract).filter(Contract.artist_id == artist_id).all())
+        events = self._events_to_dicts(
+            db_session.query(Event).filter(Event.artist_id == artist_id).all()
+        )
+        payments = self._payments_to_dicts(
+            db_session.query(Payment).filter(Payment.artist_id == artist_id).all()
+        )
+        contracts = self._contracts_to_dicts(
+            db_session.query(Contract).filter(Contract.artist_id == artist_id).all()
+        )
         result = []
         result.extend(touring.check_missing_guarantee(artist_id, events, payments))
         result.extend(touring.check_settlement_discrepancy(artist_id, events, payments, contracts))
         return result
 
     def detect_platform_anomalies(self, artist_id: str, db_session: Session) -> list[dict]:
-        events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id == artist_id).all())
-        payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id == artist_id).all())
+        events = self._events_to_dicts(
+            db_session.query(Event).filter(Event.artist_id == artist_id).all()
+        )
+        payments = self._payments_to_dicts(
+            db_session.query(Payment).filter(Payment.artist_id == artist_id).all()
+        )
         result = []
         result.extend(platforms.check_low_stream_rates(artist_id, events, payments))
         result.extend(platforms.check_missing_platform_payments(artist_id, events, payments))
         return result
 
     def detect_rule_anomalies(self, artist_id: str, db_session: Session) -> list[dict]:
-        events = self._events_to_dicts(db_session.query(Event).filter(Event.artist_id == artist_id).all())
-        payments = self._payments_to_dicts(db_session.query(Payment).filter(Payment.artist_id == artist_id).all())
-        contracts = self._contracts_to_dicts(db_session.query(Contract).filter(Contract.artist_id == artist_id).all())
-        return run_transparent_rules(artist_id, events=events, payments=payments, contracts=contracts)
+        events = self._events_to_dicts(
+            db_session.query(Event).filter(Event.artist_id == artist_id).all()
+        )
+        payments = self._payments_to_dicts(
+            db_session.query(Payment).filter(Payment.artist_id == artist_id).all()
+        )
+        contracts = self._contracts_to_dicts(
+            db_session.query(Contract).filter(Contract.artist_id == artist_id).all()
+        )
+        return run_transparent_rules(
+            artist_id, events=events, payments=payments, contracts=contracts
+        )

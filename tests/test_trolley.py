@@ -42,7 +42,9 @@ def _mk_artist(db, *, verified: bool = True) -> Artist:
     return artist
 
 
-def _mk_claim(db, artist_id: str, *, status: ClaimStatus = ClaimStatus.FUNDS_RECEIVED, net: float = 900.0) -> Claim:
+def _mk_claim(
+    db, artist_id: str, *, status: ClaimStatus = ClaimStatus.FUNDS_RECEIVED, net: float = 900.0
+) -> Claim:
     now = datetime.now(timezone.utc)
     claim = Claim(
         id=str(uuid.uuid4()),
@@ -87,7 +89,10 @@ def test_manual_remittance_endpoint_updates_claim_and_creates_transaction(db):
 
     txn = (
         db.query(TrolleyTransaction)
-        .filter(TrolleyTransaction.claim_id == claim.id, TrolleyTransaction.type == TrolleyTxnType.REMITTANCE)
+        .filter(
+            TrolleyTransaction.claim_id == claim.id,
+            TrolleyTransaction.type == TrolleyTxnType.REMITTANCE,
+        )
         .first()
     )
     assert txn is not None
@@ -174,7 +179,11 @@ def test_trolley_webhook_marks_claim_paid_and_updates_transaction(db, monkeypatc
     body = json.dumps(payload).encode("utf-8")
     sig = hmac.new(b"wh_secret", body, hashlib.sha256).hexdigest()
 
-    resp = client.post("/webhooks/trolley", content=body, headers={"x-trolley-signature": sig, "Content-Type": "application/json"})
+    resp = client.post(
+        "/webhooks/trolley",
+        content=body,
+        headers={"x-trolley-signature": sig, "Content-Type": "application/json"},
+    )
     assert resp.status_code == 200
 
     db.refresh(claim)

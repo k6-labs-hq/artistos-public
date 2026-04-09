@@ -37,7 +37,9 @@ class TwoAgentState(XR7State, total=False):
     workflow_phase: str
 
 
-def bootstrap_state(artist_id: str, run_id: str | None = None, *, readiness_threshold: float = 85.0) -> TwoAgentState:
+def bootstrap_state(
+    artist_id: str, run_id: str | None = None, *, readiness_threshold: float = 85.0
+) -> TwoAgentState:
     state: TwoAgentState = dict(initial_state(artist_id, run_id))
     state.update(
         {

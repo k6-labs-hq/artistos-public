@@ -85,19 +85,27 @@ def _artist_aliases(artist: Artist) -> set[str]:
     return {a for a in aliases if a}
 
 
-def compute_identity_match(artist: Artist, statement_signals: dict[str, Any], works: list[Work]) -> IdentityMatchResult:
+def compute_identity_match(
+    artist: Artist, statement_signals: dict[str, Any], works: list[Work]
+) -> IdentityMatchResult:
     stage_name_candidate = _norm(statement_signals.get("artist_name"))
     artist_aliases = _artist_aliases(artist)
 
     stage_score = 0.0
     if stage_name_candidate:
-        stage_score = max(_string_similarity(alias, stage_name_candidate) for alias in artist_aliases) if artist_aliases else 0.0
+        stage_score = (
+            max(_string_similarity(alias, stage_name_candidate) for alias in artist_aliases)
+            if artist_aliases
+            else 0.0
+        )
 
     ipi_candidate = _norm(statement_signals.get("pro_writer_id"))
     ipi_known = _norm(artist.ipi_number)
     ipi_score = 1.0 if (ipi_candidate and ipi_known and ipi_candidate == ipi_known) else 0.0
 
-    distributor_aliases = {_norm(v) for v in list(statement_signals.get("distributor_list") or []) if _norm(v)}
+    distributor_aliases = {
+        _norm(v) for v in list(statement_signals.get("distributor_list") or []) if _norm(v)
+    }
     artist_distributor_aliases = {_norm(v) for v in list(artist.stage_names or []) if _norm(v)}
     distributor_score = _set_overlap(distributor_aliases, artist_distributor_aliases)
 
@@ -177,7 +185,11 @@ def persist_identity_match(
         decision_status=result.decision_status,
         decision_reason=result.reason,
         decision_actor="system:auto_match",
-        decision_at=datetime.now(timezone.utc) if result.decision_status == IdentityDecisionStatus.AUTO_ACCEPTED else None,
+        decision_at=(
+            datetime.now(timezone.utc)
+            if result.decision_status == IdentityDecisionStatus.AUTO_ACCEPTED
+            else None
+        ),
         matched_profile=statement_signals,
         score_breakdown=result.score_breakdown,
         chain_hash=chain_hash,

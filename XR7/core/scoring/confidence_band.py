@@ -4,6 +4,7 @@ Pure confidence-band classification.
 No DB, no imports from XR7 models/services.  Call this from n8n, LangGraph
 nodes, unit tests, or any other context without a SQLAlchemy session.
 """
+
 from __future__ import annotations
 
 #: Threshold above which an anomaly is considered high-confidence.

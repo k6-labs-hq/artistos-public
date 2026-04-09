@@ -112,19 +112,28 @@ class EvidenceAnchor:
         def _anchor() -> str:
             if not self.contract_address or Web3 is None:
                 # Fallback pseudo tx hash for offline/dev environments.
-                return "0x" + hashlib.sha256(f"{claim_id}:{packet_hash}:{prior_hash}".encode("utf-8")).hexdigest()
+                return (
+                    "0x"
+                    + hashlib.sha256(
+                        f"{claim_id}:{packet_hash}:{prior_hash}".encode("utf-8")
+                    ).hexdigest()
+                )
             w3 = self._web3()
 
             if not self.private_key:
                 raise RuntimeError("WEB3_PRIVATE_KEY is required for on-chain anchoring")
 
             account = w3.eth.account.from_key(self.private_key)
-            contract = w3.eth.contract(address=w3.to_checksum_address(self.contract_address), abi=self.ANCHOR_ABI)
+            contract = w3.eth.contract(
+                address=w3.to_checksum_address(self.contract_address), abi=self.ANCHOR_ABI
+            )
             nonce = w3.eth.get_transaction_count(account.address)
             packet_hash_bytes = bytes.fromhex(packet_hash.replace("0x", "")[:64].ljust(64, "0"))
             prior_hash_bytes = bytes.fromhex(prior_hash.replace("0x", "")[:64].ljust(64, "0"))
 
-            tx = contract.functions.anchor(claim_id, packet_hash_bytes, prior_hash_bytes).build_transaction(
+            tx = contract.functions.anchor(
+                claim_id, packet_hash_bytes, prior_hash_bytes
+            ).build_transaction(
                 {
                     "from": account.address,
                     "nonce": nonce,
@@ -151,7 +160,9 @@ class EvidenceAnchor:
             if not self.contract_address:
                 return True
             w3 = self._web3()
-            contract = w3.eth.contract(address=w3.to_checksum_address(self.contract_address), abi=self.ANCHOR_ABI)
+            contract = w3.eth.contract(
+                address=w3.to_checksum_address(self.contract_address), abi=self.ANCHOR_ABI
+            )
             latest = contract.functions.latestHash(claim_id).call()
             return bool(latest and int.from_bytes(latest, "big") != 0)
 
@@ -220,7 +231,13 @@ class EvidenceAnchor:
                 db.close()
 
 
-@celery_app.task(name="xr7.pipeline.anchor_claim_evidence", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+@celery_app.task(
+    name="xr7.pipeline.anchor_claim_evidence",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
 def anchor_claim_evidence_task(self, claim_id: str) -> dict:  # noqa: ANN001
     """Celery wrapper for asynchronous evidence anchoring."""
 

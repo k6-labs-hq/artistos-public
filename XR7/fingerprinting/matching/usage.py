@@ -39,9 +39,7 @@ _STREAMING_PLATFORMS = frozenset(
 )
 
 # Platforms classified as live event sources
-_LIVE_PLATFORMS = frozenset(
-    {"ticketmaster", "axs", "bandsintown", "songkick", "eventbrite"}
-)
+_LIVE_PLATFORMS = frozenset({"ticketmaster", "axs", "bandsintown", "songkick", "eventbrite"})
 
 
 def _infer_match_type(platform: str | None) -> MatchType:

@@ -1,4 +1,5 @@
 """Legal authority, negotiation, and attorney-prep agents."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -100,15 +101,11 @@ async def LegalAuthorityAgent(state: XR7State) -> XR7State:
                 "anomaly_id": a.get("id"),
                 "subtype": a.get("subtype"),
                 "estimated_recoverable": float(a.get("estimated_recoverable") or 0.0),
-                "confidence": float(
-                    a.get("confidence") or a.get("confidence_score") or 0.0
-                ),
+                "confidence": float(a.get("confidence") or a.get("confidence_score") or 0.0),
             }
             for a in anomalies[:10]
         ],
-        "exhibit_list": [
-            f"Exhibit-{idx + 1}: {h}" for idx, h in enumerate(evidence_hashes[:20])
-        ],
+        "exhibit_list": [f"Exhibit-{idx + 1}: {h}" for idx, h in enumerate(evidence_hashes[:20])],
         "chain_of_custody_summary": chain_text,
         "compliance_statement": compliance_statements,
         "signature_block": {
@@ -158,25 +155,18 @@ async def LegalRiskScoringAgent(state: XR7State) -> XR7State:
     metadata_completeness = float(profile.get("metadata_completeness") or 0.65)
     evidence_strength = min(
         1.0,
-        (len(evidence_hashes) / 8.0)
-        + (0.15 if state.get("legal_structured_packet") else 0.0),
+        (len(evidence_hashes) / 8.0) + (0.15 if state.get("legal_structured_packet") else 0.0),
     )
     negotiation_friction = min(1.0, len(history) / 6.0)
 
     legal_risk = _safe_score(
-        0.45 * severity_factor
-        + 0.25 * (1.0 - metadata_completeness)
-        + 0.30 * negotiation_friction
+        0.45 * severity_factor + 0.25 * (1.0 - metadata_completeness) + 0.30 * negotiation_friction
     )
     settlement_probability = _safe_score(
-        0.55 * evidence_strength
-        + 0.30 * metadata_completeness
-        + 0.15 * (1.0 - severity_factor)
+        0.55 * evidence_strength + 0.30 * metadata_completeness + 0.15 * (1.0 - severity_factor)
     )
     escalation_readiness = _safe_score(
-        0.5 * evidence_strength
-        + 0.25 * severity_factor
-        + 0.25 * (1.0 - settlement_probability)
+        0.5 * evidence_strength + 0.25 * severity_factor + 0.25 * (1.0 - settlement_probability)
     )
 
     score = _safe_score(0.82 + 0.18 * evidence_strength)
@@ -200,9 +190,7 @@ async def PayerBehaviorPredictionAgent(state: XR7State) -> XR7State:
     legal_sections = list(state.get("legal_authority_sections") or [])
     escalation_readiness = float(state.get("escalation_readiness_score") or 0.0)
 
-    delay_events = sum(
-        1 for row in history if "delay" in str(row.get("action", "")).lower()
-    )
+    delay_events = sum(1 for row in history if "delay" in str(row.get("action", "")).lower())
     concession_events = sum(
         1
         for row in history
@@ -214,10 +202,7 @@ async def PayerBehaviorPredictionAgent(state: XR7State) -> XR7State:
     responsiveness = _safe_score(
         max(
             0.05,
-            0.75
-            - (delay_events * 0.12)
-            - (rounds - 1) * 0.05
-            + concession_events * 0.08,
+            0.75 - (delay_events * 0.12) - (rounds - 1) * 0.05 + concession_events * 0.08,
         )
     )
     settlement_probability = _safe_score(
@@ -234,9 +219,7 @@ async def PayerBehaviorPredictionAgent(state: XR7State) -> XR7State:
     posture = (
         "cooperative"
         if responsiveness >= 0.7
-        else "neutral"
-        if responsiveness >= 0.45
-        else "resistant"
+        else "neutral" if responsiveness >= 0.45 else "resistant"
     )
     claim_amount = float(claim.get("estimated_recoverable") or 0.0)
     emphasis = [
@@ -253,11 +236,7 @@ async def PayerBehaviorPredictionAgent(state: XR7State) -> XR7State:
         "delay_pattern": {"rounds": rounds, "delay_events": delay_events},
         "historical_signal": "aggregated_xr7_pattern_based",
         "claim_size_band": (
-            "high"
-            if claim_amount >= 10000
-            else "medium"
-            if claim_amount >= 3000
-            else "low"
+            "high" if claim_amount >= 10000 else "medium" if claim_amount >= 3000 else "low"
         ),
     }
     strategy = (
@@ -347,31 +326,19 @@ async def ClaimOutcomeForecasterAgent(state: XR7State) -> XR7State:
 
     claim_amount = float(claim.get("estimated_recoverable") or 0.0)
     if claim_amount <= 0:
-        claim_amount = sum(
-            float(a.get("estimated_recoverable") or 0.0) for a in anomalies[:5]
-        )
+        claim_amount = sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies[:5])
 
-    evidence_strength = min(
-        1.0, len(state.get("evidence_hashes") or []) / 10.0
-    )
-    metadata = float(
-        (state.get("catalog_profile") or {}).get("metadata_completeness") or 0.65
-    )
+    evidence_strength = min(1.0, len(state.get("evidence_hashes") or []) / 10.0)
+    metadata = float((state.get("catalog_profile") or {}).get("metadata_completeness") or 0.65)
     base_settlement = float(
-        state.get("predicted_settlement_probability")
-        or state.get("settlement_probability")
-        or 0.5
+        state.get("predicted_settlement_probability") or state.get("settlement_probability") or 0.5
     )
     resistance = float(state.get("predicted_escalation_resistance") or 0.4)
     posture = str(behavior.get("posture") or "neutral")
 
     posture_factor = 1.05 if posture == "cooperative" else 0.93 if posture == "resistant" else 1.0
-    payout_prob = _safe_score(
-        base_settlement * (0.75 + 0.25 * evidence_strength) * posture_factor
-    )
-    escalation_prob = _safe_score(
-        max(0.05, 0.35 + resistance * 0.45 - evidence_strength * 0.2)
-    )
+    payout_prob = _safe_score(base_settlement * (0.75 + 0.25 * evidence_strength) * posture_factor)
+    escalation_prob = _safe_score(max(0.05, 0.35 + resistance * 0.45 - evidence_strength * 0.2))
     expected_value = round(claim_amount * payout_prob, 2)
     low = round(expected_value * max(0.45, 0.7 - escalation_prob * 0.3), 2)
     high = round(
@@ -381,9 +348,7 @@ async def ClaimOutcomeForecasterAgent(state: XR7State) -> XR7State:
         ),
         2,
     )
-    timeline_days = max(
-        10, int(round(28 + escalation_prob * 30 + (1.0 - metadata) * 14))
-    )
+    timeline_days = max(10, int(round(28 + escalation_prob * 30 + (1.0 - metadata) * 14)))
     full_payout_prob = _safe_score(
         max(0.02, payout_prob - escalation_prob * 0.25 + evidence_strength * 0.15)
     )
@@ -411,9 +376,7 @@ async def EvidenceNarrativeAgent(state: XR7State) -> XR7State:
     claim = _primary_claim(state)
     behavior = dict(state.get("payer_behavior_profile") or {})
 
-    discrepancy_total = sum(
-        float(a.get("estimated_recoverable") or 0.0) for a in anomalies
-    )
+    discrepancy_total = sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies)
     overview = (
         f"XR7 identified {len(anomalies)} discrepancy signals associated with claim {claim.get('id', 'N/A')}. "
         "This narrative summarizes evidence lineage, calculation basis, and context for attorney review."
@@ -495,9 +458,7 @@ async def LegalCounselPrepAgent(state: XR7State) -> XR7State:
         "factual_narrative_summary": state.get("narrative_summary") or factual_summary,
         "discrepancy_analysis": {
             "anomaly_count": len(anomalies),
-            "estimated_total": sum(
-                float(a.get("estimated_recoverable") or 0.0) for a in anomalies
-            ),
+            "estimated_total": sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies),
         },
         "variance_analysis": state.get("legal_structured_packet") or {},
         "evidence_strength_summary": {
@@ -517,9 +478,7 @@ async def LegalCounselPrepAgent(state: XR7State) -> XR7State:
         ),
         "escalation_readiness": float(state.get("escalation_readiness_score") or 0.0),
         "timeline_reconstruction": {
-            "predicted_settlement_days": int(
-                state.get("predicted_settlement_timeline_days") or 0
-            ),
+            "predicted_settlement_days": int(state.get("predicted_settlement_timeline_days") or 0),
             "negotiation_rounds": len(state.get("negotiation_history") or []),
         },
         "chain_of_custody_verification_summary": chain_summary,
@@ -569,11 +528,10 @@ async def ClaimEscalationAgent(state: XR7State) -> XR7State:
                     "contract_basis": [
                         {
                             "counterparty": str(
-                                (
-                                    (state.get("contract_terms") or {}).get("contracts") or [{}]
-                                )[0]
+                                ((state.get("contract_terms") or {}).get("contracts") or [{}])[0]
                                 .get("parsed_terms", {})
-                                .get("counterparty") or ""
+                                .get("counterparty")
+                                or ""
                             )
                         }
                     ]
@@ -681,6 +639,7 @@ async def AttorneyExportAgent(state: XR7State) -> XR7State:
 
 async def DetectionAgent(state: XR7State) -> XR7State:
     from XR7.agents.onboarding.enrichment_agents import SocialUGCCollectorAgent
+
     return await SocialUGCCollectorAgent(state)
 
 
@@ -692,7 +651,9 @@ async def EvidenceVerifierAgent(state: XR7State) -> XR7State:
         state,
         agent_name="evidence_verifier",
         score=score,
-        updates={"error_log": [] if valid else ["Evidence verification found invalid or missing hashes"]},
+        updates={
+            "error_log": [] if valid else ["Evidence verification found invalid or missing hashes"]
+        },
         decision="evidence integrity verified",
     )
 

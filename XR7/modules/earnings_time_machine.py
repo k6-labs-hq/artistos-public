@@ -6,6 +6,7 @@ clean from day one. The delta between that "clean world" number and actual
 earnings received is their cumulative lifetime leakage, visualised as a
 diverging timeline.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -29,17 +30,16 @@ logger = get_logger(__name__)
 # Internal helpers
 # ---------------------------------------------------------------------------
 
-_METADATA_UPLIFT_RATE = 0.12   # 12% uplift for perfect metadata
+_METADATA_UPLIFT_RATE = 0.12  # 12% uplift for perfect metadata
 _ANOMALY_RECOVERY_RATE = 0.80  # 80% of estimated_recoverable captured in clean world
 _SPLIT_CORRECTION_RATE = 0.05  # 5% average uplift from corrected splits
-_FOREIGN_SOCIETY_RATE = 0.08   # 8% uplift for full foreign society crosswalk
-_DSP_ATTRIBUTION_RATE = 0.04   # 4% uplift for resolved DSP/PRO attribution errors
+_FOREIGN_SOCIETY_RATE = 0.08  # 8% uplift for full foreign society crosswalk
+_DSP_ATTRIBUTION_RATE = 0.04  # 4% uplift for resolved DSP/PRO attribution errors
 
 
 def _compute_hash(artist_id: str, payload: dict) -> str:
     raw = json.dumps({"artist_id": artist_id, "payload": payload}, sort_keys=True)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 
 def _ensure_utc(dt: datetime | None) -> datetime | None:
@@ -51,6 +51,7 @@ def _ensure_utc(dt: datetime | None) -> datetime | None:
 # ---------------------------------------------------------------------------
 # Core engine
 # ---------------------------------------------------------------------------
+
 
 class EarningsTimeMachine:
     """Compute clean-world vs actual earnings per calendar period."""
@@ -77,23 +78,17 @@ class EarningsTimeMachine:
         catalog_health_scores = catalog_health_scores or []
 
         # -- Gather actual payments ----------------------------------------
-        payments = (
-            self.db.query(Payment)
-            .filter(Payment.artist_id == artist_id)
-            .all()
-        )
+        payments = self.db.query(Payment).filter(Payment.artist_id == artist_id).all()
 
         # -- Gather open / historical anomalies -----------------------------
-        anomalies_db = (
-            self.db.query(Anomaly)
-            .filter(Anomaly.artist_id == artist_id)
-            .all()
-        )
+        anomalies_db = self.db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
 
         # -- Build period buckets -------------------------------------------
         actual_by_period: dict[str, float] = defaultdict(float)
         for p in payments:
-            dt = _ensure_utc(getattr(p, "received_at", None) or getattr(p, "period_start", None)) or datetime.now(timezone.utc)
+            dt = _ensure_utc(
+                getattr(p, "received_at", None) or getattr(p, "period_start", None)
+            ) or datetime.now(timezone.utc)
             key = _period_key(dt, granularity)
             actual_by_period[key] += float(p.amount or 0.0)
 
@@ -112,20 +107,30 @@ class EarningsTimeMachine:
             # anomaly amounts are leakage, not actual earnings — excluded from actual
 
         # -- Compute clean-world uplift per period --------------------------
-        metadata_uplift_total = sum(
-            float(r.get("estimated_value_impact", 0.0)) for r in metadata_repair_log
-        ) * _METADATA_UPLIFT_RATE if not metadata_repair_log else sum(
-            float(r.get("value_delta", 0.0)) for r in metadata_repair_log if float(r.get("value_delta", 0.0)) > 0
+        metadata_uplift_total = (
+            sum(float(r.get("estimated_value_impact", 0.0)) for r in metadata_repair_log)
+            * _METADATA_UPLIFT_RATE
+            if not metadata_repair_log
+            else sum(
+                float(r.get("value_delta", 0.0))
+                for r in metadata_repair_log
+                if float(r.get("value_delta", 0.0)) > 0
+            )
         )
 
-        anomaly_uplift_total = sum(
-            float(a.estimated_recoverable or 0.0) for a in anomalies_db
-        ) * _ANOMALY_RECOVERY_RATE
+        anomaly_uplift_total = (
+            sum(float(a.estimated_recoverable or 0.0) for a in anomalies_db)
+            * _ANOMALY_RECOVERY_RATE
+        )
         for rec in anomaly_history:
-            anomaly_uplift_total += float(rec.get("recoverable_estimate", 0.0)) * _ANOMALY_RECOVERY_RATE
+            anomaly_uplift_total += (
+                float(rec.get("recoverable_estimate", 0.0)) * _ANOMALY_RECOVERY_RATE
+            )
 
         split_uplift = sum(
-            float(r.get("split_delta", 0.0)) for r in split_verification_history if float(r.get("split_delta", 0.0)) > 0
+            float(r.get("split_delta", 0.0))
+            for r in split_verification_history
+            if float(r.get("split_delta", 0.0)) > 0
         )
 
         total_actual = sum(actual_by_period.values())
@@ -234,6 +239,7 @@ class EarningsTimeMachine:
 # Plain-language ArtistComfortAgent summary
 # ---------------------------------------------------------------------------
 
+
 def _generate_summary(
     artist_id: str,
     total_actual: float,
@@ -256,6 +262,7 @@ def _generate_summary(
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def run_analysis(artist_id: str, granularity: str = "year") -> dict[str, Any]:
     """Callable by Celery: xr7.modules.earnings_time_machine.run_analysis"""

@@ -40,7 +40,9 @@ class MLFeedbackEvent(Base):
     estimated_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     actual_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     payload: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class CalibrationSnapshot(Base):
@@ -58,7 +60,9 @@ class CalibrationSnapshot(Base):
     posterior_mean: Mapped[float] = mapped_column(Float, nullable=False, default=0.5)
     lower_credible: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     upper_credible: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
-    last_updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    last_updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class MLFeedbackEventCreate(BaseModel):

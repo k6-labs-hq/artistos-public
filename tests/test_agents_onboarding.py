@@ -5,6 +5,7 @@ Covers:
 - Pure-state async agents that run without a database session
 - _intent_from_text and _severity_weight classification helpers
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -74,9 +75,7 @@ def test_evidence_hash_differs_for_different_inputs():
 
 def test_evidence_hash_matches_manual_sha256():
     payload = {"key": "value", "number": 42}
-    raw = json.dumps(
-        {"artist_id": "a1", "agent": "Foo", "payload": payload}, sort_keys=True
-    )
+    raw = json.dumps({"artist_id": "a1", "agent": "Foo", "payload": payload}, sort_keys=True)
     expected = hashlib.sha256(raw.encode("utf-8")).hexdigest()
     assert _evidence_hash("a1", "Foo", payload) == expected
 
@@ -333,14 +332,17 @@ def test_discovery_rule_agent_no_anomalies(monkeypatch):
 
 def test_shim_exports_intent_interpreter():
     from XR7.agents.onboarding_agents import ArtistIntentInterpreterAgent as A  # noqa: F401
+
     assert callable(A)
 
 
 def test_shim_exports_legal_authority():
     from XR7.agents.onboarding_agents import LegalAuthorityAgent as L  # noqa: F401
+
     assert callable(L)
 
 
 def test_shim_exports_auto_sol_guardian():
     from XR7.agents.onboarding_agents import AutoSOLGuardianAgent as S  # noqa: F401
+
     assert callable(S)

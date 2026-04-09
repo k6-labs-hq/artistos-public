@@ -209,7 +209,7 @@ def test_evidence_packet_includes_metadata_repair_logs():
         resp = client.post(f"/claims/{claim.id}/evidence")
         assert resp.status_code == 200
         packet = resp.json()
-        logs = ((packet.get("metadata_repairs") or {}).get("logs") or [])
+        logs = (packet.get("metadata_repairs") or {}).get("logs") or []
         assert len(logs) >= 1
         assert "before" in logs[0]
         assert "after" in logs[0]

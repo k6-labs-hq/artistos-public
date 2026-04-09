@@ -104,9 +104,7 @@ class TestCatalogMatchingByTitle:
 
         # ISRC, ISWC, IPI all return None; title query returns [work]
         mock_db.query.return_value.filter.return_value.first.return_value = None
-        mock_db.query.return_value.filter.return_value.limit.return_value.all.return_value = [
-            work
-        ]
+        mock_db.query.return_value.filter.return_value.limit.return_value.all.return_value = [work]
 
         module = CatalogMatchingModule(mock_db)
         fp = _make_fingerprint(title="Test Song", artist_name="Test Artist")
@@ -120,9 +118,7 @@ class TestCatalogMatchingByTitle:
         mock_db = MagicMock()
         work = _make_work(title="Completely Different")
         mock_db.query.return_value.filter.return_value.first.return_value = None
-        mock_db.query.return_value.filter.return_value.limit.return_value.all.return_value = [
-            work
-        ]
+        mock_db.query.return_value.filter.return_value.limit.return_value.all.return_value = [work]
 
         module = CatalogMatchingModule(mock_db)
         fp = _make_fingerprint(title="Nothing Like It")

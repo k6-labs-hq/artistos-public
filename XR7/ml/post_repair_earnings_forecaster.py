@@ -102,8 +102,12 @@ class PostRepairEarningsForecaster:
         horizons = [30, 60, 90, 180]
         horizon_rows: dict[str, dict[str, Any]] = {}
         for h in horizons:
-            expected = max(0.0, (baseline + (effective_slope * h * 0.5)) * h * seasonality * repair_factor)
-            band = max(expected * (1.0 - confidence_level) * 0.9, sigma * np.sqrt(max(h / 30.0, 1.0)))
+            expected = max(
+                0.0, (baseline + (effective_slope * h * 0.5)) * h * seasonality * repair_factor
+            )
+            band = max(
+                expected * (1.0 - confidence_level) * 0.9, sigma * np.sqrt(max(h / 30.0, 1.0))
+            )
             low = max(0.0, expected - band)
             high = max(0.0, expected + band)
             horizon_rows[str(h)] = {

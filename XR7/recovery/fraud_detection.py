@@ -4,7 +4,9 @@ import hashlib
 from typing import Any
 
 
-def run_fraud_scan(claims: list[dict[str, Any]], statements: list[dict[str, Any]]) -> dict[str, Any]:
+def run_fraud_scan(
+    claims: list[dict[str, Any]], statements: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Detect duplicate claims, potential tampering, and suspicious statement patterns."""
     seen_claim_keys: set[tuple[str, str]] = set()
     duplicate_claims: list[dict[str, Any]] = []
@@ -12,7 +14,9 @@ def run_fraud_scan(claims: list[dict[str, Any]], statements: list[dict[str, Any]
     for c in claims:
         key = (str(c.get("anomaly_id") or ""), str(c.get("claim_type") or ""))
         if key in seen_claim_keys:
-            duplicate_claims.append({"claim_id": c.get("id"), "reason": "duplicate_anomaly_claim_type"})
+            duplicate_claims.append(
+                {"claim_id": c.get("id"), "reason": "duplicate_anomaly_claim_type"}
+            )
         else:
             seen_claim_keys.add(key)
 
@@ -29,7 +33,9 @@ def run_fraud_scan(claims: list[dict[str, Any]], statements: list[dict[str, Any]
         row_count = int(s.get("row_count") or 0)
         events_created = int(s.get("events_created") or 0)
         if row_count > 0 and events_created == 0:
-            suspicious.append({"statement_id": s.get("id"), "reason": "no_events_from_nonempty_file"})
+            suspicious.append(
+                {"statement_id": s.get("id"), "reason": "no_events_from_nonempty_file"}
+            )
 
     return {
         "duplicate_claims": duplicate_claims,

@@ -70,8 +70,14 @@ class Claim(Base):
     attorney_review_required: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     legal_defensibility_report: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
     claim_strength_rating: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
 
 class ClaimSchema(BaseModel):

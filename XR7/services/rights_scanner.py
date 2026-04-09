@@ -3,6 +3,7 @@
 Detects missing ISRC/ISWC/UPC/PRO/foreign registrations per work and
 generates submission packets for PRS, GEMA, SACEM, ASCAP, BMI etc.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -40,25 +41,29 @@ def scan_rights_gaps(db: Session, artist_id: str) -> list[dict[str, Any]]:
 
         for identifier, description in _REQUIRED_IDENTIFIERS.items():
             if not work_meta.get(identifier):
-                gaps.append({
-                    "work_id": work.id,
-                    "work_title": getattr(work, "title", None),
-                    "gap_type": f"missing_{identifier}",
-                    "description": description,
-                    "territory": "global",
-                })
+                gaps.append(
+                    {
+                        "work_id": work.id,
+                        "work_title": getattr(work, "title", None),
+                        "gap_type": f"missing_{identifier}",
+                        "description": description,
+                        "territory": "global",
+                    }
+                )
 
         # Foreign society registrations
         registered_societies: list[str] = list(work_meta.get("registered_societies") or [])
         for society in _FOREIGN_SOCIETIES:
             if society not in registered_societies:
-                gaps.append({
-                    "work_id": work.id,
-                    "work_title": getattr(work, "title", None),
-                    "gap_type": "unregistered_foreign",
-                    "description": f"Not registered with {society}.",
-                    "territory": society,
-                })
+                gaps.append(
+                    {
+                        "work_id": work.id,
+                        "work_title": getattr(work, "title", None),
+                        "gap_type": "unregistered_foreign",
+                        "description": f"Not registered with {society}.",
+                        "territory": society,
+                    }
+                )
 
     return gaps
 

@@ -62,6 +62,7 @@ def test_bulk_onboard_allows_manager(monkeypatch):
 # PARTNER-301 — Portfolio and legal export authorization matrix
 # ---------------------------------------------------------------------------
 
+
 def test_portfolio_export_blocks_unknown_role(monkeypatch):
     monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
     resp = client.get("/management/org-1/portfolio/export", headers=_headers("viewer"))

@@ -152,11 +152,21 @@ class XR7PlatformAPIClient:
         until: datetime | None,
     ) -> dict[str, list[dict[str, Any]]]:
         return {
-            "catalog": self._fetch_optional(self.config.catalog_path, scheduler, since=since, until=until),
-            "usage": self._fetch_optional(self.config.usage_path, scheduler, since=since, until=until),
-            "monetization": self._fetch_optional(self.config.monetization_path, scheduler, since=since, until=until),
-            "performance": self._fetch_optional(self.config.performance_path, scheduler, since=since, until=until),
-            "fingerprints": self._fetch_optional(self.config.fingerprint_path, scheduler, since=since, until=until),
+            "catalog": self._fetch_optional(
+                self.config.catalog_path, scheduler, since=since, until=until
+            ),
+            "usage": self._fetch_optional(
+                self.config.usage_path, scheduler, since=since, until=until
+            ),
+            "monetization": self._fetch_optional(
+                self.config.monetization_path, scheduler, since=since, until=until
+            ),
+            "performance": self._fetch_optional(
+                self.config.performance_path, scheduler, since=since, until=until
+            ),
+            "fingerprints": self._fetch_optional(
+                self.config.fingerprint_path, scheduler, since=since, until=until
+            ),
         }
 
     def _fetch_optional(

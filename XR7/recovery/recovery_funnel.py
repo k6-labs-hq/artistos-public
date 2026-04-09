@@ -15,7 +15,9 @@ def _days_between(start: datetime | None, end: datetime | None) -> int:
     return max(0, int((end - start).days))
 
 
-def compute_recovery_funnel(anomalies: list[dict[str, Any]], claims: list[dict[str, Any]], deposits: list[dict[str, Any]]) -> dict[str, Any]:
+def compute_recovery_funnel(
+    anomalies: list[dict[str, Any]], claims: list[dict[str, Any]], deposits: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Compute anomaly-to-deposit funnel metrics including drop-off and bottlenecks."""
     anomaly_count = len(anomalies)
     claim_count = len(claims)

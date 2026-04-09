@@ -3,9 +3,13 @@ from __future__ import annotations
 from typing import Any
 
 
-def forecast_recovery_portfolio(base_expected_recovery: float, payer_adjustment: float = 1.0) -> dict[str, Any]:
+def forecast_recovery_portfolio(
+    base_expected_recovery: float, payer_adjustment: float = 1.0
+) -> dict[str, Any]:
     """Forecast expected recovery at 30/60/90 day horizons with confidence intervals."""
-    base = max(0.0, float(base_expected_recovery)) * max(0.5, min(1.5, float(payer_adjustment or 1.0)))
+    base = max(0.0, float(base_expected_recovery)) * max(
+        0.5, min(1.5, float(payer_adjustment or 1.0))
+    )
     r30 = base * 0.35
     r60 = base * 0.65
     r90 = base

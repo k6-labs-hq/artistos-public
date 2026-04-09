@@ -5,6 +5,7 @@ Generates a live counterparty risk rating (0–100) for every distributor,
 PRO, label, streaming platform, and payer organisation in the artist's
 earnings ecosystem.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -107,7 +108,9 @@ class PayerHealthScorer:
         chain_hash = _compute_hash(artist_id, payload_for_hash)
         try:
             ImmutableLedgerService(self.db).append(
-                artist_id, "payer_health_scores_refreshed", {**payload_for_hash, "chain_hash": chain_hash}
+                artist_id,
+                "payer_health_scores_refreshed",
+                {**payload_for_hash, "chain_hash": chain_hash},
             )
         except Exception:  # noqa: BLE001
             logger.warning("Failed to append ledger for payer_health_scores")
@@ -157,12 +160,23 @@ class PayerHealthScorer:
 
         # 5. Data quality (0–15): payments with complete data
         complete_payments = sum(
-            1 for p in payments
-            if getattr(p, "amount", None) is not None and (getattr(p, "received_at", None) is not None or getattr(p, "period_start", None) is not None)
+            1
+            for p in payments
+            if getattr(p, "amount", None) is not None
+            and (
+                getattr(p, "received_at", None) is not None
+                or getattr(p, "period_start", None) is not None
+            )
         )
         data_quality = round((complete_payments / payer_payment_count) * 15)
 
-        composite = payment_accuracy + redistribution_timing + rate_drift + dispute_resolution + data_quality
+        composite = (
+            payment_accuracy
+            + redistribution_timing
+            + rate_drift
+            + dispute_resolution
+            + data_quality
+        )
         composite = max(0, min(100, composite))
         tier = _risk_tier(composite)
 
@@ -221,6 +235,7 @@ def global_aggregate_scores(db: Session, limit: int = 20) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def refresh_scores(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.payer_health.refresh_scores"""

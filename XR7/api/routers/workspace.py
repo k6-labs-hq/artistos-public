@@ -28,7 +28,9 @@ def _require_workspace_role(
 
     role = x_workspace_role.strip().lower()
     if role not in {"manager", "attorney", "enterprise"}:
-        raise HTTPException(status_code=403, detail="Workspace role must be manager, attorney, or enterprise")
+        raise HTTPException(
+            status_code=403, detail="Workspace role must be manager, attorney, or enterprise"
+        )
     return role
 
 
@@ -88,7 +90,9 @@ def workspace_claims(role: str = Depends(_require_workspace_role), db: Session =
 
 
 @router.get("/deadlines")
-def workspace_deadlines(role: str = Depends(_require_workspace_role), db: Session = Depends(get_db)):
+def workspace_deadlines(
+    role: str = Depends(_require_workspace_role), db: Session = Depends(get_db)
+):
     artists = db.query(Artist).all()
     out = []
     for artist in artists:
@@ -116,7 +120,9 @@ def workspace_deadlines(role: str = Depends(_require_workspace_role), db: Sessio
                 }
                 for c in claims
             ],
-            contracts=[{"id": c.id, "terms": c.terms or {}, "territory": c.territory} for c in contracts],
+            contracts=[
+                {"id": c.id, "terms": c.terms or {}, "territory": c.territory} for c in contracts
+            ],
             payments=[{"id": p.id, "amount": p.amount} for p in payments],
         )
         out.append({"artist_id": artist.id, "artist_name": artist.name, **risk})

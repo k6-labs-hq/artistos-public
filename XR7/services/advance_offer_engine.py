@@ -1,4 +1,5 @@
 """Pillar 5 — Cash advance offer engine backed by recoverable forecast."""
+
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
@@ -13,7 +14,7 @@ from xr7_common.logging import get_logger
 logger = get_logger(__name__)
 
 _ADVANCE_OFFER_EXPIRY_DAYS = 7
-_MAX_ADVANCE_PCT_OF_FORECAST = 0.60   # Never advance more than 60 % of predicted low
+_MAX_ADVANCE_PCT_OF_FORECAST = 0.60  # Never advance more than 60 % of predicted low
 
 
 def compute_advance_offer(
@@ -92,4 +93,8 @@ def accept_advance(db: Session, *, advance_id: str, artist_id: str) -> dict[str,
     advance.status = AdvanceStatus.ACCEPTED
     advance.accepted_at = datetime.now(timezone.utc)
     db.commit()
-    return {"advance_id": advance_id, "status": advance.status, "message": "Advance accepted. Disbursement queued."}
+    return {
+        "advance_id": advance_id,
+        "status": advance.status,
+        "message": "Advance accepted. Disbursement queued.",
+    }

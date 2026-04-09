@@ -88,7 +88,9 @@ def test_reconcile_recovered_amount(db_session, artist_and_anomaly):
     assert updated.currency == "USD"
 
 
-def test_generate_evidence_packet_has_row_level_proof_and_reconciliation(db_session, artist_and_anomaly):
+def test_generate_evidence_packet_has_row_level_proof_and_reconciliation(
+    db_session, artist_and_anomaly
+):
     orchestrator = ClaimsOrchestrator(db_session)
 
     anomaly = db_session.query(Anomaly).filter(Anomaly.id == "anomaly-1").first()
@@ -132,7 +134,10 @@ def test_generate_evidence_packet_has_row_level_proof_and_reconciliation(db_sess
     assert packet["proof"]["totals"]["ledger_shortfall_amount"] == pytest.approx(130.0)
     assert packet["proof"]["missing_money_amount"] == pytest.approx(130.0)
     assert len(packet["proof"]["ledger_evidence"]) == 2
-    assert packet["proof"]["ledger_evidence"][0]["source_file"] in {"spotify_q1.csv", "apple_q1.csv"}
+    assert packet["proof"]["ledger_evidence"][0]["source_file"] in {
+        "spotify_q1.csv",
+        "apple_q1.csv",
+    }
     assert packet["reconciliation"]["model_shortfall_amount"] == pytest.approx(200.0)
     assert packet["reconciliation"]["proof_shortfall_amount"] == pytest.approx(130.0)
     assert packet["reconciliation"]["discrepancy_flag"] is True
@@ -143,7 +148,9 @@ def test_generate_evidence_packet_has_row_level_proof_and_reconciliation(db_sess
     assert updated_claim.evidence["claim_id"] == claim.id
 
 
-def test_generate_evidence_packet_without_ledger_uses_model_shortfall(db_session, artist_and_anomaly):
+def test_generate_evidence_packet_without_ledger_uses_model_shortfall(
+    db_session, artist_and_anomaly
+):
     orchestrator = ClaimsOrchestrator(db_session)
 
     anomaly = db_session.query(Anomaly).filter(Anomaly.id == "anomaly-1").first()
@@ -173,7 +180,9 @@ def test_generate_evidence_packet_integrity_chain_advances(db_session, artist_an
     assert first_packet["integrity"]["signature"]
     assert first_packet["metadata"]["packet_version"] == "1.1"
     assert first_packet["metadata"]["revision"] == 1
-    assert second_packet["integrity"]["prior_packet_hash"] == first_packet["integrity"]["packet_hash"]
+    assert (
+        second_packet["integrity"]["prior_packet_hash"] == first_packet["integrity"]["packet_hash"]
+    )
     assert second_packet["integrity"]["chain_hash"] != first_packet["integrity"]["chain_hash"]
     assert second_packet["metadata"]["revision"] == 2
 

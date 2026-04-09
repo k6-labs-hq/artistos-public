@@ -80,7 +80,9 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
         role=artist_in.role,
         ipi_number=artist_in.ipi_number,
         stage_names=artist_in.stage_names,
-        default_attorney_grace_period_days=max(1, int(artist_in.default_attorney_grace_period_days or 60)),
+        default_attorney_grace_period_days=max(
+            1, int(artist_in.default_attorney_grace_period_days or 60)
+        ),
         primary_jurisdiction=(artist_in.primary_jurisdiction or "USA").strip().upper(),
         preferred_contract_type=(artist_in.preferred_contract_type or "recording").strip().lower(),
         primary_vertical=(artist_in.primary_vertical or "MUSIC").strip().upper(),
@@ -113,9 +115,13 @@ def update_artist_preferences(
 ):
     artist = get_artist_or_404(artist_id, db)
 
-    artist.default_attorney_grace_period_days = max(1, int(payload.default_attorney_grace_period_days))
+    artist.default_attorney_grace_period_days = max(
+        1, int(payload.default_attorney_grace_period_days)
+    )
     artist.primary_jurisdiction = (payload.primary_jurisdiction or "USA").strip().upper()
-    artist.preferred_contract_type = (payload.preferred_contract_type or "recording").strip().lower()
+    artist.preferred_contract_type = (
+        (payload.preferred_contract_type or "recording").strip().lower()
+    )
     db.commit()
     db.refresh(artist)
     return inject_branding_metadata(db, _attorney_grace_period_settings_payload(artist))
@@ -152,8 +158,11 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
         try:
             c = connector_cls(config={}, **kwargs)
             ok = c.connect()
-            return {"source": name, "configured": ok,
-                    "status": "ready" if ok else "missing_credentials"}
+            return {
+                "source": name,
+                "configured": ok,
+                "status": "ready" if ok else "missing_credentials",
+            }
         except Exception as exc:  # noqa: BLE001
             return {"source": name, "configured": False, "status": f"error: {exc}"}
 
@@ -170,20 +179,23 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
     )
 
     configured_count = sum(1 for s in sources if s["configured"])
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "status": "ready" if configured_count > 0 else "no_connectors_configured",
-        "configured_sources": configured_count,
-        "total_sources": len(sources),
-        "sources": sources,
-        "next_steps": (
-            "Configure connector credentials via environment variables (see .env.example), "
-            "then call this endpoint again.  Alternatively, upload royalty statement CSV files "
-            "directly at POST /artists/{artist_id}/statements/upload — no API keys required."
-            if configured_count == 0
-            else "Use POST /artists/{artist_id}/statements/upload to ingest data from configured sources."
-        ),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "status": "ready" if configured_count > 0 else "no_connectors_configured",
+            "configured_sources": configured_count,
+            "total_sources": len(sources),
+            "sources": sources,
+            "next_steps": (
+                "Configure connector credentials via environment variables (see .env.example), "
+                "then call this endpoint again.  Alternatively, upload royalty statement CSV files "
+                "directly at POST /artists/{artist_id}/statements/upload — no API keys required."
+                if configured_count == 0
+                else "Use POST /artists/{artist_id}/statements/upload to ingest data from configured sources."
+            ),
+        },
+    )
 
 
 @router.get("/{artist_id}/summary")
@@ -195,11 +207,19 @@ def artist_summary(artist_id: str, db: Session = Depends(get_db)):
     anomaly_count = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()
     claim_count = db.query(Claim).filter(Claim.artist_id == artist_id).count()
     # Lifetime recovery potential and complexity scoring feed operator and artist planning.
-    potential = float(summary.get("total_expected", 0.0) or 0.0) - float(summary.get("total_received", 0.0) or 0.0)
+    potential = float(summary.get("total_expected", 0.0) or 0.0) - float(
+        summary.get("total_received", 0.0) or 0.0
+    )
     complexity = 0.0
-    complexity += min(1.0, float(db.query(Contract).filter(Contract.artist_id == artist_id).count()) / 10.0)
-    complexity += min(1.0, float(db.query(Event).filter(Event.artist_id == artist_id).count()) / 5000.0)
-    complexity += min(1.0, float(db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()) / 50.0)
+    complexity += min(
+        1.0, float(db.query(Contract).filter(Contract.artist_id == artist_id).count()) / 10.0
+    )
+    complexity += min(
+        1.0, float(db.query(Event).filter(Event.artist_id == artist_id).count()) / 5000.0
+    )
+    complexity += min(
+        1.0, float(db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()) / 50.0
+    )
     complexity_score = round(min(1.0, complexity / 3.0), 6)
 
     try:
@@ -232,7 +252,12 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
         for w in db.query(Work).filter(Work.artist_id == artist_id).all()
     ]
     payments = [
-        {"id": p.id, "amount": p.amount, "currency": p.currency, "received_at": p.received_at.isoformat()}
+        {
+            "id": p.id,
+            "amount": p.amount,
+            "currency": p.currency,
+            "received_at": p.received_at.isoformat(),
+        }
         for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
     ]
     anomalies = [
@@ -270,7 +295,11 @@ def weekly_digest(artist_id: str, db: Session = Depends(get_db)):
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
     contracts = db.query(Contract).filter(Contract.artist_id == artist_id).all()
     payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
-    preference = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+    preference = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist_id)
+        .first()
+    )
 
     digest = build_weekly_digest(
         artist_id=artist_id,
@@ -351,12 +380,15 @@ def connect_provider(artist_id: str, provider: str, db: Session = Depends(get_db
         link.is_active = True
     db.commit()
     db.refresh(link)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "provider": provider_key,
-        "status": provider_status(provider_key),
-        "link_id": link.id,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "provider": provider_key,
+            "status": provider_status(provider_key),
+            "link_id": link.id,
+        },
+    )
 
 
 @router.get("/{artist_id}/connect/{provider}/status")
@@ -366,23 +398,31 @@ def provider_connection_status(artist_id: str, provider: str, db: Session = Depe
     provider_key = normalize_provider(provider)
     links = (
         db.query(ConnectorAccountLink)
-        .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.provider == provider_key)
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id,
+            ConnectorAccountLink.provider == provider_key,
+        )
         .order_by(ConnectorAccountLink.updated_at.desc())
         .all()
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "provider": provider_key,
-        "status": provider_status(provider_key),
-        "accounts": [
-            {
-                "id": link.id,
-                "external_account_id": link.external_account_id,
-                "display_name": link.display_name,
-                "status": str(link.status),
-                "last_refreshed_at": link.last_refreshed_at.isoformat() if link.last_refreshed_at else None,
-                "is_active": bool(link.is_active),
-            }
-            for link in links
-        ],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "provider": provider_key,
+            "status": provider_status(provider_key),
+            "accounts": [
+                {
+                    "id": link.id,
+                    "external_account_id": link.external_account_id,
+                    "display_name": link.display_name,
+                    "status": str(link.status),
+                    "last_refreshed_at": (
+                        link.last_refreshed_at.isoformat() if link.last_refreshed_at else None
+                    ),
+                    "is_active": bool(link.is_active),
+                }
+                for link in links
+            ],
+        },
+    )

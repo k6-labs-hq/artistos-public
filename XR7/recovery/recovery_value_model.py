@@ -14,9 +14,9 @@ def portfolio_expected_recovery_value(
     """Estimate portfolio-level expected recovery value range and horizon."""
     total_est = sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies)
     anomaly_density = len(anomalies) / max(1.0, float(len(contracts) or 1))
-    payer_accept = (
-        sum(float(r.get("acceptance_probability") or 0.5) for r in payer_behavior_rows) / max(1.0, float(len(payer_behavior_rows) or 1))
-    )
+    payer_accept = sum(
+        float(r.get("acceptance_probability") or 0.5) for r in payer_behavior_rows
+    ) / max(1.0, float(len(payer_behavior_rows) or 1))
 
     health_factor = max(0.6, min(1.3, (catalog_health / 100.0) + 0.4))
     density_penalty = max(0.65, min(1.0, 1.0 - (anomaly_density * 0.03)))

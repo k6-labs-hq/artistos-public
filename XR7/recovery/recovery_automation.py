@@ -44,7 +44,9 @@ def automate_recovery(artist_id: str, findings: list[dict[str, Any]]) -> dict[st
 # ---------------------------------------------------------------------------
 
 
-def build_automation_plan(claim: dict[str, Any], deadline_risk: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_automation_plan(
+    claim: dict[str, Any], deadline_risk: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Generate automated follow-up/escalation/evidence refresh actions for claims."""
     status = str(claim.get("status") or "IDENTIFIED")
     risk_color = str((deadline_risk or {}).get("risk_color") or "GREEN")
@@ -63,7 +65,11 @@ def build_automation_plan(claim: dict[str, Any], deadline_risk: dict[str, Any] |
     if status in {"IDENTIFIED", "PREPARED"}:
         next_steps = ["Finalize packet", "Submit claim", "Schedule initial follow-up"]
     elif status in {"SUBMITTED", "FILED", "IN_REVIEW"}:
-        next_steps = ["Auto-send reminder", "Escalate if no response", "Regenerate evidence appendix"]
+        next_steps = [
+            "Auto-send reminder",
+            "Escalate if no response",
+            "Regenerate evidence appendix",
+        ]
     else:
         next_steps = ["Monitor settlement", "Track deposit status", "Close case checklist"]
 

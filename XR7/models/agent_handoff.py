@@ -22,4 +22,6 @@ class AgentHandoffRecord(Base):
     readiness_score: Mapped[float] = mapped_column(nullable=False)
     readiness_threshold: Mapped[float] = mapped_column(nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )

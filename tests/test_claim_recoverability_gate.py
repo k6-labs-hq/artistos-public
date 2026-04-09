@@ -14,7 +14,11 @@ client = TestClient(app)
 
 
 def _create_artist(session) -> Artist:
-    artist = Artist(id=str(uuid.uuid4()), name="Recoverability Gate Artist", created_at=datetime.now(timezone.utc))
+    artist = Artist(
+        id=str(uuid.uuid4()),
+        name="Recoverability Gate Artist",
+        created_at=datetime.now(timezone.utc),
+    )
     session.add(artist)
     session.commit()
     session.refresh(artist)

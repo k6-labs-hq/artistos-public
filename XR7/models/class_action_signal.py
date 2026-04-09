@@ -1,4 +1,5 @@
 """Pillar 8 — Crowdsourced class-action evidence aggregation signals."""
+
 from __future__ import annotations
 
 import uuid
@@ -12,6 +13,7 @@ from XR7.models.base import Base
 
 class ClassActionSignal(Base):
     """Aggregated payer-drift signal across multiple artists — potential class action."""
+
     __tablename__ = "class_action_signals"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

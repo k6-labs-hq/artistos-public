@@ -74,7 +74,11 @@ def with_idempotency_key(
         if is_duplicate:
             logger.info(
                 "Idempotency key reuse detected",
-                extra={"idempotency_key": idempotency_key, "tenant_id": tenant_id, "artist_id": artist_id},
+                extra={
+                    "idempotency_key": idempotency_key,
+                    "tenant_id": tenant_id,
+                    "artist_id": artist_id,
+                },
             )
             # Return cached response
             return cached_response

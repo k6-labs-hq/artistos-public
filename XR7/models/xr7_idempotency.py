@@ -92,7 +92,11 @@ class IdempotencyService:
             return (True, cached_body)
 
         # First time seeing this key; store it
-        response_body_str = json.dumps(response_body, default=str) if not isinstance(response_body, str) else response_body
+        response_body_str = (
+            json.dumps(response_body, default=str)
+            if not isinstance(response_body, str)
+            else response_body
+        )
 
         record = XR7IdempotencyRecord(
             id=str(uuid.uuid4()),

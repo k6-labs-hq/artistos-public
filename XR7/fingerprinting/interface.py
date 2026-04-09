@@ -96,9 +96,7 @@ class IFingerprintingProvider(ABC):
         """Return the provider's current operational health status."""
 
     @abstractmethod
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         """Convert a provider-native response dict into the XR7 normalized schema.
 
         This must be callable synchronously (no I/O) so the orchestrator can

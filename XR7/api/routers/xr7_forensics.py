@@ -70,10 +70,14 @@ def _dispatch_task(queue_backend: str, task_fn, payload: dict[str, Any], inline_
 
 
 @router.post("/artists/{artist_id}/xr7/credentials")
-def upsert_xr7_credentials(artist_id: str, payload: XR7ConnectorCredentialUpsert, db: Session = Depends(get_db)):
+def upsert_xr7_credentials(
+    artist_id: str, payload: XR7ConnectorCredentialUpsert, db: Session = Depends(get_db)
+):
     expires_at = None
     if payload.expires_in_seconds is not None:
-        expires_at = datetime.now(timezone.utc) + timedelta(seconds=max(0, payload.expires_in_seconds))
+        expires_at = datetime.now(timezone.utc) + timedelta(
+            seconds=max(0, payload.expires_in_seconds)
+        )
     row = upsert_connector_credential(
         db,
         tenant_id=payload.tenant_id,
@@ -132,7 +136,9 @@ async def run_file_ingestion(
 
 
 @router.post("/artists/{artist_id}/xr7/pipelines/fingerprinting")
-def run_fingerprinting(artist_id: str, payload: FingerprintingRequest, db: Session = Depends(get_db)):
+def run_fingerprinting(
+    artist_id: str, payload: FingerprintingRequest, db: Session = Depends(get_db)
+):
     out = run_fingerprinting_pipeline(
         db,
         tenant_id=payload.tenant_id,
@@ -144,7 +150,9 @@ def run_fingerprinting(artist_id: str, payload: FingerprintingRequest, db: Sessi
 
 
 @router.post("/artists/{artist_id}/xr7/pipelines/reconciliation")
-def run_reconciliation(artist_id: str, payload: ReconciliationRequest, db: Session = Depends(get_db)):
+def run_reconciliation(
+    artist_id: str, payload: ReconciliationRequest, db: Session = Depends(get_db)
+):
     out = run_reconciliation_pipeline(
         db,
         tenant_id=payload.tenant_id,
@@ -171,7 +179,9 @@ def get_gap_report(artist_id: str, tenant_id: str = "default", db: Session = Dep
 
 
 @router.post("/artists/{artist_id}/xr7/queue/api-ingestion")
-def queue_api_ingestion(artist_id: str, payload: APIIngestionRequest, db: Session = Depends(get_db)):
+def queue_api_ingestion(
+    artist_id: str, payload: APIIngestionRequest, db: Session = Depends(get_db)
+):
     retry = RETRY_POLICIES["api_ingestion"]
     job_payload = payload.model_dump(mode="json")
     dispatch = _dispatch_task(
@@ -261,7 +271,9 @@ async def queue_file_ingestion(
 
 
 @router.post("/artists/{artist_id}/xr7/queue/fingerprinting")
-def queue_fingerprinting(artist_id: str, payload: FingerprintingRequest, db: Session = Depends(get_db)):
+def queue_fingerprinting(
+    artist_id: str, payload: FingerprintingRequest, db: Session = Depends(get_db)
+):
     retry = RETRY_POLICIES["fingerprinting"]
     job_payload = payload.model_dump(mode="json")
     dispatch = _dispatch_task(
@@ -291,7 +303,9 @@ def queue_fingerprinting(artist_id: str, payload: FingerprintingRequest, db: Ses
 
 
 @router.post("/artists/{artist_id}/xr7/queue/reconciliation")
-def queue_reconciliation(artist_id: str, payload: ReconciliationRequest, db: Session = Depends(get_db)):
+def queue_reconciliation(
+    artist_id: str, payload: ReconciliationRequest, db: Session = Depends(get_db)
+):
     retry = RETRY_POLICIES["reconciliation"]
     job_payload = payload.model_dump(mode="json")
     dispatch = _dispatch_task(

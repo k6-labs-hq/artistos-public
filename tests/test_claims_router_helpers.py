@@ -5,6 +5,7 @@ Covers:
 - _compute_anomaly_trust: returns (recoverability, trust) tuple with expected keys
 - get_artist_or_404: raises 404 for missing artist, returns Artist for existing one
 """
+
 from __future__ import annotations
 
 import types
@@ -105,10 +106,18 @@ def test_anomaly_to_payload_has_all_keys():
     a = _make_anomaly()
     payload = _anomaly_to_payload(a)
     expected_keys = {
-        "id", "artist_id", "category", "subtype", "severity",
-        "estimated_recoverable", "confidence_score",
-        "time_window_start", "time_window_end",
-        "description", "feature_snapshot", "created_at",
+        "id",
+        "artist_id",
+        "category",
+        "subtype",
+        "severity",
+        "estimated_recoverable",
+        "confidence_score",
+        "time_window_start",
+        "time_window_end",
+        "description",
+        "feature_snapshot",
+        "created_at",
     }
     assert expected_keys.issubset(set(payload.keys()))
 
@@ -128,7 +137,9 @@ def test_compute_anomaly_trust_returns_two_dicts():
 def test_compute_anomaly_trust_with_description_uses_higher_completeness():
     """When description is present, data_completeness is 0.85; absent → 0.6.
     We can observe this indirectly through trust score differences."""
-    payload_with_desc = _anomaly_to_payload(_make_anomaly(description="Something", confidence_score=0.9))
+    payload_with_desc = _anomaly_to_payload(
+        _make_anomaly(description="Something", confidence_score=0.9)
+    )
     payload_no_desc = _anomaly_to_payload(_make_anomaly(description=None, confidence_score=0.9))
 
     _, trust_with = _compute_anomaly_trust(payload_with_desc)

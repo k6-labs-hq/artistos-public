@@ -18,6 +18,7 @@ the failing checks.  The task does NOT raise on failure so Celery does not
 retry backup-validation checks automatically (we want a weekly cadence, not
 a retry storm).
 """
+
 from __future__ import annotations
 
 import os

@@ -1,4 +1,5 @@
 """Pillar 6 — Weekly Earnings Story generator + message feed writer."""
+
 from __future__ import annotations
 
 from typing import Any

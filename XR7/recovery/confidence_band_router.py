@@ -76,12 +76,16 @@ class ConfidenceBandRouter:
             elif band == "medium":
                 # Medium confidence: enqueue to analyst review
                 actions.append("enqueue_analyst_review")
-                self._enqueue_analyst_review(anomaly_id, artist_id, confidence, estimate_recoverable, payload)
+                self._enqueue_analyst_review(
+                    anomaly_id, artist_id, confidence, estimate_recoverable, payload
+                )
 
             else:  # band == "low"
                 # Low confidence: enqueue to watchlist/unmatched
                 actions.append("enqueue_watchlist")
-                self._enqueue_watchlist(anomaly_id, artist_id, confidence, estimate_recoverable, payload)
+                self._enqueue_watchlist(
+                    anomaly_id, artist_id, confidence, estimate_recoverable, payload
+                )
 
             return {
                 "band": band,
@@ -89,14 +93,18 @@ class ConfidenceBandRouter:
                 "case_id": case_id,
             }
         except Exception as e:
-            logger.exception(f"Confidence-band routing failed for anomaly {anomaly_id}", extra={"band": band})
+            logger.exception(
+                f"Confidence-band routing failed for anomaly {anomaly_id}", extra={"band": band}
+            )
             return {
                 "band": band,
                 "actions": [f"routing_error:{str(e)}"],
                 "case_id": None,
             }
 
-    def _auto_create_case(self, anomaly_id: str, artist_id: str, payload: dict[str, Any]) -> str | None:
+    def _auto_create_case(
+        self, anomaly_id: str, artist_id: str, payload: dict[str, Any]
+    ) -> str | None:
         """Auto-create a case for high-confidence anomalies."""
         try:
             case = Claim(
@@ -116,7 +124,9 @@ class ConfidenceBandRouter:
             )
             return case.id
         except Exception as e:
-            logger.exception(f"Failed to auto-create case for anomaly {anomaly_id}", extra={"error": str(e)})
+            logger.exception(
+                f"Failed to auto-create case for anomaly {anomaly_id}", extra={"error": str(e)}
+            )
             return None
 
     def _enqueue_analyst_review(

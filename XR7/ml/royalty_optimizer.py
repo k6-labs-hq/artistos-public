@@ -34,5 +34,9 @@ class RoyaltyOptimizer:
         return {
             "chart": "bar",
             "labels": ["baseline", "projected", "delta"],
-            "values": [simulation.get("baseline"), simulation.get("projected"), simulation.get("delta")],
+            "values": [
+                simulation.get("baseline"),
+                simulation.get("projected"),
+                simulation.get("delta"),
+            ],
         }

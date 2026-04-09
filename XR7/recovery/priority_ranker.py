@@ -67,6 +67,7 @@ _GLOBAL_DEFAULT_RECOVERABLE = 500.0
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 class ActionType:
     INVESTIGATE_ANOMALY = "INVESTIGATE_ANOMALY"
     FILE_CLAIM = "FILE_CLAIM"
@@ -79,14 +80,14 @@ class PriorityItem:
     """A single scored item in the priority queue."""
 
     item_id: str
-    item_type: str                    # "ANOMALY" or "CLAIM"
-    action: str                       # see ActionType
+    item_type: str  # "ANOMALY" or "CLAIM"
+    action: str  # see ActionType
     artist_id: str
     category: str
     subtype: str
-    priority_score: float             # raw score (before normalisation)
-    priority_rank: int = 0            # 1 = highest priority
-    normalised_score: float = 0.0     # [0, 100]
+    priority_score: float  # raw score (before normalisation)
+    priority_rank: int = 0  # 1 = highest priority
+    normalised_score: float = 0.0  # [0, 100]
     estimated_recoverable: float = 0.0
     confidence_score: float = 0.0
     sol_status: str = "UNKNOWN"
@@ -116,6 +117,7 @@ class PriorityItem:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _age_factor(created_at: datetime | None, reference_dt: datetime) -> float:
     """
@@ -163,6 +165,7 @@ def _normalise(scores: list[float]) -> list[float]:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def rank_anomalies(
     anomalies: list[dict],
@@ -230,9 +233,7 @@ def rank_anomalies(
     # Normalise and rank
     raw_scores = [it.priority_score for it in items]
     normalised = _normalise(raw_scores)
-    sorted_items = sorted(
-        zip(items, normalised), key=lambda x: x[1], reverse=True
-    )
+    sorted_items = sorted(zip(items, normalised), key=lambda x: x[1], reverse=True)
     for rank, (item, norm) in enumerate(sorted_items, start=1):
         item.priority_rank = rank
         item.normalised_score = norm
@@ -305,9 +306,7 @@ def rank_claims(
 
     raw_scores = [it.priority_score for it in items]
     normalised = _normalise(raw_scores)
-    sorted_items = sorted(
-        zip(items, normalised), key=lambda x: x[1], reverse=True
-    )
+    sorted_items = sorted(zip(items, normalised), key=lambda x: x[1], reverse=True)
     for rank, (item, norm) in enumerate(sorted_items, start=1):
         item.priority_rank = rank
         item.normalised_score = norm

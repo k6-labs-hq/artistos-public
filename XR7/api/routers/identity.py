@@ -77,11 +77,16 @@ def list_identity_matches(
         .order_by(ArtistIdentityMatch.created_at.desc())
         .all()
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "count": len(rows),
-        "matches": [ArtistIdentityMatchSchema.model_validate(r).model_dump(mode="json") for r in rows],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "count": len(rows),
+            "matches": [
+                ArtistIdentityMatchSchema.model_validate(r).model_dump(mode="json") for r in rows
+            ],
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/identity/matches/{match_id}/audit")
@@ -106,15 +111,24 @@ def get_identity_match_audit(
         .order_by(ArtistIdentityMatchAudit.created_at.asc())
         .all()
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "match_id": match_id,
-        "chain_head": match.chain_hash,
-        "audit": [ArtistIdentityMatchAuditSchema.model_validate(a).model_dump(mode="json") for a in audits],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "match_id": match_id,
+            "chain_head": match.chain_hash,
+            "audit": [
+                ArtistIdentityMatchAuditSchema.model_validate(a).model_dump(mode="json")
+                for a in audits
+            ],
+        },
+    )
 
 
-@router.post("/artists/{artist_id}/identity/matches/{match_id}/decision", response_model=ArtistIdentityMatchSchema)
+@router.post(
+    "/artists/{artist_id}/identity/matches/{match_id}/decision",
+    response_model=ArtistIdentityMatchSchema,
+)
 def decide_identity_match(
     artist_id: str,
     match_id: str,
@@ -136,7 +150,9 @@ def decide_identity_match(
         IdentityDecisionStatus.PENDING_SOFT_CONFIRM,
         IdentityDecisionStatus.PENDING_EXPLICIT_CONFIRM,
     }:
-        raise HTTPException(status_code=422, detail="Only CONFIRMED or REJECTED are accepted decisions")
+        raise HTTPException(
+            status_code=422, detail="Only CONFIRMED or REJECTED are accepted decisions"
+        )
 
     try:
         updated = apply_identity_decision(

@@ -30,40 +30,41 @@ from XR7.utils.datetime_utils import parse_date as _parse_date
 
 # How often an artist can invoke their audit right, by contract type.
 DEFAULT_AUDIT_INTERVALS: dict[str, int] = {
-    "LABEL":      3,   # years
+    "LABEL": 3,  # years
     "PUBLISHING": 2,
-    "MERCH":      2,
-    "TOURING":    1,
-    "SYNC":       2,
-    "BRAND":      1,
-    "GRANT":      2,
+    "MERCH": 2,
+    "TOURING": 1,
+    "SYNC": 2,
+    "BRAND": 1,
+    "GRANT": 2,
 }
 
 # Expected recovery rate as a fraction of total payments during the audit period.
 # Based on industry audit study averages.
 DEFAULT_RECOVERY_RATES: dict[str, float] = {
-    "LABEL":      0.15,   # 15 % of payments audited
+    "LABEL": 0.15,  # 15 % of payments audited
     "PUBLISHING": 0.12,
-    "MERCH":      0.10,
-    "TOURING":    0.08,
-    "SYNC":       0.18,   # Sync deals have historically high error rates
-    "BRAND":      0.07,
-    "GRANT":      0.05,
+    "MERCH": 0.10,
+    "TOURING": 0.08,
+    "SYNC": 0.18,  # Sync deals have historically high error rates
+    "BRAND": 0.07,
+    "GRANT": 0.05,
 }
 
-_DEFAULT_AUDIT_INTERVAL = 3       # years, fallback
-_DEFAULT_RECOVERY_RATE = 0.10     # 10 %, fallback
+_DEFAULT_AUDIT_INTERVAL = 3  # years, fallback
+_DEFAULT_RECOVERY_RATE = 0.10  # 10 %, fallback
 
 
 # ---------------------------------------------------------------------------
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 class AuditEligibility:
-    ELIGIBLE = "ELIGIBLE"               # Audit right is available now
-    ELIGIBLE_SOON = "ELIGIBLE_SOON"     # Eligible within the next 90 days
+    ELIGIBLE = "ELIGIBLE"  # Audit right is available now
+    ELIGIBLE_SOON = "ELIGIBLE_SOON"  # Eligible within the next 90 days
     NOT_YET_ELIGIBLE = "NOT_YET_ELIGIBLE"
-    NEVER_AUDITED = "NEVER_AUDITED"     # No audit on record — highest priority
+    NEVER_AUDITED = "NEVER_AUDITED"  # No audit on record — highest priority
 
 
 @dataclass
@@ -74,9 +75,9 @@ class AuditRecommendation:
     contract_type: str
     counterparty: str
     eligibility: str
-    days_until_eligible: int | None    # None means already eligible
-    last_audit_date: str | None        # ISO date string or None
-    next_eligible_date: str | None     # ISO date string or None
+    days_until_eligible: int | None  # None means already eligible
+    last_audit_date: str | None  # ISO date string or None
+    next_eligible_date: str | None  # ISO date string or None
     audit_interval_years: int
     estimated_recovery: float
     total_payments_in_period: float
@@ -103,6 +104,7 @@ class AuditRecommendation:
 # ---------------------------------------------------------------------------
 # Core logic
 # ---------------------------------------------------------------------------
+
 
 def _payments_in_period(
     payments: list[dict],
@@ -251,18 +253,26 @@ def audit_summary(recommendations: list[AuditRecommendation]) -> dict:
     """
     Produce a high-level summary dict from a list of audit recommendations.
     """
-    eligible = [r for r in recommendations if r.eligibility in (
-        AuditEligibility.ELIGIBLE, AuditEligibility.NEVER_AUDITED
-    )]
+    eligible = [
+        r
+        for r in recommendations
+        if r.eligibility in (AuditEligibility.ELIGIBLE, AuditEligibility.NEVER_AUDITED)
+    ]
     total_potential = sum(r.estimated_recovery for r in recommendations)
     eligible_potential = sum(r.estimated_recovery for r in eligible)
 
     return {
         "total_contracts": len(recommendations),
         "eligible_for_audit": len(eligible),
-        "eligible_soon": sum(1 for r in recommendations if r.eligibility == AuditEligibility.ELIGIBLE_SOON),
-        "not_yet_eligible": sum(1 for r in recommendations if r.eligibility == AuditEligibility.NOT_YET_ELIGIBLE),
-        "never_audited": sum(1 for r in recommendations if r.eligibility == AuditEligibility.NEVER_AUDITED),
+        "eligible_soon": sum(
+            1 for r in recommendations if r.eligibility == AuditEligibility.ELIGIBLE_SOON
+        ),
+        "not_yet_eligible": sum(
+            1 for r in recommendations if r.eligibility == AuditEligibility.NOT_YET_ELIGIBLE
+        ),
+        "never_audited": sum(
+            1 for r in recommendations if r.eligibility == AuditEligibility.NEVER_AUDITED
+        ),
         "total_potential_recovery": round(total_potential, 2),
         "immediately_actionable_recovery": round(eligible_potential, 2),
     }

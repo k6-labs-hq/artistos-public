@@ -25196,7 +25196,14 @@
             "title": "Trust Score"
           },
           "urgent_flag": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Urgent Flag",
             "default": false
           },

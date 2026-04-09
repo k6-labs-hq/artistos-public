@@ -11,7 +11,9 @@ def _bearer_scheme_names(spec: dict) -> set[str]:
     schemes = (spec.get("components") or {}).get("securitySchemes") or {}
     names: set[str] = set()
     for name, scheme in schemes.items():
-        if (scheme or {}).get("type") == "http" and str((scheme or {}).get("scheme") or "").lower() == "bearer":
+        if (scheme or {}).get("type") == "http" and str(
+            (scheme or {}).get("scheme") or ""
+        ).lower() == "bearer":
             names.add(name)
     return names
 

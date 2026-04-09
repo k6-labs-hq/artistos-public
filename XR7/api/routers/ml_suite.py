@@ -111,15 +111,22 @@ def ml_calibration_dashboard(
     get_artist_or_404(artist_id, db)
 
     summary = SuccessProbabilityCalibrator().calibration_summary(artist_id, db)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "calibration": summary,
-        "dashboard": {
-            "status": "healthy" if float(summary.get("avg_posterior_success_rate") or 0.0) >= 0.55 else "watch",
-            "recommended_actions": [
-                "Feed new claim outcomes to keep posterior rates calibrated.",
-                "Review low-confidence categories in analyst queue.",
-                "Compare forecast confidence bands against realized deposits monthly.",
-            ],
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "calibration": summary,
+            "dashboard": {
+                "status": (
+                    "healthy"
+                    if float(summary.get("avg_posterior_success_rate") or 0.0) >= 0.55
+                    else "watch"
+                ),
+                "recommended_actions": [
+                    "Feed new claim outcomes to keep posterior rates calibrated.",
+                    "Review low-confidence categories in analyst queue.",
+                    "Compare forecast confidence bands against realized deposits monthly.",
+                ],
+            },
         },
-    })
+    )

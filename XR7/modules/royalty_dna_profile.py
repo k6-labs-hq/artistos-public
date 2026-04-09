@@ -5,6 +5,7 @@ Generates a visual earnings fingerprint: per-platform, per-territory,
 per-royalty-type breakdown with concentration risk, territory gaps,
 seasonality, and an ArtistComfortAgent insight narrative.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -39,7 +40,16 @@ _ROYALTY_TYPES = [
 ]
 
 _MAJOR_TERRITORIES = [
-    "US", "GB", "DE", "FR", "JP", "CA", "AU", "SE", "NL", "BR",
+    "US",
+    "GB",
+    "DE",
+    "FR",
+    "JP",
+    "CA",
+    "AU",
+    "SE",
+    "NL",
+    "BR",
 ]
 
 
@@ -48,14 +58,13 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-
 def _herfindahl_index(shares: list[float]) -> float:
     """Return HHI (0–1). 1 = perfect monopoly."""
     total = sum(shares)
     if total == 0:
         return 0.0
     normalised = [s / total for s in shares]
-    return round(sum(x ** 2 for x in normalised), 4)
+    return round(sum(x**2 for x in normalised), 4)
 
 
 class RoyaltyDNAProfile:
@@ -76,7 +85,9 @@ class RoyaltyDNAProfile:
         for p in payments:
             source = str(getattr(p, "source", None) or "Unknown")
             territory = str(getattr(p, "territory", None) or getattr(p, "source", None) or "US")
-            rtype = str(getattr(p, "royalty_type", None) or getattr(p, "payment_type", None) or "ROYALTY")
+            rtype = str(
+                getattr(p, "royalty_type", None) or getattr(p, "payment_type", None) or "ROYALTY"
+            )
             amount = float(p.amount or 0.0)
             dt = _ensure_utc(getattr(p, "received_at", None) or getattr(p, "period_start", None))
 
@@ -115,7 +126,8 @@ class RoyaltyDNAProfile:
         earning_territories = set(territory_totals.keys())
         registered_territories = {t.upper() for t in earning_territories}  # proxy
         territory_gaps = [
-            t for t in _MAJOR_TERRITORIES
+            t
+            for t in _MAJOR_TERRITORIES
             if t not in registered_territories and t not in earning_territories
         ]
 
@@ -162,9 +174,11 @@ class RoyaltyDNAProfile:
 
         # Revenue concentration score (HHI)
         concentration_score = _herfindahl_index(list(platform_totals.values()))
-        top3_concentration = round(
-            sum(sorted(platform_totals.values(), reverse=True)[:3]) / total_earned * 100, 1
-        ) if platform_totals else 0.0
+        top3_concentration = (
+            round(sum(sorted(platform_totals.values(), reverse=True)[:3]) / total_earned * 100, 1)
+            if platform_totals
+            else 0.0
+        )
 
         # Catalog long-tail ratio
         work_values = sorted(work_totals.values(), reverse=True)
@@ -173,10 +187,7 @@ class RoyaltyDNAProfile:
 
         # Platform seasonality: months where each platform is +/- vs average
         seasonal_avg = sum(monthly_totals.values()) / max(len(monthly_totals), 1)
-        seasonality = {
-            month: round(v - seasonal_avg, 2)
-            for month, v in monthly_totals.items()
-        }
+        seasonality = {month: round(v - seasonal_avg, 2) for month, v in monthly_totals.items()}
 
         # DNA strand segments
         dna_strand = [
@@ -208,7 +219,9 @@ class RoyaltyDNAProfile:
         chain_hash = _compute_hash(artist_id, payload_for_hash)
         try:
             ImmutableLedgerService(self.db).append(
-                artist_id, "royalty_dna_profile_generated", {**payload_for_hash, "chain_hash": chain_hash}
+                artist_id,
+                "royalty_dna_profile_generated",
+                {**payload_for_hash, "chain_hash": chain_hash},
             )
         except Exception:  # noqa: BLE001
             logger.warning("Failed to append ledger for royalty_dna_profile")
@@ -307,6 +320,7 @@ def _generate_insights(
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def generate_profile(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.royalty_dna.generate_profile"""

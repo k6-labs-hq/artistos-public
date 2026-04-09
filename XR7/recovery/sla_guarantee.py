@@ -28,7 +28,14 @@ def sla_status_for_artist(claims: list[dict[str, Any]], target_days: int = 45) -
         breached = remaining < 0 and str(c.get("status")) not in {"PAID", "CLOSED"}
         if breached:
             breaches += 1
-        timers.append({"claim_id": c.get("id"), "age_days": age, "days_remaining": remaining, "breached": breached})
+        timers.append(
+            {
+                "claim_id": c.get("id"),
+                "age_days": age,
+                "days_remaining": remaining,
+                "breached": breached,
+            }
+        )
 
         forecast_risk = "LOW"
         if remaining <= 0:

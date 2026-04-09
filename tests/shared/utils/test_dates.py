@@ -16,6 +16,7 @@ from shared.utils.dates import ensure_utc, period_key
 # ensure_utc
 # ---------------------------------------------------------------------------
 
+
 class TestEnsureUtcNoneHandling:
     def test_none_fallback_to_now_returns_datetime(self):
         result = ensure_utc(None)
@@ -102,6 +103,7 @@ class TestEnsureUtcAwareDatetime:
 # period_key
 # ---------------------------------------------------------------------------
 
+
 class TestPeriodKeyMonth:
     def test_january(self):
         dt = datetime(2025, 1, 15, tzinfo=timezone.utc)
@@ -121,12 +123,23 @@ class TestPeriodKeyMonth:
 
 
 class TestPeriodKeyQuarter:
-    @pytest.mark.parametrize("month,expected_q", [
-        (1, "Q1"), (2, "Q1"), (3, "Q1"),
-        (4, "Q2"), (5, "Q2"), (6, "Q2"),
-        (7, "Q3"), (8, "Q3"), (9, "Q3"),
-        (10, "Q4"), (11, "Q4"), (12, "Q4"),
-    ])
+    @pytest.mark.parametrize(
+        "month,expected_q",
+        [
+            (1, "Q1"),
+            (2, "Q1"),
+            (3, "Q1"),
+            (4, "Q2"),
+            (5, "Q2"),
+            (6, "Q2"),
+            (7, "Q3"),
+            (8, "Q3"),
+            (9, "Q3"),
+            (10, "Q4"),
+            (11, "Q4"),
+            (12, "Q4"),
+        ],
+    )
     def test_month_maps_to_quarter(self, month, expected_q):
         dt = datetime(2025, month, 1, tzinfo=timezone.utc)
         assert period_key(dt, "quarter") == f"2025-{expected_q}"
@@ -178,6 +191,7 @@ class TestPeriodKeySortability:
 # ---------------------------------------------------------------------------
 # Additional branches and edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestEnsureUtcAdditional:
     def test_fallback_to_now_false_ignored_for_non_none_dt(self):

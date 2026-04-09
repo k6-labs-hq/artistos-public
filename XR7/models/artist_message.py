@@ -1,4 +1,5 @@
 """Pillar 6 — Natural-language conversational messages + weekly story feed."""
+
 from __future__ import annotations
 
 import enum
@@ -24,6 +25,7 @@ class MessageCategory(str, enum.Enum):
 
 class ArtistMessage(Base):
     """Outbound message feed entry shown to the artist."""
+
     __tablename__ = "artist_messages"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))

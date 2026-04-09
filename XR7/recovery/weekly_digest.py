@@ -35,8 +35,10 @@ def build_weekly_digest(
 
     new_anomalies = [a for a in anomalies if _ensure_utc(a.created_at, now) >= week_ago]
     advanced_claims = [
-        c for c in claims
-        if _ensure_utc(c.updated_at, now) >= week_ago and str(c.status) not in {"IDENTIFIED", "PREPARED"}
+        c
+        for c in claims
+        if _ensure_utc(c.updated_at, now) >= week_ago
+        and str(c.status) not in {"IDENTIFIED", "PREPARED"}
     ]
     expected_additional_recovery = sum(float(a.estimated_recoverable or 0.0) for a in new_anomalies)
 

@@ -7,6 +7,7 @@ Tables:
   case_attachments    – role-scoped file attachments
   case_approvals      – formal approval workflow records
 """
+
 from __future__ import annotations
 
 import enum
@@ -45,12 +46,11 @@ class ApprovalDecision(str, enum.Enum):
 # CaseRoom
 # ---------------------------------------------------------------------------
 
+
 class CaseRoom(Base):
     __tablename__ = "case_rooms"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     claim_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     title: Mapped[str] = mapped_column(String, nullable=False)
@@ -77,15 +77,12 @@ class CaseRoom(Base):
 # CaseRoomMember
 # ---------------------------------------------------------------------------
 
+
 class CaseRoomMember(Base):
     __tablename__ = "case_room_members"
-    __table_args__ = (
-        UniqueConstraint("room_id", "email", name="uq_case_room_member"),
-    )
+    __table_args__ = (UniqueConstraint("room_id", "email", name="uq_case_room_member"),)
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     room_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String, nullable=False, index=True)
     display_name: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -104,20 +101,17 @@ class CaseRoomMember(Base):
 # CaseComment
 # ---------------------------------------------------------------------------
 
+
 class CaseComment(Base):
     __tablename__ = "case_comments"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     room_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     author_email: Mapped[str] = mapped_column(String, nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     # comma-separated email list of @mentioned users
     mentions: Mapped[str | None] = mapped_column(Text, nullable=True)
-    parent_id: Mapped[str | None] = mapped_column(
-        String, nullable=True
-    )  # thread parent
+    parent_id: Mapped[str | None] = mapped_column(String, nullable=True)  # thread parent
     edited: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc), index=True
@@ -133,12 +127,11 @@ class CaseComment(Base):
 # CaseAttachment
 # ---------------------------------------------------------------------------
 
+
 class CaseAttachment(Base):
     __tablename__ = "case_attachments"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     room_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     uploaded_by: Mapped[str] = mapped_column(String, nullable=False)
     filename: Mapped[str] = mapped_column(String, nullable=False)
@@ -158,12 +151,11 @@ class CaseAttachment(Base):
 # CaseApproval
 # ---------------------------------------------------------------------------
 
+
 class CaseApproval(Base):
     __tablename__ = "case_approvals"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     room_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     requested_by: Mapped[str] = mapped_column(String, nullable=False)
     approver_email: Mapped[str] = mapped_column(String, nullable=False, index=True)
@@ -182,6 +174,7 @@ class CaseApproval(Base):
 # ---------------------------------------------------------------------------
 # Pydantic schemas
 # ---------------------------------------------------------------------------
+
 
 class CaseRoomSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)

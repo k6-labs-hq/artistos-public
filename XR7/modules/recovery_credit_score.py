@@ -5,6 +5,7 @@ Produces a single proprietary score (0–850) estimating how recoverable
 the artist's catalog is right now. Used for advance qualification and
 displayed to the artist as a progress benchmark.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -60,7 +61,6 @@ def _tier(score: int) -> str:
 def _compute_hash(artist_id: str, payload: dict) -> str:
     raw = json.dumps({"artist_id": artist_id, "payload": payload}, sort_keys=True)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 
 class RecoveryCreditScore:
@@ -154,20 +154,25 @@ class RecoveryCreditScore:
             "artist_id": artist_id,
             "score": composite,
             "tier": tier,
-            "components": {k: v["score"] for k, v in {
-                "catalog_health": cat_health,
-                "anomaly_recoverability": anom_recover,
-                "sol_safety": sol_safety,
-                "contract_clarity": contract_clarity,
-                "payer_reliability": payer_reliability,
-                "territory_coverage": territory_cov,
-                "platform_diversification": platform_div,
-            }.items()},
+            "components": {
+                k: v["score"]
+                for k, v in {
+                    "catalog_health": cat_health,
+                    "anomaly_recoverability": anom_recover,
+                    "sol_safety": sol_safety,
+                    "contract_clarity": contract_clarity,
+                    "payer_reliability": payer_reliability,
+                    "territory_coverage": territory_cov,
+                    "platform_diversification": platform_div,
+                }.items()
+            },
         }
         chain_hash = _compute_hash(artist_id, payload_for_hash)
         try:
             ImmutableLedgerService(self.db).append(
-                artist_id, "recovery_credit_score_calculated", {**payload_for_hash, "chain_hash": chain_hash}
+                artist_id,
+                "recovery_credit_score_calculated",
+                {**payload_for_hash, "chain_hash": chain_hash},
             )
         except Exception:  # noqa: BLE001
             logger.warning("Failed to append ledger for recovery_credit_score")
@@ -197,7 +202,9 @@ class RecoveryCreditScore:
     # Component calculations
     # -----------------------------------------------------------------------
 
-    def _catalog_health_component(self, works: list[Work], override: float | None) -> dict[str, Any]:
+    def _catalog_health_component(
+        self, works: list[Work], override: float | None
+    ) -> dict[str, Any]:
         max_score = 150
         if override is not None:
             score = round(override * max_score)
@@ -267,16 +274,15 @@ class RecoveryCreditScore:
             "data_source": "sol_tracker",
         }
 
-    def _contract_clarity_component(self, contracts: list[Contract], anomalies: list[Anomaly]) -> dict[str, Any]:
+    def _contract_clarity_component(
+        self, contracts: list[Contract], anomalies: list[Anomaly]
+    ) -> dict[str, Any]:
         max_score = 120
         if not contracts:
             score = 40  # no contracts uploaded
         else:
             # Check for BREACH_RISK anomalies
-            breach_count = sum(
-                1 for a in anomalies
-                if "BREACH_RISK" in (a.description or "")
-            )
+            breach_count = sum(1 for a in anomalies if "BREACH_RISK" in (a.description or ""))
             base = min(1.0, len(contracts) / 3.0) * 100
             penalty = min(base, breach_count * 15)
             score = round((base - penalty) / 100 * max_score)
@@ -287,10 +293,16 @@ class RecoveryCreditScore:
             "label": "Contract Clarity",
             "explanation": "Based on contract upload count, audit right status, and drift findings.",
             "data_source": "contract_drift_monitor",
-            "prompt": None if contracts else "Upload your distributor contracts to improve this component.",
+            "prompt": (
+                None
+                if contracts
+                else "Upload your distributor contracts to improve this component."
+            ),
         }
 
-    def _payer_reliability_component(self, payments: list[Payment], override: float | None) -> dict[str, Any]:
+    def _payer_reliability_component(
+        self, payments: list[Payment], override: float | None
+    ) -> dict[str, Any]:
         max_score = 110
         if override is not None:
             score = round(override / 100.0 * max_score)
@@ -308,7 +320,9 @@ class RecoveryCreditScore:
             "prompt": None if override else "Run Payer Health Score to improve this component.",
         }
 
-    def _territory_coverage_component(self, payments: list[Payment], override: float | None) -> dict[str, Any]:
+    def _territory_coverage_component(
+        self, payments: list[Payment], override: float | None
+    ) -> dict[str, Any]:
         max_score = 100
         if override is not None:
             score = round(override * max_score)
@@ -322,10 +336,14 @@ class RecoveryCreditScore:
             "label": "Territory Coverage",
             "explanation": "Ratio of territories earning vs. territories registered.",
             "data_source": "royalty_dna_profile",
-            "prompt": None if override else "Generate your Royalty DNA Profile to improve this component.",
+            "prompt": (
+                None if override else "Generate your Royalty DNA Profile to improve this component."
+            ),
         }
 
-    def _platform_diversification_component(self, payments: list[Payment], concentration_score: float | None) -> dict[str, Any]:
+    def _platform_diversification_component(
+        self, payments: list[Payment], concentration_score: float | None
+    ) -> dict[str, Any]:
         max_score = 100
         if concentration_score is not None:
             # Low HHI = high diversification = high score
@@ -340,13 +358,18 @@ class RecoveryCreditScore:
             "label": "Platform Diversification",
             "explanation": "Revenue concentration index — well-diversified catalog scores higher.",
             "data_source": "royalty_dna_profile",
-            "prompt": None if concentration_score else "Generate your Royalty DNA Profile to improve this component.",
+            "prompt": (
+                None
+                if concentration_score
+                else "Generate your Royalty DNA Profile to improve this component."
+            ),
         }
 
 
 # ---------------------------------------------------------------------------
 # Narrative & action generation
 # ---------------------------------------------------------------------------
+
 
 def _generate_actions(
     cat_health: dict,
@@ -358,13 +381,48 @@ def _generate_actions(
     platform_div: dict,
 ) -> list[dict[str, Any]]:
     components = [
-        ("catalog_health", cat_health, "Fix metadata gaps and add missing ISRCs/ISWCs.", "+35 points"),
-        ("anomaly_recoverability", anom_recover, "Resolve high-value open anomalies before they expire.", "+30 points"),
-        ("sol_safety", sol_safety, "Resolve CRITICAL anomalies in the Black Box Countdown.", "+25 points"),
-        ("contract_clarity", contract_clarity, "Upload your distributor contracts for audit rights extraction.", "+20 points"),
-        ("payer_reliability", payer_reliability, "Run Payer Health Score to identify unreliable payers.", "+15 points"),
-        ("territory_coverage", territory_cov, "Register catalog in missing territories (Royalty DNA Profile).", "+15 points"),
-        ("platform_diversification", platform_div, "Diversify distribution to reduce single-platform exposure.", "+10 points"),
+        (
+            "catalog_health",
+            cat_health,
+            "Fix metadata gaps and add missing ISRCs/ISWCs.",
+            "+35 points",
+        ),
+        (
+            "anomaly_recoverability",
+            anom_recover,
+            "Resolve high-value open anomalies before they expire.",
+            "+30 points",
+        ),
+        (
+            "sol_safety",
+            sol_safety,
+            "Resolve CRITICAL anomalies in the Black Box Countdown.",
+            "+25 points",
+        ),
+        (
+            "contract_clarity",
+            contract_clarity,
+            "Upload your distributor contracts for audit rights extraction.",
+            "+20 points",
+        ),
+        (
+            "payer_reliability",
+            payer_reliability,
+            "Run Payer Health Score to identify unreliable payers.",
+            "+15 points",
+        ),
+        (
+            "territory_coverage",
+            territory_cov,
+            "Register catalog in missing territories (Royalty DNA Profile).",
+            "+15 points",
+        ),
+        (
+            "platform_diversification",
+            platform_div,
+            "Diversify distribution to reduce single-platform exposure.",
+            "+10 points",
+        ),
     ]
     actions = []
     for key, comp, description, impact in sorted(components, key=lambda x: x[1]["score"]):
@@ -425,6 +483,7 @@ def _generate_narrative(
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def recalculate(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.recovery_score.recalculate"""

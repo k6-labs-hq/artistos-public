@@ -121,7 +121,9 @@ class FingerprintJobSchema(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def _job_to_dict(job: FingerprintJob, matches: list[FingerprintMatch] | None = None) -> dict[str, Any]:
+def _job_to_dict(
+    job: FingerprintJob, matches: list[FingerprintMatch] | None = None
+) -> dict[str, Any]:
     return {
         "id": job.id,
         "artist_id": job.artist_id,
@@ -278,7 +280,9 @@ async def register_reference(
     isrc: str | None = Form(default=None),
     title: str | None = Form(default=None),
     artist_name: str | None = Form(default=None),
-    provider: str | None = Form(default=None, description="Target provider name (default: first active)"),
+    provider: str | None = Form(
+        default=None, description="Target provider name (default: first active)"
+    ),
     db: Session = Depends(get_db),
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> ReferenceRegistrationResponse:
@@ -307,12 +311,12 @@ async def register_reference(
                 )
         else:
             if not orchestrator._registry:
-                raise HTTPException(status_code=503, detail="No fingerprinting providers configured.")
+                raise HTTPException(
+                    status_code=503, detail="No fingerprinting providers configured."
+                )
             adapter = next(iter(orchestrator._registry.values()))
 
-        ref_id = await adapter.submit_reference_file(
-            audio_data, isrc=isrc, metadata=metadata
-        )
+        ref_id = await adapter.submit_reference_file(audio_data, isrc=isrc, metadata=metadata)
     except HTTPException:
         raise
     except Exception as exc:

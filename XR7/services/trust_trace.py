@@ -1,4 +1,5 @@
 """Pillar 1 — Trust & Transparency trace writer service."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -35,9 +36,7 @@ def write_trace_event(
     explanation: str | None = None,
 ) -> TrustTraceEvent:
     """Persist a pipeline trace step for real-time trust feed."""
-    plain_explanation = explanation or _STAGE_EXPLANATIONS.get(
-        stage, f"Processing stage: {stage}"
-    )
+    plain_explanation = explanation or _STAGE_EXPLANATIONS.get(stage, f"Processing stage: {stage}")
     event = TrustTraceEvent(
         artist_id=artist_id,
         run_id=run_id,
@@ -63,9 +62,7 @@ def write_trace_event(
     return event
 
 
-def get_latest_trace(
-    db: Session, artist_id: str, *, limit: int = 20
-) -> list[dict[str, Any]]:
+def get_latest_trace(db: Session, artist_id: str, *, limit: int = 20) -> list[dict[str, Any]]:
     rows = (
         db.query(TrustTraceEvent)
         .filter(TrustTraceEvent.artist_id == artist_id)

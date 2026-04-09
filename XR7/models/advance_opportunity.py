@@ -25,9 +25,15 @@ class AdvanceOpportunity(Base):
     __tablename__ = "advance_opportunities"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False, index=True)
-    anomaly_id: Mapped[str | None] = mapped_column(String, ForeignKey("anomalies.id"), nullable=True, index=True)
-    claim_id: Mapped[str | None] = mapped_column(String, ForeignKey("claims.id"), nullable=True, index=True)
+    artist_id: Mapped[str] = mapped_column(
+        String, ForeignKey("artists.id"), nullable=False, index=True
+    )
+    anomaly_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("anomalies.id"), nullable=True, index=True
+    )
+    claim_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("claims.id"), nullable=True, index=True
+    )
     status: Mapped[str] = mapped_column(
         Enum(AdvanceOpportunityStatus),
         nullable=False,
@@ -43,7 +49,9 @@ class AdvanceOpportunity(Base):
     analyst_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     executive_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     source_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=False,

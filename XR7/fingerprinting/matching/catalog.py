@@ -87,9 +87,7 @@ class CatalogMatchingModule:
 
         # 4 — Title + artist fuzzy match
         if fingerprint.title and not results:
-            fuzzy_results = self._match_by_title_artist(
-                fingerprint.title, fingerprint.artist_name
-            )
+            fuzzy_results = self._match_by_title_artist(fingerprint.title, fingerprint.artist_name)
             results.extend(fuzzy_results)
 
         # 5 — Acoustic track_id cross-reference
@@ -127,11 +125,7 @@ class CatalogMatchingModule:
     def _match_by_isrc(self, isrc: str | None) -> CatalogMatchResult | None:
         from XR7.models.work import Work
 
-        work = (
-            self._db.query(Work)
-            .filter(Work.isrc == isrc)
-            .first()
-        )
+        work = self._db.query(Work).filter(Work.isrc == isrc).first()
         if not work:
             return None
         return CatalogMatchResult(
@@ -146,11 +140,7 @@ class CatalogMatchingModule:
     def _match_by_iswc(self, iswc: str) -> CatalogMatchResult | None:
         from XR7.models.work import Work
 
-        work = (
-            self._db.query(Work)
-            .filter(Work.iswc == iswc)
-            .first()
-        )
+        work = self._db.query(Work).filter(Work.iswc == iswc).first()
         if not work:
             return None
         return CatalogMatchResult(
@@ -167,18 +157,10 @@ class CatalogMatchingModule:
         from XR7.models.artist import Artist
         from XR7.models.work import Work
 
-        artist = (
-            self._db.query(Artist)
-            .filter(Artist.ipi == ipi)
-            .first()
-        )
+        artist = self._db.query(Artist).filter(Artist.ipi == ipi).first()
         if not artist:
             return None
-        work = (
-            self._db.query(Work)
-            .filter(Work.artist_id == artist.id)
-            .first()
-        )
+        work = self._db.query(Work).filter(Work.artist_id == artist.id).first()
         if not work:
             return None
         return CatalogMatchResult(
@@ -200,17 +182,12 @@ class CatalogMatchingModule:
 
         # Load a bounded candidate set (avoids full table scan)
         candidates = (
-            self._db.query(Work)
-            .filter(Work.title.ilike(f"%{title[:20]}%"))
-            .limit(200)
-            .all()
+            self._db.query(Work).filter(Work.title.ilike(f"%{title[:20]}%")).limit(200).all()
         )
 
         scored: list[tuple[float, Work]] = []
         for work in candidates:
-            title_ratio = difflib.SequenceMatcher(
-                None, title.lower(), work.title.lower()
-            ).ratio()
+            title_ratio = difflib.SequenceMatcher(None, title.lower(), work.title.lower()).ratio()
 
             artist_ratio = 0.0
             if artist_name and hasattr(work, "artist") and work.artist:
@@ -231,9 +208,7 @@ class CatalogMatchingModule:
                 isrc=work.isrc,
                 iswc=work.iswc,
                 title=work.title,
-                confidence_score=round(
-                    score * _CONFIDENCE["title_artist_fuzzy"], 4
-                ),
+                confidence_score=round(score * _CONFIDENCE["title_artist_fuzzy"], 4),
                 match_method="title_artist_fuzzy",
             )
             for score, work in scored[:5]
@@ -245,11 +220,7 @@ class CatalogMatchingModule:
 
         # Works may store provider IDs in a JSON metadata column in future.
         # For now, attempt an ISRC-equivalent lookup via track_id as ISRC.
-        work = (
-            self._db.query(Work)
-            .filter(Work.isrc == track_id)
-            .first()
-        )
+        work = self._db.query(Work).filter(Work.isrc == track_id).first()
         if not work:
             return None
         return CatalogMatchResult(
@@ -265,6 +236,7 @@ class CatalogMatchingModule:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _already_matched(results: list[CatalogMatchResult], method: str) -> bool:
     return any(r.match_method == method for r in results)

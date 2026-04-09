@@ -41,19 +41,21 @@ def list_invoices(artist_id: str, db: Session = Depends(get_db)):
     brand = get_branding_for_artist(db, artist_id)
     invoices = []
     for c in claims:
-        invoices.append({
-            "artist_id": artist_id,
-            "branding": branding_metadata(brand),
-            "claim_id": c.id,
-            "recovered_amount": c.recovered_amount,
-            "contingency_fee": c.contingency_fee,
-            "contingency_fee_percent": float(artist.contingency_fee_percent or 0.0),
-            "fee_copy": (
-                f"XR7 retains {float(artist.contingency_fee_percent or 0.0):.2f}% "
-                f"(${float(c.contingency_fee or 0.0):,.2f}) You receive "
-                f"${float((c.recovered_amount or 0.0) - (c.contingency_fee or 0.0)):,.2f}"
-            ),
-            "currency": c.currency,
-            "claim_status": c.status,
-        })
+        invoices.append(
+            {
+                "artist_id": artist_id,
+                "branding": branding_metadata(brand),
+                "claim_id": c.id,
+                "recovered_amount": c.recovered_amount,
+                "contingency_fee": c.contingency_fee,
+                "contingency_fee_percent": float(artist.contingency_fee_percent or 0.0),
+                "fee_copy": (
+                    f"XR7 retains {float(artist.contingency_fee_percent or 0.0):.2f}% "
+                    f"(${float(c.contingency_fee or 0.0):,.2f}) You receive "
+                    f"${float((c.recovered_amount or 0.0) - (c.contingency_fee or 0.0)):,.2f}"
+                ),
+                "currency": c.currency,
+                "claim_status": c.status,
+            }
+        )
     return invoices

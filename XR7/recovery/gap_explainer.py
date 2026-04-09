@@ -111,7 +111,9 @@ class _SimpleRateLimiter:
 class GapExplainerService:
     """LLM-backed gap explainability service with fallback templates."""
 
-    def __init__(self, provider: str | None = None, model: str | None = None, db: Session | None = None):
+    def __init__(
+        self, provider: str | None = None, model: str | None = None, db: Session | None = None
+    ):
         self.provider = (provider or os.environ.get("LLM_PROVIDER", "openai")).strip().lower()
         self.model = model or os.environ.get("LLM_MODEL", "gpt-4o-mini")
         self.api_key = os.environ.get("LLM_API_KEY", "")
@@ -123,7 +125,11 @@ class GapExplainerService:
             raise RuntimeError("LLM_API_KEY is not configured")
 
         if self.provider in {"xai", "xai-grok", "grok"} and ChatXAI is not None:
-            return ChatXAI(model=os.environ.get("LLM_MODEL", "grok-beta"), api_key=self.api_key, temperature=0.2)
+            return ChatXAI(
+                model=os.environ.get("LLM_MODEL", "grok-beta"),
+                api_key=self.api_key,
+                temperature=0.2,
+            )
 
         if ChatOpenAI is None:
             raise RuntimeError("langchain_openai is not installed")
@@ -137,7 +143,9 @@ class GapExplainerService:
             raise RuntimeError("langchain_core is not installed")
 
         llm = await self._build_llm()
-        result = await llm.ainvoke([SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)])
+        result = await llm.ainvoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
+        )
         content = getattr(result, "content", "")
         if isinstance(content, list):
             return "\n".join(str(c) for c in content)
@@ -168,7 +176,9 @@ class GapExplainerService:
         if expected is not None and actual is not None:
             gap_amount = max(0, expected - actual)
             if gap_amount > 0:
-                gap_desc = f"Royalty payment of {actual} appears {gap_amount} short of expected {expected}"
+                gap_desc = (
+                    f"Royalty payment of {actual} appears {gap_amount} short of expected {expected}"
+                )
 
         return {
             "anomaly_id": anomaly.get("id", "unknown"),
@@ -193,7 +203,9 @@ class GapExplainerService:
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }
 
-    async def explain_gap(self, anomaly: dict[str, Any], evidence: dict[str, Any] | None = None) -> dict[str, Any]:
+    async def explain_gap(
+        self, anomaly: dict[str, Any], evidence: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Generate natural-language gap explanation with evidence citations.
 
         Args:
@@ -210,9 +222,19 @@ class GapExplainerService:
                 subtype=anomaly.get("subtype") or "unknown",
                 expected_amount=anomaly.get("expected_amount"),
                 actual_amount=anomaly.get("actual_amount"),
-                gap_amount=max(0, float(anomaly.get("expected_amount") or 0) - float(anomaly.get("actual_amount") or 0)),
+                gap_amount=max(
+                    0,
+                    float(anomaly.get("expected_amount") or 0)
+                    - float(anomaly.get("actual_amount") or 0),
+                ),
                 gap_pct=(
-                    (max(0, float(anomaly.get("expected_amount") or 0) - float(anomaly.get("actual_amount") or 0)))
+                    (
+                        max(
+                            0,
+                            float(anomaly.get("expected_amount") or 0)
+                            - float(anomaly.get("actual_amount") or 0),
+                        )
+                    )
                     / max(float(anomaly.get("expected_amount") or 0.01), 0.01)
                 ),
                 territory=anomaly.get("territory"),
@@ -233,7 +255,9 @@ class GapExplainerService:
             f"Anomaly data:\n{json.dumps(evidence_payload.model_dump(exclude_none=True), indent=2)}\n\n"
         )
         if evidence:
-            user_prompt += f"Additional evidence packet:\n{json.dumps(evidence, indent=2, default=str)}\n\n"
+            user_prompt += (
+                f"Additional evidence packet:\n{json.dumps(evidence, indent=2, default=str)}\n\n"
+            )
 
         user_prompt += "Output strictly valid JSON only, no markdown fencing."
 
@@ -252,7 +276,9 @@ class GapExplainerService:
             logger.warning(f"LLM response parsing failed: {e}; using fallback")
             return self._fallback_explanation(anomaly)
 
-    def explain_gap_sync(self, anomaly: dict[str, Any], evidence: dict[str, Any] | None = None) -> dict[str, Any]:
+    def explain_gap_sync(
+        self, anomaly: dict[str, Any], evidence: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """Synchronous wrapper for explain_gap using asyncio.run (blocking)."""
         try:
             return asyncio.run(self.explain_gap(anomaly, evidence))

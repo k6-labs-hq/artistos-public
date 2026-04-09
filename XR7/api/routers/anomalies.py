@@ -59,7 +59,9 @@ def list_anomalies(
         trust = TrustDefensibilityService().trust_score(
             data_completeness=0.85 if anomaly_payload.get("description") else 0.6,
             model_confidence=float(anomaly_payload.get("confidence_score") or 0.0),
-            contract_evidence_quality=0.7 if recoverability_payload.get("contract_recoverability") else 0.45,
+            contract_evidence_quality=(
+                0.7 if recoverability_payload.get("contract_recoverability") else 0.45
+            ),
             sol_risk=1.0 if discovery.get("urgent_flag") else 0.25,
         )
         obj = {
@@ -73,7 +75,9 @@ def list_anomalies(
                 }
             ),
             **recoverability_payload,
-            "redistribution_risk_score": (recoverability_payload.get("black_box_expiration") or {}).get("redistribution_risk_score"),
+            "redistribution_risk_score": (
+                recoverability_payload.get("black_box_expiration") or {}
+            ).get("redistribution_risk_score"),
             "trust_score": trust.get("trust_score"),
             "urgent_flag": bool(discovery.get("urgent_flag")),
         }
@@ -97,7 +101,10 @@ def get_anomaly(anomaly_id: str, db: Session = Depends(get_db)):
     return anomaly
 
 
-@router.get("/anomalies/{anomaly_id}/recovery-probability", response_model=AnomalyRecoveryProbabilityResponseSchema)
+@router.get(
+    "/anomalies/{anomaly_id}/recovery-probability",
+    response_model=AnomalyRecoveryProbabilityResponseSchema,
+)
 def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends(get_db)):
     anomaly = db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
     if not anomaly:
@@ -105,7 +112,14 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
 
     behavior = payer_behavior_profile(
         "generic",
-        [{"payer": "generic", "status": "IN_REVIEW", "settlement_days": 45, "settlement_percent": 0.7}],
+        [
+            {
+                "payer": "generic",
+                "status": "IN_REVIEW",
+                "settlement_days": 45,
+                "settlement_percent": 0.7,
+            }
+        ],
     )
     probability = anomaly_recovery_probability(
         {
@@ -128,7 +142,9 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
         "anomaly_id": anomaly_id,
         **probability,
         **recoverability,
-        "redistribution_risk_score": (recoverability.get("black_box_expiration") or {}).get("redistribution_risk_score"),
+        "redistribution_risk_score": (recoverability.get("black_box_expiration") or {}).get(
+            "redistribution_risk_score"
+        ),
         "trust_score": trust.get("trust_score"),
         "urgent_flag": bool(discovery.get("urgent_flag")),
     }
@@ -190,13 +206,16 @@ async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
         claim_ids.append(claim_id)
         evidence.append(await detector.generate_influence_evidence(match))
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "potential_claims": matches,
-        "claim_ids": claim_ids,
-        "evidence_packets": evidence,
-        "leakage_discovered_increment": len(claim_ids),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "potential_claims": matches,
+            "claim_ids": claim_ids,
+            "evidence_packets": evidence,
+            "leakage_discovered_increment": len(claim_ids),
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/anomalies/fraud-scan")
@@ -238,19 +257,20 @@ def explain_anomaly(anomaly_id: str, db: Session = Depends(get_db)):
     db.add(audit_log)
     db.commit()
 
-    return inject_branding_metadata(db, {
-        "anomaly_id": anomaly_id,
-        "explanation": explanation,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "anomaly_id": anomaly_id,
+            "explanation": explanation,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/anomalies/{anomaly_id}/explain")
 def explain_artist_anomaly(artist_id: str, anomaly_id: str, db: Session = Depends(get_db)):
     """Artist-scoped explain-my-gap endpoint."""
     anomaly = (
-        db.query(Anomaly)
-        .filter(Anomaly.id == anomaly_id, Anomaly.artist_id == artist_id)
-        .first()
+        db.query(Anomaly).filter(Anomaly.id == anomaly_id, Anomaly.artist_id == artist_id).first()
     )
     if not anomaly:
         raise HTTPException(status_code=404, detail="Anomaly not found for this artist")

@@ -35,11 +35,7 @@ def score_evidence_strength(
     discrepancy = float(reconciliation.get("discrepancy_amount") or 0.0)
     consistency = _clamp_score(100.0 - min(70.0, discrepancy * 10.0) - max(0, revision - 1) * 3.0)
 
-    provenance = _clamp_score(
-        30.0
-        + min(35.0, citations * 4.0)
-        + min(35.0, anchor_count * 20.0)
-    )
+    provenance = _clamp_score(30.0 + min(35.0, citations * 4.0) + min(35.0, anchor_count * 20.0))
 
     chain_fields = [
         integrity.get("packet_hash"),

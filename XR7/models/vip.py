@@ -8,6 +8,7 @@ Domain objects for the elite concierge tier:
   • VipReferral           – VIP-to-VIP referral programme
   • WeeklyBrief           – proactive AI-generated audio/video recap
 """
+
 from __future__ import annotations
 
 import enum
@@ -24,6 +25,7 @@ from XR7.models.base import Base
 # ---------------------------------------------------------------------------
 # Enums
 # ---------------------------------------------------------------------------
+
 
 class VipTierLevel(str, enum.Enum):
     VIP = "VIP"
@@ -61,14 +63,13 @@ class BriefStatus(str, enum.Enum):
 # SQLAlchemy models
 # ---------------------------------------------------------------------------
 
+
 class FoundersCircleMember(Base):
     """Core membership record for Founders Circle / VIP tier."""
 
     __tablename__ = "founders_circle_members"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True, unique=True)
     tier_level: Mapped[str] = mapped_column(
         String(32), nullable=False, default=VipTierLevel.FOUNDERS_CIRCLE.value
@@ -103,9 +104,7 @@ class VipInviteCode(Base):
 
     __tablename__ = "vip_invite_codes"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     code: Mapped[str] = mapped_column(String(128), nullable=False, unique=True, index=True)
     code_hash: Mapped[str] = mapped_column(String(256), nullable=False, unique=True, index=True)
     tier_level: Mapped[str] = mapped_column(
@@ -134,9 +133,7 @@ class PersonaProfile(Base):
 
     __tablename__ = "persona_profiles"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True, unique=True)
     enrichment_status: Mapped[str] = mapped_column(
         String(32), nullable=False, default=EnrichmentStatus.PENDING.value
@@ -186,9 +183,7 @@ class ConciergeMessage(Base):
 
     __tablename__ = "concierge_messages"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     sender_type: Mapped[str] = mapped_column(
         String(16), nullable=False, default=ConciergeMessageSender.ARTIST.value
@@ -214,9 +209,7 @@ class VipReferral(Base):
 
     __tablename__ = "vip_referrals"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     referrer_artist_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     referred_email: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
     referred_artist_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
@@ -238,9 +231,7 @@ class WeeklyBrief(Base):
 
     __tablename__ = "weekly_briefs"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     brief_week: Mapped[str] = mapped_column(
         String(8), nullable=False, comment="ISO week: '2026-W12'"
@@ -264,9 +255,7 @@ class CopilotQuery(Base):
 
     __tablename__ = "copilot_queries"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     query_text: Mapped[str] = mapped_column(Text, nullable=False)
     response_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -285,6 +274,7 @@ class CopilotQuery(Base):
 # ---------------------------------------------------------------------------
 # Pydantic schemas
 # ---------------------------------------------------------------------------
+
 
 class FoundersCircleMemberSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -416,6 +406,7 @@ class CopilotQuerySchema(BaseModel):
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
+
 
 class ClaimVipInviteRequest(BaseModel):
     artist_id: str

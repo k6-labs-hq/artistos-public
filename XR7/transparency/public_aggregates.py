@@ -20,7 +20,9 @@ class PublicTransparencyAPI:
         buf = io.BytesIO()
         aggregates = self.get_public_aggregates()
         with zipfile.ZipFile(buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr("your_story.md", f"# Advocacy Story for {artist_id}\n\nTemplate narrative here.")
+            zf.writestr(
+                "your_story.md", f"# Advocacy Story for {artist_id}\n\nTemplate narrative here."
+            )
             zf.writestr("public_aggregates.json", json.dumps(aggregates, indent=2))
             zf.writestr("pro_reform_letter_template.md", "# PRO Reform Letter\n\nDear ...")
         return buf.getvalue()

@@ -1,4 +1,5 @@
 """Pillar 5 — Rights scan, registration packets, cash advance offer."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -21,6 +22,7 @@ router = APIRouter(tags=["sovereignty"])
 # Rights Scan
 # ---------------------------------------------------------------------------
 
+
 @router.get("/artists/{artist_id}/rights/scan")
 def scan_rights(
     artist_id: str,
@@ -31,11 +33,14 @@ def scan_rights(
     get_artist_or_404(artist_id, db)
 
     gaps = scan_rights_gaps(db, artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "gaps_found": len(gaps),
-        "gaps": gaps,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "gaps_found": len(gaps),
+            "gaps": gaps,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/rights/register")
@@ -49,20 +54,23 @@ def register_rights_packets(
 
     gaps = scan_rights_gaps(db, artist_id)
     results = persist_and_generate_packets(db, artist_id, gaps)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "packets_generated": len(results),
-        "packets": [
-            {
-                "id": r.id,
-                "gap_type": r.gap_type,
-                "territory": r.territory,
-                "submission_status": r.submission_status,
-                "work_id": r.work_id,
-            }
-            for r in results
-        ],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "packets_generated": len(results),
+            "packets": [
+                {
+                    "id": r.id,
+                    "gap_type": r.gap_type,
+                    "territory": r.territory,
+                    "submission_status": r.submission_status,
+                    "work_id": r.work_id,
+                }
+                for r in results
+            ],
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/rights/gaps")
@@ -78,27 +86,31 @@ def list_rights_gaps(
         .order_by(RightsScanResult.scanned_at.desc())
         .all()
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "count": len(rows),
-        "gaps": [
-            {
-                "id": r.id,
-                "gap_type": r.gap_type,
-                "territory": r.territory,
-                "work_id": r.work_id,
-                "submission_status": r.submission_status,
-                "notes": r.notes,
-                "scanned_at": r.scanned_at.isoformat() if r.scanned_at else None,
-            }
-            for r in rows
-        ],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "count": len(rows),
+            "gaps": [
+                {
+                    "id": r.id,
+                    "gap_type": r.gap_type,
+                    "territory": r.territory,
+                    "work_id": r.work_id,
+                    "submission_status": r.submission_status,
+                    "notes": r.notes,
+                    "scanned_at": r.scanned_at.isoformat() if r.scanned_at else None,
+                }
+                for r in rows
+            ],
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
 # Cash Advance Offer
 # ---------------------------------------------------------------------------
+
 
 class AdvanceOfferRequest(BaseModel):
     predicted_low_forecast: float = Field(gt=0)
@@ -158,20 +170,23 @@ def list_advance_history(
         .order_by(RecoverableLiquidityAdvance.offered_at.desc())
         .all()
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "count": len(advances),
-        "advances": [
-            {
-                "id": a.id,
-                "offered_amount": a.offered_amount,
-                "currency": a.currency,
-                "advance_fee_pct": a.advance_fee_pct,
-                "status": a.status,
-                "offered_at": a.offered_at.isoformat() if a.offered_at else None,
-                "accepted_at": a.accepted_at.isoformat() if a.accepted_at else None,
-                "disbursed_at": a.disbursed_at.isoformat() if a.disbursed_at else None,
-            }
-            for a in advances
-        ],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "count": len(advances),
+            "advances": [
+                {
+                    "id": a.id,
+                    "offered_amount": a.offered_amount,
+                    "currency": a.currency,
+                    "advance_fee_pct": a.advance_fee_pct,
+                    "status": a.status,
+                    "offered_at": a.offered_at.isoformat() if a.offered_at else None,
+                    "accepted_at": a.accepted_at.isoformat() if a.accepted_at else None,
+                    "disbursed_at": a.disbursed_at.isoformat() if a.disbursed_at else None,
+                }
+                for a in advances
+            ],
+        },
+    )

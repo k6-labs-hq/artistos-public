@@ -60,7 +60,11 @@ class InfluenceDetector:
     def __init__(self, db: Session):
         self.db = db
         self._rate = _ApiRateLimiter(max_requests=30, window_seconds=60)
-        self._simulated = os.environ.get("XR7_AI_MUSIC_SIMULATED", "1").strip().lower() in {"1", "true", "yes"}
+        self._simulated = os.environ.get("XR7_AI_MUSIC_SIMULATED", "1").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+        }
 
     @staticmethod
     def _fingerprint(work_title: str, artist_id: str) -> str:
@@ -191,12 +195,20 @@ class InfluenceDetector:
         return claim.id
 
 
-@celery_app.task(name="xr7.pipeline.scan_ai_influence_daily", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+@celery_app.task(
+    name="xr7.pipeline.scan_ai_influence_daily",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 2},
+)
 def scan_ai_influence_daily(self) -> dict:  # noqa: ANN001
     """Daily background scan for AI influence opportunities."""
     db = SessionLocal()
     try:
-        artist_ids = {r.artist_id for r in db.query(UniversalRoyaltyEvent.artist_id).all() if r.artist_id}
+        artist_ids = {
+            r.artist_id for r in db.query(UniversalRoyaltyEvent.artist_id).all() if r.artist_id
+        }
         created = 0
         for artist_id in artist_ids:
             detector = InfluenceDetector(db)

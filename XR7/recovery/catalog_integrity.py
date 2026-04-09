@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 
-def assess_catalog_integrity(works: list[dict[str, Any]], contracts: list[dict[str, Any]], events: list[dict[str, Any]]) -> dict[str, Any]:
+def assess_catalog_integrity(
+    works: list[dict[str, Any]], contracts: list[dict[str, Any]], events: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Evaluate metadata integrity and registration drift across catalog assets."""
     missing_isrc = [w.get("id") for w in works if not w.get("isrc")]
     missing_iswc = [w.get("id") for w in works if not w.get("iswc")]
@@ -26,15 +28,19 @@ def assess_catalog_integrity(works: list[dict[str, Any]], contracts: list[dict[s
         qty = float(e.get("quantity") or 0.0)
         val = float(e.get("unit_value") or 0.0)
         if qty > 0 and val <= 0.0:
-            collaborator_mismatches.append({
-                "work_id": e.get("work_id"),
-                "platform": e.get("platform"),
-                "issue": "non_positive_unit_value",
-            })
+            collaborator_mismatches.append(
+                {
+                    "work_id": e.get("work_id"),
+                    "platform": e.get("platform"),
+                    "issue": "non_positive_unit_value",
+                }
+            )
 
     for w in works:
         if str(w.get("title") or "").strip().lower().endswith("(live)") and not w.get("isrc"):
-            drift.append({"work_id": w.get("id"), "issue": "metadata_drift_live_version_unregistered"})
+            drift.append(
+                {"work_id": w.get("id"), "issue": "metadata_drift_live_version_unregistered"}
+            )
 
     return {
         "isrc_iswc_reconciliation": {

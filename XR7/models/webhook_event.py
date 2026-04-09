@@ -3,6 +3,7 @@
 A signed payload is written here on receipt.  If processing fails the
 row stays in status=FAILED and can be replayed via the admin endpoint.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -27,9 +28,7 @@ class WebhookEventStatus(str):
 class WebhookEvent(Base):
     __tablename__ = "webhook_events"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     source: Mapped[str] = mapped_column(String, nullable=False, index=True)
     event_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     raw_payload: Mapped[str] = mapped_column(Text, nullable=False)
@@ -70,7 +69,5 @@ class WebhookEventSchema(BaseModel):
 
 def verify_webhook_signature(payload: str, secret: str, provided_sig: str) -> bool:
     """Constant-time HMAC-SHA256 comparison."""
-    expected = hmac.new(
-        secret.encode(), payload.encode(), hashlib.sha256
-    ).hexdigest()
+    expected = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
     return hmac.compare_digest(expected, provided_sig)

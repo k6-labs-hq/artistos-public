@@ -63,9 +63,7 @@ class TestRoyaltyNoUsageDetection:
             usage_results=[],
             existing_gaps=[],
         )
-        royalty_no_usage = [
-            a for a in anomalies if a.anomaly_type == AnomalyType.ROYALTY_NO_USAGE
-        ]
+        royalty_no_usage = [a for a in anomalies if a.anomaly_type == AnomalyType.ROYALTY_NO_USAGE]
         assert len(royalty_no_usage) >= 1
 
     def test_no_anomaly_when_fingerprint_covers_isrc(self):
@@ -87,9 +85,7 @@ class TestRoyaltyNoUsageDetection:
             usage_results=[],
             existing_gaps=[],
         )
-        royalty_no_usage = [
-            a for a in anomalies if a.anomaly_type == AnomalyType.ROYALTY_NO_USAGE
-        ]
+        royalty_no_usage = [a for a in anomalies if a.anomaly_type == AnomalyType.ROYALTY_NO_USAGE]
         assert len(royalty_no_usage) == 0
 
 
@@ -110,9 +106,7 @@ class TestISRCConflictDetection:
             usage_results=[],
             existing_gaps=[],
         )
-        conflicts = [
-            a for a in anomalies if a.anomaly_type == AnomalyType.ISRC_CONFLICT
-        ]
+        conflicts = [a for a in anomalies if a.anomaly_type == AnomalyType.ISRC_CONFLICT]
         assert len(conflicts) >= 1
 
     def test_no_conflict_for_unique_isrcs(self):
@@ -131,9 +125,7 @@ class TestISRCConflictDetection:
             usage_results=[],
             existing_gaps=[],
         )
-        conflicts = [
-            a for a in anomalies if a.anomaly_type == AnomalyType.ISRC_CONFLICT
-        ]
+        conflicts = [a for a in anomalies if a.anomaly_type == AnomalyType.ISRC_CONFLICT]
         assert len(conflicts) == 0
 
 
@@ -153,9 +145,7 @@ class TestCatalogMismatchDetection:
             usage_results=[],
             existing_gaps=[],
         )
-        mismatches = [
-            a for a in anomalies if a.anomaly_type == AnomalyType.CATALOG_MISMATCH
-        ]
+        mismatches = [a for a in anomalies if a.anomaly_type == AnomalyType.CATALOG_MISMATCH]
         assert len(mismatches) >= 1
 
 
@@ -183,7 +173,5 @@ class TestDeduplicationVsExistingGaps:
             usage_results=[],
             existing_gaps=[existing_gap],
         )
-        mismatches = [
-            a for a in anomalies if a.anomaly_type == AnomalyType.CATALOG_MISMATCH
-        ]
+        mismatches = [a for a in anomalies if a.anomaly_type == AnomalyType.CATALOG_MISMATCH]
         assert len(mismatches) == 0

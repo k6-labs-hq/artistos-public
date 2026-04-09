@@ -105,12 +105,7 @@ class GracenoteAdapter(IFingerprintingProvider):
         )
         response.raise_for_status()
         data = response.json()
-        ref_id: str = (
-            data.get("reference_id")
-            or data.get("gn_id")
-            or data.get("id")
-            or "unknown"
-        )
+        ref_id: str = data.get("reference_id") or data.get("gn_id") or data.get("id") or "unknown"
         logger.info("Gracenote: registered reference ref_id=%s isrc=%s", ref_id, isrc)
         return ref_id
 
@@ -173,9 +168,7 @@ class GracenoteAdapter(IFingerprintingProvider):
                     track_id=reference_id,
                     isrc=det.get("isrc"),
                     confidence_score=float(det.get("confidence", 1.0)),
-                    match_type=_GN_MATCH_TYPE_MAP.get(
-                        det.get("match_type", ""), MatchType.UNKNOWN
-                    ),
+                    match_type=_GN_MATCH_TYPE_MAP.get(det.get("match_type", ""), MatchType.UNKNOWN),
                     platform=det.get("channel") or det.get("service"),
                     territory=territory or det.get("territory"),
                     timestamp=datetime.now(timezone.utc),
@@ -196,9 +189,7 @@ class GracenoteAdapter(IFingerprintingProvider):
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.error(
-                "Gracenote get_match_results HTTP error job_id=%s: %s", job_id, exc
-            )
+            logger.error("Gracenote get_match_results HTTP error job_id=%s: %s", job_id, exc)
             raise
         return self.normalize_provider_response(raw)
 
@@ -206,14 +197,10 @@ class GracenoteAdapter(IFingerprintingProvider):
         client = self._client_()
         start = time.monotonic()
         try:
-            response = await client.get(
-                f"{self._cfg.endpoint}/health", timeout=5.0
-            )
+            response = await client.get(f"{self._cfg.endpoint}/health", timeout=5.0)
             latency_ms = (time.monotonic() - start) * 1000.0
             status = (
-                ProviderStatus.HEALTHY
-                if response.status_code < 500
-                else ProviderStatus.DEGRADED
+                ProviderStatus.HEALTHY if response.status_code < 500 else ProviderStatus.DEGRADED
             )
             return ProviderHealthStatus(
                 provider=self.provider_name,
@@ -231,9 +218,7 @@ class GracenoteAdapter(IFingerprintingProvider):
                 checked_at=datetime.now(timezone.utc),
             )
 
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         """Normalize Gracenote JSON recognition response.
 
         Expected shape::
@@ -257,9 +242,7 @@ class GracenoteAdapter(IFingerprintingProvider):
             logger.debug("Gracenote: non-OK status=%s", raw.get("status"))
             return []
 
-        raw_results: list[dict[str, Any]] = (
-            raw.get("results") or raw.get("matches") or []
-        )
+        raw_results: list[dict[str, Any]] = raw.get("results") or raw.get("matches") or []
         results: list[NormalizedMatchResult] = []
 
         for item in raw_results:

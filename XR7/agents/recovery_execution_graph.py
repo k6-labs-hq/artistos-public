@@ -213,7 +213,8 @@ async def run_recovery_execution_agent(state: TwoAgentState) -> TwoAgentState:
                     "handoff_id": (current.get("handoff") or {}).get("handoff_id"),
                     "received_at": datetime.now(timezone.utc).isoformat(),
                     "catalog_profile": (current.get("handoff") or {}).get("catalog_profile") or {},
-                    "readiness_score": (current.get("handoff") or {}).get("readiness_score") or current.get("readiness_score"),
+                    "readiness_score": (current.get("handoff") or {}).get("readiness_score")
+                    or current.get("readiness_score"),
                 }
             },
         )

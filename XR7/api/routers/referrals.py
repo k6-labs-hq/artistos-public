@@ -1,4 +1,5 @@
 """Pillar 2 — Referral program endpoints."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -37,13 +38,16 @@ def register_referral(
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "referral_id": ref.id,
-        "referred_artist_id": ref.referred_artist_id,
-        "referral_fee_pct": ref.referral_fee_pct,
-        "message": "Referral registered. You will earn a share of their net recoveries.",
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "referral_id": ref.id,
+            "referred_artist_id": ref.referred_artist_id,
+            "referral_fee_pct": ref.referral_fee_pct,
+            "message": "Referral registered. You will earn a share of their net recoveries.",
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/referrals")

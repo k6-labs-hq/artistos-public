@@ -26,9 +26,13 @@ class TVFilmPortfolioJob(Base):
     entity_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     uploaded_filename: Mapped[str | None] = mapped_column(String, nullable=True)
     roster_size: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    status: Mapped[str] = mapped_column(Enum(TVFilmPortfolioJobStatus), nullable=False, default=TVFilmPortfolioJobStatus.QUEUED)
+    status: Mapped[str] = mapped_column(
+        Enum(TVFilmPortfolioJobStatus), nullable=False, default=TVFilmPortfolioJobStatus.QUEUED
+    )
     summary_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

@@ -1,4 +1,3 @@
-
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -45,7 +44,13 @@ def test_no_works_returns_empty(db_session, artist):
 
 def test_work_with_no_payment_is_ghost(db_session, artist):
     # A work with no matching payments is always detected as a ghost
-    work = Work(id="work-ghost", artist_id=artist.id, title="Ghost Track", isrc="USRC99999999", work_type="RECORDING")
+    work = Work(
+        id="work-ghost",
+        artist_id=artist.id,
+        title="Ghost Track",
+        isrc="USRC99999999",
+        work_type="RECORDING",
+    )
     db_session.add(work)
     db_session.commit()
 
@@ -55,7 +60,13 @@ def test_work_with_no_payment_is_ghost(db_session, artist):
 
 
 def test_ghost_score_between_0_and_1(db_session, artist):
-    work = Work(id="work-gs", artist_id=artist.id, title="Score Test", isrc="USRC11110000", work_type="RECORDING")
+    work = Work(
+        id="work-gs",
+        artist_id=artist.id,
+        title="Score Test",
+        isrc="USRC11110000",
+        work_type="RECORDING",
+    )
     db_session.add(work)
     db_session.commit()
 
@@ -66,7 +77,13 @@ def test_ghost_score_between_0_and_1(db_session, artist):
 
 
 def test_anomaly_created_for_ghost_work(db_session, artist):
-    work = Work(id="work-anom", artist_id=artist.id, title="Anomaly Track", isrc="USRC55550000", work_type="RECORDING")
+    work = Work(
+        id="work-anom",
+        artist_id=artist.id,
+        title="Anomaly Track",
+        isrc="USRC55550000",
+        work_type="RECORDING",
+    )
     db_session.add(work)
     db_session.commit()
 

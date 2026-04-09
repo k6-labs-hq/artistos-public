@@ -1,4 +1,5 @@
 """Shared FastAPI dependencies and helper utilities for all routers."""
+
 from __future__ import annotations
 
 from fastapi import HTTPException

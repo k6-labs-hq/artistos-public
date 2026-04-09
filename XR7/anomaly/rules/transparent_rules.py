@@ -16,19 +16,31 @@ def _to_dt(value):
     return None
 
 
-def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dict], contracts: list[dict]) -> list[dict]:
+def run_transparent_rules(
+    artist_id: str, events: list[dict], payments: list[dict], contracts: list[dict]
+) -> list[dict]:
     now = datetime.now(timezone.utc)
     findings: list[dict] = []
 
     stream_events = [e for e in events if str(e.get("event_type", "")).upper() == "STREAM"]
-    stream_rates = [float(e.get("unit_value") or 0.0) for e in stream_events if float(e.get("unit_value") or 0.0) > 0]
+    stream_rates = [
+        float(e.get("unit_value") or 0.0)
+        for e in stream_events
+        if float(e.get("unit_value") or 0.0) > 0
+    ]
     median_platform_rate = 0.004
     if stream_rates:
         sorted_rates = sorted(stream_rates)
         median_platform_rate = sorted_rates[len(sorted_rates) // 2]
 
-    royalty_payments = [p for p in payments if str(p.get("payment_type", "")).upper() in {"ROYALTY", "SETTLEMENT"}]
-    payout_months = {(_to_dt(p.get("received_at")).year, _to_dt(p.get("received_at")).month) for p in royalty_payments if _to_dt(p.get("received_at"))}
+    royalty_payments = [
+        p for p in payments if str(p.get("payment_type", "")).upper() in {"ROYALTY", "SETTLEMENT"}
+    ]
+    payout_months = {
+        (_to_dt(p.get("received_at")).year, _to_dt(p.get("received_at")).month)
+        for p in royalty_payments
+        if _to_dt(p.get("received_at"))
+    }
 
     # RULE 1: streaming payout under 50% of expected market baseline.
     if stream_events:
@@ -36,7 +48,11 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
         baseline = max(median_platform_rate, 0.001)
         ratio = observed_rate / baseline if baseline > 0 else 0.0
         if ratio < 0.5:
-            est_loss = max((baseline - observed_rate) * sum(float(e.get("quantity") or 0.0) for e in stream_events), 0.0)
+            est_loss = max(
+                (baseline - observed_rate)
+                * sum(float(e.get("quantity") or 0.0) for e in stream_events),
+                0.0,
+            )
             findings.append(
                 {
                     "artist_id": artist_id,
@@ -61,7 +77,9 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
             )
 
     # RULE 2: monthly royalty history has gap > 60 days.
-    payment_dates = sorted([_to_dt(p.get("received_at")) for p in royalty_payments if _to_dt(p.get("received_at"))])
+    payment_dates = sorted(
+        [_to_dt(p.get("received_at")) for p in royalty_payments if _to_dt(p.get("received_at"))]
+    )
     if len(payment_dates) >= 2:
         largest_gap = max((b - a).days for a, b in zip(payment_dates[:-1], payment_dates[1:]))
         if largest_gap > 60:
@@ -73,7 +91,9 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
                     "severity": "HIGH",
                     "expected_amount": None,
                     "actual_amount": None,
-                    "estimated_recoverable": round(_mean([float(p.get("amount") or 0.0) for p in royalty_payments]), 2),
+                    "estimated_recoverable": round(
+                        _mean([float(p.get("amount") or 0.0) for p in royalty_payments]), 2
+                    ),
                     "confidence_score": 0.88,
                     "status": "OPEN",
                     "description": "Detected royalty payment gap greater than 60 days.",
@@ -127,7 +147,11 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
                 )
 
     # RULE 4: if no royalty payments in months with streams.
-    event_months = {(_to_dt(e.get("timestamp")).year, _to_dt(e.get("timestamp")).month) for e in stream_events if _to_dt(e.get("timestamp"))}
+    event_months = {
+        (_to_dt(e.get("timestamp")).year, _to_dt(e.get("timestamp")).month)
+        for e in stream_events
+        if _to_dt(e.get("timestamp"))
+    }
     missing_months = sorted(event_months - payout_months)
     if missing_months:
         findings.append(
@@ -138,7 +162,13 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
                 "severity": "HIGH",
                 "expected_amount": None,
                 "actual_amount": None,
-                "estimated_recoverable": round(sum(float(e.get("quantity") or 0.0) * float(e.get("unit_value") or 0.0) for e in stream_events), 2),
+                "estimated_recoverable": round(
+                    sum(
+                        float(e.get("quantity") or 0.0) * float(e.get("unit_value") or 0.0)
+                        for e in stream_events
+                    ),
+                    2,
+                ),
                 "confidence_score": 0.86,
                 "status": "OPEN",
                 "description": "At least one month contains stream activity with no corresponding royalty payment.",
@@ -153,7 +183,11 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
         )
 
     # RULE 5: payment concentration risk if top payment > 60% of total.
-    amounts = [float(p.get("amount") or 0.0) for p in royalty_payments if float(p.get("amount") or 0.0) > 0.0]
+    amounts = [
+        float(p.get("amount") or 0.0)
+        for p in royalty_payments
+        if float(p.get("amount") or 0.0) > 0.0
+    ]
     if len(amounts) >= 3:
         total = sum(amounts)
         top = max(amounts)
@@ -182,7 +216,9 @@ def run_transparent_rules(artist_id: str, events: list[dict], payments: list[dic
             )
 
     # RULE 6: stale contracts lacking clear term data.
-    incomplete_contracts = [c for c in contracts if not isinstance(c.get("terms"), dict) or not c.get("terms")]
+    incomplete_contracts = [
+        c for c in contracts if not isinstance(c.get("terms"), dict) or not c.get("terms")
+    ]
     if incomplete_contracts:
         findings.append(
             {

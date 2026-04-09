@@ -28,7 +28,11 @@ client = TestClient(app)
 
 
 def _create_artist(db, name: str | None = None) -> Artist:
-    artist = Artist(id=str(uuid4()), name=name or f"Test Artist {uuid4().hex[:8]}", created_at=datetime.now(timezone.utc))
+    artist = Artist(
+        id=str(uuid4()),
+        name=name or f"Test Artist {uuid4().hex[:8]}",
+        created_at=datetime.now(timezone.utc),
+    )
     db.add(artist)
     db.commit()
     db.refresh(artist)
@@ -391,9 +395,24 @@ def test_confidence_band_router_batch_routing() -> None:
 
         router = ConfidenceBandRouter(db)
         anomalies = [
-            {"id": "anom1", "artist_id": artist.id, "confidence_score": 0.95, "estimated_recoverable": 300},
-            {"id": "anom2", "artist_id": artist.id, "confidence_score": 0.75, "estimated_recoverable": 200},
-            {"id": "anom3", "artist_id": artist.id, "confidence_score": 0.50, "estimated_recoverable": 100},
+            {
+                "id": "anom1",
+                "artist_id": artist.id,
+                "confidence_score": 0.95,
+                "estimated_recoverable": 300,
+            },
+            {
+                "id": "anom2",
+                "artist_id": artist.id,
+                "confidence_score": 0.75,
+                "estimated_recoverable": 200,
+            },
+            {
+                "id": "anom3",
+                "artist_id": artist.id,
+                "confidence_score": 0.50,
+                "estimated_recoverable": 100,
+            },
         ]
 
         result = router.route_batch(anomalies)

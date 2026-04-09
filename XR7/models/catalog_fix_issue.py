@@ -6,6 +6,7 @@ Each record tracks the lifecycle of one actionable item: pending → requested
 → resolved (or expired). A pre-filled email/letter template is generated and
 stored in ``template_payload`` when the artist requests the fix.
 """
+
 from __future__ import annotations
 
 import enum
@@ -55,22 +56,16 @@ class CatalogFixIssue(Base):
 
     __tablename__ = "catalog_fix_issues"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(
         String, ForeignKey("artists.id"), nullable=False, index=True
     )
     category: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    priority: Mapped[str] = mapped_column(
-        String, nullable=False, default=FixPriority.MEDIUM.value
-    )
+    priority: Mapped[str] = mapped_column(String, nullable=False, default=FixPriority.MEDIUM.value)
     description: Mapped[str] = mapped_column(String, nullable=False)
     # JSON-serialised list[{"title": str, "isrc": str | None}]
     affected_works_json: Mapped[str | None] = mapped_column(String, nullable=True)
-    estimated_recoverable_usd: Mapped[float] = mapped_column(
-        Float, nullable=False, default=0.0
-    )
+    estimated_recoverable_usd: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     suggested_action: Mapped[str] = mapped_column(
         String, nullable=False, default=FixSuggestedAction.OTHER.value
     )
@@ -112,6 +107,7 @@ class CatalogFixIssue(Base):
 # ---------------------------------------------------------------------------
 # Pydantic schemas
 # ---------------------------------------------------------------------------
+
 
 class AffectedWork(BaseModel):
     title: str

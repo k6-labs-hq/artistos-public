@@ -14,7 +14,11 @@ class RecoveryPotentialModel:
     ) -> dict:
         anomaly_value = sum(float(a.get("estimated_recoverable") or 0.0) for a in anomalies)
         open_anomaly_count = sum(1 for a in anomalies if str(a.get("status")) != "CLOSED")
-        contract_complexity = sum(1 for c in contracts if c.get("territory") and str(c.get("territory")).upper() not in {"US", "USA"})
+        contract_complexity = sum(
+            1
+            for c in contracts
+            if c.get("territory") and str(c.get("territory")).upper() not in {"US", "USA"}
+        )
         contract_complexity += len(contracts)
 
         health_factor = max(0.5, min(1.5, (100.0 - float(catalog_health_score or 0.0)) / 50.0))

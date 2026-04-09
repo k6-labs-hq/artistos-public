@@ -117,6 +117,7 @@ _GLOBAL_SOCIAL_SUMMARY_STUB = {
 # Pure serialisation helpers — used by multiple section builders
 # ---------------------------------------------------------------------------
 
+
 def _to_anomaly_dict(a: "Anomaly") -> dict:
     """Serialise an Anomaly ORM row into the dict shape expected by rule engines."""
     return {
@@ -212,13 +213,17 @@ class DashboardEngine:
         calibration_health = self._calibration_health_section(artist_id)
         metadata_health_prevention = self._metadata_health_prevention_section(artist_id)
         post_repair_forecast = self._post_repair_forecast_section(artist_id)
-        future_leakage_prevention = self._future_leakage_prevention_section(artist_id, works, anomalies, payments)
+        future_leakage_prevention = self._future_leakage_prevention_section(
+            artist_id, works, anomalies, payments
+        )
         recoverability_breakdown = self._recoverability_breakdown_section(anomalies)
         repair_transparency_panel = self._repair_transparency_panel_section(artist_id)
         catalog_health = self._catalog_health_section(artist_id, works, payments, anomalies, claims)
         expected_value = self._expected_value_section(anomalies, claims, contracts, catalog_health)
         segment_insight = self._catalog_segment_section(works, payments, anomalies)
-        recovery_potential = self._recovery_potential_section(anomalies, contracts, catalog_health, segment_insight)
+        recovery_potential = self._recovery_potential_section(
+            anomalies, contracts, catalog_health, segment_insight
+        )
         earnings_trend = self._earnings_trend_section(artist_id)
         feed = self._activity_feed(anomalies, claims, disbursements)
         ugc = self._ugc_opportunities_section(artist_id)
@@ -228,7 +233,9 @@ class DashboardEngine:
         valuation = self._financing_section(artist_id)
         optimization = self._optimization_playground_section(artist_id)
         industry = self._industry_comparison_section(artist_id)
-        catalog_health_vs_industry = self._catalog_health_vs_industry_section(artist_id, anomalies, claims)
+        catalog_health_vs_industry = self._catalog_health_vs_industry_section(
+            artist_id, anomalies, claims
+        )
         society_activity = self._society_activity_section(artist_id)
 
         return {
@@ -244,7 +251,8 @@ class DashboardEngine:
             "calibration_health": calibration_health,
             "metadata_health_future_leakage_prevention": metadata_health_prevention,
             "forecasted_royalties_post_repair": post_repair_forecast,
-            "forecast_disclaimer": post_repair_forecast.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
+            "forecast_disclaimer": post_repair_forecast.get("forecast_disclaimer")
+            or FORECAST_DISCLAIMER,
             "future_leakage_prevention": future_leakage_prevention,
             "recoverability_breakdown": recoverability_breakdown,
             "recoverable_vs_expired": {
@@ -338,12 +346,16 @@ class DashboardEngine:
         return {
             "catalog_value": val,
             "matches": matches,
-            "estimated_advance": round(sum(float(m.get("estimated_advance") or 0.0) for m in matches), 2),
+            "estimated_advance": round(
+                sum(float(m.get("estimated_advance") or 0.0) for m in matches), 2
+            ),
         }
 
     def _optimization_playground_section(self, artist_id: str) -> dict[str, Any]:
         opt = RoyaltyOptimizer()
-        sim = opt.simulate_scenario(artist_id, {"distro_switch": True, "ai_opt_in": True, "fraud_reduction": True})
+        sim = opt.simulate_scenario(
+            artist_id, {"distro_switch": True, "ai_opt_in": True, "fraud_reduction": True}
+        )
         return {"default_simulation": sim, "chart": opt.visualize_delta(sim)}
 
     def _industry_comparison_section(self, artist_id: str) -> dict[str, Any]:
@@ -351,10 +363,16 @@ class DashboardEngine:
         b = engine.get_benchmarks(artist_id)
         return {"benchmarks": b, "message": engine.generate_comparison_report(b)}
 
-    def _catalog_health_vs_industry_section(self, artist_id: str, anomalies: list[Anomaly], claims: list[Claim]) -> dict[str, Any]:
+    def _catalog_health_vs_industry_section(
+        self, artist_id: str, anomalies: list[Anomaly], claims: list[Claim]
+    ) -> dict[str, Any]:
         benchmark = LeakageBenchmarkEngine()
         leaked = sum(float(a.estimated_recoverable or 0.0) for a in anomalies)
-        recovered = sum(float(c.recovered_amount or 0.0) for c in claims if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED})
+        recovered = sum(
+            float(c.recovered_amount or 0.0)
+            for c in claims
+            if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED}
+        )
         expired = 0.0
         for a in anomalies:
             payload = {
@@ -391,10 +409,23 @@ class DashboardEngine:
             peer_claims = self.db.query(Claim).filter(Claim.artist_id == p.id).all()
             peers.append(
                 {
-                    "estimated_leaked": sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies),
-                    "recovered": sum(float(c.recovered_amount or 0.0) for c in peer_claims if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED}),
-                    "expired": sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies if str(a.recoverability_class or "") == "Expired (Black-Box Redistributed)"),
-                    "total_estimated_earnings": max(sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies) * 3.5, 1.0),
+                    "estimated_leaked": sum(
+                        float(a.estimated_recoverable or 0.0) for a in peer_anomalies
+                    ),
+                    "recovered": sum(
+                        float(c.recovered_amount or 0.0)
+                        for c in peer_claims
+                        if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED}
+                    ),
+                    "expired": sum(
+                        float(a.estimated_recoverable or 0.0)
+                        for a in peer_anomalies
+                        if str(a.recoverability_class or "") == "Expired (Black-Box Redistributed)"
+                    ),
+                    "total_estimated_earnings": max(
+                        sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies) * 3.5,
+                        1.0,
+                    ),
                     "benchmark_opt_in": True,
                 }
             )
@@ -423,15 +454,26 @@ class DashboardEngine:
             "count": len(rows),
         }
 
-    def _catalog_segment_section(self, works: list[Work], payments: list[Payment], anomalies: list[Anomaly]) -> dict:
+    def _catalog_segment_section(
+        self, works: list[Work], payments: list[Payment], anomalies: list[Anomaly]
+    ) -> dict:
         segmenter = CatalogSegmenter()
         return segmenter.segment(
             [{"id": w.id} for w in works],
             [{"amount": p.amount} for p in payments],
-            [{"status": a.status, "estimated_recoverable": a.estimated_recoverable} for a in anomalies],
+            [
+                {"status": a.status, "estimated_recoverable": a.estimated_recoverable}
+                for a in anomalies
+            ],
         )
 
-    def _recovery_potential_section(self, anomalies: list[Anomaly], contracts: list[Contract], catalog_health: dict, segment: dict) -> dict:
+    def _recovery_potential_section(
+        self,
+        anomalies: list[Anomaly],
+        contracts: list[Contract],
+        catalog_health: dict,
+        segment: dict,
+    ) -> dict:
         model = RecoveryPotentialModel()
         peer_multiplier = 1.15 if segment.get("segment") == "frontline_releases" else 1.0
         return model.score(
@@ -507,10 +549,7 @@ class DashboardEngine:
         Active claims — money XR7 is currently chasing for the artist.
         """
         active = [c for c in claims if c.status in _ACTIVE_CLAIM_STATUSES]
-        closed_paid = [
-            c for c in claims
-            if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED}
-        ]
+        closed_paid = [c for c in claims if c.status in {ClaimStatus.PAID, ClaimStatus.CLOSED}]
 
         # For active claims, use recovered_amount if set (claim has been
         # reconciled already), otherwise fall back to the anomaly's
@@ -598,7 +637,9 @@ class DashboardEngine:
             .filter(
                 TrolleyTransaction.artist_id == artist_id,
                 TrolleyTransaction.type == TrolleyTxnType.DISBURSEMENT,
-                TrolleyTransaction.status.in_([TrolleyTxnStatus.PENDING, TrolleyTxnStatus.PROCESSING]),
+                TrolleyTransaction.status.in_(
+                    [TrolleyTxnStatus.PENDING, TrolleyTxnStatus.PROCESSING]
+                ),
             )
             .all()
         )
@@ -634,9 +675,7 @@ class DashboardEngine:
         """
         # Exclude closed anomalies — SOL tracking only applies to open items.
         open_anomaly_dicts = [
-            _to_anomaly_dict(a)
-            for a in anomalies
-            if a.status != AnomalyStatus.CLOSED
+            _to_anomaly_dict(a) for a in anomalies if a.status != AnomalyStatus.CLOSED
         ]
         summary = sol_summary(open_anomaly_dicts)
 
@@ -702,9 +741,7 @@ class DashboardEngine:
             ),
         }
 
-    def _priority_actions_section(
-        self, anomalies: list[Anomaly], claims: list[Claim]
-    ) -> dict:
+    def _priority_actions_section(self, anomalies: list[Anomaly], claims: list[Claim]) -> dict:
         """
         Top 10 ranked items from the recovery priority queue.
 
@@ -713,9 +750,7 @@ class DashboardEngine:
         and returns the highest-ROI actions.  The artist's "do-this-now" list.
         """
         open_anomaly_dicts = [
-            _to_anomaly_dict(a)
-            for a in anomalies
-            if a.status != AnomalyStatus.CLOSED
+            _to_anomaly_dict(a) for a in anomalies if a.status != AnomalyStatus.CLOSED
         ]
         active_claim_dicts = [
             {
@@ -738,9 +773,7 @@ class DashboardEngine:
         queue = build_action_queue(classified_anomalies, active_claim_dicts)
 
         top_items = queue[:10]
-        total_recoverable = sum(
-            item.get("estimated_recoverable") or 0.0 for item in top_items
-        )
+        total_recoverable = sum(item.get("estimated_recoverable") or 0.0 for item in top_items)
 
         return {
             "total_open_items": len(queue),
@@ -828,8 +861,7 @@ class DashboardEngine:
         ]
         anomaly_dicts = [{"id": a.id, "status": a.status} for a in anomalies]
         claim_dicts = [
-            {"id": c.id, "status": c.status, "recovered_amount": c.recovered_amount}
-            for c in claims
+            {"id": c.id, "status": c.status, "recovered_amount": c.recovered_amount} for c in claims
         ]
 
         rg = RightsGraph()
@@ -872,7 +904,9 @@ class DashboardEngine:
             "issues_found": len(issues),
             "issues_auto_repaired": len(auto_repaired),
             "issues_requiring_review": len(requiring_review),
-            "projected_leakage_avoided": round(sum(float(i.projected_leakage_avoided or 0.0) for i in auto_repaired), 2),
+            "projected_leakage_avoided": round(
+                sum(float(i.projected_leakage_avoided or 0.0) for i in auto_repaired), 2
+            ),
             "completeness_score": health.get("completeness_score"),
             "consistency_score": health.get("consistency_score"),
             "identifier_coverage": health.get("identifier_coverage"),
@@ -914,7 +948,9 @@ class DashboardEngine:
 
         works_rows = [{"id": w.id, "isrc": w.isrc, "iswc": w.iswc} for w in works]
         metadata_completeness = float(health.get("completeness_score") or 0.0)
-        identifier_coverage = float((health.get("identifier_coverage") or {}).get("both_coverage") or 0.0)
+        identifier_coverage = float(
+            (health.get("identifier_coverage") or {}).get("both_coverage") or 0.0
+        )
         anomaly_density = float(len(anomalies)) / max(float(len(works) or 1), 1.0)
         amounts = [float(p.amount or 0.0) for p in payments if float(p.amount or 0.0) > 0.0]
         payment_regularity = 0.5
@@ -928,9 +964,7 @@ class DashboardEngine:
         # Fallback heuristic where historical release metadata is unavailable.
         catalog_age_years = 4.0 if works else 0.0
         distributors = {
-            str(p.source or "").strip().lower()
-            for p in payments
-            if str(p.source or "").strip()
+            str(p.source or "").strip().lower() for p in payments if str(p.source or "").strip()
         }
 
         predictions = predictor.predict_per_work(
@@ -972,7 +1006,9 @@ class DashboardEngine:
                     "created_at": anomaly.created_at,
                 }
             )
-            recoverability_class = str((payload.get("recoverability") or {}).get("recoverability_class") or "")
+            recoverability_class = str(
+                (payload.get("recoverability") or {}).get("recoverability_class") or ""
+            )
             if recoverability_class == "Expired (Black-Box Redistributed)":
                 expired_anomaly_count += 1
                 expired_estimated_total += float(anomaly.estimated_recoverable or 0.0)
@@ -1023,11 +1059,17 @@ class DashboardEngine:
                     "created_at": anomaly.created_at,
                 }
             )
-            cls = str((payload.get("recoverability") or {}).get("recoverability_class") or "Unclassified")
-            narrative = str(((payload.get("black_box_expiration") or {}).get("probability_narrative") or "")).strip()
+            cls = str(
+                (payload.get("recoverability") or {}).get("recoverability_class") or "Unclassified"
+            )
+            narrative = str(
+                ((payload.get("black_box_expiration") or {}).get("probability_narrative") or "")
+            ).strip()
             if narrative:
                 narratives.append(narrative)
-            contract_clause = str(((payload.get("contract_recoverability") or {}).get("governing_clause") or "")).strip()
+            contract_clause = str(
+                ((payload.get("contract_recoverability") or {}).get("governing_clause") or "")
+            ).strip()
             if contract_clause:
                 contract_clauses.append(contract_clause)
             if cls not in by_class:
@@ -1043,15 +1085,24 @@ class DashboardEngine:
                     {
                         "anomaly_id": anomaly.id,
                         "subtype": anomaly.subtype,
-                        "rule_applied": (payload.get("black_box_expiration") or {}).get("rule_applied"),
+                        "rule_applied": (payload.get("black_box_expiration") or {}).get(
+                            "rule_applied"
+                        ),
                     }
                 )
 
         for summary in by_class.values():
             summary["estimated_recoverable"] = round(float(summary["estimated_recoverable"]), 2)
 
-        recoverable_total = sum(v["estimated_recoverable"] for k, v in by_class.items() if k != "Expired (Black-Box Redistributed)")
-        expired_total = float((by_class.get("Expired (Black-Box Redistributed)") or {}).get("estimated_recoverable") or 0.0)
+        recoverable_total = sum(
+            v["estimated_recoverable"]
+            for k, v in by_class.items()
+            if k != "Expired (Black-Box Redistributed)"
+        )
+        expired_total = float(
+            (by_class.get("Expired (Black-Box Redistributed)") or {}).get("estimated_recoverable")
+            or 0.0
+        )
         copyright_data = by_class.get("Recoverable via Copyright Damages") or {
             "count": 0,
             "estimated_recoverable": 0.0,
@@ -1081,7 +1132,8 @@ class DashboardEngine:
                 {
                     "repair_id": row.get("repair_id"),
                     "what_was_fixed": row.get("issue_type"),
-                    "why_it_was_fixed": row.get("repair_rationale") or "Prevent future leakage and mismatched payouts.",
+                    "why_it_was_fixed": row.get("repair_rationale")
+                    or "Prevent future leakage and mismatched payouts.",
                     "how_it_prevents_future_loss": "Improves identifier and registry matching across rights systems.",
                     "confidence_score": row.get("confidence_score"),
                     "evidence_link": f"/artists/{artist_id}/catalog/repairs#{row.get('repair_id')}",
@@ -1168,52 +1220,58 @@ class DashboardEngine:
         events: list[dict] = []
 
         for a in anomalies:
-            events.append({
-                "type": "LEAKAGE_DISCOVERED",
-                "timestamp": a.created_at.isoformat(),
-                "title": f"Leakage detected: {a.subtype}",
-                "detail": (
-                    f"{a.category} anomaly ({a.severity}) — "
-                    f"estimated recoverable: "
-                    f"${a.estimated_recoverable:,.2f}"
-                    if a.estimated_recoverable
-                    else f"{a.category} anomaly ({a.severity})"
-                ),
-                "reference_id": a.id,
-                "amount": a.estimated_recoverable,
-            })
+            events.append(
+                {
+                    "type": "LEAKAGE_DISCOVERED",
+                    "timestamp": a.created_at.isoformat(),
+                    "title": f"Leakage detected: {a.subtype}",
+                    "detail": (
+                        f"{a.category} anomaly ({a.severity}) — "
+                        f"estimated recoverable: "
+                        f"${a.estimated_recoverable:,.2f}"
+                        if a.estimated_recoverable
+                        else f"{a.category} anomaly ({a.severity})"
+                    ),
+                    "reference_id": a.id,
+                    "amount": a.estimated_recoverable,
+                }
+            )
 
         for c in claims:
             label = _claim_status_label(c.status)
-            events.append({
-                "type": f"CLAIM_{c.status}",
-                "timestamp": c.updated_at.isoformat(),
-                "title": label,
-                "detail": (
-                    f"{c.claim_type} claim — "
-                    + (
-                        f"${c.recovered_amount:,.2f} {c.currency}"
-                        if c.recovered_amount
-                        else "amount pending reconciliation"
-                    )
-                ),
-                "reference_id": c.id,
-                "amount": c.recovered_amount,
-            })
+            events.append(
+                {
+                    "type": f"CLAIM_{c.status}",
+                    "timestamp": c.updated_at.isoformat(),
+                    "title": label,
+                    "detail": (
+                        f"{c.claim_type} claim — "
+                        + (
+                            f"${c.recovered_amount:,.2f} {c.currency}"
+                            if c.recovered_amount
+                            else "amount pending reconciliation"
+                        )
+                    ),
+                    "reference_id": c.id,
+                    "amount": c.recovered_amount,
+                }
+            )
 
         for d in disbursements:
-            events.append({
-                "type": "PAYMENT_DEPOSITED",
-                "timestamp": d.updated_at.isoformat(),
-                "title": "Payment deposited to your account",
-                "detail": (
-                    f"${(d.net_amount or 0.0):,.2f} {d.source_currency} deposited via Trolley — "
-                    f"status: {d.status}"
-                    + (f" (payment: {d.trolley_payment_id})" if d.trolley_payment_id else "")
-                ),
-                "reference_id": d.id,
-                "amount": d.net_amount,
-            })
+            events.append(
+                {
+                    "type": "PAYMENT_DEPOSITED",
+                    "timestamp": d.updated_at.isoformat(),
+                    "title": "Payment deposited to your account",
+                    "detail": (
+                        f"${(d.net_amount or 0.0):,.2f} {d.source_currency} deposited via Trolley — "
+                        f"status: {d.status}"
+                        + (f" (payment: {d.trolley_payment_id})" if d.trolley_payment_id else "")
+                    ),
+                    "reference_id": d.id,
+                    "amount": d.net_amount,
+                }
+            )
 
         events.sort(key=lambda e: e["timestamp"], reverse=True)
         return events[:50]
@@ -1222,6 +1280,7 @@ class DashboardEngine:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _claim_status_label(status: str) -> str:
     return {

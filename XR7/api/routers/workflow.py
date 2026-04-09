@@ -48,7 +48,9 @@ class AgentHandoffListResponse(BaseModel):
     branding: dict[str, Any] | None = None
 
 
-@router.post("/artists/{artist_id}/workflow/run-full-autonomous", response_model=WorkflowRunResponse)
+@router.post(
+    "/artists/{artist_id}/workflow/run-full-autonomous", response_model=WorkflowRunResponse
+)
 def run_full_autonomous_workflow(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
 
@@ -70,21 +72,27 @@ def run_full_autonomous_workflow(artist_id: str, db: Session = Depends(get_db)):
 def workflow_run_status(artist_id: str, run_id: str, db: Session = Depends(get_db)):
     trace = get_run_trace(artist_id, run_id)
     if not trace.get("found"):
-        return inject_branding_metadata(db, {
+        return inject_branding_metadata(
+            db,
+            {
+                "artist_id": artist_id,
+                "run_id": run_id,
+                "status": "queued_or_unknown",
+                "current_step": None,
+                "event_count": 0,
+            },
+        )
+    return inject_branding_metadata(
+        db,
+        {
             "artist_id": artist_id,
             "run_id": run_id,
-            "status": "queued_or_unknown",
-            "current_step": None,
-            "event_count": 0,
-        })
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "run_id": run_id,
-        "status": "running_or_complete",
-        "current_step": trace.get("current_step"),
-        "event_count": len(trace.get("events") or []),
-        "confidence_scores": trace.get("confidence_scores") or {},
-    })
+            "status": "running_or_complete",
+            "current_step": trace.get("current_step"),
+            "event_count": len(trace.get("events") or []),
+            "confidence_scores": trace.get("confidence_scores") or {},
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/workflow/handoffs", response_model=AgentHandoffListResponse)

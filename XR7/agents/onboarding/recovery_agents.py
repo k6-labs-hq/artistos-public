@@ -1,4 +1,5 @@
 """SOL guardian, settlement tracking, and evidence recovery agents."""
+
 from __future__ import annotations
 
 from datetime import datetime
@@ -48,13 +49,9 @@ async def AutoPayerChaserAgent(state: XR7State) -> XR7State:
             "claim_id": c.id,
             "status": str(c.status),
             "action": (
-                "send_follow_up"
-                if str(c.status) not in {"PAID", "CLOSED"}
-                else "monitor_only"
+                "send_follow_up" if str(c.status) not in {"PAID", "CLOSED"} else "monitor_only"
             ),
-            "priority": (
-                "high" if str(c.status) in {"DRAFTED", "SENT", "PREPARED"} else "normal"
-            ),
+            "priority": ("high" if str(c.status) in {"DRAFTED", "SENT", "PREPARED"} else "normal"),
         }
         for c in claims
     ]

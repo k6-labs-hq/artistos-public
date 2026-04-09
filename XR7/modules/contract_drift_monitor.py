@@ -4,6 +4,7 @@ XR7 Engine 2 — Contract Drift Monitor
 Quarterly monitoring of whether actual payments match contracted rates.
 Tracks divergence over time and classifies drift severity.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -31,7 +32,6 @@ _P_VALUE_THRESHOLD = 0.05
 def _compute_hash(artist_id: str, payload: dict) -> str:
     raw = json.dumps({"artist_id": artist_id, "payload": payload}, sort_keys=True)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 
 def _classify_drift(drift_pct: float) -> str:
@@ -153,6 +153,7 @@ class ContractDriftMonitor:
 
         # Group payments by quarter
         from collections import defaultdict
+
         quarter_payments: dict[str, list[float]] = defaultdict(list)
         for p in payments:
             dt = _ensure_utc(getattr(p, "received_at", None) or getattr(p, "period_start", None))
@@ -194,13 +195,19 @@ class ContractDriftMonitor:
                 }
             )
 
-        latest_class = quarterly_timeline[-1]["classification"] if quarterly_timeline else "WITHIN_VARIANCE"
+        latest_class = (
+            quarterly_timeline[-1]["classification"] if quarterly_timeline else "WITHIN_VARIANCE"
+        )
         trend = _drift_trend(drift_pct_history)
 
         # Audit rights window check
         audit_rights_days = int(terms.get("audit_rights_days", 1095))
-        effective_date = _ensure_utc(getattr(contract, "effective_date", None) or getattr(contract, "created_at", None))
-        audit_expiry = effective_date.replace(year=effective_date.year + max(1, audit_rights_days // 365))
+        effective_date = _ensure_utc(
+            getattr(contract, "effective_date", None) or getattr(contract, "created_at", None)
+        )
+        audit_expiry = effective_date.replace(
+            year=effective_date.year + max(1, audit_rights_days // 365)
+        )
         now = datetime.now(timezone.utc)
         audit_days_remaining = (audit_expiry - now).days
         audit_expiry_warning = audit_days_remaining <= 90 and latest_class != "WITHIN_VARIANCE"
@@ -260,6 +267,7 @@ def _generate_drift_explanation(
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def run_quarterly_analysis(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.contract_drift.run_quarterly_analysis"""

@@ -6,13 +6,24 @@ class ContractTermExtractor:
     """Lightweight rule-based contract term extractor for initial term snapshots."""
 
     _RATE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*%")
-    _MIN_GUARANTEE_RE = re.compile(r"(?:minimum\s+guarantee|min\.?\s+guarantee)\s*(?:of)?\s*\$?([\d,]+(?:\.\d+)?)", re.IGNORECASE)
-    _ESCALATOR_RE = re.compile(r"(?:escalat(?:or|ion)|step\s*up)\s*(?:to)?\s*(\d+(?:\.\d+)?)\s*%", re.IGNORECASE)
-    _TERRITORY_RE = re.compile(r"\b(worldwide|world wide|us|usa|uk|eu|global|japan|korea|france)\b", re.IGNORECASE)
+    _MIN_GUARANTEE_RE = re.compile(
+        r"(?:minimum\s+guarantee|min\.?\s+guarantee)\s*(?:of)?\s*\$?([\d,]+(?:\.\d+)?)",
+        re.IGNORECASE,
+    )
+    _ESCALATOR_RE = re.compile(
+        r"(?:escalat(?:or|ion)|step\s*up)\s*(?:to)?\s*(\d+(?:\.\d+)?)\s*%", re.IGNORECASE
+    )
+    _TERRITORY_RE = re.compile(
+        r"\b(worldwide|world wide|us|usa|uk|eu|global|japan|korea|france)\b", re.IGNORECASE
+    )
     _RECOUP_RE = re.compile(r"\b(recoup(?:ment)?|reserve)\b", re.IGNORECASE)
-    _AUDIT_RE = re.compile(r"\b(audit\s+right[s]?|right\s+to\s+audit|books\s+and\s+records)\b", re.IGNORECASE)
+    _AUDIT_RE = re.compile(
+        r"\b(audit\s+right[s]?|right\s+to\s+audit|books\s+and\s+records)\b", re.IGNORECASE
+    )
     _MFN_RE = re.compile(r"\b(most\s+favou?red\s+nation|mfn)\b", re.IGNORECASE)
-    _RECOUP_TRAP_RE = re.compile(r"\b(cross[-\s]?collateral(?:ization)?|perpetual\s+recoup(?:ment)?)\b", re.IGNORECASE)
+    _RECOUP_TRAP_RE = re.compile(
+        r"\b(cross[-\s]?collateral(?:ization)?|perpetual\s+recoup(?:ment)?)\b", re.IGNORECASE
+    )
 
     def extract_with_highlights(
         self,
@@ -145,18 +156,20 @@ class ContractTermExtractor:
         terms = self.extract(text)
 
         rate_values = [
-            float(t["term_value"])
-            for t in terms
-            if t.get("term_key") == "royalty_rate_percent"
+            float(t["term_value"]) for t in terms if t.get("term_key") == "royalty_rate_percent"
         ]
         has_escalator = any(t.get("term_key") == "escalator_rate_percent" for t in terms)
-        has_audit = any(t.get("term_key") == "audit_rights_clause" for t in terms) or bool(self._AUDIT_RE.search(text))
+        has_audit = any(t.get("term_key") == "audit_rights_clause" for t in terms) or bool(
+            self._AUDIT_RE.search(text)
+        )
         has_mfn = bool(self._MFN_RE.search(text))
         has_recoup_clause = any(t.get("term_key") == "recoupment_clause" for t in terms)
         has_recoup_trap = bool(self._RECOUP_TRAP_RE.search(text))
 
         low_rate_flag = bool(rate_values) and min(rate_values) < 12.0
-        royalty_rate_anomaly = low_rate_flag or (bool(rate_values) and max(rate_values) - min(rate_values) > 20.0)
+        royalty_rate_anomaly = low_rate_flag or (
+            bool(rate_values) and max(rate_values) - min(rate_values) > 20.0
+        )
 
         risk = 0.25
         if not has_audit:
@@ -174,15 +187,21 @@ class ContractTermExtractor:
 
         redlines: list[str] = []
         if not has_audit:
-            redlines.append("Add explicit annual audit rights with 30-day access to books and records.")
+            redlines.append(
+                "Add explicit annual audit rights with 30-day access to books and records."
+            )
         if not has_escalator:
             redlines.append("Add an escalator clause tied to stream/consumption thresholds.")
         if has_recoup_clause:
-            redlines.append("Cap recoupment and prohibit non-transparent reserves without aging schedule.")
+            redlines.append(
+                "Cap recoupment and prohibit non-transparent reserves without aging schedule."
+            )
         if has_recoup_trap:
             redlines.append("Remove cross-collateralization/perpetual recoupment language.")
         if royalty_rate_anomaly:
-            redlines.append("Normalize royalty rates to market benchmarks and define territory exceptions.")
+            redlines.append(
+                "Normalize royalty rates to market benchmarks and define territory exceptions."
+            )
         if not has_mfn:
             redlines.append("Add MFN protection for key royalty and audit terms.")
 

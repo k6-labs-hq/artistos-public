@@ -125,7 +125,11 @@ def artist_login(payload: ArtistLoginRequest, db: Session = Depends(get_db)) -> 
     if not artist:
         raise HTTPException(status_code=404, detail="Artist not found")
 
-    if payload.email and artist.email and payload.email.strip().lower() != artist.email.strip().lower():
+    if (
+        payload.email
+        and artist.email
+        and payload.email.strip().lower() != artist.email.strip().lower()
+    ):
         raise HTTPException(status_code=401, detail="Artist email does not match")
 
     token = jwt_service.issue_token(
@@ -155,13 +159,18 @@ def admin_login(payload: AdminLoginRequest) -> TokenResponse:
 
 
 @router.get("/auth/me")
-def auth_me(payload: dict[str, Any] = Depends(get_auth_payload), db: Session = Depends(get_db)) -> dict:
+def auth_me(
+    payload: dict[str, Any] = Depends(get_auth_payload), db: Session = Depends(get_db)
+) -> dict:
 
-    return inject_branding_metadata(db, {
-        "subject": payload.get("sub"),
-        "role": payload.get("role"),
-        "artist_id": payload.get("artist_id"),
-        "artist_email": payload.get("artist_email"),
-        "issued_at": payload.get("iat"),
-        "expires_at": payload.get("exp"),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "subject": payload.get("sub"),
+            "role": payload.get("role"),
+            "artist_id": payload.get("artist_id"),
+            "artist_email": payload.get("artist_email"),
+            "issued_at": payload.get("iat"),
+            "expires_at": payload.get("exp"),
+        },
+    )

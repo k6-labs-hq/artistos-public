@@ -65,7 +65,13 @@ class UGCUsageMonitor:
         return payload
 
 
-@celery_app.task(name="xr7.pipeline.scan_ugc_daily", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+@celery_app.task(
+    name="xr7.pipeline.scan_ugc_daily",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 2},
+)
 def scan_ugc_daily(self, artist_id: str) -> dict:  # noqa: ANN001
     monitor = UGCUsageMonitor()
     uses = __import__("asyncio").run(monitor.scan_for_uses(artist_id, days_back=30))

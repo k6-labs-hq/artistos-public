@@ -1,4 +1,5 @@
 """Pillar 2 — Referral tree for viral growth loops."""
+
 from __future__ import annotations
 
 import uuid

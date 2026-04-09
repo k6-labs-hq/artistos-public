@@ -33,7 +33,9 @@ def _to_utc(value: Any) -> datetime | None:
 
 
 def _hash_payload(payload: dict[str, Any]) -> str:
-    return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+    ).hexdigest()
 
 
 @dataclass(frozen=True)
@@ -44,7 +46,9 @@ class DiscoveryTrigger:
 
 _TRIGGER_PRIORITY: list[DiscoveryTrigger] = [
     DiscoveryTrigger("statement_receipt_date", "Statement receipt date with anomaly visible"),
-    DiscoveryTrigger("metadata_repair_event_date", "Metadata repair event revealing misattribution"),
+    DiscoveryTrigger(
+        "metadata_repair_event_date", "Metadata repair event revealing misattribution"
+    ),
     DiscoveryTrigger("third_party_audit_date", "Third-party audit or PRO data release"),
     DiscoveryTrigger("xr7_detection_timestamp", "XR7 detection timestamp (constructive discovery)"),
     DiscoveryTrigger("industry_publication_date", "Industry publication or society announcement"),
@@ -89,7 +93,9 @@ class DiscoveryRuleEngine:
     def __init__(self, db: Session | None = None) -> None:
         self.db = db
 
-    def _pick_discovery_date(self, anomaly_like: dict[str, Any]) -> tuple[datetime | None, list[dict[str, Any]]]:
+    def _pick_discovery_date(
+        self, anomaly_like: dict[str, Any]
+    ) -> tuple[datetime | None, list[dict[str, Any]]]:
         timeline: list[dict[str, Any]] = []
         first_dt: datetime | None = None
         first_key = None
@@ -101,7 +107,13 @@ class DiscoveryRuleEngine:
                 "label": trigger.label,
                 "date": dt.isoformat() if dt else None,
                 "source_evidence": evidence,
-                "evidence_hash": _hash_payload({"key": trigger.key, "date": dt.isoformat() if dt else None, "evidence": evidence}),
+                "evidence_hash": _hash_payload(
+                    {
+                        "key": trigger.key,
+                        "date": dt.isoformat() if dt else None,
+                        "evidence": evidence,
+                    }
+                ),
             }
             timeline.append(row)
             if first_dt is None and dt is not None:
@@ -116,7 +128,9 @@ class DiscoveryRuleEngine:
                     "label": "Fallback created_at discovery",
                     "date": fallback.isoformat(),
                     "source_evidence": "system fallback",
-                    "evidence_hash": _hash_payload({"key": "fallback_created_at", "date": fallback.isoformat()}),
+                    "evidence_hash": _hash_payload(
+                        {"key": "fallback_created_at", "date": fallback.isoformat()}
+                    ),
                 }
             )
             first_dt = fallback
@@ -128,7 +142,9 @@ class DiscoveryRuleEngine:
                 "label": "Selected discovery trigger",
                 "date": first_dt.isoformat(),
                 "source_evidence": first_key,
-                "evidence_hash": _hash_payload({"selected": first_key, "date": first_dt.isoformat()}),
+                "evidence_hash": _hash_payload(
+                    {"selected": first_key, "date": first_dt.isoformat()}
+                ),
             }
         )
         return first_dt, timeline
@@ -138,7 +154,9 @@ class DiscoveryRuleEngine:
         fn = _JURISDICTION_SOL.get(key, _us_deadline)
         return fn(discovery_date)
 
-    def generate_discovery_memo(self, anomaly_like: dict[str, Any], analysis: dict[str, Any]) -> dict[str, Any]:
+    def generate_discovery_memo(
+        self, anomaly_like: dict[str, Any], analysis: dict[str, Any]
+    ) -> dict[str, Any]:
         checklist = {
             "facts_section_present": bool(anomaly_like.get("description")),
             "timeline_section_present": bool(analysis.get("discovery_timeline")),
@@ -171,10 +189,14 @@ class DiscoveryRuleEngine:
         memo["memo_hash"] = _hash_payload(memo)
         return memo
 
-    def evaluate(self, anomaly_like: dict[str, Any], *, as_of: datetime | None = None) -> dict[str, Any]:
+    def evaluate(
+        self, anomaly_like: dict[str, Any], *, as_of: datetime | None = None
+    ) -> dict[str, Any]:
         now = as_of or datetime.now(timezone.utc)
         discovery_date, timeline = self._pick_discovery_date(anomaly_like)
-        jurisdiction = str(anomaly_like.get("jurisdiction") or anomaly_like.get("territory") or "US").upper()
+        jurisdiction = str(
+            anomaly_like.get("jurisdiction") or anomaly_like.get("territory") or "US"
+        ).upper()
         deadline = self._deadline_for_jurisdiction(jurisdiction, discovery_date)
         days_remaining = int((deadline - now).total_seconds() // 86400)
         urgent_flag = days_remaining <= 90

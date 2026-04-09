@@ -31,7 +31,9 @@ def _persist_handoff(run_id: str, state: TwoAgentState) -> None:
 
     db = SessionLocal()
     try:
-        existing = db.query(AgentHandoffRecord).filter(AgentHandoffRecord.handoff_id == handoff_id).first()
+        existing = (
+            db.query(AgentHandoffRecord).filter(AgentHandoffRecord.handoff_id == handoff_id).first()
+        )
         if existing:
             return
         row = AgentHandoffRecord(
@@ -48,7 +50,10 @@ def _persist_handoff(run_id: str, state: TwoAgentState) -> None:
         db.commit()
     except Exception:  # noqa: BLE001
         db.rollback()
-        logger.exception("Failed to persist two-agent handoff", extra={"run_id": run_id, "handoff_id": handoff_id})
+        logger.exception(
+            "Failed to persist two-agent handoff",
+            extra={"run_id": run_id, "handoff_id": handoff_id},
+        )
     finally:
         db.close()
 
@@ -147,7 +152,10 @@ async def run_two_agent_orchestrator(
             state,
             node="two_agent_orchestrator",
             event="complete",
-            payload={"artist_status": state.get("artist_status"), "active_agent": state.get("active_agent")},
+            payload={
+                "artist_status": state.get("artist_status"),
+                "active_agent": state.get("active_agent"),
+            },
         ),
     )
 
@@ -163,7 +171,9 @@ def run_two_agent_orchestrator_sync(
     *,
     readiness_threshold: float = 85.0,
 ) -> TwoAgentState:
-    return asyncio.run(run_two_agent_orchestrator(artist_id, run_id, readiness_threshold=readiness_threshold))
+    return asyncio.run(
+        run_two_agent_orchestrator(artist_id, run_id, readiness_threshold=readiness_threshold)
+    )
 
 
 def get_latest_artist_state(artist_id: str) -> TwoAgentState | None:
@@ -209,7 +219,9 @@ def _serialize_handoff(row: AgentHandoffRecord) -> dict[str, Any]:
         "to_agent": row.to_agent,
         "readiness_score": row.readiness_score,
         "readiness_threshold": row.readiness_threshold,
-        "status": str(payload.get("artist_status") or payload.get("workflow_phase") or row.to_agent),
+        "status": str(
+            payload.get("artist_status") or payload.get("workflow_phase") or row.to_agent
+        ),
         "payload": payload,
         "created_at": row.created_at.isoformat() if row.created_at else None,
     }
@@ -264,14 +276,16 @@ def query_handoffs(
         items = [_serialize_handoff(row) for row in rows]
         if status:
             desired_status = status.strip().lower()
-            items = [item for item in items if str(item.get("status") or "").lower() == desired_status]
+            items = [
+                item for item in items if str(item.get("status") or "").lower() == desired_status
+            ]
 
         total = len(items)
         return {
             "total": total,
             "limit": limit,
             "offset": offset,
-            "items": items[offset: offset + limit],
+            "items": items[offset : offset + limit],
         }
     finally:
         db.close()

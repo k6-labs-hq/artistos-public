@@ -13,6 +13,7 @@ Full coverage test suite for the Invite-Only Premier Experience:
   - VipService unit tests (offline, no HTTP)
   - VipPersonaEnrichmentNode LangGraph unit test
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -68,6 +69,7 @@ def _make_artist(db, name: str = "Test Artist") -> str:
 # 1.  ADMIN: create invite codes
 # ══════════════════════════════════════════════════════════════
 
+
 class TestAdminInviteCodes:
     def test_create_invite_code_success(self, monkeypatch):
         monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
@@ -99,6 +101,7 @@ class TestAdminInviteCodes:
 # ══════════════════════════════════════════════════════════════
 # 2.  CLAIM INVITE
 # ══════════════════════════════════════════════════════════════
+
 
 class TestClaimInvite:
     def _create_code(self) -> str:
@@ -168,6 +171,7 @@ class TestClaimInvite:
 # 3.  ADMIN GRANT / REVOKE
 # ══════════════════════════════════════════════════════════════
 
+
 class TestAdminGrantRevoke:
     def test_grant_vip(self, monkeypatch):
         monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
@@ -218,6 +222,7 @@ class TestAdminGrantRevoke:
 # 4.  VIP STATUS ENDPOINT
 # ══════════════════════════════════════════════════════════════
 
+
 class TestVipStatusEndpoint:
     def _grant_vip(self, artist_id: str, monkeypatch) -> None:
         monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
@@ -266,6 +271,7 @@ class TestVipStatusEndpoint:
 # ══════════════════════════════════════════════════════════════
 # 5.  CONCIERGE MESSAGING
 # ══════════════════════════════════════════════════════════════
+
 
 class TestConciergeMessaging:
     def _vip_artist(self, monkeypatch) -> str:
@@ -357,6 +363,7 @@ class TestConciergeMessaging:
 # 6.  PERSONA ENRICHMENT
 # ══════════════════════════════════════════════════════════════
 
+
 class TestPersonaEnrichment:
     def _vip_artist(self, monkeypatch) -> str:
         monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
@@ -395,6 +402,7 @@ class TestPersonaEnrichment:
 # ══════════════════════════════════════════════════════════════
 # 7.  COPILOT QUERY + FEEDBACK + HISTORY
 # ══════════════════════════════════════════════════════════════
+
 
 class TestCopilot:
     def _vip_artist(self, monkeypatch) -> str:
@@ -511,6 +519,7 @@ class TestCopilot:
 # 8.  WEEKLY BRIEF
 # ══════════════════════════════════════════════════════════════
 
+
 class TestWeeklyBrief:
     def _vip_artist(self, monkeypatch) -> str:
         monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
@@ -545,6 +554,7 @@ class TestWeeklyBrief:
 # ══════════════════════════════════════════════════════════════
 # 9.  VIP REFERRALS
 # ══════════════════════════════════════════════════════════════
+
 
 class TestVipReferrals:
     def _vip_artist(self, monkeypatch) -> str:
@@ -599,13 +609,16 @@ class TestVipReferrals:
             json={"referred_email": f"b_{_uid()}@test.xr7"},
         )
         after_r = client.get(f"/artists/{aid}/vip/status")
-        after_slots = after_r.json().get("membership", {}).get("referral_slots_remaining", initial_slots)
+        after_slots = (
+            after_r.json().get("membership", {}).get("referral_slots_remaining", initial_slots)
+        )
         assert after_slots == initial_slots - 1
 
 
 # ══════════════════════════════════════════════════════════════
 # 10.  VipService UNIT TESTS (offline, direct DB)
 # ══════════════════════════════════════════════════════════════
+
 
 class TestVipServiceUnit:
     def test_is_vip_false_for_new_artist(self):
@@ -743,6 +756,7 @@ class TestVipServiceUnit:
 # ══════════════════════════════════════════════════════════════
 # 11.  VipPersonaEnrichmentNode LangGraph UNIT TEST
 # ══════════════════════════════════════════════════════════════
+
 
 class TestVipPersonaEnrichmentNode:
     def test_non_vip_artist_passthrough(self):

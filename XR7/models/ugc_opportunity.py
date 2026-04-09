@@ -6,6 +6,7 @@ content scanning — un-monetized Content ID matches, unauthorized uses, etc.
 Each row represents one video/post where the artist's music was detected
 but is not yet monetized.
 """
+
 from __future__ import annotations
 
 import enum
@@ -44,9 +45,7 @@ class UGCOpportunity(Base):
 
     __tablename__ = "ugc_opportunities"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(
         String, ForeignKey("artists.id"), nullable=False, index=True
     )

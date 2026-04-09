@@ -66,8 +66,8 @@ class SplitVerifier:
         participants = []
         percentages = []
         for wallet, pct in artist_splits.items():
-            participants.append(f'participants.push(payable({wallet}));')
-            percentages.append(f'percentBps.push({int(float(pct) * 10000)});')
+            participants.append(f"participants.push(payable({wallet}));")
+            percentages.append(f"percentBps.push({int(float(pct) * 10000)});")
 
         participant_code = "\n        ".join(participants) if participants else "// no participants"
         percentage_code = "\n        ".join(percentages) if percentages else "// no percentages"

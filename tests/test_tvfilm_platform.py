@@ -73,7 +73,10 @@ def test_tvfilm_ingestion_scan_claims_and_forecast_flow():
     assert audit.status_code == 200
     audit_payload = audit.json()
     assert audit_payload["rows_audited"] == 3
-    assert audit_payload["calculation_profiles"][0]["recommended_template"] in {"SAG-AFTRA", "STUDIO_GENERIC"}
+    assert audit_payload["calculation_profiles"][0]["recommended_template"] in {
+        "SAG-AFTRA",
+        "STUDIO_GENERIC",
+    }
 
 
 def test_tvfilm_enterprise_portfolio_analyze_and_fetch_job():

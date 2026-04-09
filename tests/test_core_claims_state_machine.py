@@ -17,6 +17,7 @@ Recommended future tests:
   - Integration: drive the full lifecycle through a real Claim ORM object
     (belongs in an integration test file, not here).
 """
+
 from __future__ import annotations
 
 import importlib
@@ -33,6 +34,7 @@ from XR7.models.claim import ClaimStatus
 # ---------------------------------------------------------------------------
 # Domain-boundary guard — no DB / ORM imports allowed in pure core module
 # ---------------------------------------------------------------------------
+
 
 def test_no_db_imports_in_state_machine():
     """The state_machine module must remain free of SQLAlchemy and FastAPI."""
@@ -52,6 +54,7 @@ def test_no_db_imports_in_state_machine():
 # ---------------------------------------------------------------------------
 # next_status — happy path: all defined forward transitions
 # ---------------------------------------------------------------------------
+
 
 class TestNextStatusHappyPath:
     def test_identified_to_prepared(self):
@@ -97,6 +100,7 @@ class TestNextStatusHappyPath:
 # next_status — terminal and unknown states raise ValueError
 # ---------------------------------------------------------------------------
 
+
 class TestNextStatusErrors:
     def test_closed_has_no_forward_transition(self):
         with pytest.raises(ValueError, match="CLOSED"):
@@ -118,16 +122,20 @@ class TestNextStatusErrors:
 # contract_type_for_category — all mapped categories
 # ---------------------------------------------------------------------------
 
+
 class TestContractTypeForCategory:
-    @pytest.mark.parametrize("category,expected", [
-        ("ROYALTY",  "LABEL"),
-        ("TOURING",  "TOURING"),
-        ("MERCH",    "MERCH"),
-        ("SYNC",     "SYNC"),
-        ("PLATFORM", "LABEL"),
-        ("BRAND",    "BRAND"),
-        ("GRANT",    "GRANT"),
-    ])
+    @pytest.mark.parametrize(
+        "category,expected",
+        [
+            ("ROYALTY", "LABEL"),
+            ("TOURING", "TOURING"),
+            ("MERCH", "MERCH"),
+            ("SYNC", "SYNC"),
+            ("PLATFORM", "LABEL"),
+            ("BRAND", "BRAND"),
+            ("GRANT", "GRANT"),
+        ],
+    )
     def test_known_category_returns_correct_contract_type(self, category, expected):
         assert contract_type_for_category(category) == expected
 
@@ -154,6 +162,7 @@ class TestContractTypeForCategory:
 # TRANSITIONS table integrity
 # ---------------------------------------------------------------------------
 
+
 class TestTransitionsTableIntegrity:
     def test_all_transition_values_are_claim_statuses(self):
         for from_status, to_status in TRANSITIONS.items():
@@ -162,9 +171,7 @@ class TestTransitionsTableIntegrity:
 
     def test_no_self_loops(self):
         for from_status, to_status in TRANSITIONS.items():
-            assert from_status != to_status, (
-                f"Self-loop detected: {from_status} → {to_status}"
-            )
+            assert from_status != to_status, f"Self-loop detected: {from_status} → {to_status}"
 
     def test_closed_not_a_key_in_transitions(self):
         assert ClaimStatus.CLOSED not in TRANSITIONS

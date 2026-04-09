@@ -58,34 +58,43 @@ def export_artist_data(
         details={"work_count": len(works), "claim_count": len(claims)},
     )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "export": {
-            "requested_at": datetime.now(timezone.utc).isoformat(),
-            "artist": {
-                "id": artist.id,
-                "name": artist.name,
-                "email": artist.email,
-                "status": artist.status,
-                "created_at": artist.created_at.isoformat() if artist.created_at else None,
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "export": {
+                "requested_at": datetime.now(timezone.utc).isoformat(),
+                "artist": {
+                    "id": artist.id,
+                    "name": artist.name,
+                    "email": artist.email,
+                    "status": artist.status,
+                    "created_at": artist.created_at.isoformat() if artist.created_at else None,
+                },
+                "works": [
+                    {
+                        "id": w.id,
+                        "title": w.title,
+                        "isrc": w.isrc,
+                        "iswc": w.iswc,
+                        "work_type": str(w.work_type),
+                    }
+                    for w in works
+                ],
+                "claims": [
+                    {
+                        "id": c.id,
+                        "status": str(c.status),
+                        "claim_type": c.claim_type,
+                        "recovered_amount": c.recovered_amount,
+                        "currency": c.currency,
+                        "created_at": c.created_at.isoformat() if c.created_at else None,
+                    }
+                    for c in claims
+                ],
             },
-            "works": [
-                {"id": w.id, "title": w.title, "isrc": w.isrc, "iswc": w.iswc, "work_type": str(w.work_type)}
-                for w in works
-            ],
-            "claims": [
-                {
-                    "id": c.id,
-                    "status": str(c.status),
-                    "claim_type": c.claim_type,
-                    "recovered_amount": c.recovered_amount,
-                    "currency": c.currency,
-                    "created_at": c.created_at.isoformat() if c.created_at else None,
-                }
-                for c in claims
-            ],
         },
-    })
+    )
 
 
 @router.post("/artists/{artist_id}/privacy/erase")
@@ -109,11 +118,14 @@ def erase_artist_data(
         details={"mode": "anonymize_identity_fields"},
     )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "status": "anonymized",
-        "message": "Artist profile identity fields have been anonymized.",
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "status": "anonymized",
+            "message": "Artist profile identity fields have been anonymized.",
+        },
+    )
 
 
 @router.get("/admin/audit/events")

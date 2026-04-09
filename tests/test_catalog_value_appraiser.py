@@ -91,7 +91,9 @@ def test_key_drivers_count(db_session, artist):
 
     appraiser = CatalogValueAppraiser(db_session)
     result = appraiser.appraise(
-        artist.id, catalog_health_score=0.9, territory_coverage_ratio=0.8,
+        artist.id,
+        catalog_health_score=0.9,
+        territory_coverage_ratio=0.8,
         trajectory="GROWING",
     )
     # With high health, high territory coverage, growing trajectory => at least 1 driver
@@ -104,8 +106,11 @@ def test_key_risks_count(db_session, artist):
 
     appraiser = CatalogValueAppraiser(db_session)
     result = appraiser.appraise(
-        artist.id, catalog_health_score=0.3, concentration_score=0.8,
-        territory_coverage_ratio=0.2, trajectory="DECLINING",
+        artist.id,
+        catalog_health_score=0.3,
+        concentration_score=0.8,
+        territory_coverage_ratio=0.2,
+        trajectory="DECLINING",
     )
     # Low health, high concentration, low territory, declining => at least 1 risk
     assert len(result["key_value_risks"]) >= 1

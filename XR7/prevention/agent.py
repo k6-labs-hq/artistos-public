@@ -25,7 +25,13 @@ class PreventiveAgent:
             risks.append({"risk": "unclaimed_ugc_growth", "count": len(ugc), "priority": "high"})
         if trend.get("trend") == "DECLINING":
             risks.append({"risk": "declining_earnings", "priority": "medium"})
-        risks.append({"risk": "deadline_drift", "risk_color": risk.get("risk_color", "GREEN"), "priority": "high"})
+        risks.append(
+            {
+                "risk": "deadline_drift",
+                "risk_color": risk.get("risk_color", "GREEN"),
+                "priority": "high",
+            }
+        )
         return risks
 
     def generate_prevention_actions(self, risks: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -33,7 +39,9 @@ class PreventiveAgent:
         for risk in risks:
             name = str(risk.get("risk") or "unknown")
             if name == "unclaimed_ugc_growth":
-                actions.append({"action": "Run global UGC scan and auto-create claims", "priority": 1})
+                actions.append(
+                    {"action": "Run global UGC scan and auto-create claims", "priority": 1}
+                )
             elif name == "declining_earnings":
                 actions.append({"action": "Run royalty optimization simulation", "priority": 2})
             else:
@@ -42,7 +50,13 @@ class PreventiveAgent:
         return actions
 
 
-@celery_app.task(name="xr7.pipeline.preventive_agent_daily", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+@celery_app.task(
+    name="xr7.pipeline.preventive_agent_daily",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 2},
+)
 def preventive_agent_daily(self, artist_id: str) -> dict:  # noqa: ANN001
     agent = PreventiveAgent()
     import asyncio

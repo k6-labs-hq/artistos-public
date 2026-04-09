@@ -7,6 +7,7 @@ Provides `ask_xr7_advisor(query, context)` which:
 
 Used by the /artists/{id}/copilot/query endpoint.
 """
+
 from __future__ import annotations
 
 import importlib

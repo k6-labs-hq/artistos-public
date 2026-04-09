@@ -50,9 +50,7 @@ def _build_provider_registry(
     candidates: list[tuple[int, str, IFingerprintingProvider]] = []
 
     if cfg.acrcloud.enabled:
-        candidates.append(
-            (cfg.acrcloud.priority, "acrcloud", ACRCloudAdapter(cfg.acrcloud))
-        )
+        candidates.append((cfg.acrcloud.priority, "acrcloud", ACRCloudAdapter(cfg.acrcloud)))
     if cfg.audible_magic.enabled:
         candidates.append(
             (
@@ -62,9 +60,7 @@ def _build_provider_registry(
             )
         )
     if cfg.gracenote.enabled:
-        candidates.append(
-            (cfg.gracenote.priority, "gracenote", GracenoteAdapter(cfg.gracenote))
-        )
+        candidates.append((cfg.gracenote.priority, "gracenote", GracenoteAdapter(cfg.gracenote)))
     if cfg.bmat.enabled:
         candidates.append((cfg.bmat.priority, "bmat", BMATAdapter(cfg.bmat)))
     if cfg.soundmouse.enabled:
@@ -113,9 +109,7 @@ class FingerprintingOrchestrator:
     ) -> None:
         self._cfg = config or fingerprinting_config
         self._db = db
-        self._registry: dict[str, IFingerprintingProvider] = _build_provider_registry(
-            self._cfg
-        )
+        self._registry: dict[str, IFingerprintingProvider] = _build_provider_registry(self._cfg)
         self._tenant_map: dict[str, list[str]] = _parse_tenant_map(
             self._cfg.orchestrator.tenant_provider_map_raw
         )
@@ -138,9 +132,7 @@ class FingerprintingOrchestrator:
         3. Global priority order from config
         """
         job_id = str(uuid.uuid4())
-        providers = self._resolve_providers(
-            request.providers, request.tenant_id
-        )
+        providers = self._resolve_providers(request.providers, request.tenant_id)
 
         logger.info(
             "Fingerprinting job_id=%s artist_id=%s providers=%s",
@@ -197,9 +189,7 @@ class FingerprintingOrchestrator:
         results: list[NormalizedMatchResult] = []
         for adapter in self._registry.values():
             try:
-                detections = await adapter.detect_usage(
-                    reference_id, territory=territory
-                )
+                detections = await adapter.detect_usage(reference_id, territory=territory)
                 results.extend(detections)
             except Exception as exc:
                 logger.warning(
@@ -212,9 +202,7 @@ class FingerprintingOrchestrator:
     async def health_check_all(self) -> list[ProviderHealthStatus]:
         """Run health checks against all registered providers concurrently."""
         tasks = [adapter.get_provider_health() for adapter in self._registry.values()]
-        statuses: list[ProviderHealthStatus] = await asyncio.gather(
-            *tasks, return_exceptions=False
-        )
+        statuses: list[ProviderHealthStatus] = await asyncio.gather(*tasks, return_exceptions=False)
         for s in statuses:
             logger.info(
                 "Health check provider=%s status=%s latency_ms=%.1f",
@@ -235,21 +223,11 @@ class FingerprintingOrchestrator:
     ) -> list[IFingerprintingProvider]:
         """Return an ordered list of provider adapters to use."""
         if requested:
-            return [
-                self._registry[name]
-                for name in requested
-                if name in self._registry
-            ]
+            return [self._registry[name] for name in requested if name in self._registry]
         if tenant_id and tenant_id in self._tenant_map:
             names = self._tenant_map[tenant_id]
-            return [
-                self._registry[name]
-                for name in names
-                if name in self._registry
-            ]
-        return list(self._registry.values())[
-            : self._cfg.orchestrator.max_parallel_providers
-        ]
+            return [self._registry[name] for name in names if name in self._registry]
+        return list(self._registry.values())[: self._cfg.orchestrator.max_parallel_providers]
 
     async def _run_parallel(
         self,
@@ -265,9 +243,7 @@ class FingerprintingOrchestrator:
         ) -> list[NormalizedMatchResult]:
             cb = self._cb_registry.get(adapter.provider_name)
             if cb.is_open():
-                logger.warning(
-                    "Circuit OPEN — skipping provider=%s", adapter.provider_name
-                )
+                logger.warning("Circuit OPEN — skipping provider=%s", adapter.provider_name)
                 return []
             try:
                 results = await asyncio.wait_for(
@@ -295,9 +271,7 @@ class FingerprintingOrchestrator:
                 return []
             except Exception as exc:
                 cb.record_failure()
-                logger.warning(
-                    "Provider %s raised: %s", adapter.provider_name, exc
-                )
+                logger.warning("Provider %s raised: %s", adapter.provider_name, exc)
                 return []
 
         nested = await asyncio.gather(*[_safe_match(p) for p in providers])
@@ -328,12 +302,12 @@ class FingerprintingOrchestrator:
                     },
                 )
                 if results:
-                        cb.record_success()
-                        logger.debug(
-                            "Fallback: returning results from provider=%s",
-                            adapter.provider_name,
-                        )
-                        return results
+                    cb.record_success()
+                    logger.debug(
+                        "Fallback: returning results from provider=%s",
+                        adapter.provider_name,
+                    )
+                    return results
                 cb.record_success()
             except Exception as exc:
                 cb.record_failure()
@@ -348,9 +322,7 @@ class FingerprintingOrchestrator:
     # Ingestion pipeline integration
     # ------------------------------------------------------------------
 
-    def _emit_ingestion_event(
-        self, artist_id: str, match: NormalizedMatchResult
-    ) -> None:
+    def _emit_ingestion_event(self, artist_id: str, match: NormalizedMatchResult) -> None:
         """Emit a normalized royalty event to the XR7 ingestion pipeline."""
         try:
             event = to_universal_royalty_event(
@@ -358,9 +330,11 @@ class FingerprintingOrchestrator:
                 source_type="fingerprinting",
                 source_name=match.provider,
                 record_type="fingerprint_match",
-                event_type=match.match_type.value
-                if hasattr(match.match_type, "value")
-                else str(match.match_type),
+                event_type=(
+                    match.match_type.value
+                    if hasattr(match.match_type, "value")
+                    else str(match.match_type)
+                ),
                 amount=0.0,
                 quantity=1.0,
                 territory=match.territory,
@@ -370,12 +344,16 @@ class FingerprintingOrchestrator:
                     "confidence_score": match.confidence_score,
                     "platform": match.platform,
                     "provider": match.provider,
-                    "royalty_status": match.royalty_status.value
-                    if hasattr(match.royalty_status, "value")
-                    else str(match.royalty_status),
-                    "anomaly_type": match.anomaly_type.value
-                    if hasattr(match.anomaly_type, "value")
-                    else str(match.anomaly_type),
+                    "royalty_status": (
+                        match.royalty_status.value
+                        if hasattr(match.royalty_status, "value")
+                        else str(match.royalty_status)
+                    ),
+                    "anomaly_type": (
+                        match.anomaly_type.value
+                        if hasattr(match.anomaly_type, "value")
+                        else str(match.anomaly_type)
+                    ),
                 },
             )
             logger.debug("Emitted ingestion event isrc=%s provider=%s", match.isrc, match.provider)
@@ -444,17 +422,21 @@ class FingerprintingOrchestrator:
                     title=r.title,
                     artist_name=r.artist_name,
                     confidence_score=r.confidence_score,
-                    match_type=r.match_type.value
-                    if hasattr(r.match_type, "value")
-                    else str(r.match_type),
+                    match_type=(
+                        r.match_type.value if hasattr(r.match_type, "value") else str(r.match_type)
+                    ),
                     platform=r.platform,
                     territory=r.territory,
-                    royalty_status=r.royalty_status.value
-                    if hasattr(r.royalty_status, "value")
-                    else str(r.royalty_status),
-                    anomaly_type=r.anomaly_type.value
-                    if hasattr(r.anomaly_type, "value")
-                    else str(r.anomaly_type),
+                    royalty_status=(
+                        r.royalty_status.value
+                        if hasattr(r.royalty_status, "value")
+                        else str(r.royalty_status)
+                    ),
+                    anomaly_type=(
+                        r.anomaly_type.value
+                        if hasattr(r.anomaly_type, "value")
+                        else str(r.anomaly_type)
+                    ),
                     raw_payload=r.raw_provider_payload,
                     matched_at=r.timestamp,
                 )

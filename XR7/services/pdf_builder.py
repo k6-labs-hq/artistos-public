@@ -24,7 +24,11 @@ def build_simple_pdf(lines: list[str]) -> bytes:
         b"/Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj\n"
     )
     objects.append(b"4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n")
-    objects.append(f"5 0 obj << /Length {len(content)} >> stream\n".encode("utf-8") + content + b"\nendstream endobj\n")
+    objects.append(
+        f"5 0 obj << /Length {len(content)} >> stream\n".encode("utf-8")
+        + content
+        + b"\nendstream endobj\n"
+    )
 
     output = io.BytesIO()
     output.write(b"%PDF-1.4\n")

@@ -16,6 +16,7 @@ Endpoints:
   GET    /case-rooms/{room_id}/approvals              – list approvals
   POST   /case-rooms/{room_id}/approvals/{approval_id}/decide – record decision
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -52,6 +53,7 @@ router = APIRouter(tags=["case-rooms"])
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _get_room_or_404(room_id: str, db: Session) -> CaseRoom:
     room = db.query(CaseRoom).filter(CaseRoom.id == room_id).first()
@@ -107,6 +109,7 @@ def _require_min_role(
 # ---------------------------------------------------------------------------
 # Room CRUD
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/case-rooms",
@@ -186,7 +189,9 @@ def update_case_room_status(
     db: Session = Depends(get_db),
 ) -> CaseRoom:
     room = _get_room_or_404(room_id, db)
-    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
+    _require_min_role(
+        room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role
+    )
     new_status = body.get("status")
     if new_status:
         room.status = new_status
@@ -200,6 +205,7 @@ def update_case_room_status(
 # ---------------------------------------------------------------------------
 # Members
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/case-rooms/{room_id}/members",
@@ -215,7 +221,9 @@ def add_member(
     db: Session = Depends(get_db),
 ) -> CaseRoomMember:
     _get_room_or_404(room_id, db)
-    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
+    _require_min_role(
+        room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role
+    )
     existing = (
         db.query(CaseRoomMember)
         .filter(CaseRoomMember.room_id == room_id, CaseRoomMember.email == body.email)
@@ -263,7 +271,9 @@ def remove_member(
     db: Session = Depends(get_db),
 ):
     _get_room_or_404(room_id, db)
-    _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
+    _require_min_role(
+        room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role
+    )
     db.query(CaseRoomMember).filter(
         CaseRoomMember.room_id == room_id, CaseRoomMember.email == email
     ).delete()
@@ -274,6 +284,7 @@ def remove_member(
 # ---------------------------------------------------------------------------
 # Comments / Timeline
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/case-rooms/{room_id}/comments",
@@ -356,6 +367,7 @@ def edit_comment(
 # Attachments
 # ---------------------------------------------------------------------------
 
+
 @router.get(
     "/case-rooms/{room_id}/attachments",
     response_model=List[CaseAttachmentSchema],
@@ -398,6 +410,7 @@ def list_attachments(
 # ---------------------------------------------------------------------------
 # Approvals
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/case-rooms/{room_id}/approvals",

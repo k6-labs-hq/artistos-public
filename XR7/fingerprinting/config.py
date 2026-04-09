@@ -54,7 +54,9 @@ class ACRCloudConfig:
             "ACRCLOUD_ENDPOINT", "https://identify-us-west-2.acrcloud.com"
         )
     )
-    timeout_seconds: float = field(default_factory=lambda: _env_float("ACRCLOUD_TIMEOUT_SECONDS", 15.0))
+    timeout_seconds: float = field(
+        default_factory=lambda: _env_float("ACRCLOUD_TIMEOUT_SECONDS", 15.0)
+    )
     max_retries: int = field(default_factory=lambda: _env_int("ACRCLOUD_MAX_RETRIES", 3))
     rate_limit_per_minute: int = field(
         default_factory=lambda: _env_int("ACRCLOUD_RATE_LIMIT_PER_MINUTE", 100)
@@ -136,9 +138,7 @@ class SoundmouseConfig:
     enabled: bool = field(default_factory=lambda: _env_bool("XR7_SOUNDMOUSE_ENABLED"))
     api_key: str = field(default_factory=lambda: os.getenv("SOUNDMOUSE_API_KEY", ""))
     endpoint: str = field(
-        default_factory=lambda: os.getenv(
-            "SOUNDMOUSE_ENDPOINT", "https://api.soundmouse.com/v1"
-        )
+        default_factory=lambda: os.getenv("SOUNDMOUSE_ENDPOINT", "https://api.soundmouse.com/v1")
     )
     timeout_seconds: float = field(
         default_factory=lambda: _env_float("SOUNDMOUSE_TIMEOUT_SECONDS", 20.0)

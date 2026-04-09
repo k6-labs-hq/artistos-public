@@ -119,9 +119,7 @@ class AudibleMagicAdapter(IFingerprintingProvider):
         response.raise_for_status()
         data = response.json()
         ref_id: str = data.get("reference_id") or data.get("id") or "unknown"
-        logger.info(
-            "AudibleMagic: registered reference ref_id=%s isrc=%s", ref_id, isrc
-        )
+        logger.info("AudibleMagic: registered reference ref_id=%s isrc=%s", ref_id, isrc)
         return ref_id
 
     async def match_audio(
@@ -146,9 +144,7 @@ class AudibleMagicAdapter(IFingerprintingProvider):
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.error(
-                "AudibleMagic HTTP error status=%s", exc.response.status_code
-            )
+            logger.error("AudibleMagic HTTP error status=%s", exc.response.status_code)
             raise
 
         return self.normalize_provider_response(raw)
@@ -205,9 +201,7 @@ class AudibleMagicAdapter(IFingerprintingProvider):
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.error(
-                "AudibleMagic get_match_results HTTP error job_id=%s: %s", job_id, exc
-            )
+            logger.error("AudibleMagic get_match_results HTTP error job_id=%s: %s", job_id, exc)
             raise
         return self.normalize_provider_response(raw)
 
@@ -215,14 +209,10 @@ class AudibleMagicAdapter(IFingerprintingProvider):
         client = self._client_()
         start = time.monotonic()
         try:
-            response = await client.get(
-                f"{self._cfg.endpoint}/health", timeout=5.0
-            )
+            response = await client.get(f"{self._cfg.endpoint}/health", timeout=5.0)
             latency_ms = (time.monotonic() - start) * 1000.0
             status = (
-                ProviderStatus.HEALTHY
-                if response.status_code < 500
-                else ProviderStatus.DEGRADED
+                ProviderStatus.HEALTHY if response.status_code < 500 else ProviderStatus.DEGRADED
             )
             return ProviderHealthStatus(
                 provider=self.provider_name,
@@ -240,9 +230,7 @@ class AudibleMagicAdapter(IFingerprintingProvider):
                 checked_at=datetime.now(timezone.utc),
             )
 
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         """Normalize Audible Magic recognition response.
 
         Expected shape::

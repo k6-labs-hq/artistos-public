@@ -4,6 +4,7 @@ Allows connectors to resume incremental fetches without re-processing
 the full history.  The cursor_value is provider-specific (ISO timestamp,
 sequence number, page token, etc.).
 """
+
 from __future__ import annotations
 
 import uuid
@@ -18,13 +19,9 @@ from XR7.models.base import Base
 
 class ConnectorSyncCursor(Base):
     __tablename__ = "connector_sync_cursors"
-    __table_args__ = (
-        UniqueConstraint("artist_id", "integration", name="uq_sync_cursor"),
-    )
+    __table_args__ = (UniqueConstraint("artist_id", "integration", name="uq_sync_cursor"),)
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     integration: Mapped[str] = mapped_column(String, nullable=False, index=True)
     # Opaque cursor value (ISO timestamp, sequence id, page token…)

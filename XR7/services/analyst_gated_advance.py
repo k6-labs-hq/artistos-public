@@ -44,7 +44,11 @@ def _fee_band_for_score(score: float) -> float:
 
 def _ensemble_score(*, anomaly: Anomaly | None, claim: Claim | None) -> dict[str, float]:
     anomaly_conf = float(anomaly.confidence_score or 0.0) if anomaly else 0.0
-    claim_stage = str(claim.status.value if isinstance(claim.status, ClaimStatus) else claim.status) if claim else ""
+    claim_stage = (
+        str(claim.status.value if isinstance(claim.status, ClaimStatus) else claim.status)
+        if claim
+        else ""
+    )
     claim_stage_boost = 0.0
     if claim_stage in {"IN_REVIEW", "SUBMITTED", "FILED"}:
         claim_stage_boost = 0.08
@@ -60,7 +64,9 @@ def _ensemble_score(*, anomaly: Anomaly | None, claim: Claim | None) -> dict[str
     amount_signal = min(1.0, max(0.0, recoverable / 50_000.0))
 
     calibration_model = round(min(1.0, 0.75 * anomaly_conf + 0.25 * amount_signal), 4)
-    historical_model = round(min(1.0, 0.70 * anomaly_conf + 0.30 * (amount_signal + claim_stage_boost)), 4)
+    historical_model = round(
+        min(1.0, 0.70 * anomaly_conf + 0.30 * (amount_signal + claim_stage_boost)), 4
+    )
     legal_model = round(min(1.0, 0.80 * anomaly_conf + 0.20 * (0.60 + claim_stage_boost)), 4)
     ensemble = round((calibration_model + historical_model + legal_model) / 3.0, 4)
     return {
@@ -76,7 +82,9 @@ def _has_unrepaid_active_advance(db: Session, artist_id: str) -> bool:
         db.query(RecoverableLiquidityAdvance)
         .filter(
             RecoverableLiquidityAdvance.artist_id == artist_id,
-            RecoverableLiquidityAdvance.status.in_([AdvanceStatus.ACCEPTED, AdvanceStatus.DISBURSED]),
+            RecoverableLiquidityAdvance.status.in_(
+                [AdvanceStatus.ACCEPTED, AdvanceStatus.DISBURSED]
+            ),
         )
         .first()
     )
@@ -87,7 +95,9 @@ def run_nightly_advance_opportunity_scan(db: Session) -> dict[str, Any]:
     created = 0
     skipped = 0
 
-    candidate_anomalies = db.query(Anomaly).filter(Anomaly.confidence_score >= MIN_SIGNAL_CONFIDENCE).all()
+    candidate_anomalies = (
+        db.query(Anomaly).filter(Anomaly.confidence_score >= MIN_SIGNAL_CONFIDENCE).all()
+    )
     anomalies = []
     for anomaly in candidate_anomalies:
         status_value = str(getattr(anomaly, "status", "") or "")
@@ -121,7 +131,14 @@ def run_nightly_advance_opportunity_scan(db: Session) -> dict[str, Any]:
             .filter(
                 Claim.artist_id == anomaly.artist_id,
                 Claim.anomaly_id == anomaly.id,
-                Claim.status.in_([ClaimStatus.FILED, ClaimStatus.SUBMITTED, ClaimStatus.IN_REVIEW, ClaimStatus.ACCEPTED]),
+                Claim.status.in_(
+                    [
+                        ClaimStatus.FILED,
+                        ClaimStatus.SUBMITTED,
+                        ClaimStatus.IN_REVIEW,
+                        ClaimStatus.ACCEPTED,
+                    ]
+                ),
             )
             .order_by(Claim.updated_at.desc())
             .first()
@@ -198,7 +215,11 @@ def analyst_decision(
     if opp.status != AdvanceOpportunityStatus.QUEUED_ANALYST:
         raise ValueError("Opportunity is not in analyst queue")
 
-    opp.status = AdvanceOpportunityStatus.QUEUED_EXEC if approved else AdvanceOpportunityStatus.ANALYST_REJECTED
+    opp.status = (
+        AdvanceOpportunityStatus.QUEUED_EXEC
+        if approved
+        else AdvanceOpportunityStatus.ANALYST_REJECTED
+    )
     opp.analyst_notes = notes
     db.add(
         AdvanceApproval(
@@ -230,7 +251,11 @@ def executive_decision(
     if opp.status != AdvanceOpportunityStatus.QUEUED_EXEC:
         raise ValueError("Opportunity is not in executive queue")
 
-    opp.status = AdvanceOpportunityStatus.EXEC_APPROVED if approved else AdvanceOpportunityStatus.EXEC_REJECTED
+    opp.status = (
+        AdvanceOpportunityStatus.EXEC_APPROVED
+        if approved
+        else AdvanceOpportunityStatus.EXEC_REJECTED
+    )
     opp.executive_notes = notes
     db.add(
         AdvanceApproval(
@@ -433,7 +458,9 @@ def add_failed_packet_signature(
         raise ValueError("Actor role is not an allowed signer for this packet")
 
     signatures = list(packet.collected_signatures or [])
-    if any(_normalize_signer_role(str(sig.get("role") or "")) == normalized_role for sig in signatures):
+    if any(
+        _normalize_signer_role(str(sig.get("role") or "")) == normalized_role for sig in signatures
+    ):
         raise ValueError(f"{normalized_role} signature already recorded")
 
     signatures.append(

@@ -74,8 +74,12 @@ class XR7Track(Base):
     ugc_usage_velocity_30d: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     ugc_platform_coverage_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     viral_risk_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7Work(Base):
@@ -88,13 +92,19 @@ class XR7Work(Base):
     iswc: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     territory_scope: Mapped[str | None] = mapped_column(String, nullable=True)
     metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    registration_completeness_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
+    registration_completeness_score: Mapped[float] = mapped_column(
+        Float, nullable=False, default=0.0
+    )
     split_conflict_flag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     split_conflict_reason: Mapped[str | None] = mapped_column(String, nullable=True)
     recovery_forecast_90d: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     recovery_forecast_365d: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7IdentifierMapping(Base):
@@ -103,8 +113,12 @@ class XR7IdentifierMapping(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id: Mapped[str] = mapped_column(String, nullable=False, default="default", index=True)
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    track_id: Mapped[str | None] = mapped_column(String, ForeignKey("xr7_tracks.id"), nullable=True, index=True)
-    work_id: Mapped[str | None] = mapped_column(String, ForeignKey("xr7_works.id"), nullable=True, index=True)
+    track_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("xr7_tracks.id"), nullable=True, index=True
+    )
+    work_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("xr7_works.id"), nullable=True, index=True
+    )
     isrc: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     iswc: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
@@ -112,7 +126,9 @@ class XR7IdentifierMapping(Base):
     source_system: Mapped[str] = mapped_column(String, nullable=False)
     evidence_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     confidence_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7UsageEvent(Base):
@@ -128,9 +144,15 @@ class XR7UsageEvent(Base):
     channel: Mapped[str | None] = mapped_column(String, nullable=True)
     units: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     asset_ref: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
-    track_id: Mapped[str | None] = mapped_column(String, ForeignKey("xr7_tracks.id"), nullable=True, index=True)
-    work_id: Mapped[str | None] = mapped_column(String, ForeignKey("xr7_works.id"), nullable=True, index=True)
-    match_method: Mapped[str] = mapped_column(Enum(XR7MatchMethod), nullable=False, default=XR7MatchMethod.API)
+    track_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("xr7_tracks.id"), nullable=True, index=True
+    )
+    work_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("xr7_works.id"), nullable=True, index=True
+    )
+    match_method: Mapped[str] = mapped_column(
+        Enum(XR7MatchMethod), nullable=False, default=XR7MatchMethod.API
+    )
     confidence_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     monetization_estimate: Mapped[float | None] = mapped_column(Float, nullable=True)
     currency: Mapped[str] = mapped_column(String, nullable=False, default="USD")
@@ -144,7 +166,9 @@ class XR7UsageEvent(Base):
     short_form_signal_strength: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     black_box_risk_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     explainability_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7RoyaltyStatement(Base):
@@ -164,14 +188,18 @@ class XR7RoyaltyStatement(Base):
     parse_status: Mapped[str] = mapped_column(String, nullable=False, default="processed")
     schema_version: Mapped[str] = mapped_column(String, nullable=False, default="v1")
     ingestion_errors_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7RoyaltyStatementLine(Base):
     __tablename__ = "xr7_royalty_statement_lines"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    statement_id: Mapped[str] = mapped_column(String, ForeignKey("xr7_royalty_statements.id"), nullable=False, index=True)
+    statement_id: Mapped[str] = mapped_column(
+        String, ForeignKey("xr7_royalty_statements.id"), nullable=False, index=True
+    )
     row_index: Mapped[int] = mapped_column(Integer, nullable=False)
     raw_work_title: Mapped[str | None] = mapped_column(String, nullable=True)
     raw_artist_name: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -201,19 +229,27 @@ class XR7UnmatchedWork(Base):
     status: Mapped[str] = mapped_column(String, nullable=False, default="open")
     resolution_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     suggested_matches_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
-    suggested_resolution_actions_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
+    suggested_resolution_actions_json: Mapped[str] = mapped_column(
+        Text, nullable=False, default="[]"
+    )
     ai_resolution_confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     recovery_potential_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     urgency_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     sla_due_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7IdentityNode(Base):
     __tablename__ = "xr7_identity_nodes"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "artist_id", "node_type", "node_key", name="uq_xr7_identity_node"),
+        UniqueConstraint(
+            "tenant_id", "artist_id", "node_type", "node_key", name="uq_xr7_identity_node"
+        ),
     )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -223,7 +259,9 @@ class XR7IdentityNode(Base):
     node_key: Mapped[str] = mapped_column(String, nullable=False)
     label: Mapped[str | None] = mapped_column(String, nullable=True)
     metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7IdentityEdge(Base):
@@ -232,21 +270,33 @@ class XR7IdentityEdge(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     tenant_id: Mapped[str] = mapped_column(String, nullable=False, default="default", index=True)
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    from_node_id: Mapped[str] = mapped_column(String, ForeignKey("xr7_identity_nodes.id"), nullable=False, index=True)
-    to_node_id: Mapped[str] = mapped_column(String, ForeignKey("xr7_identity_nodes.id"), nullable=False, index=True)
+    from_node_id: Mapped[str] = mapped_column(
+        String, ForeignKey("xr7_identity_nodes.id"), nullable=False, index=True
+    )
+    to_node_id: Mapped[str] = mapped_column(
+        String, ForeignKey("xr7_identity_nodes.id"), nullable=False, index=True
+    )
     edge_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     source_system: Mapped[str] = mapped_column(String, nullable=False)
     confidence_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     evidence_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     active_from: Mapped[date | None] = mapped_column(Date, nullable=True)
     active_to: Mapped[date | None] = mapped_column(Date, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7ConnectorCredential(Base):
     __tablename__ = "xr7_connector_credentials"
     __table_args__ = (
-        UniqueConstraint("tenant_id", "artist_id", "provider", "external_account_id", name="uq_xr7_connector_credential"),
+        UniqueConstraint(
+            "tenant_id",
+            "artist_id",
+            "provider",
+            "external_account_id",
+            name="uq_xr7_connector_credential",
+        ),
     )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -258,9 +308,15 @@ class XR7ConnectorCredential(Base):
     encrypted_refresh_token: Mapped[str | None] = mapped_column(Text, nullable=True)
     token_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     granted_scopes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
-    status: Mapped[str] = mapped_column(Enum(XR7ConnectorStatus), nullable=False, default=XR7ConnectorStatus.ACTIVE)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    status: Mapped[str] = mapped_column(
+        Enum(XR7ConnectorStatus), nullable=False, default=XR7ConnectorStatus.ACTIVE
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7CatalogValuationSnapshot(Base):
@@ -276,7 +332,9 @@ class XR7CatalogValuationSnapshot(Base):
     confidence_interval_low: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     confidence_interval_high: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     assumptions_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7RecoveryForecast(Base):
@@ -292,7 +350,9 @@ class XR7RecoveryForecast(Base):
     confidence_interval_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     model_version: Mapped[str] = mapped_column(String, nullable=False, default="v1")
     feature_snapshot_ref: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7SplitSheetImport(Base):
@@ -307,7 +367,9 @@ class XR7SplitSheetImport(Base):
     auto_resolved_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     manual_required_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     imported_by: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7AIDecisionAuditLog(Base):
@@ -324,7 +386,9 @@ class XR7AIDecisionAuditLog(Base):
     output_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     reviewer_id: Mapped[str | None] = mapped_column(String, nullable=True)
     override_flag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class XR7ConnectorCredentialUpsert(BaseModel):

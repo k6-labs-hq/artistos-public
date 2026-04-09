@@ -71,9 +71,7 @@ class MatchingEngine:
             catalog_hits = self._catalog.match(fp, return_all=True)
             all_catalog_matches.extend(catalog_hits)
 
-        logger.info(
-            "MatchingEngine: catalog_matches=%d", len(all_catalog_matches)
-        )
+        logger.info("MatchingEngine: catalog_matches=%d", len(all_catalog_matches))
 
         # Stage 2 — Usage matching
         usage_map = self._usage.match_batch(fingerprints)
@@ -118,9 +116,7 @@ class MatchingEngine:
         # Load recent fingerprint matches from DB as surrogate fingerprints
         fingerprints = self._load_recent_matches(artist_id)
         if not fingerprints:
-            logger.info(
-                "MatchingEngine: no recent matches for artist_id=%s", artist_id
-            )
+            logger.info("MatchingEngine: no recent matches for artist_id=%s", artist_id)
             return []
         report = self.run(artist_id, fingerprints)
         return report.anomalies + report.royalty_gaps
@@ -150,9 +146,7 @@ class MatchingEngine:
         except Exception as exc:
             logger.debug("_persist_report skipped: %s", exc)
 
-    def _load_recent_matches(
-        self, artist_id: str
-    ) -> list[NormalizedMatchResult]:
+    def _load_recent_matches(self, artist_id: str) -> list[NormalizedMatchResult]:
         """Load recent FingerprintMatch rows as NormalizedMatchResult proxies."""
         try:
             from datetime import timedelta
@@ -183,11 +177,23 @@ class MatchingEngine:
             for m in matches:
                 try:
                     mt_val = m.match_type or MatchType.UNKNOWN.value
-                    mt = MatchType(mt_val) if mt_val in MatchType._value2member_map_ else MatchType.UNKNOWN
+                    mt = (
+                        MatchType(mt_val)
+                        if mt_val in MatchType._value2member_map_
+                        else MatchType.UNKNOWN
+                    )
                     rs_val = m.royalty_status or RoyaltyStatus.UNKNOWN.value
-                    rs = RoyaltyStatus(rs_val) if rs_val in RoyaltyStatus._value2member_map_ else RoyaltyStatus.UNKNOWN
+                    rs = (
+                        RoyaltyStatus(rs_val)
+                        if rs_val in RoyaltyStatus._value2member_map_
+                        else RoyaltyStatus.UNKNOWN
+                    )
                     at_val = m.anomaly_type or AnomalyType.NONE.value
-                    at = AnomalyType(at_val) if at_val in AnomalyType._value2member_map_ else AnomalyType.NONE
+                    at = (
+                        AnomalyType(at_val)
+                        if at_val in AnomalyType._value2member_map_
+                        else AnomalyType.NONE
+                    )
 
                     results.append(
                         NormalizedMatchResult(

@@ -1,4 +1,5 @@
 """Pillar 4 — Creator-economy ingestion + anomaly detection endpoints."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -39,20 +40,23 @@ def ingest_creator_data(
         raise HTTPException(
             status_code=422,
             detail=f"Unsupported platform '{payload.platform}'. "
-                   f"Supported: {_SUPPORTED_PLATFORMS}",
+            f"Supported: {_SUPPORTED_PLATFORMS}",
         )
 
     events = parse_creator_platform(payload.platform, payload.rows)
     anomalies = detect_creator_anomalies(events, artist_id)
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "platform": payload.platform,
-        "events_parsed": len(events),
-        "anomalies_detected": len(anomalies),
-        "anomalies": anomalies,
-        "events": events,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "platform": payload.platform,
+            "events_parsed": len(events),
+            "anomalies_detected": len(anomalies),
+            "anomalies": anomalies,
+            "events": events,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/creator/platforms")
@@ -62,7 +66,10 @@ def list_creator_platforms(
     _: dict = Depends(require_artist_access),
 ) -> dict:
     """List all supported creator-economy platforms."""
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "supported_platforms": _SUPPORTED_PLATFORMS,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "supported_platforms": _SUPPORTED_PLATFORMS,
+        },
+    )

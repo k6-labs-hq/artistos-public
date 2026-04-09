@@ -17,11 +17,11 @@ from XR7.ingestion.connectors.base import BaseConnector
 from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 _DSP_ENV_VARS = {
-    "Spotify":      ("SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET"),
-    "Apple Music":  ("APPLE_KEY_ID", "APPLE_TEAM_ID"),
+    "Spotify": ("SPOTIFY_CLIENT_ID", "SPOTIFY_CLIENT_SECRET"),
+    "Apple Music": ("APPLE_KEY_ID", "APPLE_TEAM_ID"),
     "Amazon Music": ("AMAZON_CLIENT_ID", "AMAZON_CLIENT_SECRET"),
-    "Tidal":        ("TIDAL_CLIENT_ID", "TIDAL_CLIENT_SECRET"),
-    "Deezer":       ("DEEZER_APP_ID", "DEEZER_APP_SECRET"),
+    "Tidal": ("TIDAL_CLIENT_ID", "TIDAL_CLIENT_SECRET"),
+    "Deezer": ("DEEZER_APP_ID", "DEEZER_APP_SECRET"),
 }
 
 
@@ -39,7 +39,9 @@ class DSPConnector(BaseConnector):
         self.dsp_name = dsp_name
 
     def _required_env_vars(self) -> tuple[str, ...]:
-        return _DSP_ENV_VARS.get(self.dsp_name, (f"{self.dsp_name.upper().replace(' ', '_')}_API_KEY",))
+        return _DSP_ENV_VARS.get(
+            self.dsp_name, (f"{self.dsp_name.upper().replace(' ', '_')}_API_KEY",)
+        )
 
     def connect(self) -> bool:
         """
@@ -47,12 +49,11 @@ class DSPConnector(BaseConnector):
         ``False`` otherwise.  Does NOT make a real network call.
         """
         env_vars = self._required_env_vars()
-        return all(
-            self.config.get(v.lower()) or os.environ.get(v, "")
-            for v in env_vars
-        )
+        return all(self.config.get(v.lower()) or os.environ.get(v, "") for v in env_vars)
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         rows = load_statement_rows(
             config=self.config,
             source_name=self.dsp_name,
@@ -69,16 +70,18 @@ class DSPConnector(BaseConnector):
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []
         for record in raw_data:
-            normalized.append({
-                "source": self.dsp_name,
-                "event_type": "STREAM",
-                "artist_id": record.get("artist_id"),
-                "work_id": record.get("work_id"),
-                "quantity": record.get("streams", record.get("quantity", 0)),
-                "unit_value": record.get("rate", record.get("unit_value", 0.004)),
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("country", record.get("territory")),
-                "timestamp": record.get("timestamp"),
-                "platform": self.dsp_name,
-            })
+            normalized.append(
+                {
+                    "source": self.dsp_name,
+                    "event_type": "STREAM",
+                    "artist_id": record.get("artist_id"),
+                    "work_id": record.get("work_id"),
+                    "quantity": record.get("streams", record.get("quantity", 0)),
+                    "unit_value": record.get("rate", record.get("unit_value", 0.004)),
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("country", record.get("territory")),
+                    "timestamp": record.get("timestamp"),
+                    "platform": self.dsp_name,
+                }
+            )
         return normalized

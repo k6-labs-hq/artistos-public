@@ -37,7 +37,9 @@ def provider_status(provider: str) -> dict:
     if not config:
         return {"provider": key, "supported": False, "status": "unsupported_provider"}
 
-    token_set = bool(os.getenv(f"{config.env_prefix}_TOKEN") or os.getenv(f"{config.env_prefix}_API_KEY"))
+    token_set = bool(
+        os.getenv(f"{config.env_prefix}_TOKEN") or os.getenv(f"{config.env_prefix}_API_KEY")
+    )
     endpoint_set = bool(os.getenv(f"{config.env_prefix}_BASE_URL"))
 
     return {

@@ -29,7 +29,11 @@ def verify_splits(
         return repair_map.get(key, key)
 
     payout_index = {
-        (_canonical_work_id(r.get("work_id")), str(r.get("territory") or "GLOBAL"), str(r.get("platform") or "ALL")): float(r.get("actual_split") or 0.0)
+        (
+            _canonical_work_id(r.get("work_id")),
+            str(r.get("territory") or "GLOBAL"),
+            str(r.get("platform") or "ALL"),
+        ): float(r.get("actual_split") or 0.0)
         for r in payout_rows
     }
 
@@ -40,7 +44,11 @@ def verify_splits(
     unregistered_works: list[dict[str, Any]] = []
     conflicting_registrations: list[dict[str, Any]] = []
     for row in rights_rows:
-        key = (_canonical_work_id(row.get("work_id")), str(row.get("territory") or "GLOBAL"), str(row.get("platform") or "ALL"))
+        key = (
+            _canonical_work_id(row.get("work_id")),
+            str(row.get("territory") or "GLOBAL"),
+            str(row.get("platform") or "ALL"),
+        )
         expected = float(row.get("expected_split") or 0.0)
         actual = float(payout_index.get(key, expected))
         delta = abs(expected - actual)
@@ -69,7 +77,12 @@ def verify_splits(
             )
         pro = str(row.get("pro") or "").upper().strip()
         publisher = str(row.get("publisher") or "").upper().strip()
-        if pro and publisher and pro not in {"ASCAP", "BMI", "SESAC", "PRS", "GEMA", "SACEM", "SOCAN", "APRA", "JASRAC"}:
+        if (
+            pro
+            and publisher
+            and pro
+            not in {"ASCAP", "BMI", "SESAC", "PRS", "GEMA", "SACEM", "SOCAN", "APRA", "JASRAC"}
+        ):
             pro_publisher_mismatches.append(
                 {
                     "work_id": key[0],
@@ -78,7 +91,9 @@ def verify_splits(
                     "publisher": publisher,
                 }
             )
-        societies = sorted({str(s).upper().strip() for s in (row.get("societies") or []) if str(s).strip()})
+        societies = sorted(
+            {str(s).upper().strip() for s in (row.get("societies") or []) if str(s).strip()}
+        )
         if len(societies) > 1:
             conflicting_registrations.append(
                 {
@@ -116,7 +131,9 @@ def verify_splits(
     }
 
 
-def upsert_split_conflict_anomalies(artist_id: str, verification: dict[str, Any], existing_anomalies: list[Anomaly]) -> list[Anomaly]:
+def upsert_split_conflict_anomalies(
+    artist_id: str, verification: dict[str, Any], existing_anomalies: list[Anomaly]
+) -> list[Anomaly]:
     """Create split-conflict anomaly rows for unresolved mismatches."""
     existing_keys = {
         (str(a.subtype), str(a.description or ""))

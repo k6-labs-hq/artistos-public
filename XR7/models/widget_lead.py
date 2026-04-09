@@ -33,13 +33,11 @@ from XR7.models.base import Base
 class WidgetLead(Base):
     __tablename__ = "widget_leads"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     # Identity fields
     artist_name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    phone_hash: Mapped[str] = mapped_column(String, nullable=False)   # SHA-256 of normalised phone
+    phone_hash: Mapped[str] = mapped_column(String, nullable=False)  # SHA-256 of normalised phone
 
     # Career profile submitted in Step 3
     career_stage: Mapped[str] = mapped_column(String, nullable=False)
@@ -55,7 +53,9 @@ class WidgetLead(Base):
 
     # Status flags
     results_emailed: Mapped[bool] = mapped_column(Boolean, default=False)
-    claimed: Mapped[bool] = mapped_column(Boolean, default=False)     # artist clicked "Claim My Recovery"
+    claimed: Mapped[bool] = mapped_column(
+        Boolean, default=False
+    )  # artist clicked "Claim My Recovery"
     claim_submitted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -66,6 +66,7 @@ class WidgetLead(Base):
 # ---------------------------------------------------------------------------
 # Pydantic schema for API responses
 # ---------------------------------------------------------------------------
+
 
 class WidgetLeadSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -90,6 +91,7 @@ class WidgetLeadSchema(BaseModel):
 # ---------------------------------------------------------------------------
 # Helper
 # ---------------------------------------------------------------------------
+
 
 def hash_phone(phone: str) -> str:
     """Return a SHA-256 hex digest of *phone* for de-duplication without storing PII."""

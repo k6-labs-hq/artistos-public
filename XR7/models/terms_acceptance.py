@@ -22,9 +22,7 @@ from XR7.models.base import Base
 class TermsAcceptance(Base):
     __tablename__ = "terms_acceptances"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(
         String, ForeignKey("artists.id"), nullable=False, index=True
     )

@@ -59,9 +59,7 @@ def _fake_audio() -> bytes:
 
 class TestIdentifySync:
     def test_returns_200_with_matches(self):
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance.identify = AsyncMock(return_value=[_SAMPLE_MATCH])
             MockOrch.return_value = instance
@@ -94,9 +92,7 @@ class TestIdentifySync:
         assert response.status_code == 413
 
     def test_provider_error_returns_502(self):
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance.identify = AsyncMock(side_effect=RuntimeError("provider down"))
             MockOrch.return_value = instance
@@ -109,9 +105,7 @@ class TestIdentifySync:
         assert response.status_code == 502
 
     def test_providers_form_field_parsed(self):
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance.identify = AsyncMock(return_value=[_SAMPLE_MATCH])
             MockOrch.return_value = instance
@@ -139,9 +133,7 @@ class TestIdentifyAsync:
         mock_task = MagicMock()
         mock_task.id = _JOB_ID
 
-        with patch(
-            "XR7.fingerprinting.workers.realtime_fingerprint_audio"
-        ) as mock_worker:
+        with patch("XR7.fingerprinting.workers.realtime_fingerprint_audio") as mock_worker:
             mock_worker.delay = MagicMock(return_value=mock_task)
             response = client.post(
                 f"/artists/{_ARTIST_ID}/fingerprints/identify/async",
@@ -167,9 +159,7 @@ class TestIdentifyAsync:
         mock_task = MagicMock()
         mock_task.id = "s3-job-abc"
 
-        with patch(
-            "XR7.fingerprinting.workers.realtime_fingerprint_audio"
-        ) as mock_worker:
+        with patch("XR7.fingerprinting.workers.realtime_fingerprint_audio") as mock_worker:
             mock_worker.delay = MagicMock(return_value=mock_task)
             response = client.post(
                 f"/artists/{_ARTIST_ID}/fingerprints/identify/async",
@@ -191,9 +181,7 @@ class TestRegisterReference:
         mock_adapter.provider_name = "acrcloud"
         mock_adapter.submit_reference_file = AsyncMock(return_value="ref-acrcloud-123")
 
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance._registry = {"acrcloud": mock_adapter}
             MockOrch.return_value = instance
@@ -218,9 +206,7 @@ class TestRegisterReference:
         assert response.status_code == 400
 
     def test_unknown_provider_returns_400(self):
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance._registry = {"acrcloud": MagicMock()}
             MockOrch.return_value = instance
@@ -275,15 +261,11 @@ class TestListJobs:
         assert isinstance(data["items"], list)
 
     def test_invalid_status_returns_400(self):
-        response = client.get(
-            f"/artists/{_ARTIST_ID}/fingerprints/jobs?status=totally_invalid"
-        )
+        response = client.get(f"/artists/{_ARTIST_ID}/fingerprints/jobs?status=totally_invalid")
         assert response.status_code == 400
 
     def test_page_and_page_size_accepted(self):
-        response = client.get(
-            f"/artists/{_ARTIST_ID}/fingerprints/jobs?page=1&page_size=5"
-        )
+        response = client.get(f"/artists/{_ARTIST_ID}/fingerprints/jobs?page=1&page_size=5")
         assert response.status_code == 200
 
 
@@ -294,9 +276,7 @@ class TestListJobs:
 
 class TestGetJob:
     def test_returns_404_when_not_found(self):
-        response = client.get(
-            f"/artists/{_ARTIST_ID}/fingerprints/jobs/{uuid.uuid4()}"
-        )
+        response = client.get(f"/artists/{_ARTIST_ID}/fingerprints/jobs/{uuid.uuid4()}")
         assert response.status_code == 404
 
     def test_returns_job_with_matches(self):
@@ -398,9 +378,7 @@ class TestProviderHealth:
             checked_at=datetime.now(timezone.utc),
         )
 
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance.health_check_all = AsyncMock(return_value=[mock_status])
             MockOrch.return_value = instance
@@ -426,9 +404,7 @@ class TestCircuitBreakers:
             "bmat": {"state": "open", "failure_count": 5, "last_failure_time": 1234567890.0},
         }
 
-        with patch(
-            "XR7.api.routers.fingerprinting.FingerprintingOrchestrator"
-        ) as MockOrch:
+        with patch("XR7.api.routers.fingerprinting.FingerprintingOrchestrator") as MockOrch:
             instance = MagicMock()
             instance.circuit_breaker_status = MagicMock(return_value=mock_statuses)
             MockOrch.return_value = instance

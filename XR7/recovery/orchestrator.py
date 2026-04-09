@@ -25,6 +25,7 @@ class ClaimsOrchestrator:
     @staticmethod
     def _signing_mode() -> str:
         import os
+
         return os.environ.get("XR7_EVIDENCE_SIGNING_MODE", "hmac")
 
     @staticmethod
@@ -42,8 +43,12 @@ class ClaimsOrchestrator:
         """Delegates to the pure core implementation (no DB required)."""
         return _core_verify_integrity(packet)
 
-    def _ledger_rows_for_anomaly(self, anomaly: Anomaly | None, artist_id: str) -> list[RoyaltyLedgerEntry]:
-        query = self.db_session.query(RoyaltyLedgerEntry).filter(RoyaltyLedgerEntry.artist_id == artist_id)
+    def _ledger_rows_for_anomaly(
+        self, anomaly: Anomaly | None, artist_id: str
+    ) -> list[RoyaltyLedgerEntry]:
+        query = self.db_session.query(RoyaltyLedgerEntry).filter(
+            RoyaltyLedgerEntry.artist_id == artist_id
+        )
         if anomaly is None:
             return query.all()
 
@@ -152,21 +157,31 @@ class ClaimsOrchestrator:
 
         ledger_rows = self._ledger_rows_for_anomaly(anomaly, artist_id)
         proof_lines, proof_totals = self._build_ledger_proof(ledger_rows)
-        metadata_logs: list[dict] = MetadataRepairEngine(self.db_session).recent_repair_logs(artist_id)
+        metadata_logs: list[dict] = MetadataRepairEngine(self.db_session).recent_repair_logs(
+            artist_id
+        )
 
         anomaly_expected = self._money(anomaly.expected_amount if anomaly else 0.0)
         anomaly_actual = self._money(anomaly.actual_amount if anomaly else 0.0)
         anomaly_shortfall = self._money(max(anomaly_expected - anomaly_actual, 0.0))
         estimated_recoverable = self._money(anomaly.estimated_recoverable if anomaly else 0.0)
         model_shortfall = anomaly_shortfall if anomaly_shortfall > 0 else estimated_recoverable
-        proof_shortfall = proof_totals["ledger_shortfall_amount"] if proof_totals["ledger_row_count"] > 0 else model_shortfall
+        proof_shortfall = (
+            proof_totals["ledger_shortfall_amount"]
+            if proof_totals["ledger_row_count"] > 0
+            else model_shortfall
+        )
         discrepancy_amount = self._money(abs(proof_shortfall - model_shortfall))
 
         anomaly_category = self._enum_value(anomaly.category) if anomaly else None
-        target_contract_type = contract_type_for_category(str(anomaly_category) if anomaly else None)
+        target_contract_type = contract_type_for_category(
+            str(anomaly_category) if anomaly else None
+        )
         relevant_contracts = [
-            c for c in contracts
-            if target_contract_type is None or self._enum_value(c.contract_type) == target_contract_type
+            c
+            for c in contracts
+            if target_contract_type is None
+            or self._enum_value(c.contract_type) == target_contract_type
         ]
 
         prior_packet_hash = None
@@ -192,8 +207,16 @@ class ClaimsOrchestrator:
                 "expected_amount": anomaly_expected,
                 "actual_amount": anomaly_actual,
                 "estimated_recoverable": estimated_recoverable,
-                "time_window_start": anomaly.time_window_start.isoformat() if anomaly and anomaly.time_window_start else None,
-                "time_window_end": anomaly.time_window_end.isoformat() if anomaly and anomaly.time_window_end else None,
+                "time_window_start": (
+                    anomaly.time_window_start.isoformat()
+                    if anomaly and anomaly.time_window_start
+                    else None
+                ),
+                "time_window_end": (
+                    anomaly.time_window_end.isoformat()
+                    if anomaly and anomaly.time_window_end
+                    else None
+                ),
                 "territory": anomaly.territory if anomaly else None,
             },
             "proof": {
@@ -204,8 +227,16 @@ class ClaimsOrchestrator:
                 "data_scope": {
                     "artist_id": artist_id,
                     "territory": anomaly.territory if anomaly else None,
-                    "time_window_start": anomaly.time_window_start.isoformat() if anomaly and anomaly.time_window_start else None,
-                    "time_window_end": anomaly.time_window_end.isoformat() if anomaly and anomaly.time_window_end else None,
+                    "time_window_start": (
+                        anomaly.time_window_start.isoformat()
+                        if anomaly and anomaly.time_window_start
+                        else None
+                    ),
+                    "time_window_end": (
+                        anomaly.time_window_end.isoformat()
+                        if anomaly and anomaly.time_window_end
+                        else None
+                    ),
                 },
             },
             "reconciliation": {
@@ -220,7 +251,9 @@ class ClaimsOrchestrator:
                         "id": c.id,
                         "contract_type": self._enum_value(c.contract_type),
                         "counterparty": c.counterparty,
-                        "effective_date": c.effective_date.isoformat() if c.effective_date else None,
+                        "effective_date": (
+                            c.effective_date.isoformat() if c.effective_date else None
+                        ),
                         "expiry_date": c.expiry_date.isoformat() if c.expiry_date else None,
                         "territory": c.territory,
                         "terms": c.terms,
@@ -241,9 +274,20 @@ class ClaimsOrchestrator:
             "metadata_repairs": {
                 "logs": metadata_logs,
             },
-            "events": [{"id": e.id, "event_type": self._enum_value(e.event_type), "timestamp": str(e.timestamp)} for e in events],
-            "contracts": [{"id": c.id, "contract_type": self._enum_value(c.contract_type)} for c in contracts],
-            "payments": [{"id": p.id, "amount": p.amount, "currency": p.currency} for p in payments],
+            "events": [
+                {
+                    "id": e.id,
+                    "event_type": self._enum_value(e.event_type),
+                    "timestamp": str(e.timestamp),
+                }
+                for e in events
+            ],
+            "contracts": [
+                {"id": c.id, "contract_type": self._enum_value(c.contract_type)} for c in contracts
+            ],
+            "payments": [
+                {"id": p.id, "amount": p.amount, "currency": p.currency} for p in payments
+            ],
             "summary": {
                 "event_count": len(events),
                 "contract_count": len(contracts),
@@ -268,7 +312,9 @@ class ClaimsOrchestrator:
             raise ValueError(f"Claim {claim_id} not found")
         return str(claim.status)
 
-    def reconcile_recovered_amount(self, claim_id: str, recovered_amount: float, currency: str) -> Claim:
+    def reconcile_recovered_amount(
+        self, claim_id: str, recovered_amount: float, currency: str
+    ) -> Claim:
         claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
         if not claim:
             raise ValueError(f"Claim {claim_id} not found")
@@ -277,9 +323,13 @@ class ClaimsOrchestrator:
         claim.recovered_amount = recovered_amount
         claim.currency = currency
         claim.platform_fee_percent = fee_percent
-        claim.contingency_fee = BillingEngine(self.db_session).calculate_contingency_fee(recovered_amount, claim.artist_id)
+        claim.contingency_fee = BillingEngine(self.db_session).calculate_contingency_fee(
+            recovered_amount, claim.artist_id
+        )
         claim.platform_fee_amount = claim.contingency_fee
-        claim.artist_net_amount = float(recovered_amount or 0.0) - float(claim.contingency_fee or 0.0)
+        claim.artist_net_amount = float(recovered_amount or 0.0) - float(
+            claim.contingency_fee or 0.0
+        )
         claim.updated_at = datetime.now(timezone.utc)
         self.db_session.commit()
         self.db_session.refresh(claim)

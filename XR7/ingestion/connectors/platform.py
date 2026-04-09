@@ -18,8 +18,8 @@ from XR7.ingestion.connectors.base import BaseConnector
 from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 _PLATFORM_ENV_VARS = {
-    "YouTube":   ("YOUTUBE_API_KEY",),
-    "TikTok":    ("TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"),
+    "YouTube": ("YOUTUBE_API_KEY",),
+    "TikTok": ("TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET"),
     "Instagram": ("INSTAGRAM_APP_ID", "INSTAGRAM_APP_SECRET"),
 }
 
@@ -49,11 +49,12 @@ class PlatformConnector(BaseConnector):
         ``False`` otherwise.  Does NOT make a real network call.
         """
         return all(
-            self.config.get(v.lower()) or os.environ.get(v, "")
-            for v in self._required_env_vars()
+            self.config.get(v.lower()) or os.environ.get(v, "") for v in self._required_env_vars()
         )
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         rows = load_statement_rows(
             config=self.config,
             source_name=self.platform_name,
@@ -70,16 +71,18 @@ class PlatformConnector(BaseConnector):
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []
         for record in raw_data:
-            normalized.append({
-                "source": self.platform_name,
-                "event_type": record.get("event_type", "STREAM"),
-                "artist_id": record.get("artist_id"),
-                "work_id": record.get("work_id"),
-                "quantity": record.get("views", record.get("quantity", 0)),
-                "unit_value": record.get("cpm", record.get("unit_value", 0.0)),
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("country", record.get("territory")),
-                "timestamp": record.get("timestamp"),
-                "platform": self.platform_name,
-            })
+            normalized.append(
+                {
+                    "source": self.platform_name,
+                    "event_type": record.get("event_type", "STREAM"),
+                    "artist_id": record.get("artist_id"),
+                    "work_id": record.get("work_id"),
+                    "quantity": record.get("views", record.get("quantity", 0)),
+                    "unit_value": record.get("cpm", record.get("unit_value", 0.0)),
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("country", record.get("territory")),
+                    "timestamp": record.get("timestamp"),
+                    "platform": self.platform_name,
+                }
+            )
         return normalized

@@ -88,9 +88,7 @@ class RoyaltyMatchingModule:
         for usage in usage_results:
             # Skip already-reported usage — check royalty coverage
             if usage.reported:
-                gaps.extend(
-                    self._check_royalty_coverage(fingerprint, usage, artist_id)
-                )
+                gaps.extend(self._check_royalty_coverage(fingerprint, usage, artist_id))
             else:
                 # Usage not in any statement
                 gaps.append(
@@ -223,9 +221,7 @@ class RoyaltyMatchingModule:
         try:
             from XR7.models.payment import Payment
 
-            query = self._db.query(Payment).filter(
-                Payment.artist_id == artist_id
-            )
+            query = self._db.query(Payment).filter(Payment.artist_id == artist_id)
             payments = query.limit(500).all()
 
             for p in payments:

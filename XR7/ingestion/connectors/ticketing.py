@@ -20,9 +20,9 @@ from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 _TICKETING_ENV_VARS = {
     "Ticketmaster": ("TICKETMASTER_API_KEY",),
-    "AXS":          ("AXS_API_KEY",),
-    "SeatGeek":     ("SEATGEEK_CLIENT_ID", "SEATGEEK_CLIENT_SECRET"),
-    "Eventbrite":   ("EVENTBRITE_PRIVATE_TOKEN",),
+    "AXS": ("AXS_API_KEY",),
+    "SeatGeek": ("SEATGEEK_CLIENT_ID", "SEATGEEK_CLIENT_SECRET"),
+    "Eventbrite": ("EVENTBRITE_PRIVATE_TOKEN",),
 }
 
 
@@ -51,11 +51,12 @@ class TicketingConnector(BaseConnector):
         ``False`` otherwise.  Does NOT make a real network call.
         """
         return all(
-            self.config.get(v.lower()) or os.environ.get(v, "")
-            for v in self._required_env_vars()
+            self.config.get(v.lower()) or os.environ.get(v, "") for v in self._required_env_vars()
         )
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         rows = load_statement_rows(
             config=self.config,
             source_name=self.platform_name,
@@ -72,15 +73,17 @@ class TicketingConnector(BaseConnector):
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []
         for record in raw_data:
-            normalized.append({
-                "source": self.platform_name,
-                "event_type": "SHOW",
-                "artist_id": record.get("artist_id"),
-                "quantity": record.get("tickets_sold", record.get("quantity", 1)),
-                "unit_value": record.get("guarantee", record.get("unit_value", 0.0)),
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("country", record.get("territory")),
-                "timestamp": record.get("show_date", record.get("timestamp")),
-                "platform": self.platform_name,
-            })
+            normalized.append(
+                {
+                    "source": self.platform_name,
+                    "event_type": "SHOW",
+                    "artist_id": record.get("artist_id"),
+                    "quantity": record.get("tickets_sold", record.get("quantity", 1)),
+                    "unit_value": record.get("guarantee", record.get("unit_value", 0.0)),
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("country", record.get("territory")),
+                    "timestamp": record.get("show_date", record.get("timestamp")),
+                    "platform": self.platform_name,
+                }
+            )
         return normalized

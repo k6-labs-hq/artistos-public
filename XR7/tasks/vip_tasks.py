@@ -6,6 +6,7 @@ Tasks:
   generate_vip_briefs_all    – scheduled task: generate briefs for all VIPs
   send_vip_weekly_digest     – scheduled: send email/notification with brief
 """
+
 from __future__ import annotations
 
 import json
@@ -26,6 +27,7 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _fetch_json(url: str, timeout: int = 8) -> Optional[dict]:
     """Simple HTTP GET returning parsed JSON or None on error.
@@ -49,6 +51,7 @@ def _safe_str_id(value: str) -> str:
 # ---------------------------------------------------------------------------
 # Task: Persona Enrichment
 # ---------------------------------------------------------------------------
+
 
 @celery_app.task(
     name="xr7.vip.enrich_artist_persona",
@@ -110,6 +113,7 @@ def enrich_artist_persona(self, artist_id: str, force: bool = False) -> dict:  #
 
         # ---------- Catalog summary from existing works ----------
         from XR7.models.work import Work
+
         works = db.query(Work).filter(Work.artist_id == artist_id).limit(50).all()
         if works:
             enrichment["notable_works"] = [w.title for w in works[:10]]
@@ -124,13 +128,20 @@ def enrich_artist_persona(self, artist_id: str, force: bool = False) -> dict:  #
         # Save results
         svc.save_enrichment_results(artist_id, **enrichment)
         logger.info("Persona enrichment complete", extra={"artist_id": artist_id})
-        return {"status": "complete", "artist_id": artist_id, "fields_enriched": list(enrichment.keys())}
+        return {
+            "status": "complete",
+            "artist_id": artist_id,
+            "fields_enriched": list(enrichment.keys()),
+        }
 
     except Exception:
         db_ = SessionLocal()
         try:
             from XR7.models.vip import PersonaProfile
-            profile = db_.query(PersonaProfile).filter(PersonaProfile.artist_id == artist_id).first()
+
+            profile = (
+                db_.query(PersonaProfile).filter(PersonaProfile.artist_id == artist_id).first()
+            )
             if profile:
                 profile.enrichment_status = EnrichmentStatus.FAILED.value
                 profile.updated_at = datetime.now(timezone.utc)
@@ -146,6 +157,7 @@ def enrich_artist_persona(self, artist_id: str, force: bool = False) -> dict:  #
 # ---------------------------------------------------------------------------
 # Task: Generate Weekly Brief
 # ---------------------------------------------------------------------------
+
 
 @celery_app.task(
     name="xr7.vip.generate_weekly_brief",
@@ -221,6 +233,7 @@ def generate_weekly_brief_task(self, artist_id: str, brief_week: str) -> dict:  
         db2 = SessionLocal()
         try:
             from XR7.models.vip import WeeklyBrief
+
             brief = (
                 db2.query(WeeklyBrief)
                 .filter(
@@ -255,11 +268,13 @@ def _try_generate_tts(text: str, artist_id: str, brief_week: str) -> Optional[st
 
         # Truncate to avoid excessive TTS costs
         text_snippet = text[:1500]
-        payload = json.dumps({
-            "text": text_snippet,
-            "model_id": "eleven_monolingual_v1",
-            "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
-        }).encode()
+        payload = json.dumps(
+            {
+                "text": text_snippet,
+                "model_id": "eleven_monolingual_v1",
+                "voice_settings": {"stability": 0.5, "similarity_boost": 0.75},
+            }
+        ).encode()
         headers = {
             "Content-Type": "application/json",
             "xi-api-key": api_key,
@@ -283,23 +298,25 @@ def _try_generate_tts(text: str, artist_id: str, brief_week: str) -> Optional[st
 # Task: Scheduled – generate briefs for all active VIP members
 # ---------------------------------------------------------------------------
 
+
 @celery_app.task(name="xr7.vip.generate_vip_briefs_all", bind=True)
 def generate_vip_briefs_all(self=None) -> dict:  # noqa: ANN001
     """Weekly scheduled task: trigger brief generation for every active VIP."""
     db = SessionLocal()
     try:
         from XR7.models.vip import FoundersCircleMember
+
         members = (
-            db.query(FoundersCircleMember)
-            .filter(FoundersCircleMember.is_active.is_(True))
-            .all()
+            db.query(FoundersCircleMember).filter(FoundersCircleMember.is_active.is_(True)).all()
         )
         brief_week = date.today().strftime("%G-W%V")
         triggered = 0
         for member in members:
             generate_weekly_brief_task.delay(member.artist_id, brief_week)
             triggered += 1
-        logger.info("VIP brief generation triggered", extra={"count": triggered, "week": brief_week})
+        logger.info(
+            "VIP brief generation triggered", extra={"count": triggered, "week": brief_week}
+        )
         return {"triggered": triggered, "brief_week": brief_week}
     finally:
         db.close()

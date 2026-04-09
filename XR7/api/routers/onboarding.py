@@ -103,22 +103,27 @@ def _artist_or_404(artist_id: str, db: Session) -> Artist:
     artist = get_artist_or_404(artist_id, db)
     return artist
 
+
 @router.get("/artists/{artist_id}/onboarding/status")
 def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
     artist = _artist_or_404(artist_id, db)
 
     terms_accepted = (
-        db.query(TermsAcceptance.id)
-        .filter(TermsAcceptance.artist_id == artist_id)
-        .first()
+        db.query(TermsAcceptance.id).filter(TermsAcceptance.artist_id == artist_id).first()
         is not None
     )
-    statement_count = db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
-    anomaly_count = db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    statement_count = (
+        db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    )
+    anomaly_count = (
+        db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    )
     claim_count = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
     connector_count = (
         db.query(func.count(ConnectorAccountLink.id))
-        .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True))
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True)
+        )
         .scalar()
         or 0
     )
@@ -180,33 +185,42 @@ def onboarding_auto(
 
     enqueued_jobs = run_due_sync_jobs(db=db) if payload.run_due_sync_jobs_now else []
 
-    statement_count = db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
-    anomaly_count = db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    statement_count = (
+        db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    )
+    anomaly_count = (
+        db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    )
     claim_count = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
     connector_count = (
         db.query(func.count(ConnectorAccountLink.id))
-        .filter(ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True))
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id, ConnectorAccountLink.is_active.is_(True)
+        )
         .scalar()
         or 0
     )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "status": artist.status,
-        "onboarded_at": artist.onboarded_at.isoformat() if artist.onboarded_at else None,
-        "enqueued_sync_jobs": enqueued_jobs,
-        "progress": {
-            "statements_uploaded": int(statement_count),
-            "anomalies_detected": int(anomaly_count),
-            "claims_drafted": int(claim_count),
-            "active_connectors": int(connector_count),
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "status": artist.status,
+            "onboarded_at": artist.onboarded_at.isoformat() if artist.onboarded_at else None,
+            "enqueued_sync_jobs": enqueued_jobs,
+            "progress": {
+                "statements_uploaded": int(statement_count),
+                "anomalies_detected": int(anomaly_count),
+                "claims_drafted": int(claim_count),
+                "active_connectors": int(connector_count),
+            },
+            "next_recommended_actions": [
+                "Upload latest statements",
+                "Connect distributor and PRO accounts",
+                "Review top-priority recovery queue",
+            ],
         },
-        "next_recommended_actions": [
-            "Upload latest statements",
-            "Connect distributor and PRO accounts",
-            "Review top-priority recovery queue",
-        ],
-    })
+    )
 
 
 @router.get("/permissions/ui")
@@ -229,7 +243,11 @@ def permissions_dashboard(artist_id: str, db: Session = Depends(get_db)):
             "tenant_id": r.tenant_id,
             "status": r.status,
             "is_active": r.is_active,
-            "last_sync_timestamp": (r.last_refreshed_at or r.updated_at).isoformat() if (r.last_refreshed_at or r.updated_at) else None,
+            "last_sync_timestamp": (
+                (r.last_refreshed_at or r.updated_at).isoformat()
+                if (r.last_refreshed_at or r.updated_at)
+                else None
+            ),
             "connection_health": "healthy" if r.is_active else "disconnected",
         }
         for r in rows
@@ -245,10 +263,16 @@ def permissions_dashboard(artist_id: str, db: Session = Depends(get_db)):
         "connected_accounts": connected_accounts,
         "missing_connections": missing_connections,
         "connection_health": {
-            "healthy_count": sum(1 for r in connected_accounts if r["connection_health"] == "healthy"),
-            "disconnected_count": sum(1 for r in connected_accounts if r["connection_health"] != "healthy"),
+            "healthy_count": sum(
+                1 for r in connected_accounts if r["connection_health"] == "healthy"
+            ),
+            "disconnected_count": sum(
+                1 for r in connected_accounts if r["connection_health"] != "healthy"
+            ),
         },
-        "last_sync_timestamps": [a["last_sync_timestamp"] for a in connected_accounts if a["last_sync_timestamp"]],
+        "last_sync_timestamps": [
+            a["last_sync_timestamp"] for a in connected_accounts if a["last_sync_timestamp"]
+        ],
     }
 
 
@@ -261,15 +285,18 @@ def run_data_fetcher(
     _artist_or_404(artist_id, db)
     fetcher = get_fetcher(integration)
     bundle = fetcher.fetch_all(artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "integration": integration,
-        "historical_statements": bundle.historical_statements,
-        "catalog_metadata": bundle.catalog_metadata,
-        "registrations": bundle.registrations,
-        "usage_data": bundle.usage_data,
-        "normalized_universal_events": bundle.normalized_events,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "integration": integration,
+            "historical_statements": bundle.historical_statements,
+            "catalog_metadata": bundle.catalog_metadata,
+            "registrations": bundle.registrations,
+            "usage_data": bundle.usage_data,
+            "normalized_universal_events": bundle.normalized_events,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/ingestion/upload-any")
@@ -359,7 +386,9 @@ async def parse_statement_with_engine(
             .first()
         )
         if not plugin:
-            raise HTTPException(status_code=404, detail="Parser type is not enabled for this artist")
+            raise HTTPException(
+                status_code=404, detail="Parser type is not enabled for this artist"
+            )
         plugin_entrypoint = plugin.plugin_entrypoint
 
     content = await file.read()
@@ -379,13 +408,16 @@ async def parse_statement_with_engine(
         except ParserPluginError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "parser_type": parsed.parser_type,
-        "event_count": parsed.event_count,
-        "warnings": parsed.warnings,
-        "events": parsed.events[:100],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "parser_type": parsed.parser_type,
+            "event_count": parsed.event_count,
+            "warnings": parsed.warnings,
+            "events": parsed.events[:100],
+        },
+    )
 
 
 @router.put("/artists/{artist_id}/parsers/plugins", response_model=ParserPluginSchema)
@@ -538,11 +570,14 @@ def requeue_due_sync_jobs(
         .count()
     )
     enqueued = run_due_sync_jobs(db=db)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "due_jobs_for_artist": due_for_artist,
-        "enqueued_jobs": enqueued,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "due_jobs_for_artist": due_for_artist,
+            "enqueued_jobs": enqueued,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/ingestion/missing-data")
@@ -552,7 +587,9 @@ def missing_data_status(
 ):
     _artist_or_404(artist_id, db)
 
-    accounts = db.query(ConnectorAccountLink).filter(ConnectorAccountLink.artist_id == artist_id).all()
+    accounts = (
+        db.query(ConnectorAccountLink).filter(ConnectorAccountLink.artist_id == artist_id).all()
+    )
     works = db.query(Work).filter(Work.artist_id == artist_id).all()
     events = db.query(Event).filter(Event.artist_id == artist_id).all()
 
@@ -587,8 +624,12 @@ def build_catalog_work_graph(artist_id: str, db: Session = Depends(get_db)):
             }
             for w in works
         ],
-        registrations=[{"registration_id": w.iswc, "work_id": w.id, "source": "internal"} for w in works],
-        statements=[{"statement_id": s.id, "work_id": None, "source": s.format_detected} for s in statements],
+        registrations=[
+            {"registration_id": w.iswc, "work_id": w.id, "source": "internal"} for w in works
+        ],
+        statements=[
+            {"statement_id": s.id, "work_id": None, "source": s.format_detected} for s in statements
+        ],
     )
     return inject_branding_metadata(db, {"artist_id": artist_id, **graph})
 
@@ -631,7 +672,10 @@ def list_catalog_confirmations(artist_id: str, db: Session = Depends(get_db)):
 def infer_catalog(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     works = db.query(Work).filter(Work.artist_id == artist_id).all()
-    rows = [{"id": w.id, "work_id": w.id, "streams": 0, "contributors": [], "owner": None} for w in works]
+    rows = [
+        {"id": w.id, "work_id": w.id, "streams": 0, "contributors": [], "owner": None}
+        for w in works
+    ]
     return infer_catalog_relationships(rows)
 
 
@@ -648,11 +692,14 @@ def catalog_metadata_health(artist_id: str, db: Session = Depends(get_db)):
 def catalog_repairs(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     repairs = MetadataRepairEngine(db).catalog_repairs(artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "metadata_repair_ledger": repairs,
-        "count": len(repairs),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "metadata_repair_ledger": repairs,
+            "count": len(repairs),
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/splits/repair")
@@ -687,15 +734,18 @@ def apply_split_repairs(
         },
     )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "mismatch_count": result.mismatch_count,
-        "corrections_applied": result.corrections_applied,
-        "registration_packets": result.registration_packets,
-        "proposed_corrections": result.corrections,
-        "low_confidence_review_queue": review_flags,
-        "ledger_entry_hash": entry.entry_hash,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "mismatch_count": result.mismatch_count,
+            "corrections_applied": result.corrections_applied,
+            "registration_packets": result.registration_packets,
+            "proposed_corrections": result.corrections,
+            "low_confidence_review_queue": review_flags,
+            "ledger_entry_hash": entry.entry_hash,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/variance/scan")
@@ -739,7 +789,10 @@ def generate_audit_evidence_packet(claim_id: str, db: Session = Depends(get_db))
 def run_recovery_automation(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     anomalies = db.query(func.count(Event.id)).filter(Event.artist_id == artist_id).scalar() or 0
-    findings = [{"type": "STREAM_VS_PAYOUT_MISMATCH", "row": {"counterparty": "pro", "index": i}} for i in range(min(5, int(anomalies)))]
+    findings = [
+        {"type": "STREAM_VS_PAYOUT_MISMATCH", "row": {"counterparty": "pro", "index": i}}
+        for i in range(min(5, int(anomalies)))
+    ]
     result = automate_recovery(artist_id, findings)
 
     ledger = ImmutableLedgerService(db)
@@ -748,7 +801,9 @@ def run_recovery_automation(artist_id: str, db: Session = Depends(get_db)):
     return {**result, "ledger_entry_hash": entry.entry_hash}
 
 
-@router.get("/artists/{artist_id}/ledger/immutable", response_model=list[ImmutableLedgerEntrySchema])
+@router.get(
+    "/artists/{artist_id}/ledger/immutable", response_model=list[ImmutableLedgerEntrySchema]
+)
 def list_immutable_ledger_entries(artist_id: str, db: Session = Depends(get_db)):
     _artist_or_404(artist_id, db)
     return ImmutableLedgerService(db).list_entries(artist_id)
@@ -775,18 +830,24 @@ def run_full_workflow(
     if payload.async_run:
         # Keep async mode lightweight while preserving request-scoped DB context.
         enqueued_jobs = run_due_sync_jobs(db=db)
-        return inject_branding_metadata(db, {
-            "artist_id": artist_id,
-            "queued": True,
-            "mode": "async",
-            "enqueued_jobs": enqueued_jobs,
-            "preview": XR7WorkflowService(db).preview(artist_id),
-        })
+        return inject_branding_metadata(
+            db,
+            {
+                "artist_id": artist_id,
+                "queued": True,
+                "mode": "async",
+                "enqueued_jobs": enqueued_jobs,
+                "preview": XR7WorkflowService(db).preview(artist_id),
+            },
+        )
 
     result = XR7WorkflowService(db).run(artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": result.artist_id,
-        "queued": False,
-        "mode": "inline",
-        "steps": result.steps,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": result.artist_id,
+            "queued": False,
+            "mode": "inline",
+            "steps": result.steps,
+        },
+    )

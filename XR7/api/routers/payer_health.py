@@ -5,6 +5,7 @@ GET /artists/{artist_id}/payers/health
 GET /artists/{artist_id}/payers/{payer_id}/health
 GET /payers/health/global
 """
+
 from __future__ import annotations
 
 from typing import Any

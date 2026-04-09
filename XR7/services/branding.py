@@ -99,8 +99,10 @@ def _to_brand_dict(row: BrandingProfile | None, org_id: str | None = None) -> di
         "primary_color": row.primary_color or DEFAULT_BRANDING["primary_color"],
         "secondary_color": row.secondary_color or DEFAULT_BRANDING["secondary_color"],
         "accent_color": row.accent_color or DEFAULT_BRANDING["accent_color"],
-        "dashboard_header_text": row.dashboard_header_text or DEFAULT_BRANDING["dashboard_header_text"],
-        "dashboard_footer_text": row.dashboard_footer_text or DEFAULT_BRANDING["dashboard_footer_text"],
+        "dashboard_header_text": row.dashboard_header_text
+        or DEFAULT_BRANDING["dashboard_header_text"],
+        "dashboard_footer_text": row.dashboard_footer_text
+        or DEFAULT_BRANDING["dashboard_footer_text"],
         "support_email": row.support_email or DEFAULT_BRANDING["support_email"],
         "support_phone": row.support_phone or DEFAULT_BRANDING["support_phone"],
         "legal_disclaimer": row.legal_disclaimer or DEFAULT_BRANDING["legal_disclaimer"],
@@ -163,7 +165,11 @@ def inject_branding_metadata(db: Session | None, payload: dict[str, Any]) -> dic
 
     artist_id = payload.get("artist_id")
     if artist_id:
-        brand = get_branding_for_artist(db, str(artist_id)) if db is not None else get_branding_profile(None, None)
+        brand = (
+            get_branding_for_artist(db, str(artist_id))
+            if db is not None
+            else get_branding_profile(None, None)
+        )
         return {**payload, "branding": branding_metadata(brand)}
 
     org_id = payload.get("org_id")
@@ -178,12 +184,24 @@ def placeholder_map(brand: dict[str, Any]) -> dict[str, str]:
     return {
         "{{BRAND.NAME}}": str(brand.get("display_name") or DEFAULT_BRANDING["display_name"]),
         "{{BRAND.LOGO}}": str(brand.get("logo_url") or DEFAULT_BRANDING["logo_url"]),
-        "{{BRAND.PRIMARY_COLOR}}": str(brand.get("primary_color") or DEFAULT_BRANDING["primary_color"]),
-        "{{BRAND.SECONDARY_COLOR}}": str(brand.get("secondary_color") or DEFAULT_BRANDING["secondary_color"]),
-        "{{BRAND.ACCENT_COLOR}}": str(brand.get("accent_color") or DEFAULT_BRANDING["accent_color"]),
-        "{{BRAND.SUPPORT_EMAIL}}": str(brand.get("support_email") or DEFAULT_BRANDING["support_email"]),
-        "{{BRAND.SUPPORT_PHONE}}": str(brand.get("support_phone") or DEFAULT_BRANDING["support_phone"]),
-        "{{BRAND.LEGAL_DISCLAIMER}}": str(brand.get("legal_disclaimer") or DEFAULT_BRANDING["legal_disclaimer"]),
+        "{{BRAND.PRIMARY_COLOR}}": str(
+            brand.get("primary_color") or DEFAULT_BRANDING["primary_color"]
+        ),
+        "{{BRAND.SECONDARY_COLOR}}": str(
+            brand.get("secondary_color") or DEFAULT_BRANDING["secondary_color"]
+        ),
+        "{{BRAND.ACCENT_COLOR}}": str(
+            brand.get("accent_color") or DEFAULT_BRANDING["accent_color"]
+        ),
+        "{{BRAND.SUPPORT_EMAIL}}": str(
+            brand.get("support_email") or DEFAULT_BRANDING["support_email"]
+        ),
+        "{{BRAND.SUPPORT_PHONE}}": str(
+            brand.get("support_phone") or DEFAULT_BRANDING["support_phone"]
+        ),
+        "{{BRAND.LEGAL_DISCLAIMER}}": str(
+            brand.get("legal_disclaimer") or DEFAULT_BRANDING["legal_disclaimer"]
+        ),
     }
 
 

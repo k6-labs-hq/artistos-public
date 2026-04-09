@@ -33,9 +33,7 @@ class FingerprintJobMode(str, enum.Enum):
 class FingerprintJob(Base):
     __tablename__ = "fingerprint_jobs"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(
         String, ForeignKey("artists.id"), nullable=False, index=True
     )

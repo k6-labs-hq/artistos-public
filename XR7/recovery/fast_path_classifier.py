@@ -9,7 +9,12 @@ def classify_fast_path(
     anomaly_subtype: str | None = None,
 ) -> dict:
     """Classify claims into FAST_PATH/STANDARD/COMPLEX/HIGH FRICTION buckets."""
-    score = (payer_responsiveness * 0.35) + ((evidence_strength / 100.0) * 0.3) + (contract_clarity * 0.2) + (historical_success * 0.15)
+    score = (
+        (payer_responsiveness * 0.35)
+        + ((evidence_strength / 100.0) * 0.3)
+        + (contract_clarity * 0.2)
+        + (historical_success * 0.15)
+    )
     subtype = str(anomaly_subtype or "").lower()
     if "ownership" in subtype or "rights" in subtype:
         score -= 0.15

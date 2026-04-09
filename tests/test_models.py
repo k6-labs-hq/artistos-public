@@ -59,6 +59,7 @@ def test_enum_values_work(db_session):
     db_session.add(artist)
     db_session.commit()
     from datetime import datetime, timezone
+
     event = Event(
         id="event-1",
         event_type=EventType.STREAM,
@@ -77,6 +78,7 @@ def test_enum_values_work(db_session):
 
 def test_pydantic_schema_validates(db_session):
     from datetime import datetime, timezone
+
     artist = Artist(id="artist-4", name="Schema Artist", created_at=datetime.now(timezone.utc))
     db_session.add(artist)
     db_session.commit()

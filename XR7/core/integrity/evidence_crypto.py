@@ -12,6 +12,7 @@ Signing modes
   ``XR7_EVIDENCE_PUBLIC_KEY_PEM`` env vars.  Falls back to HMAC when the key
   is not configured.
 """
+
 from __future__ import annotations
 
 import base64
@@ -27,6 +28,7 @@ from typing import Any
 # ---------------------------------------------------------------------------
 # Low-level primitives
 # ---------------------------------------------------------------------------
+
 
 def canonicalize(data: dict[str, Any]) -> bytes:
     """Stable JSON serialisation used as the input to all hash operations."""
@@ -52,6 +54,7 @@ def compute_chain_hash(prior_packet_hash: str | None, packet_hash: str) -> str:
 # Signing / verification
 # ---------------------------------------------------------------------------
 
+
 def signing_mode() -> str:
     return os.environ.get("XR7_EVIDENCE_SIGNING_MODE", "hmac").strip().lower()
 
@@ -59,9 +62,7 @@ def signing_mode() -> str:
 def hmac_sign(chain_hash: str) -> tuple[str, str]:
     """Return (signature_hex, key_source_label) using HMAC-SHA256."""
     secret = os.environ.get("XR7_EVIDENCE_HMAC_SECRET", "xr7-dev-evidence-secret")
-    sig = _hmac.new(
-        secret.encode("utf-8"), chain_hash.encode("utf-8"), hashlib.sha256
-    ).hexdigest()
+    sig = _hmac.new(secret.encode("utf-8"), chain_hash.encode("utf-8"), hashlib.sha256).hexdigest()
     key_source = (
         "env:XR7_EVIDENCE_HMAC_SECRET"
         if os.environ.get("XR7_EVIDENCE_HMAC_SECRET")
@@ -109,9 +110,13 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
         sig_file.flush()
         proc = subprocess.run(
             [
-                "openssl", "dgst", "-sha256",
-                "-verify", key_file.name,
-                "-signature", sig_file.name,
+                "openssl",
+                "dgst",
+                "-sha256",
+                "-verify",
+                key_file.name,
+                "-signature",
+                sig_file.name,
             ],
             input=message.encode("utf-8"),
             capture_output=True,
@@ -123,6 +128,7 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
 # ---------------------------------------------------------------------------
 # High-level packet helpers
 # ---------------------------------------------------------------------------
+
 
 def seal_packet(base_packet: dict[str, Any], prior_packet_hash: str | None) -> dict[str, Any]:
     """Compute and return the integrity block for *base_packet*.
@@ -204,12 +210,7 @@ def verify_packet_integrity(packet: dict[str, Any]) -> dict[str, Any]:
         signature_valid = hmac_verify(expected_chain_hash, signature)
         signature_mode = "hmac"
 
-    valid = (
-        packet_hash_matches
-        and chain_hash_matches
-        and line_hashes_match
-        and signature_valid
-    )
+    valid = packet_hash_matches and chain_hash_matches and line_hashes_match and signature_valid
     return {
         "valid": valid,
         "checks": {

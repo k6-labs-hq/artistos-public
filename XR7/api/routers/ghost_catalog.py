@@ -5,6 +5,7 @@ POST /artists/{artist_id}/catalog/ghost-scan
 GET  /artists/{artist_id}/catalog/ghosts
 GET  /artists/{artist_id}/catalog/ghosts/{work_id}
 """
+
 from __future__ import annotations
 
 from typing import Any

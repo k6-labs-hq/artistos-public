@@ -1,11 +1,12 @@
 """Tests for platform features introduced in migration 0027:
-  - Notification delivery log endpoint
-  - Case rooms (CRUD, members, comments, approvals)
-  - Data residency policy (admin CRUD + check)
-  - Connector reliability (webhook ingest / DLQ replay / sync cursor)
-  - SLO dashboards + cost telemetry
-  - Batch ingestion jobs (create / progress / retry)
+- Notification delivery log endpoint
+- Case rooms (CRUD, members, comments, approvals)
+- Data residency policy (admin CRUD + check)
+- Connector reliability (webhook ingest / DLQ replay / sync cursor)
+- SLO dashboards + cost telemetry
+- Batch ingestion jobs (create / progress / retry)
 """
+
 from __future__ import annotations
 
 import uuid
@@ -28,6 +29,7 @@ ADMIN_HEADERS = {"x-admin-key": "admin-secret"}
 # Helpers
 # ============================================================================
 
+
 def _uid() -> str:
     return uuid.uuid4().hex[:8]
 
@@ -35,6 +37,7 @@ def _uid() -> str:
 # ============================================================================
 # 1. Notification delivery log
 # ============================================================================
+
 
 class TestNotificationDeliveryLog:
     def test_empty_log(self):
@@ -65,6 +68,7 @@ class TestNotificationDeliveryLog:
 # ============================================================================
 # 2. Case rooms
 # ============================================================================
+
 
 class TestCaseRooms:
     def _create_room(self, artist_id: str | None = None) -> dict:
@@ -200,6 +204,7 @@ class TestCaseRooms:
 # 3. Data residency
 # ============================================================================
 
+
 class TestDataResidency:
     def _org_id(self):
         return f"org-{_uid()}"
@@ -265,6 +270,7 @@ class TestDataResidency:
 # 4. Connector reliability
 # ============================================================================
 
+
 class TestConnectorReliability:
     def test_webhook_ingest(self):
         resp = client.post(
@@ -323,9 +329,7 @@ class TestConnectorReliability:
         assert put_resp.status_code == 200
         assert put_resp.json()["cursor_value"] == "2026-03-20T10:00:00Z"
 
-        get_resp = client.get(
-            f"/artists/{artist_id}/connectors/{integration}/sync-cursor"
-        )
+        get_resp = client.get(f"/artists/{artist_id}/connectors/{integration}/sync-cursor")
         assert get_resp.status_code == 200
         assert get_resp.json()["integration"] == integration
 
@@ -341,9 +345,7 @@ class TestConnectorReliability:
             f"/artists/{artist_id}/connectors/{integration}/sync-cursor",
             json={"cursor_value": "page_token_002"},
         )
-        get_resp = client.get(
-            f"/artists/{artist_id}/connectors/{integration}/sync-cursor"
-        )
+        get_resp = client.get(f"/artists/{artist_id}/connectors/{integration}/sync-cursor")
         assert get_resp.json()["cursor_value"] == "page_token_002"
 
     def test_sync_cursor_not_found(self):
@@ -358,6 +360,7 @@ class TestConnectorReliability:
 # ============================================================================
 # 5. SLO dashboards + cost telemetry
 # ============================================================================
+
 
 class TestSlo:
     def _org(self):
@@ -428,9 +431,7 @@ class TestSlo:
         # total = 120.50 + 85.00 + 12.00 + 18.75 = 236.25
         assert abs(body["total_cost_usd"] - 236.25) < 0.01
 
-        list_resp = client.get(
-            f"/admin/orgs/{org_id}/cost-telemetry", headers=ADMIN_HEADERS
-        )
+        list_resp = client.get(f"/admin/orgs/{org_id}/cost-telemetry", headers=ADMIN_HEADERS)
         assert list_resp.status_code == 200
         assert len(list_resp.json()) == 1
 
@@ -477,9 +478,7 @@ class TestSlo:
 
     def test_cost_alert_no_data(self):
         org_id = self._org()
-        resp = client.get(
-            f"/admin/orgs/{org_id}/cost-telemetry/alert-check", headers=ADMIN_HEADERS
-        )
+        resp = client.get(f"/admin/orgs/{org_id}/cost-telemetry/alert-check", headers=ADMIN_HEADERS)
         assert resp.status_code == 200
         assert resp.json()["alert"] is False
 
@@ -487,6 +486,7 @@ class TestSlo:
 # ============================================================================
 # 6. Batch ingestion
 # ============================================================================
+
 
 class TestBatchIngestion:
     def _artist(self):
@@ -542,9 +542,7 @@ class TestBatchIngestion:
             json={"filenames": ["f1.csv", "f2.csv"]},
         )
         job_id = create_resp.json()["id"]
-        files_resp = client.get(
-            f"/artists/{artist_id}/statements/batch/{job_id}/files"
-        )
+        files_resp = client.get(f"/artists/{artist_id}/statements/batch/{job_id}/files")
         assert files_resp.status_code == 200
         assert len(files_resp.json()) == 2
 
@@ -555,9 +553,7 @@ class TestBatchIngestion:
             json={"filenames": ["x.csv"]},
         )
         job_id = create_resp.json()["id"]
-        retry_resp = client.post(
-            f"/artists/{artist_id}/statements/batch/{job_id}/retry-failed"
-        )
+        retry_resp = client.post(f"/artists/{artist_id}/statements/batch/{job_id}/retry-failed")
         assert retry_resp.status_code == 200
         assert retry_resp.json()["status"] == "pending"
 

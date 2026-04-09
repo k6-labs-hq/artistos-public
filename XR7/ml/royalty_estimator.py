@@ -75,20 +75,34 @@ from typing import Literal
 # ---------------------------------------------------------------------------
 
 CareerStage = Literal[
-    "EMERGING",       # < 10K monthly listeners
-    "DEVELOPING",     # 10K – 100K
-    "MID_LEVEL",      # 100K – 500K
-    "ESTABLISHED",    # 500K – 5M
-    "LEGACY",         # > 5M lifetime but possibly lower current activity
+    "EMERGING",  # < 10K monthly listeners
+    "DEVELOPING",  # 10K – 100K
+    "MID_LEVEL",  # 100K – 500K
+    "ESTABLISHED",  # 500K – 5M
+    "LEGACY",  # > 5M lifetime but possibly lower current activity
 ]
 
 VALID_CAREER_STAGES: tuple[str, ...] = (
-    "EMERGING", "DEVELOPING", "MID_LEVEL", "ESTABLISHED", "LEGACY"
+    "EMERGING",
+    "DEVELOPING",
+    "MID_LEVEL",
+    "ESTABLISHED",
+    "LEGACY",
 )
 
 VALID_GENRES: tuple[str, ...] = (
-    "POP", "HIP_HOP", "ROCK", "COUNTRY", "ELECTRONIC", "CLASSICAL",
-    "JAZZ", "LATIN", "R_AND_B", "FOLK", "GOSPEL", "OTHER",
+    "POP",
+    "HIP_HOP",
+    "ROCK",
+    "COUNTRY",
+    "ELECTRONIC",
+    "CLASSICAL",
+    "JAZZ",
+    "LATIN",
+    "R_AND_B",
+    "FOLK",
+    "GOSPEL",
+    "OTHER",
 )
 
 
@@ -98,17 +112,17 @@ VALID_GENRES: tuple[str, ...] = (
 # ---------------------------------------------------------------------------
 
 _MONTHLY_STREAMS: dict[str, tuple[float, float, float]] = {
-    "EMERGING":   (  1_000,    15_000,    50_000),
-    "DEVELOPING": ( 25_000,   150_000,   500_000),
-    "MID_LEVEL":  (300_000, 1_200_000, 3_000_000),
-    "ESTABLISHED":(1_000_000, 5_000_000, 20_000_000),
-    "LEGACY":     (  500_000, 2_000_000, 8_000_000),
+    "EMERGING": (1_000, 15_000, 50_000),
+    "DEVELOPING": (25_000, 150_000, 500_000),
+    "MID_LEVEL": (300_000, 1_200_000, 3_000_000),
+    "ESTABLISHED": (1_000_000, 5_000_000, 20_000_000),
+    "LEGACY": (500_000, 2_000_000, 8_000_000),
 }
 
 # US mechanical rate per stream ($ / stream) — effective 2024
-_MECHANICAL_RATE_PER_STREAM = 0.00115   # $0.00115 (statutory mechanical)
+_MECHANICAL_RATE_PER_STREAM = 0.00115  # $0.00115 (statutory mechanical)
 # Performing rights distribution per stream (PRO share)
-_PRO_RATE_PER_STREAM = 0.0008           # approximately 20 % of total stream value
+_PRO_RATE_PER_STREAM = 0.0008  # approximately 20 % of total stream value
 
 
 # ---------------------------------------------------------------------------
@@ -119,34 +133,34 @@ _PRO_RATE_PER_STREAM = 0.0008           # approximately 20 % of total stream val
 
 _UNPAID_FRACTIONS: dict[str, dict[str, float]] = {
     "digital_mechanical": {
-        "conservative": 0.08,   # 8 %
-        "likely":       0.18,   # 18 %  ← headline
-        "optimistic":   0.35,   # 35 %
+        "conservative": 0.08,  # 8 %
+        "likely": 0.18,  # 18 %  ← headline
+        "optimistic": 0.35,  # 35 %
     },
     "pro_performance": {
         "conservative": 0.06,
-        "likely":       0.15,
-        "optimistic":   0.28,
+        "likely": 0.15,
+        "optimistic": 0.28,
     },
     "international": {
         "conservative": 0.10,
-        "likely":       0.22,
-        "optimistic":   0.40,
+        "likely": 0.22,
+        "optimistic": 0.40,
     },
     "sync_licensing": {
         "conservative": 0.05,
-        "likely":       0.12,
-        "optimistic":   0.25,
+        "likely": 0.12,
+        "optimistic": 0.25,
     },
     "physical_download": {
         "conservative": 0.04,
-        "likely":       0.10,
-        "optimistic":   0.20,
+        "likely": 0.10,
+        "optimistic": 0.20,
     },
     "publishing_advance": {
         "conservative": 0.03,
-        "likely":       0.07,
-        "optimistic":   0.15,
+        "likely": 0.07,
+        "optimistic": 0.15,
     },
 }
 
@@ -156,18 +170,102 @@ _UNPAID_FRACTIONS: dict[str, dict[str, float]] = {
 # ---------------------------------------------------------------------------
 
 _GENRE_MULTIPLIERS: dict[str, dict[str, float]] = {
-    "POP":       {"digital_mechanical": 1.2, "sync_licensing": 1.3, "international": 1.2, "pro_performance": 1.1, "physical_download": 1.1, "publishing_advance": 1.0},
-    "HIP_HOP":   {"digital_mechanical": 1.3, "sync_licensing": 1.2, "international": 1.0, "pro_performance": 1.1, "physical_download": 0.9, "publishing_advance": 1.2},
-    "ROCK":      {"digital_mechanical": 1.0, "sync_licensing": 1.1, "international": 1.1, "pro_performance": 1.0, "physical_download": 1.3, "publishing_advance": 1.0},
-    "COUNTRY":   {"digital_mechanical": 1.0, "sync_licensing": 1.2, "international": 0.8, "pro_performance": 1.1, "physical_download": 1.1, "publishing_advance": 1.0},
-    "ELECTRONIC":{"digital_mechanical": 0.9, "sync_licensing": 1.4, "international": 1.3, "pro_performance": 0.8, "physical_download": 0.7, "publishing_advance": 0.8},
-    "CLASSICAL": {"digital_mechanical": 0.6, "sync_licensing": 1.5, "international": 1.4, "pro_performance": 0.7, "physical_download": 0.8, "publishing_advance": 0.6},
-    "JAZZ":      {"digital_mechanical": 0.5, "sync_licensing": 1.3, "international": 1.2, "pro_performance": 0.8, "physical_download": 0.9, "publishing_advance": 0.6},
-    "LATIN":     {"digital_mechanical": 1.1, "sync_licensing": 1.1, "international": 1.5, "pro_performance": 1.2, "physical_download": 1.0, "publishing_advance": 1.0},
-    "R_AND_B":   {"digital_mechanical": 1.2, "sync_licensing": 1.2, "international": 1.1, "pro_performance": 1.1, "physical_download": 1.0, "publishing_advance": 1.1},
-    "FOLK":      {"digital_mechanical": 0.7, "sync_licensing": 1.0, "international": 1.0, "pro_performance": 0.9, "physical_download": 1.0, "publishing_advance": 0.8},
-    "GOSPEL":    {"digital_mechanical": 0.8, "sync_licensing": 0.7, "international": 0.8, "pro_performance": 1.0, "physical_download": 1.1, "publishing_advance": 0.9},
-    "OTHER":     {"digital_mechanical": 1.0, "sync_licensing": 1.0, "international": 1.0, "pro_performance": 1.0, "physical_download": 1.0, "publishing_advance": 1.0},
+    "POP": {
+        "digital_mechanical": 1.2,
+        "sync_licensing": 1.3,
+        "international": 1.2,
+        "pro_performance": 1.1,
+        "physical_download": 1.1,
+        "publishing_advance": 1.0,
+    },
+    "HIP_HOP": {
+        "digital_mechanical": 1.3,
+        "sync_licensing": 1.2,
+        "international": 1.0,
+        "pro_performance": 1.1,
+        "physical_download": 0.9,
+        "publishing_advance": 1.2,
+    },
+    "ROCK": {
+        "digital_mechanical": 1.0,
+        "sync_licensing": 1.1,
+        "international": 1.1,
+        "pro_performance": 1.0,
+        "physical_download": 1.3,
+        "publishing_advance": 1.0,
+    },
+    "COUNTRY": {
+        "digital_mechanical": 1.0,
+        "sync_licensing": 1.2,
+        "international": 0.8,
+        "pro_performance": 1.1,
+        "physical_download": 1.1,
+        "publishing_advance": 1.0,
+    },
+    "ELECTRONIC": {
+        "digital_mechanical": 0.9,
+        "sync_licensing": 1.4,
+        "international": 1.3,
+        "pro_performance": 0.8,
+        "physical_download": 0.7,
+        "publishing_advance": 0.8,
+    },
+    "CLASSICAL": {
+        "digital_mechanical": 0.6,
+        "sync_licensing": 1.5,
+        "international": 1.4,
+        "pro_performance": 0.7,
+        "physical_download": 0.8,
+        "publishing_advance": 0.6,
+    },
+    "JAZZ": {
+        "digital_mechanical": 0.5,
+        "sync_licensing": 1.3,
+        "international": 1.2,
+        "pro_performance": 0.8,
+        "physical_download": 0.9,
+        "publishing_advance": 0.6,
+    },
+    "LATIN": {
+        "digital_mechanical": 1.1,
+        "sync_licensing": 1.1,
+        "international": 1.5,
+        "pro_performance": 1.2,
+        "physical_download": 1.0,
+        "publishing_advance": 1.0,
+    },
+    "R_AND_B": {
+        "digital_mechanical": 1.2,
+        "sync_licensing": 1.2,
+        "international": 1.1,
+        "pro_performance": 1.1,
+        "physical_download": 1.0,
+        "publishing_advance": 1.1,
+    },
+    "FOLK": {
+        "digital_mechanical": 0.7,
+        "sync_licensing": 1.0,
+        "international": 1.0,
+        "pro_performance": 0.9,
+        "physical_download": 1.0,
+        "publishing_advance": 0.8,
+    },
+    "GOSPEL": {
+        "digital_mechanical": 0.8,
+        "sync_licensing": 0.7,
+        "international": 0.8,
+        "pro_performance": 1.0,
+        "physical_download": 1.1,
+        "publishing_advance": 0.9,
+    },
+    "OTHER": {
+        "digital_mechanical": 1.0,
+        "sync_licensing": 1.0,
+        "international": 1.0,
+        "pro_performance": 1.0,
+        "physical_download": 1.0,
+        "publishing_advance": 1.0,
+    },
 }
 
 
@@ -235,6 +333,7 @@ _STREAM_METADATA: dict[str, dict[str, str]] = {
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class StreamEstimate:
     """Estimate for a single revenue stream."""
@@ -297,6 +396,7 @@ class RoyaltyEstimate:
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _normalize_career_stage(stage: str) -> str:
     """Return a normalized career stage, falling back to EMERGING if unknown."""
     normalized = stage.strip().upper().replace("-", "_").replace(" ", "_")
@@ -350,8 +450,8 @@ def _estimate_stream(
     uf = unpaid_fractions[stream_type]
 
     conservative = monthly_streams[0] * rate_per_stream * months * uf["conservative"] * gm_val
-    likely       = monthly_streams[1] * rate_per_stream * months * uf["likely"]       * gm_val
-    optimistic   = monthly_streams[2] * rate_per_stream * months * uf["optimistic"]   * gm_val
+    likely = monthly_streams[1] * rate_per_stream * months * uf["likely"] * gm_val
+    optimistic = monthly_streams[2] * rate_per_stream * months * uf["optimistic"] * gm_val
 
     meta = _STREAM_METADATA.get(stream_type, {})
     methodology = (
@@ -439,11 +539,11 @@ def estimate_royalties(
     stream_configs = [
         # (stream_type, rate_per_stream)
         ("digital_mechanical", _MECHANICAL_RATE_PER_STREAM),
-        ("pro_performance",    _PRO_RATE_PER_STREAM),
-        ("international",      _PRO_RATE_PER_STREAM * 0.6),   # subset of PRO activity
-        ("sync_licensing",     _PRO_RATE_PER_STREAM * 4.0),   # sync pays much higher per use
-        ("physical_download",  _MECHANICAL_RATE_PER_STREAM * 2.0),   # older higher mechanical rates
-        ("publishing_advance", _PRO_RATE_PER_STREAM * 0.8),   # fraction of total PRO
+        ("pro_performance", _PRO_RATE_PER_STREAM),
+        ("international", _PRO_RATE_PER_STREAM * 0.6),  # subset of PRO activity
+        ("sync_licensing", _PRO_RATE_PER_STREAM * 4.0),  # sync pays much higher per use
+        ("physical_download", _MECHANICAL_RATE_PER_STREAM * 2.0),  # older higher mechanical rates
+        ("publishing_advance", _PRO_RATE_PER_STREAM * 0.8),  # fraction of total PRO
     ]
 
     stream_estimates: list[StreamEstimate] = []
@@ -460,8 +560,8 @@ def estimate_royalties(
         stream_estimates.append(est)
 
     total_conservative = sum(s.conservative for s in stream_estimates)
-    total_likely       = sum(s.likely for s in stream_estimates)
-    total_optimistic   = sum(s.optimistic for s in stream_estimates)
+    total_likely = sum(s.likely for s in stream_estimates)
+    total_optimistic = sum(s.optimistic for s in stream_estimates)
 
     return RoyaltyEstimate(
         artist_name=artist_name,

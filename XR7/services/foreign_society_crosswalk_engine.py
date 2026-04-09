@@ -31,10 +31,12 @@ class ForeignSocietyCrosswalkEngine:
         packets: list[dict[str, Any]] = []
 
         if foreign_events and not works:
-            findings.append({
-                "issue": "MISSING_FOREIGN_REGISTRATIONS",
-                "details": "Foreign usage detected with no catalog works available for registration crosswalk.",
-            })
+            findings.append(
+                {
+                    "issue": "MISSING_FOREIGN_REGISTRATIONS",
+                    "details": "Foreign usage detected with no catalog works available for registration crosswalk.",
+                }
+            )
 
         for w in works:
             if not w.isrc or not w.iswc:
@@ -71,8 +73,12 @@ class ForeignSocietyCrosswalkEngine:
                 {
                     "issue": "MISSING_SUB_PUBLISHER_COLLECTIONS",
                     "details": "Foreign activity present; ensure sub-publisher collection mandates are on file.",
-                    "territories": sorted({str(e.territory or "").upper() for e in foreign_events if e.territory}),
+                    "territories": sorted(
+                        {str(e.territory or "").upper() for e in foreign_events if e.territory}
+                    ),
                 }
             )
 
-        return ForeignCrosswalkReport(artist_id=artist_id, findings=findings, registration_packets=packets)
+        return ForeignCrosswalkReport(
+            artist_id=artist_id, findings=findings, registration_packets=packets
+        )

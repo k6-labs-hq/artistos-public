@@ -153,7 +153,11 @@ def assign_founder_slot_on_activation(db: Session, artist: Artist) -> FounderAss
 
 
 def _upsert_pref_for_artist(db: Session, artist: Artist) -> NotificationPreference:
-    pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist.id).first()
+    pref = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist.id)
+        .first()
+    )
     if pref is None:
         pref = NotificationPreference(artist_id=artist.id)
         db.add(pref)
@@ -206,7 +210,9 @@ def _notify_non_activated_artists(db: Session, event_key: str, title: str, body:
         )
 
 
-def handle_founder_notifications(db: Session, artist: Artist, result: FounderAssignmentResult) -> None:
+def handle_founder_notifications(
+    db: Session, artist: Artist, result: FounderAssignmentResult
+) -> None:
     if not result.assigned:
         return
 
@@ -245,4 +251,7 @@ def handle_founder_notifications(db: Session, artist: Artist, result: FounderAss
 
             hubspot_sync_recovery_update.delay(artist.id, event="founder_cohort_closed")
         except Exception:  # noqa: BLE001
-            logger.exception("Failed to enqueue founder cohort closed HubSpot sync", extra={"artist_id": artist.id})
+            logger.exception(
+                "Failed to enqueue founder cohort closed HubSpot sync",
+                extra={"artist_id": artist.id},
+            )

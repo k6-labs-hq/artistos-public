@@ -4,6 +4,7 @@ Earnings Time Machine — API endpoints.
 POST /artists/{artist_id}/earnings/time-machine
 GET  /artists/{artist_id}/earnings/time-machine/result
 """
+
 from __future__ import annotations
 
 from typing import Any

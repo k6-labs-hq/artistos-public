@@ -1,4 +1,5 @@
 """Onboarding agents sub-package. Re-exports all agent callables."""
+
 from XR7.agents.onboarding.catalog_agents import (
     ArtistExplainerAgent,
     ArtistIntentInterpreterAgent,

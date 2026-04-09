@@ -9,6 +9,7 @@ Ensemble of:
 
 Returns low / mid / high USD estimates with a confidence score and key drivers.
 """
+
 from __future__ import annotations
 
 import math
@@ -31,20 +32,30 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 
 _HORIZON_MONTHS_ALLOWED = frozenset([6, 12, 24, 36, 60])
-_TERMINAL_CLAIM_STATUSES = frozenset([
-    ClaimStatus.PAID.value, ClaimStatus.CLOSED.value,
-])
-_ACTIVE_CLAIM_STATUSES = frozenset([
-    ClaimStatus.IDENTIFIED.value, ClaimStatus.PREPARED.value,
-    ClaimStatus.FILED.value, ClaimStatus.SUBMITTED.value,
-    ClaimStatus.PROOF_SUBMITTED.value, ClaimStatus.IN_REVIEW.value,
-    ClaimStatus.ACCEPTED.value, ClaimStatus.FUNDS_RECEIVED.value,
-])
+_TERMINAL_CLAIM_STATUSES = frozenset(
+    [
+        ClaimStatus.PAID.value,
+        ClaimStatus.CLOSED.value,
+    ]
+)
+_ACTIVE_CLAIM_STATUSES = frozenset(
+    [
+        ClaimStatus.IDENTIFIED.value,
+        ClaimStatus.PREPARED.value,
+        ClaimStatus.FILED.value,
+        ClaimStatus.SUBMITTED.value,
+        ClaimStatus.PROOF_SUBMITTED.value,
+        ClaimStatus.IN_REVIEW.value,
+        ClaimStatus.ACCEPTED.value,
+        ClaimStatus.FUNDS_RECEIVED.value,
+    ]
+)
 
 
 # ---------------------------------------------------------------------------
 # SOL decay helpers
 # ---------------------------------------------------------------------------
+
 
 def _sol_decay_factor(sol_deadline: datetime | None, now: datetime) -> float:
     """
@@ -59,7 +70,9 @@ def _sol_decay_factor(sol_deadline: datetime | None, now: datetime) -> float:
     if sol_deadline is None:
         return 0.95  # assume reasonably safe if not tracked
 
-    deadline = sol_deadline.replace(tzinfo=timezone.utc) if sol_deadline.tzinfo is None else sol_deadline
+    deadline = (
+        sol_deadline.replace(tzinfo=timezone.utc) if sol_deadline.tzinfo is None else sol_deadline
+    )
     days_remaining = (deadline - now).days
 
     if days_remaining > 365:
@@ -73,7 +86,9 @@ def _sol_decay_factor(sol_deadline: datetime | None, now: datetime) -> float:
     return 0.10
 
 
-def _compute_sol_adjusted_value(anomalies: list[Anomaly], claims: list[Claim]) -> tuple[float, list[str]]:
+def _compute_sol_adjusted_value(
+    anomalies: list[Anomaly], claims: list[Claim]
+) -> tuple[float, list[str]]:
     """
     For each open anomaly, apply its SOL decay factor.
     Returns (total_sol_adjusted_value, key_driver_strings).
@@ -106,9 +121,13 @@ def _compute_sol_adjusted_value(anomalies: list[Anomaly], claims: list[Claim]) -
 
     drivers: list[str] = []
     if urgent_count:
-        drivers.append(f"{urgent_count} claim window{'s' if urgent_count > 1 else ''} closing in < 90 days — act now")
+        drivers.append(
+            f"{urgent_count} claim window{'s' if urgent_count > 1 else ''} closing in < 90 days — act now"
+        )
     if closing_soon_count:
-        drivers.append(f"{closing_soon_count} foreign PRO window{'s' if closing_soon_count > 1 else ''} closing within 12 months")
+        drivers.append(
+            f"{closing_soon_count} foreign PRO window{'s' if closing_soon_count > 1 else ''} closing within 12 months"
+        )
 
     return round(total, 2), drivers
 
@@ -116,6 +135,7 @@ def _compute_sol_adjusted_value(anomalies: list[Anomaly], claims: list[Claim]) -
 # ---------------------------------------------------------------------------
 # Main ensemble
 # ---------------------------------------------------------------------------
+
 
 class PredictiveRecoverableModel:
     """
@@ -148,18 +168,12 @@ class PredictiveRecoverableModel:
             raise ValueError(f"horizon_months must be one of {sorted(_HORIZON_MONTHS_ALLOWED)}")
 
         now = datetime.now(timezone.utc)
-        anomalies: list[Anomaly] = (
-            db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
-        )
-        claims: list[Claim] = (
-            db.query(Claim).filter(Claim.artist_id == artist_id).all()
-        )
+        anomalies: list[Anomaly] = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+        claims: list[Claim] = db.query(Claim).filter(Claim.artist_id == artist_id).all()
 
         # ── 1. Earnings trajectory ─────────────────────────────────────────
         royalty_stmts = (
-            db.query(XR7RoyaltyStatement)
-            .filter(XR7RoyaltyStatement.artist_id == artist_id)
-            .all()
+            db.query(XR7RoyaltyStatement).filter(XR7RoyaltyStatement.artist_id == artist_id).all()
         )
         earnings_records = [
             {
@@ -192,9 +206,10 @@ class PredictiveRecoverableModel:
         # ── 4. Active claim pipeline ───────────────────────────────────────
         active_claims = [c for c in claims if str(c.status) in _ACTIVE_CLAIM_STATUSES]
         active_pipeline_value = sum(
-            float(c.recovered_amount or 0.0) or
-            float(
-                next((a.estimated_recoverable for a in anomalies if a.id == c.anomaly_id), None) or 0.0
+            float(c.recovered_amount or 0.0)
+            or float(
+                next((a.estimated_recoverable for a in anomalies if a.id == c.anomaly_id), None)
+                or 0.0
             )
             for c in active_claims
         )
@@ -206,8 +221,8 @@ class PredictiveRecoverableModel:
         # Mid = posterior-weighted blend of earnings projection + anomaly pipeline
         raw_mid = (
             projected_earnings * horizon_scale * 0.25  # incremental leakage share
-            + sol_adjusted_pipeline * posterior_rate    # expected recovery success
-            + active_pipeline_value * 0.85             # 85% of active claims expected to close
+            + sol_adjusted_pipeline * posterior_rate  # expected recovery success
+            + active_pipeline_value * 0.85  # 85% of active claims expected to close
         )
 
         # Spread driven by forecast uncertainty + horizon length
@@ -243,8 +258,7 @@ class PredictiveRecoverableModel:
 
         if posterior_rate >= 0.65:
             drivers.append(
-                f"High historical success rate ({posterior_rate:.0%}) "
-                "boosts recovery confidence"
+                f"High historical success rate ({posterior_rate:.0%}) " "boosts recovery confidence"
             )
         elif posterior_rate < 0.40 and sample_count >= 5:
             drivers.append(

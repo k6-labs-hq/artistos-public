@@ -33,7 +33,9 @@ class ObjectStorageService:
             logger.info("Creating missing object storage bucket", extra={"bucket": self.bucket})
             self._client.create_bucket(Bucket=self.bucket)
 
-    def upload_bytes(self, key: str, data: bytes, content_type: str = "application/octet-stream") -> str:
+    def upload_bytes(
+        self, key: str, data: bytes, content_type: str = "application/octet-stream"
+    ) -> str:
         self.ensure_bucket()
         self._client.put_object(Bucket=self.bucket, Key=key, Body=data, ContentType=content_type)
         return f"s3://{self.bucket}/{key}"

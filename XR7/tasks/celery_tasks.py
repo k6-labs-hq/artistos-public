@@ -22,7 +22,13 @@ def _ledger(db, artist_id: str, entry_type: str, payload: dict) -> None:
     ImmutableLedgerService(db).append(artist_id, entry_type, payload)
 
 
-@celery_app.task(name="xr7.workflow.run_artist_workflow", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 2})
+@celery_app.task(
+    name="xr7.workflow.run_artist_workflow",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 2},
+)
 def run_artist_workflow(self, artist_id: str, run_id: str | None = None) -> dict:  # noqa: ANN001
     state = run_xr7_recovery_orchestra_sync(artist_id, run_id)
     db = SessionLocal()
@@ -68,7 +74,11 @@ def run_nightly_preparation_scan(self=None) -> dict:  # noqa: ANN001
         db.close()
     for artist_id in artist_ids:
         run_artist_workflow.delay(artist_id)
-    return {"triggered": len(artist_ids), "scope": "nightly_preparation_scan", "agent": "onboarding_preparation"}
+    return {
+        "triggered": len(artist_ids),
+        "scope": "nightly_preparation_scan",
+        "agent": "onboarding_preparation",
+    }
 
 
 @celery_app.task(name="xr7.workflow.run_daily_recovery_scan", bind=True)
@@ -81,7 +91,11 @@ def run_daily_recovery_scan(self=None) -> dict:  # noqa: ANN001
         db.close()
     for artist_id in artist_ids:
         run_artist_workflow.delay(artist_id)
-    return {"triggered": len(artist_ids), "scope": "daily_recovery_scan", "agent": "recovery_execution"}
+    return {
+        "triggered": len(artist_ids),
+        "scope": "daily_recovery_scan",
+        "agent": "recovery_execution",
+    }
 
 
 @celery_app.task(name="xr7.workflow.run_follow_up_and_readiness", bind=True)
@@ -109,7 +123,9 @@ def on_ugc_fetch(self, artist_id: str) -> dict:  # noqa: ANN001
 
 
 @celery_app.task(name="xr7.workflow.on_soundcloud_statement_upload", bind=True)
-def on_soundcloud_statement_upload(self, artist_id: str, statement_id: str | None = None) -> dict:  # noqa: ANN001
+def on_soundcloud_statement_upload(
+    self, artist_id: str, statement_id: str | None = None
+) -> dict:  # noqa: ANN001
     run_artist_workflow.delay(artist_id)
     return {
         "artist_id": artist_id,

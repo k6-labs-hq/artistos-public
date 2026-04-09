@@ -23,7 +23,9 @@ class MetadataRepairApplyRequest(BaseModel):
 
 
 @router.post("/artists/{artist_id}/xr7/metadata/repair/suggest")
-def suggest_repairs(artist_id: str, payload: MetadataRepairSuggestRequest, db: Session = Depends(get_db)):
+def suggest_repairs(
+    artist_id: str, payload: MetadataRepairSuggestRequest, db: Session = Depends(get_db)
+):
     return suggest_metadata_repairs(
         db,
         tenant_id=payload.tenant_id,
@@ -34,7 +36,9 @@ def suggest_repairs(artist_id: str, payload: MetadataRepairSuggestRequest, db: S
 
 
 @router.post("/artists/{artist_id}/xr7/metadata/repair/apply")
-def apply_repairs(artist_id: str, payload: MetadataRepairApplyRequest, db: Session = Depends(get_db)):
+def apply_repairs(
+    artist_id: str, payload: MetadataRepairApplyRequest, db: Session = Depends(get_db)
+):
     return apply_metadata_repairs(
         db,
         tenant_id=payload.tenant_id,

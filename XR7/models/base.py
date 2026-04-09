@@ -14,7 +14,10 @@ def _engine_connect_args(url: str) -> dict[str, object]:
         return {"check_same_thread": False}
     return {}
 
-engine = create_engine(DATABASE_URL, connect_args=_engine_connect_args(DATABASE_URL), pool_pre_ping=True)
+
+engine = create_engine(
+    DATABASE_URL, connect_args=_engine_connect_args(DATABASE_URL), pool_pre_ping=True
+)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

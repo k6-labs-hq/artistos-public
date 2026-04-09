@@ -40,6 +40,7 @@ _CURRENT_SHA256 = terms_text_sha256()
 # Request / response schemas
 # ---------------------------------------------------------------------------
 
+
 class TermsAcceptRequest(BaseModel):
     """
     Body for POST /artists/{artist_id}/terms/accept.
@@ -48,6 +49,7 @@ class TermsAcceptRequest(BaseModel):
     GET /terms.  This prevents a client that cached an old version of the
     T&C from accidentally accepting stale terms.
     """
+
     terms_version: str
     # Explicit acknowledgement checkbox — must be True
     agreed: bool
@@ -56,6 +58,7 @@ class TermsAcceptRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.get("/terms")
 def get_terms() -> dict:
@@ -179,28 +182,35 @@ def terms_status(artist_id: str, db: Session = Depends(get_db)) -> dict:
     )
 
     if record:
-        return inject_branding_metadata(db, {
-            "artist_id": artist_id,
-            "accepted": True,
-            "terms_version": record.terms_version,
-            "accepted_at": record.accepted_at.isoformat(),
-            "text_sha256": record.text_sha256,
-            "pending_version": None,
-        })
+        return inject_branding_metadata(
+            db,
+            {
+                "artist_id": artist_id,
+                "accepted": True,
+                "terms_version": record.terms_version,
+                "accepted_at": record.accepted_at.isoformat(),
+                "text_sha256": record.text_sha256,
+                "pending_version": None,
+            },
+        )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "accepted": False,
-        "terms_version": None,
-        "accepted_at": None,
-        "text_sha256": None,
-        "pending_version": TERMS_VERSION,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "accepted": False,
+            "terms_version": None,
+            "accepted_at": None,
+            "text_sha256": None,
+            "pending_version": TERMS_VERSION,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
 
 def _extract_client_ip(request: Request) -> str | None:
     """

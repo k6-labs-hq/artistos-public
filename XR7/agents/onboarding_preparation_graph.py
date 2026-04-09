@@ -172,12 +172,19 @@ async def run_onboarding_preparation_agent(state: TwoAgentState) -> TwoAgentStat
 
     readiness = float(current.get("readiness_score") or 0.0)
     threshold = float(current.get("readiness_threshold") or 85.0)
-    explicit_handoff = str(current.get("handoff_trigger") or "").lower() in {"ready", "manual", "force"}
+    explicit_handoff = str(current.get("handoff_trigger") or "").lower() in {
+        "ready",
+        "manual",
+        "force",
+    }
     ready = readiness >= threshold or explicit_handoff
 
     tvfilm_prep = {
         "role_interpreted": _node_confidence(current, "role_interpreter_agent") > 0,
-        "production_metadata_prepared": _node_confidence(current, "production_metadata_builder_agent") > 0,
+        "production_metadata_prepared": _node_confidence(
+            current, "production_metadata_builder_agent"
+        )
+        > 0,
         "episode_hierarchy_repaired": _node_confidence(current, "episode_season_repair_agent") > 0,
     }
 

@@ -176,17 +176,23 @@ def test_failed_packet_multisign_and_legal_completion():
     assert items
     opportunity_id = str(items[0]["opportunity_id"])
 
-    assert client.post(
-        f"/admin/advances/opportunities/{opportunity_id}/analyst-decision",
-        json={"approved": True, "notes": "analyst ok"},
-        headers=_role_headers("analyst@xr7", "analyst"),
-    ).status_code == 200
+    assert (
+        client.post(
+            f"/admin/advances/opportunities/{opportunity_id}/analyst-decision",
+            json={"approved": True, "notes": "analyst ok"},
+            headers=_role_headers("analyst@xr7", "analyst"),
+        ).status_code
+        == 200
+    )
 
-    assert client.post(
-        f"/admin/advances/opportunities/{opportunity_id}/executive-decision",
-        json={"approved": True, "notes": "exec ok"},
-        headers=_role_headers("exec@xr7", "exec"),
-    ).status_code == 200
+    assert (
+        client.post(
+            f"/admin/advances/opportunities/{opportunity_id}/executive-decision",
+            json={"approved": True, "notes": "exec ok"},
+            headers=_role_headers("exec@xr7", "exec"),
+        ).status_code
+        == 200
+    )
 
     publish = client.post(
         f"/admin/advances/opportunities/{opportunity_id}/publish-offer",

@@ -33,8 +33,7 @@ def _earnings_monthly_totals(earnings_records: list[dict]) -> list[tuple[datetim
 
     ordered = sorted(by_month.items(), key=lambda kv: kv[0])
     return [
-        (datetime(year=k[0], month=k[1], day=1, tzinfo=timezone.utc), float(v))
-        for k, v in ordered
+        (datetime(year=k[0], month=k[1], day=1, tzinfo=timezone.utc), float(v)) for k, v in ordered
     ]
 
 
@@ -103,7 +102,7 @@ def forecast_earnings(
     if len(growth_rates) >= 2:
         mu = sum(growth_rates) / len(growth_rates)
         variance = sum((g - mu) ** 2 for g in growth_rates) / (len(growth_rates) - 1)
-        volatility = variance ** 0.5
+        volatility = variance**0.5
 
     # Approximate fit metric for deterministic method compatibility.
     if len(lookback) >= 2:
@@ -198,4 +197,6 @@ class EarningsForecaster:
         horizon_days: int = 90,
         confidence: float = 0.95,
     ) -> dict[str, dict]:
-        return forecast_by_category(earnings_records, horizon_days=horizon_days, confidence=confidence)
+        return forecast_by_category(
+            earnings_records, horizon_days=horizon_days, confidence=confidence
+        )

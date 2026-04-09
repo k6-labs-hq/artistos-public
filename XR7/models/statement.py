@@ -25,18 +25,20 @@ class Statement(Base):
 
     __tablename__ = "statements"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     filename: Mapped[str] = mapped_column(String, nullable=False)
-    file_hash: Mapped[str] = mapped_column(String, nullable=False)      # SHA-256 of raw bytes
-    format_detected: Mapped[str] = mapped_column(String, nullable=False)  # distrokid / tunecore / etc.
+    file_hash: Mapped[str] = mapped_column(String, nullable=False)  # SHA-256 of raw bytes
+    format_detected: Mapped[str] = mapped_column(
+        String, nullable=False
+    )  # distrokid / tunecore / etc.
     row_count: Mapped[int] = mapped_column(Integer, default=0)
     events_created: Mapped[int] = mapped_column(Integer, default=0)
     payments_created: Mapped[int] = mapped_column(Integer, default=0)
     skipped_rows: Mapped[int] = mapped_column(Integer, default=0)
-    status: Mapped[str] = mapped_column(String, default="PROCESSED")    # PROCESSED / FAILED / DUPLICATE
+    status: Mapped[str] = mapped_column(
+        String, default="PROCESSED"
+    )  # PROCESSED / FAILED / DUPLICATE
     error_summary: Mapped[str | None] = mapped_column(String, nullable=True)
     ingestion_metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     uploaded_at: Mapped[datetime] = mapped_column(

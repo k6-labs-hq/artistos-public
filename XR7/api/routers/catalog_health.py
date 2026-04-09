@@ -6,6 +6,7 @@ Endpoints:
   GET  /artists/{artist_id}/catalog/fixes
   POST /artists/{artist_id}/catalog/fixes/{fix_id}/request
 """
+
 from __future__ import annotations
 
 import uuid
@@ -44,6 +45,7 @@ router = APIRouter(tags=["catalog_health"])
 # ---------------------------------------------------------------------------
 # Response schemas
 # ---------------------------------------------------------------------------
+
 
 class CategoryBreakdown(BaseModel):
     metadata_completeness: float = Field(..., ge=0.0, le=100.0, description="Score 0–100")
@@ -225,7 +227,11 @@ def _ensure_catalog_fixes(
     existing: list[CatalogFixIssue] = (
         db.query(CatalogFixIssue)
         .filter(CatalogFixIssue.artist_id == artist.id)
-        .filter(CatalogFixIssue.status.in_([CatalogFixStatus.PENDING.value, CatalogFixStatus.REQUESTED.value]))
+        .filter(
+            CatalogFixIssue.status.in_(
+                [CatalogFixStatus.PENDING.value, CatalogFixStatus.REQUESTED.value]
+            )
+        )
         .all()
     )
     existing_by_category: dict[str, CatalogFixIssue] = {row.category: row for row in existing}
@@ -235,7 +241,9 @@ def _ensure_catalog_fixes(
     # ── 1. Metadata completeness ───────────────────────────────────────────
     works_missing_isrc = [w for w in works if not w.isrc]
     works_missing_iswc = [w for w in works if not w.iswc]
-    missing_metadata_works = list({w.id: w for w in works_missing_isrc + works_missing_iswc}.values())
+    missing_metadata_works = list(
+        {w.id: w for w in works_missing_isrc + works_missing_iswc}.values()
+    )
     if missing_metadata_works:
         recoverable = len(missing_metadata_works) * 85.0  # ~$85 avg per unregistered work
         affected = [{"title": w.title, "isrc": w.isrc} for w in missing_metadata_works[:50]]
@@ -249,7 +257,11 @@ def _ensure_catalog_fixes(
                 id=str(uuid.uuid4()),
                 artist_id=artist.id,
                 category=CatalogFixCategory.METADATA_COMPLETENESS.value,
-                priority=FixPriority.HIGH.value if len(missing_metadata_works) > 5 else FixPriority.MEDIUM.value,
+                priority=(
+                    FixPriority.HIGH.value
+                    if len(missing_metadata_works) > 5
+                    else FixPriority.MEDIUM.value
+                ),
                 description=description,
                 estimated_recoverable_usd=recoverable,
                 suggested_action=FixSuggestedAction.EMAIL_DISTRIBUTOR.value,
@@ -262,7 +274,9 @@ def _ensure_catalog_fixes(
 
     # ── 2. Registration status ─────────────────────────────────────────────
     unregistered_compositions = [
-        w for w in works if str(w.work_type) in ("COMPOSITION", "WorkType.COMPOSITION") and not w.iswc
+        w
+        for w in works
+        if str(w.work_type) in ("COMPOSITION", "WorkType.COMPOSITION") and not w.iswc
     ]
     if unregistered_compositions:
         recoverable = len(unregistered_compositions) * 220.0
@@ -290,7 +304,8 @@ def _ensure_catalog_fixes(
 
     # ── 3. Split conflicts ─────────────────────────────────────────────────
     split_anomalies = [
-        a for a in anomalies
+        a
+        for a in anomalies
         if str(a.subtype).lower() in ("split_conflict", "royalty_split_mismatch")
     ]
     if split_anomalies:
@@ -320,12 +335,15 @@ def _ensure_catalog_fixes(
 
     # ── 4. Identifier mismatches ───────────────────────────────────────────
     mismatch_anomalies = [
-        a for a in anomalies
+        a
+        for a in anomalies
         if str(a.subtype).lower() in ("identifier_mismatch", "isrc_conflict", "iswc_mismatch")
     ]
     if mismatch_anomalies:
         recoverable = sum(float(a.estimated_recoverable or 0.0) for a in mismatch_anomalies)
-        affected = [{"title": str(a.description or "")[:60], "isrc": None} for a in mismatch_anomalies[:20]]
+        affected = [
+            {"title": str(a.description or "")[:60], "isrc": None} for a in mismatch_anomalies[:20]
+        ]
         description = (
             f"{len(mismatch_anomalies)} identifier mismatches detected across platforms. "
             "ISRCs or ISWCs differ between DSPs, blocking proper royalty attribution."
@@ -349,12 +367,16 @@ def _ensure_catalog_fixes(
 
     # ── 5. Content ID issues ───────────────────────────────────────────────
     content_id_anomalies = [
-        a for a in anomalies
+        a
+        for a in anomalies
         if str(a.subtype).lower() in ("content_id_gap", "ugc_opportunity", "unmonetized_yt")
     ]
     if content_id_anomalies:
         recoverable = sum(float(a.estimated_recoverable or 0.0) for a in content_id_anomalies)
-        affected = [{"title": str(a.description or "")[:60], "isrc": None} for a in content_id_anomalies[:20]]
+        affected = [
+            {"title": str(a.description or "")[:60], "isrc": None}
+            for a in content_id_anomalies[:20]
+        ]
         description = (
             f"{len(content_id_anomalies)} Content ID opportunities detected. "
             "Works are used on YouTube/TikTok/Meta without active monetization claims."
@@ -398,21 +420,24 @@ def _compute_category_breakdown(
 
     # Split conflicts
     split_count = sum(
-        1 for a in anomalies
+        1
+        for a in anomalies
         if str(a.subtype).lower() in ("split_conflict", "royalty_split_mismatch")
     )
     split_score = round(max(0.0, 100.0 - split_count * 15.0), 1)
 
     # Identifier mismatches
     id_mismatch_count = sum(
-        1 for a in anomalies
+        1
+        for a in anomalies
         if str(a.subtype).lower() in ("identifier_mismatch", "isrc_conflict", "iswc_mismatch")
     )
     id_score = round(max(0.0, 100.0 - id_mismatch_count * 12.0), 1)
 
     # Content ID
     cid_count = sum(
-        1 for a in anomalies
+        1
+        for a in anomalies
         if str(a.subtype).lower() in ("content_id_gap", "ugc_opportunity", "unmonetized_yt")
     )
     cid_score = round(max(0.0, 100.0 - cid_count * 10.0), 1)
@@ -429,6 +454,7 @@ def _compute_category_breakdown(
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.get(
     "/artists/{artist_id}/catalog/health",
@@ -450,7 +476,9 @@ def get_catalog_health(
     # Run ML scorer
     works_dicts = [{"isrc": w.isrc, "iswc": w.iswc, "title": w.title} for w in works]
     payments_dicts = [{"amount": float(p.amount or 0.0)} for p in payments]
-    anomalies_dicts = [{"status": a.status, "estimated_recoverable": a.estimated_recoverable} for a in anomalies]
+    anomalies_dicts = [
+        {"status": a.status, "estimated_recoverable": a.estimated_recoverable} for a in anomalies
+    ]
     claims_dicts = [{"status": c.status} for c in claims]
 
     earnings_summary = {

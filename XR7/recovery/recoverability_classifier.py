@@ -43,7 +43,9 @@ class ContractRecoverabilityScorer:
     }
 
     def _resolve_clause(self, contract_data: dict[str, Any]) -> str:
-        text = str(contract_data.get("governing_clause") or contract_data.get("clause_type") or "").lower()
+        text = str(
+            contract_data.get("governing_clause") or contract_data.get("clause_type") or ""
+        ).lower()
         if "audit" in text:
             return "audit_rights"
         if "mfn" in text or "most-favored" in text or "most favored" in text:
@@ -70,7 +72,9 @@ class ContractRecoverabilityScorer:
         score = (base_low + base_high) / 2.0
 
         comparator_required = clause == "mfn"
-        comparator_present = bool(contract.get("comparator_present") or contract.get("mfn_comparator"))
+        comparator_present = bool(
+            contract.get("comparator_present") or contract.get("mfn_comparator")
+        )
         if comparator_required and not comparator_present:
             score -= 0.12
 
@@ -94,7 +98,10 @@ class ContractRecoverabilityScorer:
         rules = _JURISDICTION_RULES[region]
 
         audit_window_years = int(contract.get("audit_window_years") or rules["audit_window_years"])
-        event_year = int(str(anomaly_like.get("event_date") or anomaly_like.get("time_window_end") or "")[:4] or 0)
+        event_year = int(
+            str(anomaly_like.get("event_date") or anomaly_like.get("time_window_end") or "")[:4]
+            or 0
+        )
         current_year = int(str(anomaly_like.get("as_of_year") or 2026))
         within_window = bool(event_year and current_year - event_year <= audit_window_years)
         audit_window_status = "within_window" if within_window else "outside_window"
@@ -156,15 +163,24 @@ def classify_recoverability(
     estimated = _safe_float(anomaly_like.get("estimated_recoverable"), 0.0)
 
     contract = contract_metadata or {}
-    has_contract_enforcement = bool(contract.get("enforceable") or contract.get("backend_clause") or contract.get("rate_card"))
-    contract_score_payload = ContractRecoverabilityScorer().score(
-        anomaly_like=anomaly_like,
-        contract_data=contract,
-        jurisdiction=jurisdiction,
-        litigation_flags=litigation_flags,
-    ) if contract else None
+    has_contract_enforcement = bool(
+        contract.get("enforceable") or contract.get("backend_clause") or contract.get("rate_card")
+    )
+    contract_score_payload = (
+        ContractRecoverabilityScorer().score(
+            anomaly_like=anomaly_like,
+            contract_data=contract,
+            jurisdiction=jurisdiction,
+            litigation_flags=litigation_flags,
+        )
+        if contract
+        else None
+    )
 
-    if _contains_any(text, ("IDENTIFIER", "METADATA", "CATALOG", "CROSSWALK", "ISRC", "ISWC")) and estimated <= 0:
+    if (
+        _contains_any(text, ("IDENTIFIER", "METADATA", "CATALOG", "CROSSWALK", "ISRC", "ISWC"))
+        and estimated <= 0
+    ):
         return {
             "recoverability_class": FUTURE_PREVENTION,
             "rationale": "Issue is primarily metadata/catalog integrity with no retroactive monetary delta.",
@@ -174,7 +190,9 @@ def classify_recoverability(
             "contract_recoverability": contract_score_payload,
         }
 
-    if _contains_any(text, ("MISREPORTED", "MISATTRIBUTED", "DSP", "UNDERREPORT", "MISROUTING", "METADATA DRIFT")):
+    if _contains_any(
+        text, ("MISREPORTED", "MISATTRIBUTED", "DSP", "UNDERREPORT", "MISROUTING", "METADATA DRIFT")
+    ):
         return {
             "recoverability_class": COPYRIGHT_DAMAGES,
             "rationale": "Underpayment or misattribution discovered now supports discovery-rule damages posture.",
@@ -184,13 +202,28 @@ def classify_recoverability(
             "contract_recoverability": contract_score_payload,
         }
 
-    if _contains_any(text, ("UNDERPAY", "RATE", "MISCALCULATION", "BACKEND", "SYNC", "REUSE")) or has_contract_enforcement:
+    if (
+        _contains_any(text, ("UNDERPAY", "RATE", "MISCALCULATION", "BACKEND", "SYNC", "REUSE"))
+        or has_contract_enforcement
+    ):
         return {
             "recoverability_class": POTENTIALLY_CONTRACT,
             "rationale": "Dispute appears contract-governed (rate, formula, or participation obligations).",
             "legal_basis": "Contract enforcement and accounting rights",
             "recommended_action": "Draft contract-based claim with clause mapping and calculation audit exhibits.",
-            "confidence_score": round(min(0.97, max(confidence, 0.8, _safe_float((contract_score_payload or {}).get("contract_recoverability_score"), 0.0))), 4),
+            "confidence_score": round(
+                min(
+                    0.97,
+                    max(
+                        confidence,
+                        0.8,
+                        _safe_float(
+                            (contract_score_payload or {}).get("contract_recoverability_score"), 0.0
+                        ),
+                    ),
+                ),
+                4,
+            ),
             "contract_recoverability": contract_score_payload,
         }
 

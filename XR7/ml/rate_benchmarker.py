@@ -31,23 +31,23 @@ import numpy as np
 DEFAULT_BENCHMARKS: dict[str, dict[str, dict[str, float]]] = {
     "STREAM": {
         "DEFAULT": {"p25": 0.0030, "p50": 0.0040, "p75": 0.0055},
-        "US":      {"p25": 0.0032, "p50": 0.0042, "p75": 0.0060},
-        "GB":      {"p25": 0.0028, "p50": 0.0038, "p75": 0.0052},
+        "US": {"p25": 0.0032, "p50": 0.0042, "p75": 0.0060},
+        "GB": {"p25": 0.0028, "p50": 0.0038, "p75": 0.0052},
     },
     "SALE": {
-        "DEFAULT": {"p25": 0.05,  "p50": 0.09,   "p75": 0.15},
-        "US":      {"p25": 0.06,  "p50": 0.10,   "p75": 0.18},
+        "DEFAULT": {"p25": 0.05, "p50": 0.09, "p75": 0.15},
+        "US": {"p25": 0.06, "p50": 0.10, "p75": 0.18},
     },
     "SYNC_USAGE": {
         # Sync licence fees vary enormously by usage type; these are
         # typical per-minute/per-placement rates for indie artists.
         "DEFAULT": {"p25": 500.0, "p50": 2000.0, "p75": 10000.0},
-        "US":      {"p25": 750.0, "p50": 3000.0, "p75": 15000.0},
+        "US": {"p25": 750.0, "p50": 3000.0, "p75": 15000.0},
     },
     "SHOW": {
         # Per-show guarantees for emerging/mid-level artists (USD)
-        "DEFAULT": {"p25": 500.0,  "p50": 2500.0,  "p75": 10000.0},
-        "US":      {"p25": 750.0,  "p50": 3000.0,  "p75": 12000.0},
+        "DEFAULT": {"p25": 500.0, "p50": 2500.0, "p75": 10000.0},
+        "US": {"p25": 750.0, "p50": 3000.0, "p75": 12000.0},
     },
     "BRAND_IMPRESSION": {
         # CPM-style rate (cost per 1,000 impressions)
@@ -56,9 +56,9 @@ DEFAULT_BENCHMARKS: dict[str, dict[str, dict[str, float]]] = {
 }
 
 # Rate-tier thresholds (fraction of p50 median)
-_ABOVE_MARKET_MULTIPLIER = 1.10     # > 110 % of median
-_AT_MARKET_LOWER = 0.90             # 90–110 % of median → AT_MARKET
-_BELOW_MARKET_LOWER = 0.50          # 50–90 % of median → BELOW_MARKET
+_ABOVE_MARKET_MULTIPLIER = 1.10  # > 110 % of median
+_AT_MARKET_LOWER = 0.90  # 90–110 % of median → AT_MARKET
+_BELOW_MARKET_LOWER = 0.50  # 50–90 % of median → BELOW_MARKET
 # Below 50 % of median → CRITICAL
 
 
@@ -73,6 +73,7 @@ class RateTier:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _get_benchmark(
     event_type: str,
@@ -106,6 +107,7 @@ def _classify_rate_tier(actual: float, p50: float) -> str:
 # ---------------------------------------------------------------------------
 # Core comparison function
 # ---------------------------------------------------------------------------
+
 
 def compare_event_rates(
     artist_id: str,
@@ -193,6 +195,7 @@ def compare_event_rates(
 # ---------------------------------------------------------------------------
 # Aggregate report
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class BenchmarkReport:

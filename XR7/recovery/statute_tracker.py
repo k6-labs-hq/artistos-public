@@ -34,17 +34,17 @@ from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 # "DEFAULT" is used when no territory-specific window exists.
 DEFAULT_SOL_WINDOWS: dict[str, dict[str, int]] = {
     "ROYALTY": {
-        "DEFAULT": 1095,   # 3 years — US Copyright Act § 507(b)
-        "GB": 2190,        # 6 years — UK Limitation Act 1980
-        "EU": 2190,        # 6 years — common EU civil limitation period
+        "DEFAULT": 1095,  # 3 years — US Copyright Act § 507(b)
+        "GB": 2190,  # 6 years — UK Limitation Act 1980
+        "EU": 2190,  # 6 years — common EU civil limitation period
     },
     "PLATFORM": {
-        "DEFAULT": 1095,   # 3 years
+        "DEFAULT": 1095,  # 3 years
         "GB": 2190,
         "EU": 2190,
     },
     "TOURING": {
-        "DEFAULT": 730,    # 2 years — typical contractual dispute window
+        "DEFAULT": 730,  # 2 years — typical contractual dispute window
         "GB": 2190,
         "EU": 1095,
     },
@@ -79,17 +79,19 @@ _AT_RISK_THRESHOLD = 180
 # SOL status enum (string values so they serialise cleanly in API responses)
 # ---------------------------------------------------------------------------
 
+
 class SOLStatus:
-    EXPIRED = "EXPIRED"       # Window has already passed — claim may be time-barred
-    URGENT = "URGENT"         # < 90 days remaining
-    AT_RISK = "AT_RISK"       # 90–180 days remaining
-    OK = "OK"                 # > 180 days remaining
-    UNKNOWN = "UNKNOWN"       # Cannot determine (missing created_at)
+    EXPIRED = "EXPIRED"  # Window has already passed — claim may be time-barred
+    URGENT = "URGENT"  # < 90 days remaining
+    AT_RISK = "AT_RISK"  # 90–180 days remaining
+    OK = "OK"  # > 180 days remaining
+    UNKNOWN = "UNKNOWN"  # Cannot determine (missing created_at)
 
 
 # ---------------------------------------------------------------------------
 # Core helpers
 # ---------------------------------------------------------------------------
+
 
 def _sol_window_days(
     category: str,
@@ -130,6 +132,7 @@ def _classify_status(days_left: int) -> str:
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def classify_anomalies(
     anomalies: list[dict],
@@ -179,7 +182,9 @@ def classify_anomalies(
                 **a,
                 "sol_status": sol.get("sol_status") or SOLStatus.UNKNOWN,
                 "sol_days_remaining": sol.get("sol_days_remaining"),
-                "sol_deadline": sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None,
+                "sol_deadline": (
+                    sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None
+                ),
                 "sol_window_days": int((sol.get("sol_window_years") or 0) * 365),
                 "sol_citation_source": sol.get("sol_citation_source"),
                 "legal_disclaimer": SOL_DISCLAIMER,
@@ -242,7 +247,11 @@ def get_urgent_anomalies(
     Useful for surfacing the subset of anomalies that require immediate action.
     """
     classified = classify_anomalies(anomalies, sol_windows=sol_windows, reference_dt=reference_dt)
-    return [a for a in classified if a["sol_status"] in (SOLStatus.EXPIRED, SOLStatus.URGENT, SOLStatus.AT_RISK)]
+    return [
+        a
+        for a in classified
+        if a["sol_status"] in (SOLStatus.EXPIRED, SOLStatus.URGENT, SOLStatus.AT_RISK)
+    ]
 
 
 def sol_summary(

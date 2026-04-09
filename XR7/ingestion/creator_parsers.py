@@ -4,6 +4,7 @@ Handles YouTube Studio, TikTok Creator Fund, Instagram Reels Bonuses,
 Twitch, Patreon, and Shopify Merch statement formats.  Each parser
 returns a list of UniversalRoyaltyEvent-compatible dicts.
 """
+
 from __future__ import annotations
 
 import re
@@ -12,6 +13,7 @@ from typing import Any
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
+
 
 def _clean_currency(raw: str | None) -> float:
     if not raw:
@@ -50,6 +52,7 @@ def _row_to_event(
 # YouTube Studio parser
 # ---------------------------------------------------------------------------
 
+
 def parse_youtube_studio(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Parse YouTube Studio monthly revenue export rows."""
     events: list[dict[str, Any]] = []
@@ -77,6 +80,7 @@ def parse_youtube_studio(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 # TikTok Creator Fund parser
 # ---------------------------------------------------------------------------
 
+
 def parse_tiktok_creator_fund(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """Parse TikTok Creator Fund payment export rows."""
     events: list[dict[str, Any]] = []
@@ -102,6 +106,7 @@ def parse_tiktok_creator_fund(rows: list[dict[str, Any]]) -> list[dict[str, Any]
 # Instagram Reels Bonus parser
 # ---------------------------------------------------------------------------
 
+
 def parse_instagram_reels_bonus(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     for row in rows:
@@ -124,6 +129,7 @@ def parse_instagram_reels_bonus(rows: list[dict[str, Any]]) -> list[dict[str, An
 # ---------------------------------------------------------------------------
 # Twitch parser
 # ---------------------------------------------------------------------------
+
 
 def parse_twitch(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
@@ -148,6 +154,7 @@ def parse_twitch(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 # Patreon parser
 # ---------------------------------------------------------------------------
 
+
 def parse_patreon(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
     for row in rows:
@@ -170,6 +177,7 @@ def parse_patreon(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
 # ---------------------------------------------------------------------------
 # Shopify Merch parser
 # ---------------------------------------------------------------------------
+
 
 def parse_shopify_merch(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     events: list[dict[str, Any]] = []
@@ -206,9 +214,7 @@ CREATOR_PARSERS: dict[str, Any] = {
 }
 
 
-def parse_creator_platform(
-    platform: str, rows: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
+def parse_creator_platform(platform: str, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     parser = CREATOR_PARSERS.get(platform)
     if not parser:
         raise ValueError(f"No creator-economy parser found for platform: {platform!r}")

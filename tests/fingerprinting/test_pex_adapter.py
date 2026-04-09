@@ -220,9 +220,11 @@ class TestPexMatchAudio:
         mock_response.json.return_value = raw_response
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(adapter_direct, "_http_client") as mock_client_fn, \
-             patch.object(adapter_direct._cb, "is_open", return_value=False), \
-             patch.object(adapter_direct._cb, "record_success"):
+        with (
+            patch.object(adapter_direct, "_http_client") as mock_client_fn,
+            patch.object(adapter_direct._cb, "is_open", return_value=False),
+            patch.object(adapter_direct._cb, "record_success"),
+        ):
             mock_client = MagicMock()
             mock_client.post = AsyncMock(return_value=mock_response)
             mock_client_fn.return_value = mock_client
@@ -257,10 +259,12 @@ class TestPexSubmitReference:
         upload_response = MagicMock()
         upload_response.raise_for_status = MagicMock()
 
-        with patch.object(adapter_direct, "_http_client") as mock_client_fn, \
-             patch.object(adapter_direct._cb, "is_open", return_value=False), \
-             patch.object(adapter_direct._cb, "record_success"), \
-             patch.object(adapter_direct, "_bearer_token", AsyncMock(return_value="tok")):
+        with (
+            patch.object(adapter_direct, "_http_client") as mock_client_fn,
+            patch.object(adapter_direct._cb, "is_open", return_value=False),
+            patch.object(adapter_direct._cb, "record_success"),
+            patch.object(adapter_direct, "_bearer_token", AsyncMock(return_value="tok")),
+        ):
             mock_client = MagicMock()
             mock_client.post = AsyncMock(return_value=create_response)
             mock_client.put = AsyncMock(return_value=upload_response)
@@ -293,10 +297,12 @@ class TestPexDetectUsage:
         }
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(adapter_direct, "_http_client") as mock_client_fn, \
-             patch.object(adapter_direct._cb, "is_open", return_value=False), \
-             patch.object(adapter_direct._cb, "record_success"), \
-             patch.object(adapter_direct, "_bearer_token", AsyncMock(return_value="tok")):
+        with (
+            patch.object(adapter_direct, "_http_client") as mock_client_fn,
+            patch.object(adapter_direct._cb, "is_open", return_value=False),
+            patch.object(adapter_direct._cb, "record_success"),
+            patch.object(adapter_direct, "_bearer_token", AsyncMock(return_value="tok")),
+        ):
             mock_client = MagicMock()
             mock_client.get = AsyncMock(return_value=mock_response)
             mock_client_fn.return_value = mock_client

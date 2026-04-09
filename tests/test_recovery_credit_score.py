@@ -31,27 +31,31 @@ def artist(db_session):
 
 def add_payments(db_session, artist_id, n=12, amount=1000.0):
     for i in range(n):
-        db_session.add(Payment(
-            id=f"pay-rcs-{i}",
-            artist_id=artist_id,
-            payment_type="ROYALTY",
-            amount=amount,
-            received_at=datetime.now(timezone.utc) - timedelta(days=30 * i),
-            source="Spotify" if i % 2 == 0 else "Apple Music",
-        ))
+        db_session.add(
+            Payment(
+                id=f"pay-rcs-{i}",
+                artist_id=artist_id,
+                payment_type="ROYALTY",
+                amount=amount,
+                received_at=datetime.now(timezone.utc) - timedelta(days=30 * i),
+                source="Spotify" if i % 2 == 0 else "Apple Music",
+            )
+        )
 
 
 def add_anomaly(db_session, artist_id, anomaly_id, severity, days_old=60):
-    db_session.add(Anomaly(
-        id=anomaly_id,
-        artist_id=artist_id,
-        category=AnomalyCategory.ROYALTY,
-        subtype="MISSING_PAYMENT",
-        severity=severity,
-        confidence_score=0.8,
-        status=AnomalyStatus.OPEN,
-        created_at=datetime.now(timezone.utc) - timedelta(days=days_old),
-    ))
+    db_session.add(
+        Anomaly(
+            id=anomaly_id,
+            artist_id=artist_id,
+            category=AnomalyCategory.ROYALTY,
+            subtype="MISSING_PAYMENT",
+            severity=severity,
+            confidence_score=0.8,
+            status=AnomalyStatus.OPEN,
+            created_at=datetime.now(timezone.utc) - timedelta(days=days_old),
+        )
+    )
 
 
 def test_calculate_returns_required_keys(db_session, artist):
@@ -100,8 +104,12 @@ def test_components_have_expected_keys(db_session, artist):
     result = scorer.calculate(artist.id)
 
     expected_components = {
-        "catalog_health", "anomaly_recoverability", "sol_safety",
-        "contract_clarity", "payer_reliability", "territory_coverage",
+        "catalog_health",
+        "anomaly_recoverability",
+        "sol_safety",
+        "contract_clarity",
+        "payer_reliability",
+        "territory_coverage",
         "platform_diversification",
     }
     assert expected_components == set(result["components"].keys())

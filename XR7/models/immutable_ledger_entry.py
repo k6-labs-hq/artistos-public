@@ -20,7 +20,9 @@ class ImmutableLedgerEntry(Base):
     payload_json: Mapped[str] = mapped_column(Text, nullable=False)
     prior_hash: Mapped[str | None] = mapped_column(String, nullable=True)
     entry_hash: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class ImmutableLedgerEntrySchema(BaseModel):
@@ -35,6 +37,8 @@ class ImmutableLedgerEntrySchema(BaseModel):
     created_at: datetime
 
 
-def compute_entry_hash(*, artist_id: str, entry_type: str, payload_json: str, prior_hash: str | None) -> str:
+def compute_entry_hash(
+    *, artist_id: str, entry_type: str, payload_json: str, prior_hash: str | None
+) -> str:
     raw = f"{artist_id}|{entry_type}|{payload_json}|{prior_hash or ''}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()

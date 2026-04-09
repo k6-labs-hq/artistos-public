@@ -55,6 +55,7 @@ logger = logging.getLogger(__name__)
 # Abstract base
 # ---------------------------------------------------------------------------
 
+
 class NotificationService(ABC):
     """Abstract interface for OTP delivery."""
 
@@ -113,12 +114,12 @@ class NotificationService(ABC):
         estimate:
             The dict returned by :func:`~XR7.ml.royalty_estimator.RoyaltyEstimate.to_dict`.
         """
-        likely      = estimate.get("total_likely", 0)
+        likely = estimate.get("total_likely", 0)
         conservative = estimate.get("total_conservative", 0)
-        optimistic  = estimate.get("total_optimistic", 0)
-        currency    = estimate.get("currency", "USD")
-        streams     = estimate.get("streams", [])
-        disclaimer  = estimate.get("disclaimer", "")
+        optimistic = estimate.get("total_optimistic", 0)
+        currency = estimate.get("currency", "USD")
+        streams = estimate.get("streams", [])
+        disclaimer = estimate.get("disclaimer", "")
 
         def _fmt(n: float) -> str:
             return f"{currency} {n:,.2f}"
@@ -156,6 +157,7 @@ class NotificationService(ABC):
 # ---------------------------------------------------------------------------
 # Mock implementation (development / testing only)
 # ---------------------------------------------------------------------------
+
 
 class MockNotificationService(NotificationService):
     """
@@ -196,6 +198,7 @@ class MockNotificationService(NotificationService):
 # Twilio SMS implementation
 # ---------------------------------------------------------------------------
 
+
 class TwilioSMSService(NotificationService):
     """
     Production SMS delivery via Twilio.
@@ -214,11 +217,10 @@ class TwilioSMSService(NotificationService):
 
         try:
             from twilio.rest import Client  # type: ignore[import]
+
             self._client = Client(self._account_sid, self._auth_token)
         except ImportError as exc:
-            raise ImportError(
-                "Twilio is not installed.  Run: pip install twilio"
-            ) from exc
+            raise ImportError("Twilio is not installed.  Run: pip install twilio") from exc
         self._smtp_fallback: SMTPEmailService | None = None
         if enable_fallback and os.environ.get("SMTP_HOST"):
             try:
@@ -248,6 +250,7 @@ class TwilioSMSService(NotificationService):
 # ---------------------------------------------------------------------------
 # SMTP email implementation
 # ---------------------------------------------------------------------------
+
 
 class SMTPEmailService(NotificationService):
     """
@@ -319,6 +322,7 @@ class SMTPEmailService(NotificationService):
 # Combined service (phone via Twilio + email via SMTP)
 # ---------------------------------------------------------------------------
 
+
 class CombinedNotificationService(NotificationService):
     """
     Delegates SMS to a :class:`TwilioSMSService` and email to an
@@ -339,6 +343,7 @@ class CombinedNotificationService(NotificationService):
 # ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
+
 
 def get_notification_service() -> NotificationService:
     """

@@ -68,7 +68,9 @@ def get_branding(org_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/branding/{org_id}")
-def create_branding(org_id: str, payload: BrandingProfileUpsertRequest, db: Session = Depends(get_db)):
+def create_branding(
+    org_id: str, payload: BrandingProfileUpsertRequest, db: Session = Depends(get_db)
+):
     existing = db.query(BrandingProfile).filter(BrandingProfile.org_id == org_id).first()
     if existing:
         raise HTTPException(status_code=409, detail="Branding profile already exists")
@@ -86,7 +88,9 @@ def create_branding(org_id: str, payload: BrandingProfileUpsertRequest, db: Sess
 
 
 @router.patch("/branding/{org_id}")
-def patch_branding(org_id: str, payload: BrandingProfilePatchRequest, db: Session = Depends(get_db)):
+def patch_branding(
+    org_id: str, payload: BrandingProfilePatchRequest, db: Session = Depends(get_db)
+):
     row = db.query(BrandingProfile).filter(BrandingProfile.org_id == org_id).first()
     if not row:
         row = BrandingProfile(org_id=org_id)
@@ -116,10 +120,14 @@ def list_help_articles(org_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/branding/{org_id}/help-articles")
-def create_help_article(org_id: str, payload: HelpArticleCreateRequest, db: Session = Depends(get_db)):
+def create_help_article(
+    org_id: str, payload: HelpArticleCreateRequest, db: Session = Depends(get_db)
+):
     brand = get_branding_profile(db, org_id)
     if not bool(brand.get("white_label_enabled")):
-        raise HTTPException(status_code=403, detail="Help article uploads require white_label_enabled=true")
+        raise HTTPException(
+            status_code=403, detail="Help article uploads require white_label_enabled=true"
+        )
 
     row = BrandingHelpArticle(
         org_id=org_id,

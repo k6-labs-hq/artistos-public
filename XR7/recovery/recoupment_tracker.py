@@ -32,11 +32,12 @@ from dataclasses import dataclass, field
 # Recoupment status enum
 # ---------------------------------------------------------------------------
 
+
 class RecoupmentStatus:
-    UNRECOUPED = "UNRECOUPED"         # Artist has not yet recouped the advance
-    RECOUPED = "RECOUPED"             # Artist has fully recouped
-    OVER_RECOUPED = "OVER_RECOUPED"   # More than advance recouped (possible error)
-    UNKNOWN = "UNKNOWN"               # Insufficient data to determine
+    UNRECOUPED = "UNRECOUPED"  # Artist has not yet recouped the advance
+    RECOUPED = "RECOUPED"  # Artist has fully recouped
+    OVER_RECOUPED = "OVER_RECOUPED"  # More than advance recouped (possible error)
+    UNKNOWN = "UNKNOWN"  # Insufficient data to determine
 
 
 class RecoupmentFlag:
@@ -50,6 +51,7 @@ class RecoupmentFlag:
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class RecoupmentPosition:
     """Recoupment status for a single contract."""
@@ -58,11 +60,11 @@ class RecoupmentPosition:
     contract_type: str
     counterparty: str
     advance: float
-    recoupment_rate: float          # fraction of artist royalties applied to recoupment
-    total_payments: float           # total payments received under this contract
-    recouped_amount: float          # advance × recoupment_rate applied to payments
-    recoupment_balance: float       # remaining balance (negative = over-recouped)
-    recoupment_status: str          # see RecoupmentStatus
+    recoupment_rate: float  # fraction of artist royalties applied to recoupment
+    total_payments: float  # total payments received under this contract
+    recouped_amount: float  # advance × recoupment_rate applied to payments
+    recoupment_balance: float  # remaining balance (negative = over-recouped)
+    recoupment_status: str  # see RecoupmentStatus
     flags: list[str] = field(default_factory=list)
     anomalies: list[dict] = field(default_factory=list)
 
@@ -117,7 +119,9 @@ def _filter_payments_for_contract(
         return matched
 
     if expected_payment_type:
-        matched = [p for p in payments if str(p.get("payment_type", "")).upper() == expected_payment_type]
+        matched = [
+            p for p in payments if str(p.get("payment_type", "")).upper() == expected_payment_type
+        ]
     if matched:
         return matched
 
@@ -127,6 +131,7 @@ def _filter_payments_for_contract(
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def compute_recoupment(
     contracts: list[dict],
@@ -268,8 +273,12 @@ def recoupment_summary(positions: list[RecoupmentPosition]) -> dict:
         "total_advance": round(total_advance, 2),
         "total_recouped": round(total_recouped, 2),
         "total_remaining_balance": round(total_balance, 2),
-        "recouped_contracts": sum(1 for p in positions if p.recoupment_status == RecoupmentStatus.RECOUPED),
-        "unrecouped_contracts": sum(1 for p in positions if p.recoupment_status == RecoupmentStatus.UNRECOUPED),
+        "recouped_contracts": sum(
+            1 for p in positions if p.recoupment_status == RecoupmentStatus.RECOUPED
+        ),
+        "unrecouped_contracts": sum(
+            1 for p in positions if p.recoupment_status == RecoupmentStatus.UNRECOUPED
+        ),
         "flagged_contracts": len(flagged),
         "flag_types": list({f for p in flagged for f in p.flags}),
     }

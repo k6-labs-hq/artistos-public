@@ -28,14 +28,18 @@ def enqueue_review_item(
                 ReviewItem.artist_id == artist_id,
                 ReviewItem.source_type == source_type.value,
                 ReviewItem.source_id == source_id,
-                ReviewItem.status.in_([ReviewItemStatus.OPEN.value, ReviewItemStatus.IN_REVIEW.value]),
+                ReviewItem.status.in_(
+                    [ReviewItemStatus.OPEN.value, ReviewItemStatus.IN_REVIEW.value]
+                ),
             )
             .first()
         )
 
     if existing:
         existing.reason = reason
-        existing.priority_score = max(float(existing.priority_score or 0.0), float(priority_score or 0.0))
+        existing.priority_score = max(
+            float(existing.priority_score or 0.0), float(priority_score or 0.0)
+        )
         existing.payload = payload or existing.payload
         existing.updated_at = datetime.now(timezone.utc)
         db.commit()
@@ -58,9 +62,17 @@ def enqueue_review_item(
 
 
 def queue_metrics(db: Session) -> dict:
-    open_count = db.query(func.count(ReviewItem.id)).filter(ReviewItem.status == ReviewItemStatus.OPEN.value).scalar() or 0
+    open_count = (
+        db.query(func.count(ReviewItem.id))
+        .filter(ReviewItem.status == ReviewItemStatus.OPEN.value)
+        .scalar()
+        or 0
+    )
     in_review_count = (
-        db.query(func.count(ReviewItem.id)).filter(ReviewItem.status == ReviewItemStatus.IN_REVIEW.value).scalar() or 0
+        db.query(func.count(ReviewItem.id))
+        .filter(ReviewItem.status == ReviewItemStatus.IN_REVIEW.value)
+        .scalar()
+        or 0
     )
     threshold = int(os.environ.get("REVIEW_QUEUE_ALERT_THRESHOLD", "25"))
     return {

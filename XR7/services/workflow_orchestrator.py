@@ -111,14 +111,22 @@ class XR7WorkflowService:
                 }
                 for w in works
             ],
-            registrations=[{"registration_id": w.iswc, "work_id": w.id, "source": "internal"} for w in works],
-            statements=[{"statement_id": s.id, "work_id": None, "source": s.format_detected} for s in statements],
+            registrations=[
+                {"registration_id": w.iswc, "work_id": w.id, "source": "internal"} for w in works
+            ],
+            statements=[
+                {"statement_id": s.id, "work_id": None, "source": s.format_detected}
+                for s in statements
+            ],
         )
         steps.append({"name": "build_catalog_graph", "nodes": len(graph.get("nodes") or [])})
 
         # Step 2: infer missing catalog relationships.
         inference = infer_catalog_relationships(
-            [{"work_id": w.id, "contributors": [], "streams": 0.0, "owner": artist_id} for w in works]
+            [
+                {"work_id": w.id, "contributors": [], "streams": 0.0, "owner": artist_id}
+                for w in works
+            ]
         )
         steps.append({"name": "infer_catalog", "count": inference.get("count", 0)})
 

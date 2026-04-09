@@ -142,6 +142,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.webhook_event  # noqa: F401
     import XR7.models.xr7_idempotency  # noqa: F401
     import XR7.models.xr7_royalty  # noqa: F401
+
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -345,8 +346,11 @@ def readiness():
         try:
             c = connector_cls(config={}, **kwargs)
             connected = c.connect()
-            return {"name": name, "configured": connected,
-                    "status": "ready" if connected else "missing_credentials"}
+            return {
+                "name": name,
+                "configured": connected,
+                "status": "ready" if connected else "missing_credentials",
+            }
         except Exception as exc:  # noqa: BLE001
             return {"name": name, "configured": False, "status": f"error: {exc}"}
 
@@ -435,7 +439,9 @@ def readiness():
         },
         "ingestion": {
             "supported_format_count": len(SUPPORTED_FORMATS),
-            "explicit_format_count": len([k for k, v in SUPPORTED_FORMATS.items() if v.get("type") != "generic"]),
+            "explicit_format_count": len(
+                [k for k, v in SUPPORTED_FORMATS.items() if v.get("type") != "generic"]
+            ),
             "batch_upload": "ready",
             "status": "ready",
         },
@@ -474,7 +480,11 @@ def readiness():
             "hubspot": {
                 "enabled": hubspot_client.enabled,
                 "base_url": settings.hubspot_base_url,
-                "auth_mode": "private_app_token" if settings.hubspot_private_app_token else ("api_key" if settings.hubspot_api_key else "none"),
+                "auth_mode": (
+                    "private_app_token"
+                    if settings.hubspot_private_app_token
+                    else ("api_key" if settings.hubspot_api_key else "none")
+                ),
                 "status": "ready" if hubspot_client.enabled else "disabled_or_missing_credentials",
             }
         },
@@ -493,7 +503,8 @@ def readiness():
             "email_smtp": "ready" if smtp_ready else "missing_credentials",
         },
         "global_social": {
-            "simulated": os.environ.get("XR7_GLOBAL_SOCIAL_SIMULATED", "1").strip().lower() in {"1", "true", "yes"},
+            "simulated": os.environ.get("XR7_GLOBAL_SOCIAL_SIMULATED", "1").strip().lower()
+            in {"1", "true", "yes"},
             "api_key_configured": bool(os.environ.get("XR7_GLOBAL_SOCIAL_API_KEY")),
             "status": "ready",
         },

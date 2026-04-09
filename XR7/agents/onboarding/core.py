@@ -1,4 +1,5 @@
 """Shared constants and helper functions for all onboarding agents."""
+
 from __future__ import annotations
 
 import hashlib

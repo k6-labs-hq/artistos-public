@@ -1,4 +1,5 @@
 """Pillar 5 — Rights registration scan results (ISRC/ISWC/UPC/PRO gaps)."""
+
 from __future__ import annotations
 
 import uuid

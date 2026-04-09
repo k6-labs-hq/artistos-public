@@ -28,7 +28,9 @@ class TrolleyClient:
         access_key = os.environ.get("TROLLEY_ACCESS_KEY", "").strip()
         secret_key = os.environ.get("TROLLEY_SECRET_KEY", "").strip()
         if not access_key or not secret_key:
-            raise TrolleyException("MISSING_CREDENTIALS", "TROLLEY_ACCESS_KEY and TROLLEY_SECRET_KEY must be set")
+            raise TrolleyException(
+                "MISSING_CREDENTIALS", "TROLLEY_ACCESS_KEY and TROLLEY_SECRET_KEY must be set"
+            )
         return cls(access_key=access_key, secret_key=secret_key)
 
     def _headers(self, method: str, path: str, body: str = "") -> dict[str, str]:
@@ -46,7 +48,9 @@ class TrolleyClient:
             "X-Signature": signature,
         }
 
-    def _request(self, method: str, path: str, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _request(
+        self, method: str, path: str, payload: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         body = json.dumps(payload or {}, separators=(",", ":")) if payload is not None else ""
         headers = self._headers(method, path, body)
         response = requests.request(

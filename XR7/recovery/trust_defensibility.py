@@ -17,7 +17,9 @@ class TrustDefensibilityService:
         self.db = db
 
     def _hash(self, payload: dict[str, Any]) -> str:
-        return hashlib.sha256(json.dumps(payload, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+        return hashlib.sha256(
+            json.dumps(payload, sort_keys=True, default=str).encode("utf-8")
+        ).hexdigest()
 
     def trust_score(
         self,
@@ -85,7 +87,15 @@ class TrustDefensibilityService:
     ) -> dict[str, Any]:
         chain = [
             {"stage": "raw_royalty_data", "hash": self._hash(anomaly_payload)},
-            {"stage": "anomaly_detection", "hash": self._hash({"anomaly_id": anomaly_payload.get("id"), "subtype": anomaly_payload.get("subtype")})},
+            {
+                "stage": "anomaly_detection",
+                "hash": self._hash(
+                    {
+                        "anomaly_id": anomaly_payload.get("id"),
+                        "subtype": anomaly_payload.get("subtype"),
+                    }
+                ),
+            },
             {"stage": "recoverability_classification", "hash": self._hash(classification_payload)},
             {"stage": "evidence_package", "hash": self._hash(evidence_package)},
         ]

@@ -16,7 +16,11 @@ class SyncJob(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     integration: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    status: Mapped[str] = mapped_column(Enum("PENDING", "RUNNING", "RETRYING", "FAILED", "COMPLETED", name="sync_job_status"), nullable=False, default="PENDING")
+    status: Mapped[str] = mapped_column(
+        Enum("PENDING", "RUNNING", "RETRYING", "FAILED", "COMPLETED", name="sync_job_status"),
+        nullable=False,
+        default="PENDING",
+    )
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     max_attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -32,8 +36,12 @@ class SyncJob(Base):
     next_run_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class SyncJobSchema(BaseModel):

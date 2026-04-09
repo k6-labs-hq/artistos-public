@@ -30,12 +30,18 @@ class ClaimsEvidencePackageBuilder:
     def _attorney_checklist(self, package: dict[str, Any]) -> dict[str, bool]:
         return {
             "anomaly_detection_report_present": bool(package.get("anomaly_detection_report")),
-            "expiration_probability_report_present": bool(package.get("expiration_probability_report")),
+            "expiration_probability_report_present": bool(
+                package.get("expiration_probability_report")
+            ),
             "contract_recoverability_present": bool(package.get("contract_recoverability")),
-            "discovery_timeline_present": bool((package.get("discovery_rule") or {}).get("discovery_timeline")),
+            "discovery_timeline_present": bool(
+                (package.get("discovery_rule") or {}).get("discovery_timeline")
+            ),
             "metadata_repair_history_present": bool(package.get("metadata_repair_history")),
             "royalty_statement_excerpt_present": bool(package.get("royalty_statement_excerpt")),
-            "attorney_declaration_template_present": bool(package.get("attorney_declaration_template")),
+            "attorney_declaration_template_present": bool(
+                package.get("attorney_declaration_template")
+            ),
         }
 
     def _cover_page(self, package: dict[str, Any]) -> dict[str, Any]:
@@ -51,13 +57,25 @@ class ClaimsEvidencePackageBuilder:
             ),
         }
 
-    def build(self, *, claim: dict[str, Any], anomaly: dict[str, Any], recoverability_payload: dict[str, Any], trust_score: float, precedent_refs: list[dict[str, Any]] | None = None) -> dict[str, Any]:
-        discovery = DiscoveryRuleEngine().evaluate({
-            **anomaly,
-            "artist_id": claim.get("artist_id"),
-            "jurisdiction": claim.get("governing_law_state") or anomaly.get("jurisdiction") or "US",
-            "xr7_detection_timestamp": anomaly.get("created_at"),
-        })
+    def build(
+        self,
+        *,
+        claim: dict[str, Any],
+        anomaly: dict[str, Any],
+        recoverability_payload: dict[str, Any],
+        trust_score: float,
+        precedent_refs: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        discovery = DiscoveryRuleEngine().evaluate(
+            {
+                **anomaly,
+                "artist_id": claim.get("artist_id"),
+                "jurisdiction": claim.get("governing_law_state")
+                or anomaly.get("jurisdiction")
+                or "US",
+                "xr7_detection_timestamp": anomaly.get("created_at"),
+            }
+        )
 
         package = {
             "claim_id": claim.get("id"),
@@ -70,7 +88,8 @@ class ClaimsEvidencePackageBuilder:
                 "subtype": anomaly.get("subtype"),
                 "description": anomaly.get("description"),
             },
-            "expiration_probability_report": recoverability_payload.get("black_box_expiration") or {},
+            "expiration_probability_report": recoverability_payload.get("black_box_expiration")
+            or {},
             "contract_recoverability": recoverability_payload.get("contract_recoverability") or {},
             "discovery_rule": discovery,
             "metadata_repair_history": {
@@ -78,16 +97,29 @@ class ClaimsEvidencePackageBuilder:
                 "post_repair": anomaly.get("post_repair") or {},
                 "repair_events": anomaly.get("metadata_repairs") or [],
             },
-            "royalty_statement_excerpt": anomaly.get("royalty_statement_excerpt") or {"redacted": True},
+            "royalty_statement_excerpt": anomaly.get("royalty_statement_excerpt")
+            or {"redacted": True},
             "precedent_references": precedent_refs or [],
             "attorney_declaration_template": {
                 "title": "Attorney Declaration",
-                "fields": ["attorney_name", "bar_number", "jurisdiction", "declaration_text", "signature", "date"],
+                "fields": [
+                    "attorney_name",
+                    "bar_number",
+                    "jurisdiction",
+                    "declaration_text",
+                    "signature",
+                    "date",
+                ],
                 "status": "fillable",
             },
-            "overall_confidence": float((recoverability_payload.get("recoverability") or {}).get("confidence_score") or 0.0),
+            "overall_confidence": float(
+                (recoverability_payload.get("recoverability") or {}).get("confidence_score") or 0.0
+            ),
             "trust_score": float(trust_score),
-            "human_attorney_review_required": float((recoverability_payload.get("recoverability") or {}).get("confidence_score") or 0.0) < self.confidence_gate_threshold,
+            "human_attorney_review_required": float(
+                (recoverability_payload.get("recoverability") or {}).get("confidence_score") or 0.0
+            )
+            < self.confidence_gate_threshold,
         }
         package["cover_page"] = self._cover_page(package)
         package["attorney_review_checklist"] = self._attorney_checklist(package)
@@ -123,5 +155,7 @@ class ClaimsEvidencePackageBuilder:
         writer.writerow(["trust_score", package.get("trust_score")])
         writer.writerow(["overall_confidence", package.get("overall_confidence")])
         writer.writerow(["sol_deadline", (package.get("cover_page") or {}).get("sol_deadline")])
-        writer.writerow(["sol_warning", (package.get("cover_page") or {}).get("sol_deadline_warning")])
+        writer.writerow(
+            ["sol_warning", (package.get("cover_page") or {}).get("sol_deadline_warning")]
+        )
         return output.getvalue().encode("utf-8")

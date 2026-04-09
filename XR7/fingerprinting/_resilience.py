@@ -39,18 +39,16 @@ logger = get_logger(__name__)
 
 
 class CircuitState(str, enum.Enum):
-    CLOSED = "closed"       # Normal operation
-    OPEN = "open"           # Failing — reject all calls fast
-    HALF_OPEN = "half_open" # Probe — let one call through
+    CLOSED = "closed"  # Normal operation
+    OPEN = "open"  # Failing — reject all calls fast
+    HALF_OPEN = "half_open"  # Probe — let one call through
 
 
 class ProviderCircuitOpenError(Exception):
     """Raised when a provider's circuit is open and the call is fast-rejected."""
 
     def __init__(self, provider: str) -> None:
-        super().__init__(
-            f"Circuit breaker for provider '{provider}' is OPEN — call rejected."
-        )
+        super().__init__(f"Circuit breaker for provider '{provider}' is OPEN — call rejected.")
         self.provider = provider
 
 
@@ -271,9 +269,7 @@ class TokenBucketRateLimiter:
     def _refill(self) -> None:
         now = time.monotonic()
         elapsed = now - self._last_refill
-        self._tokens = min(
-            self._max_tokens, self._tokens + elapsed * self._rate_per_second
-        )
+        self._tokens = min(self._max_tokens, self._tokens + elapsed * self._rate_per_second)
         self._last_refill = now
 
 

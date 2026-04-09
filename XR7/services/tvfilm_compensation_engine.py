@@ -24,6 +24,7 @@ from shared.utils.numbers import safe_float as _safe_float
 # Helper utilities
 # ---------------------------------------------------------------------------
 
+
 def _label(value: Any) -> str:
     return str(value or "").strip().upper()
 
@@ -55,8 +56,8 @@ def _match_key(label: str, keys: list[str]) -> str | None:
 # ---------------------------------------------------------------------------
 
 _SAGAFTRA_SVOD_FLAT: dict[str, dict[str, float]] = {
-    "LOW":  {"half_hour": 1_600.0, "hour": 3_200.0},
-    "MID":  {"half_hour": 2_200.0, "hour": 4_400.0},
+    "LOW": {"half_hour": 1_600.0, "hour": 3_200.0},
+    "MID": {"half_hour": 2_200.0, "hour": 4_400.0},
     "HIGH": {"half_hour": 4_080.0, "hour": 8_160.0},
 }
 
@@ -68,7 +69,9 @@ _SAGAFTRA_FOREIGN_PCT = 0.15
 _SAGAFTRA_HOME_VIDEO_PCT = 0.045
 
 
-def _sagaftra_expected(row: dict[str, Any], paid: float, stated: float, window: str, role: str) -> tuple[float, float, list[str]]:
+def _sagaftra_expected(
+    row: dict[str, Any], paid: float, stated: float, window: str, role: str
+) -> tuple[float, float, list[str]]:
     budget_tier = str(row.get("budget_tier") or "MID").upper()
     if budget_tier not in _SAGAFTRA_SVOD_FLAT:
         budget_tier = "MID"
@@ -84,27 +87,37 @@ def _sagaftra_expected(row: dict[str, Any], paid: float, stated: float, window: 
     if "STREAM" in window or "SVOD" in window or "AVOD" in window:
         flat_rate = _SAGAFTRA_SVOD_FLAT[budget_tier][runtime_key]
         expected = flat_rate * ep_count
-        notes.append(f"SAG-AFTRA 2023 SVOD flat residual: ${flat_rate:,.0f}/{runtime_key} × {ep_count} ep(s) = ${expected:,.0f}")
+        notes.append(
+            f"SAG-AFTRA 2023 SVOD flat residual: ${flat_rate:,.0f}/{runtime_key} × {ep_count} ep(s) = ${expected:,.0f}"
+        )
         confidence += 0.10
     elif "SYNDICATION" in window or "DOMESTIC" in window:
         run_pct = _SAGAFTRA_RERUN_PCT.get(run_number, _SAGAFTRA_RERUN_DEFAULT)
         expected = stated * run_pct * ep_count if stated else paid * 1.30 * ep_count
-        notes.append(f"SAG-AFTRA syndication: {run_pct*100:.0f}% of initial per ep × {ep_count} ep(s) — run #{run_number}")
+        notes.append(
+            f"SAG-AFTRA syndication: {run_pct*100:.0f}% of initial per ep × {ep_count} ep(s) — run #{run_number}"
+        )
         confidence += 0.08
     elif "FOREIGN" in window:
         expected = stated * _SAGAFTRA_FOREIGN_PCT * ep_count if stated else paid * 1.15 * ep_count
-        notes.append(f"SAG-AFTRA foreign residual: {_SAGAFTRA_FOREIGN_PCT*100:.1f}% of initial × {ep_count} ep(s)")
+        notes.append(
+            f"SAG-AFTRA foreign residual: {_SAGAFTRA_FOREIGN_PCT*100:.1f}% of initial × {ep_count} ep(s)"
+        )
         confidence += 0.07
     elif "HOME VIDEO" in window or "DVD" in window:
         distributor_gross = _safe_float(row.get("distributor_gross"), default=paid * 2.5)
         expected = distributor_gross * _SAGAFTRA_HOME_VIDEO_PCT
-        notes.append(f"SAG-AFTRA home video: {_SAGAFTRA_HOME_VIDEO_PCT*100:.1f}% of distributor gross ${distributor_gross:,.0f} = ${expected:,.0f}")
+        notes.append(
+            f"SAG-AFTRA home video: {_SAGAFTRA_HOME_VIDEO_PCT*100:.1f}% of distributor gross ${distributor_gross:,.0f} = ${expected:,.0f}"
+        )
         confidence += 0.06
     else:
         # Network TV / cable — use stated or inflate paid
         run_pct = _SAGAFTRA_RERUN_PCT.get(run_number, _SAGAFTRA_RERUN_DEFAULT)
         expected = max(stated, paid * (1.0 + run_pct * 0.25))
-        notes.append(f"SAG-AFTRA network/cable run #{run_number}: {run_pct*100:.0f}% rerun rate applied")
+        notes.append(
+            f"SAG-AFTRA network/cable run #{run_number}: {run_pct*100:.0f}% rerun rate applied"
+        )
         confidence += 0.06
 
     # Stunt performer premium (10 % above scale)
@@ -136,8 +149,15 @@ _WGA_RERUN_PCT: dict[int, float] = {1: 1.0, 2: 0.75, 3: 0.50, 4: 0.50, 5: 0.50}
 _WGA_RERUN_DEFAULT = 0.40
 
 
-def _wga_expected(row: dict[str, Any], paid: float, stated: float, window: str, role: str) -> tuple[float, float, list[str]]:
-    runtime_key = "half_hour" if "30" in str(row.get("episode_runtime") or "").lower() or "half" in str(row.get("episode_runtime") or "").lower() else "hour"
+def _wga_expected(
+    row: dict[str, Any], paid: float, stated: float, window: str, role: str
+) -> tuple[float, float, list[str]]:
+    runtime_key = (
+        "half_hour"
+        if "30" in str(row.get("episode_runtime") or "").lower()
+        or "half" in str(row.get("episode_runtime") or "").lower()
+        else "hour"
+    )
     ep_count = max(1, int(_safe_float(row.get("episode_count") or 1)))
     run_number = max(1, int(_safe_float(row.get("run_number") or 1)))
     is_theatrical = "FILM" in _label(row.get("production_type") or "") or "THEATRICAL" in window
@@ -151,24 +171,32 @@ def _wga_expected(row: dict[str, Any], paid: float, stated: float, window: str, 
             expected = dist_gross * _WGA_THEATRICAL_PCT
         else:
             expected = max(stated, paid)
-        notes.append(f"WGA theatrical separate rights: {_WGA_THEATRICAL_PCT*100:.1f}% of dist. gross ${dist_gross:,.0f} = ${expected:,.0f}")
+        notes.append(
+            f"WGA theatrical separate rights: {_WGA_THEATRICAL_PCT*100:.1f}% of dist. gross ${dist_gross:,.0f} = ${expected:,.0f}"
+        )
         confidence += 0.08
     elif "STREAM" in window or "SVOD" in window or "AVOD" in window:
         applicable_min = _WGA_TV_MIN[runtime_key]
         svod_per_ep = applicable_min * _WGA_SVOD_PCT
         expected = svod_per_ep * ep_count
-        notes.append(f"WGA 2023 SVOD: {_WGA_SVOD_PCT*100:.0f}% of ${applicable_min:,.0f} applicable min × {ep_count} ep(s) = ${expected:,.0f}")
+        notes.append(
+            f"WGA 2023 SVOD: {_WGA_SVOD_PCT*100:.0f}% of ${applicable_min:,.0f} applicable min × {ep_count} ep(s) = ${expected:,.0f}"
+        )
         confidence += 0.09
     elif "SYNDICATION" in window:
         applicable_min = _WGA_TV_MIN[runtime_key]
         expected = applicable_min * _WGA_SYNDICATION_PCT * ep_count
-        notes.append(f"WGA syndication: {_WGA_SYNDICATION_PCT*100:.0f}% of ${applicable_min:,.0f} × {ep_count} ep(s) = ${expected:,.0f}")
+        notes.append(
+            f"WGA syndication: {_WGA_SYNDICATION_PCT*100:.0f}% of ${applicable_min:,.0f} × {ep_count} ep(s) = ${expected:,.0f}"
+        )
         confidence += 0.08
     else:
         run_pct = _WGA_RERUN_PCT.get(run_number, _WGA_RERUN_DEFAULT)
         applicable_min = _WGA_TV_MIN[runtime_key]
         expected = applicable_min * run_pct * ep_count
-        notes.append(f"WGA network rerun #{run_number}: {run_pct*100:.0f}% of ${applicable_min:,.0f} × {ep_count} = ${expected:,.0f}")
+        notes.append(
+            f"WGA network rerun #{run_number}: {run_pct*100:.0f}% of ${applicable_min:,.0f} × {ep_count} = ${expected:,.0f}"
+        )
         confidence += 0.07
 
     return expected, confidence, notes
@@ -195,8 +223,15 @@ _DGA_THEATRICAL_PCT = 0.015
 _DGA_THEATRICAL_THRESHOLD = 1_000_000.0
 
 
-def _dga_expected(row: dict[str, Any], paid: float, stated: float, window: str, role: str) -> tuple[float, float, list[str]]:
-    runtime_key = "half_hour" if "30" in str(row.get("episode_runtime") or "").lower() or "half" in str(row.get("episode_runtime") or "").lower() else "hour"
+def _dga_expected(
+    row: dict[str, Any], paid: float, stated: float, window: str, role: str
+) -> tuple[float, float, list[str]]:
+    runtime_key = (
+        "half_hour"
+        if "30" in str(row.get("episode_runtime") or "").lower()
+        or "half" in str(row.get("episode_runtime") or "").lower()
+        else "hour"
+    )
     ep_count = max(1, int(_safe_float(row.get("episode_count") or 1)))
     run_number = max(1, int(_safe_float(row.get("run_number") or 1)))
     is_theatrical = "FILM" in _label(row.get("production_type") or "") or "THEATRICAL" in window
@@ -210,7 +245,9 @@ def _dga_expected(row: dict[str, Any], paid: float, stated: float, window: str, 
             expected = dist_gross * _DGA_THEATRICAL_PCT
         else:
             expected = max(stated, paid)
-        notes.append(f"DGA theatrical: {_DGA_THEATRICAL_PCT*100:.1f}% of dist. gross ${dist_gross:,.0f} = ${expected:,.0f}")
+        notes.append(
+            f"DGA theatrical: {_DGA_THEATRICAL_PCT*100:.1f}% of dist. gross ${dist_gross:,.0f} = ${expected:,.0f}"
+        )
         confidence += 0.07
     elif "STREAM" in window or "SVOD" in window or "AVOD" in window:
         applicable_min = _DGA_TV_MIN_PER_EP[runtime_key]
@@ -224,7 +261,9 @@ def _dga_expected(row: dict[str, Any], paid: float, stated: float, window: str, 
         run_pct = _DGA_RERUN_PCT.get(run_number, _DGA_RERUN_DEFAULT)
         applicable_min = _DGA_TV_MIN_PER_EP[runtime_key]
         expected = applicable_min * run_pct * ep_count
-        notes.append(f"DGA TV rerun #{run_number}: {run_pct*100:.1f}% of ${applicable_min:,.0f} × {ep_count} = ${expected:,.0f}")
+        notes.append(
+            f"DGA TV rerun #{run_number}: {run_pct*100:.1f}% of ${applicable_min:,.0f} × {ep_count} = ${expected:,.0f}"
+        )
         confidence += 0.07
 
     return expected, confidence, notes
@@ -258,7 +297,9 @@ _IATSE_TURNAROUND_PENALTY = 100.0
 _IATSE_HOLIDAY_MULT = 1.5
 
 
-def _iatse_expected(row: dict[str, Any], paid: float, stated: float, window: str, role: str) -> tuple[float, float, list[str]]:
+def _iatse_expected(
+    row: dict[str, Any], paid: float, stated: float, window: str, role: str
+) -> tuple[float, float, list[str]]:
     role_upper = role.upper()
     role_key = _match_key(role_upper, list(_IATSE_DAILY_RATE_BY_ROLE.keys())) or "CREW"
     daily_rate = _IATSE_DAILY_RATE_BY_ROLE[role_key]
@@ -277,7 +318,14 @@ def _iatse_expected(row: dict[str, Any], paid: float, stated: float, window: str
     turnaround_component = turnaround_violations_hrs * _IATSE_TURNAROUND_PENALTY
     holiday_component = holiday_days * daily_rate * (_IATSE_HOLIDAY_MULT - 1.0)
 
-    expected = base + ot_component + meal_component + kit_component + turnaround_component + holiday_component
+    expected = (
+        base
+        + ot_component
+        + meal_component
+        + kit_component
+        + turnaround_component
+        + holiday_component
+    )
     expected = max(expected, stated, paid)
 
     notes = [
@@ -286,11 +334,17 @@ def _iatse_expected(row: dict[str, Any], paid: float, stated: float, window: str
     if ot_component:
         notes.append(f"Overtime: {overtime_hours}h @ 1.5× = ${ot_component:,.2f}")
     if meal_component:
-        notes.append(f"Meal penalties: {meal_violations} × ${_IATSE_MEAL_PENALTY} = ${meal_component:,.2f}")
+        notes.append(
+            f"Meal penalties: {meal_violations} × ${_IATSE_MEAL_PENALTY} = ${meal_component:,.2f}"
+        )
     if kit_component:
-        notes.append(f"Kit rental: {kit_days} days × ${_IATSE_KIT_RENTAL_MIN} = ${kit_component:,.2f}")
+        notes.append(
+            f"Kit rental: {kit_days} days × ${_IATSE_KIT_RENTAL_MIN} = ${kit_component:,.2f}"
+        )
     if turnaround_component:
-        notes.append(f"Turnaround violations: {turnaround_violations_hrs}h × ${_IATSE_TURNAROUND_PENALTY} = ${turnaround_component:,.2f}")
+        notes.append(
+            f"Turnaround violations: {turnaround_violations_hrs}h × ${_IATSE_TURNAROUND_PENALTY} = ${turnaround_component:,.2f}"
+        )
     if holiday_component:
         notes.append(f"Holiday premium: {holiday_days} days @ 0.5× = ${holiday_component:,.2f}")
 
@@ -313,7 +367,9 @@ _AFM_THEATRICAL_REUSE_PCT = 0.25
 _AFM_FOREIGN_REUSE_PCT = 0.15
 
 
-def _afm_expected(row: dict[str, Any], paid: float, stated: float, window: str, role: str) -> tuple[float, float, list[str]]:
+def _afm_expected(
+    row: dict[str, Any], paid: float, stated: float, window: str, role: str
+) -> tuple[float, float, list[str]]:
     sessions = max(1, int(_safe_float(row.get("recording_sessions") or 1)))
     territories = max(1, int(_safe_float(row.get("foreign_territories") or 1)))
 
@@ -323,19 +379,27 @@ def _afm_expected(row: dict[str, Any], paid: float, stated: float, window: str, 
     base = _AFM_SESSION_RATE * sessions
     if "STREAM" in window or "SVOD" in window:
         expected = base * (1 + _AFM_SVOD_PREMIUM_PCT)
-        notes.append(f"AFM SVOD step-up: ${_AFM_SESSION_RATE:.0f}/session × {sessions} sessions × 1.20 = ${expected:,.0f}")
+        notes.append(
+            f"AFM SVOD step-up: ${_AFM_SESSION_RATE:.0f}/session × {sessions} sessions × 1.20 = ${expected:,.0f}"
+        )
         confidence += 0.10
     elif "FOREIGN" in window:
         expected = base * _AFM_FOREIGN_REUSE_PCT * territories
-        notes.append(f"AFM foreign reuse: {_AFM_FOREIGN_REUSE_PCT*100:.0f}% × {territories} territories = ${expected:,.0f}")
+        notes.append(
+            f"AFM foreign reuse: {_AFM_FOREIGN_REUSE_PCT*100:.0f}% × {territories} territories = ${expected:,.0f}"
+        )
         confidence += 0.07
     elif "THEATRICAL" in window:
         expected = base * _AFM_THEATRICAL_REUSE_PCT
-        notes.append(f"AFM theatrical reuse: {_AFM_THEATRICAL_REUSE_PCT*100:.0f}% of ${base:,.0f} = ${expected:,.0f}")
+        notes.append(
+            f"AFM theatrical reuse: {_AFM_THEATRICAL_REUSE_PCT*100:.0f}% of ${base:,.0f} = ${expected:,.0f}"
+        )
         confidence += 0.08
     else:
         expected = base
-        notes.append(f"AFM session rate: ${_AFM_SESSION_RATE:.0f} × {sessions} sessions = ${base:,.0f}")
+        notes.append(
+            f"AFM session rate: ${_AFM_SESSION_RATE:.0f} × {sessions} sessions = ${base:,.0f}"
+        )
         confidence += 0.05
 
     expected = max(expected, stated, paid)
@@ -398,7 +462,9 @@ def calculate_expected_compensation(row: dict[str, Any]) -> dict[str, Any]:
     for union_key, fn in _UNION_ORDER:
         if union_key in union_label:
             union_matched = union_key
-            expected_from_schedule, schedule_confidence, schedule_notes = fn(row, paid, stated, window_label, role_label)
+            expected_from_schedule, schedule_confidence, schedule_notes = fn(
+                row, paid, stated, window_label, role_label
+            )
             break
 
     # Platform step-up escalation (separate from union schedule)
@@ -411,7 +477,9 @@ def calculate_expected_compensation(row: dict[str, Any]) -> dict[str, Any]:
             break
     expected_after_platform = expected_from_schedule * (1.0 + platform_step)
     if platform_step > 0:
-        schedule_notes.append(f"Platform step-up ({platform_matched}): +{platform_step*100:.0f}% = ${expected_after_platform:,.0f}")
+        schedule_notes.append(
+            f"Platform step-up ({platform_matched}): +{platform_step*100:.0f}% = ${expected_after_platform:,.0f}"
+        )
 
     # Payroll adjustments (union-agnostic)
     overtime_hours = _safe_float(row.get("overtime_hours"))
@@ -423,8 +491,13 @@ def calculate_expected_compensation(row: dict[str, Any]) -> dict[str, Any]:
     holiday_pay = _safe_float(row.get("holiday_pay"))
     overtime_component = overtime_hours * max(paid * 0.08, 35.0)
     payroll_adjustments = (
-        mileage + kit_rental + meal_penalties + stunt_adjustment
-        + turnaround_penalties + holiday_pay + overtime_component
+        mileage
+        + kit_rental
+        + meal_penalties
+        + stunt_adjustment
+        + turnaround_penalties
+        + holiday_pay
+        + overtime_component
     )
     if payroll_adjustments > 0:
         schedule_notes.append(f"Payroll adjustments: ${payroll_adjustments:,.2f}")

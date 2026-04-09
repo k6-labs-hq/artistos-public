@@ -5,6 +5,7 @@ Tracks unclaimed / black-box royalty pool matches surfaced by the weekly
 scanner task. Each record refers to a specific collection society's
 redistribution list entry that appears to belong to the artist.
 """
+
 from __future__ import annotations
 
 import enum
@@ -43,9 +44,7 @@ class BlackboxMatch(Base):
 
     __tablename__ = "blackbox_matches"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(
         String, ForeignKey("artists.id"), nullable=False, index=True
     )
@@ -60,12 +59,8 @@ class BlackboxMatch(Base):
     amount_range_low: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     amount_range_high: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     territory: Mapped[str | None] = mapped_column(String, nullable=True)
-    redistribution_window_end_date: Mapped[datetime] = mapped_column(
-        DateTime, nullable=False
-    )
-    urgency_days_remaining: Mapped[int] = mapped_column(
-        Integer, nullable=False, default=365
-    )
+    redistribution_window_end_date: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    urgency_days_remaining: Mapped[int] = mapped_column(Integer, nullable=False, default=365)
     status: Mapped[str] = mapped_column(
         String, nullable=False, default=BlackboxMatchStatus.NEW.value, index=True
     )
@@ -85,6 +80,7 @@ class BlackboxMatch(Base):
 # ---------------------------------------------------------------------------
 # Pydantic schemas
 # ---------------------------------------------------------------------------
+
 
 class BlackboxMatchSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)

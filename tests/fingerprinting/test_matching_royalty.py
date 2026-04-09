@@ -72,9 +72,7 @@ class TestRoyaltyForeignUsageAnomaly:
         usage = [_usage("bbc_radio", match_type=MatchType.BROADCAST, territory="UK", reported=True)]
 
         gaps = module.compare(fp, usage, artist_id="artist-001")
-        foreign_gaps = [
-            g for g in gaps if g.anomaly_type == AnomalyType.FOREIGN_USAGE_NO_PRO
-        ]
+        foreign_gaps = [g for g in gaps if g.anomaly_type == AnomalyType.FOREIGN_USAGE_NO_PRO]
         assert len(foreign_gaps) >= 1
 
 
@@ -88,9 +86,7 @@ class TestRoyaltyLivePerformanceAnomaly:
         usage = [_usage("ticketmaster", match_type=MatchType.LIVE, territory="US", reported=True)]
 
         gaps = module.compare(fp, usage, artist_id="artist-001")
-        live_gaps = [
-            g for g in gaps if g.anomaly_type == AnomalyType.LIVE_NO_PRO_PERFORMANCE
-        ]
+        live_gaps = [g for g in gaps if g.anomaly_type == AnomalyType.LIVE_NO_PRO_PERFORMANCE]
         assert len(live_gaps) >= 1
 
 
@@ -104,9 +100,7 @@ class TestRoyaltySocialNoDistributorAnomaly:
         usage = [_usage("tiktok", match_type=MatchType.UGC, territory="US", reported=True)]
 
         gaps = module.compare(fp, usage, artist_id="artist-001")
-        social_gaps = [
-            g for g in gaps if g.anomaly_type == AnomalyType.SOCIAL_NO_DISTRIBUTOR
-        ]
+        social_gaps = [g for g in gaps if g.anomaly_type == AnomalyType.SOCIAL_NO_DISTRIBUTOR]
         assert len(social_gaps) >= 1
 
 

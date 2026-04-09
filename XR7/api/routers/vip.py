@@ -8,6 +8,7 @@ Endpoints:
   POST /admin/vip/invite-codes              – generate new invite codes (bulk)
   GET  /artists/{artist_id}/vip/drops       – list current VIP Drop items
 """
+
 from __future__ import annotations
 
 import os
@@ -39,8 +40,13 @@ INVITE_BASE_URL = os.environ.get("INVITE_BASE_URL", "https://app.xr7.io/onboard"
 # Claim an invite code → become a VIP
 # ---------------------------------------------------------------------------
 
-@router.post("/invite/vip/claim", response_model=ClaimVipInviteResponse, summary="Claim a VIP invite code")
-def claim_vip_invite(body: ClaimVipInviteRequest, db: Session = Depends(get_db)) -> ClaimVipInviteResponse:
+
+@router.post(
+    "/invite/vip/claim", response_model=ClaimVipInviteResponse, summary="Claim a VIP invite code"
+)
+def claim_vip_invite(
+    body: ClaimVipInviteRequest, db: Session = Depends(get_db)
+) -> ClaimVipInviteResponse:
     """Activate Founders Circle / VIP membership using a single-use invite code."""
     svc = VipService(db)
     try:
@@ -59,6 +65,7 @@ def claim_vip_invite(body: ClaimVipInviteRequest, db: Session = Depends(get_db))
 # VIP status check
 # ---------------------------------------------------------------------------
 
+
 @router.get(
     "/artists/{artist_id}/vip/status",
     response_model=VipStatusResponse,
@@ -73,13 +80,14 @@ def get_vip_status(artist_id: str, db: Session = Depends(get_db)) -> VipStatusRe
         is_vip=membership is not None,
         tier_level=VipTierLevel(membership.tier_level) if membership else None,
         membership=FoundersCircleMemberSchema.model_validate(membership) if membership else None,
-        persona=None  # populated by separate /persona/enrich endpoint
+        persona=None,  # populated by separate /persona/enrich endpoint
     )
 
 
 # ---------------------------------------------------------------------------
 # VIP Drop catalogue
 # ---------------------------------------------------------------------------
+
 
 @router.get(
     "/artists/{artist_id}/vip/drops",
@@ -96,6 +104,7 @@ def get_vip_drops(artist_id: str, db: Session = Depends(get_db)) -> list[VipDrop
 # ---------------------------------------------------------------------------
 # Admin: grant / revoke VIP
 # ---------------------------------------------------------------------------
+
 
 class AdminVipGrantResponse(BaseModel):
     success: bool
@@ -150,6 +159,7 @@ def admin_revoke_vip(artist_id: str, db: Session = Depends(get_db)) -> AdminRevo
 # ---------------------------------------------------------------------------
 # Admin: generate invite codes
 # ---------------------------------------------------------------------------
+
 
 class GenerateInviteCodesRequest(BaseModel):
     count: int = 1

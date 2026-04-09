@@ -28,4 +28,6 @@ class SupportMessage(Base):
     confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
     metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
     is_read: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )

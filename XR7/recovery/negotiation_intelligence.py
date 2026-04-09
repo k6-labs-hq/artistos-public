@@ -17,7 +17,7 @@ def _claim_variance(claim: Claim) -> float:
 def _payer(claim: Claim) -> str:
     evidence = claim.evidence or {}
     if isinstance(evidence, dict):
-        contracts = ((evidence.get("legal_support") or {}).get("contract_basis") or [])
+        contracts = (evidence.get("legal_support") or {}).get("contract_basis") or []
         if contracts and isinstance(contracts, list):
             return str((contracts[0] or {}).get("counterparty") or "Unknown")
     return "Unknown"
@@ -36,8 +36,16 @@ def build_negotiation_intel(target_claim: Claim, historical_claims: list[Claim])
     if not cohort:
         cohort = [row for row in historical_claims if str(row.claim_type or "") == claim_type]
 
-    recovered_values = [float(row.recovered_amount or 0.0) for row in cohort if float(row.recovered_amount or 0.0) > 0.0]
-    avg_recovered = mean(recovered_values) if recovered_values else float(target_claim.recovered_amount or 0.0 or 500.0)
+    recovered_values = [
+        float(row.recovered_amount or 0.0)
+        for row in cohort
+        if float(row.recovered_amount or 0.0) > 0.0
+    ]
+    avg_recovered = (
+        mean(recovered_values)
+        if recovered_values
+        else float(target_claim.recovered_amount or 0.0 or 500.0)
+    )
     variance_values = [_claim_variance(row) for row in cohort]
     variance_avg = mean(variance_values) if variance_values else _claim_variance(target_claim)
 

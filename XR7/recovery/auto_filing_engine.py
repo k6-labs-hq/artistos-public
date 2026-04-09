@@ -25,7 +25,9 @@ def auto_follow_up_plan(claim: dict[str, Any], cadence_days: int = 7) -> dict[st
     }
 
 
-def auto_escalation_plan(claim: dict[str, Any], payer_profile: dict[str, Any] | None = None) -> dict[str, Any]:
+def auto_escalation_plan(
+    claim: dict[str, Any], payer_profile: dict[str, Any] | None = None
+) -> dict[str, Any]:
     profile = payer_profile or {}
     triggers = list(profile.get("auto_escalation_triggers") or ["escalate_after_21_days"])
     return {

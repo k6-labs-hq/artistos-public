@@ -1,4 +1,3 @@
-
 import enum
 import uuid
 from datetime import datetime, timezone
@@ -31,7 +30,9 @@ class Artist(Base):
     role: Mapped[str | None] = mapped_column(String, nullable=True)
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
     stage_names: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     status: Mapped[str] = mapped_column(String, default=ArtistLifecycleStatus.NEW.value, index=True)
     onboarded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     activated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
@@ -39,13 +40,19 @@ class Artist(Base):
     last_name: Mapped[str | None] = mapped_column(String, nullable=True)
     country_code: Mapped[str] = mapped_column(String, nullable=False, default="US")
     trolley_recipient_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
-    payout_account_status: Mapped[str] = mapped_column(String, nullable=False, default="not_started")
+    payout_account_status: Mapped[str] = mapped_column(
+        String, nullable=False, default="not_started"
+    )
     payout_method_type: Mapped[str | None] = mapped_column(String, nullable=True)
     payout_last4: Mapped[str | None] = mapped_column(String, nullable=True)
     tax_form_status: Mapped[str] = mapped_column(String, nullable=False, default="pending")
-    default_attorney_grace_period_days: Mapped[int] = mapped_column(Integer, nullable=False, default=60)
+    default_attorney_grace_period_days: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=60
+    )
     primary_jurisdiction: Mapped[str] = mapped_column(String, nullable=False, default="USA")
-    preferred_contract_type: Mapped[str] = mapped_column(String, nullable=False, default="recording")
+    preferred_contract_type: Mapped[str] = mapped_column(
+        String, nullable=False, default="recording"
+    )
     xr7_future_leakage_prevented: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     is_founder: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     founder_slot_number: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)

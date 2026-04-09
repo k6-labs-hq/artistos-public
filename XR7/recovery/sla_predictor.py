@@ -4,7 +4,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 
 
-def predict_claim_sla_dates(claim: dict[str, Any], payer_behavior: dict[str, Any] | None = None) -> dict[str, Any]:
+def predict_claim_sla_dates(
+    claim: dict[str, Any], payer_behavior: dict[str, Any] | None = None
+) -> dict[str, Any]:
     """Predict payer response/settlement/deposit dates for a claim."""
     created_at = claim.get("created_at")
     if isinstance(created_at, str):

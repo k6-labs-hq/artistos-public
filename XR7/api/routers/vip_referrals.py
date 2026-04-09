@@ -4,6 +4,7 @@ Endpoints:
   POST /artists/{artist_id}/vip/referral      – create a referral invite
   GET  /artists/{artist_id}/vip/referrals     – list artist's referrals
 """
+
 from __future__ import annotations
 
 import os
@@ -62,6 +63,7 @@ def list_vip_referrals(
     if not svc.is_vip(artist_id):
         raise HTTPException(status_code=403, detail="VIP membership required.")
     from XR7.models.vip import VipReferral
+
     rows = (
         db.query(VipReferral)
         .filter(VipReferral.referrer_artist_id == artist_id)

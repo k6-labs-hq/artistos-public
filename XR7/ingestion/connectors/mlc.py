@@ -24,9 +24,7 @@ class MLCConnector(BaseConnector):
         super().__init__(config)
         self.api_key = config.get("api_key") or os.environ.get("MLC_API_KEY", "")
         self.base_url = (
-            config.get("base_url")
-            or os.environ.get("MLC_API_BASE_URL")
-            or "https://api.themlc.com"
+            config.get("base_url") or os.environ.get("MLC_API_BASE_URL") or "https://api.themlc.com"
         ).rstrip("/")
         self.royalties_endpoint = config.get("royalties_endpoint", "/v1/royalties")
         self.timeout_seconds = float(config.get("timeout_seconds", 15.0))
@@ -41,7 +39,9 @@ class MLCConnector(BaseConnector):
         """
         return bool(self.api_key and self.base_url)
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         if not self.connect():
             raise RuntimeError(
                 "MLC connector is missing credentials. Set MLC_API_KEY "
@@ -151,16 +151,18 @@ class MLCConnector(BaseConnector):
             if unit_value == 0.0 and quantity > 0:
                 unit_value = amount / quantity
 
-            normalized.append({
-                "source": "MLC",
-                "event_type": record.get("event_type", "MECHANICAL"),
-                "artist_id": record.get("artist_id"),
-                "work_id": record.get("work_id", record.get("iswc", record.get("isrc"))),
-                "quantity": quantity,
-                "unit_value": unit_value,
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("territory", record.get("country")),
-                "timestamp": record.get("timestamp", record.get("statement_date")),
-                "platform": "MLC",
-            })
+            normalized.append(
+                {
+                    "source": "MLC",
+                    "event_type": record.get("event_type", "MECHANICAL"),
+                    "artist_id": record.get("artist_id"),
+                    "work_id": record.get("work_id", record.get("iswc", record.get("isrc"))),
+                    "quantity": quantity,
+                    "unit_value": unit_value,
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("territory", record.get("country")),
+                    "timestamp": record.get("timestamp", record.get("statement_date")),
+                    "platform": "MLC",
+                }
+            )
         return normalized

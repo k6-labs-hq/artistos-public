@@ -14,6 +14,7 @@ from shared.utils.numbers import money_round, safe_float
 # safe_float – typical inputs
 # ---------------------------------------------------------------------------
 
+
 class TestSafeFloatTypicalInputs:
     def test_plain_integer_string(self):
         assert safe_float("42") == 42.0
@@ -56,6 +57,7 @@ class TestSafeFloatTypicalInputs:
 # safe_float – empty / sentinel tokens → default
 # ---------------------------------------------------------------------------
 
+
 class TestSafeFloatSentinelTokens:
     @pytest.mark.parametrize("sentinel", ["", "-", "N/A", "na", "None", "n/a"])
     def test_sentinel_returns_default(self, sentinel):
@@ -77,6 +79,7 @@ class TestSafeFloatSentinelTokens:
 # ---------------------------------------------------------------------------
 # safe_float – error paths
 # ---------------------------------------------------------------------------
+
 
 class TestSafeFloatErrorPaths:
     def test_unparseable_string_returns_default(self):
@@ -113,6 +116,7 @@ class TestSafeFloatErrorPaths:
 # money_round – typical inputs
 # ---------------------------------------------------------------------------
 
+
 class TestMoneyRoundTypical:
     def test_rounds_down(self):
         assert money_round(1.234) == 1.23
@@ -143,6 +147,7 @@ class TestMoneyRoundTypical:
 # money_round – edge cases
 # ---------------------------------------------------------------------------
 
+
 class TestMoneyRoundEdgeCases:
     def test_very_small_positive(self):
         assert money_round(0.001) == 0.0
@@ -164,6 +169,7 @@ class TestMoneyRoundEdgeCases:
 # ---------------------------------------------------------------------------
 # Additional branches and edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestSafeFloatAdditional:
     def test_dollar_sign_alone_returns_default(self):
@@ -190,22 +196,26 @@ class TestSafeFloatAdditional:
         # float('nan') → str → "nan" → not in _EMPTY_TOKENS → float("nan") = nan.
         # The function does NOT substitute the default for NaN inputs.
         import math
+
         result = safe_float(float("nan"))
         assert math.isnan(result)
 
     def test_string_nan_passes_through_as_nan(self):
         # "nan" is not in _EMPTY_TOKENS (which has "na", not "nan").
         import math
+
         result = safe_float("nan")
         assert math.isnan(result)
 
     def test_float_infinity_passes_through(self):
         import math
+
         result = safe_float(float("inf"))
         assert math.isinf(result)
 
     def test_string_inf_passes_through(self):
         import math
+
         result = safe_float("inf")
         assert math.isinf(result)
 
@@ -225,12 +235,14 @@ class TestMoneyRoundAdditional:
     def test_nan_input_propagates(self):
         # round(nan, 2) returns nan without raising in CPython 3.x.
         import math
+
         result = money_round(float("nan"))
         assert math.isnan(result)
 
     def test_infinity_input_propagates(self):
         # round(inf, 2) returns inf in CPython 3 (ndigits form does not overflow).
         import math
+
         result = money_round(float("inf"))
         assert math.isinf(result)
 

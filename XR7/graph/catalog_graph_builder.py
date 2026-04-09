@@ -24,7 +24,12 @@ def build_catalog_graph(
         nodes.append({"id": work_id, "type": "work", "title": title, "isrc": isrc})
 
         if not isrc or not title:
-            missing_metadata.append({"work_id": work_id, "missing": [k for k, v in {"isrc": isrc, "title": title}.items() if not v]})
+            missing_metadata.append(
+                {
+                    "work_id": work_id,
+                    "missing": [k for k, v in {"isrc": isrc, "title": title}.items() if not v],
+                }
+            )
 
         if isrc:
             if isrc in seen_isrc and seen_isrc[isrc] != work_id:

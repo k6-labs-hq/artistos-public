@@ -52,9 +52,7 @@ class ContractDocumentIngestion:
             text = "\n".join(parts).strip()
         except Exception:
             method = "pdf_text_unavailable"
-            warnings.append(
-                "Could not extract text from PDF (install pypdf for text PDFs)."
-            )
+            warnings.append("Could not extract text from PDF (install pypdf for text PDFs).")
 
         if not text:
             # OCR fallback for scanned PDFs when optional deps are available.

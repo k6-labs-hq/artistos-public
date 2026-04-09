@@ -50,7 +50,9 @@ def verify_plugin_signature(*, entrypoint: str, plugin_signature: str | None) ->
         return
     if not plugin_signature:
         raise ParserPluginError("Plugin signature is required by policy")
-    expected = hmac.new(secret.encode("utf-8"), entrypoint.encode("utf-8"), hashlib.sha256).hexdigest()
+    expected = hmac.new(
+        secret.encode("utf-8"), entrypoint.encode("utf-8"), hashlib.sha256
+    ).hexdigest()
     if not hmac.compare_digest(expected, plugin_signature):
         raise ParserPluginError("Plugin signature verification failed")
 

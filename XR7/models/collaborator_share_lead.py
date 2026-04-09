@@ -2,6 +2,7 @@
 artist's analysis so they can be invited to the platform (viral growth loop) and
 logged in the CRM.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -28,9 +29,7 @@ class CollaboratorShareLead(Base):
 
     __tablename__ = "collaborator_share_leads"
 
-    id: Mapped[str] = mapped_column(
-        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     # The creator who ran the analysis that revealed this collaborator
     source_artist_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("artists.id"), nullable=False, index=True
@@ -38,9 +37,7 @@ class CollaboratorShareLead(Base):
     # Human-readable name of the collaborator (required)
     collaborator_name: Mapped[str] = mapped_column(String(255), nullable=False)
     # Optional contact info — filled in by the creator or enriched later
-    collaborator_email: Mapped[str | None] = mapped_column(
-        String(255), nullable=True, index=True
-    )
+    collaborator_email: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
     collaborator_role: Mapped[str] = mapped_column(
         String(50), nullable=False, default=CollaboratorRole.CO_WRITER.value
     )

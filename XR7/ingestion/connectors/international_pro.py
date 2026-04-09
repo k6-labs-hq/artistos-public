@@ -57,7 +57,9 @@ class InternationalPROConnector(BaseConnector):
     def connect(self) -> bool:
         return bool(self.api_key and self.base_url)
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         if not self.connect():
             raise RuntimeError(
                 f"{self.org_name} connector is missing credentials. Set {self.env_key}."
@@ -159,18 +161,20 @@ class InternationalPROConnector(BaseConnector):
             if unit_value == 0.0 and quantity > 0:
                 unit_value = amount / quantity
 
-            normalized.append({
-                "source": self.org_name,
-                "event_type": record.get("event_type", "PERFORMANCE"),
-                "artist_id": record.get("artist_id"),
-                "work_id": record.get("work_id", record.get("iswc", record.get("isrc"))),
-                "quantity": quantity,
-                "unit_value": unit_value,
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("territory", record.get("country")),
-                "timestamp": record.get("timestamp", record.get("statement_date")),
-                "platform": self.org_name,
-            })
+            normalized.append(
+                {
+                    "source": self.org_name,
+                    "event_type": record.get("event_type", "PERFORMANCE"),
+                    "artist_id": record.get("artist_id"),
+                    "work_id": record.get("work_id", record.get("iswc", record.get("isrc"))),
+                    "quantity": quantity,
+                    "unit_value": unit_value,
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("territory", record.get("country")),
+                    "timestamp": record.get("timestamp", record.get("statement_date")),
+                    "platform": self.org_name,
+                }
+            )
         return normalized
 
 

@@ -170,9 +170,11 @@ class TestBMATMatchAudio:
         mock_response.json.return_value = raw_response
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(adapter, "_client_") as mock_client_fn, \
-             patch.object(adapter._cb, "is_open", return_value=False), \
-             patch.object(adapter._cb, "record_success"):
+        with (
+            patch.object(adapter, "_client_") as mock_client_fn,
+            patch.object(adapter._cb, "is_open", return_value=False),
+            patch.object(adapter._cb, "record_success"),
+        ):
             mock_client = MagicMock()
             mock_client.post = AsyncMock(return_value=mock_response)
             mock_client_fn.return_value = mock_client
@@ -204,9 +206,11 @@ class TestBMATSubmitReference:
         mock_response.json.return_value = {"track_id": "ref-bmat-999"}
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(adapter, "_client_") as mock_client_fn, \
-             patch.object(adapter._cb, "is_open", return_value=False), \
-             patch.object(adapter._cb, "record_success"):
+        with (
+            patch.object(adapter, "_client_") as mock_client_fn,
+            patch.object(adapter._cb, "is_open", return_value=False),
+            patch.object(adapter._cb, "record_success"),
+        ):
             mock_client = MagicMock()
             mock_client.post = AsyncMock(return_value=mock_response)
             mock_client_fn.return_value = mock_client
@@ -232,9 +236,11 @@ class TestBMATDetectUsage:
         }
         mock_response.raise_for_status = MagicMock()
 
-        with patch.object(adapter, "_client_") as mock_client_fn, \
-             patch.object(adapter._cb, "is_open", return_value=False), \
-             patch.object(adapter._cb, "record_success"):
+        with (
+            patch.object(adapter, "_client_") as mock_client_fn,
+            patch.object(adapter._cb, "is_open", return_value=False),
+            patch.object(adapter._cb, "record_success"),
+        ):
             mock_client = MagicMock()
             mock_client.get = AsyncMock(return_value=mock_response)
             mock_client_fn.return_value = mock_client

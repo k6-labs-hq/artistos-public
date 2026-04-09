@@ -8,7 +8,9 @@ class IngestionPipeline:
         self.db_session = db_session
         self.connectors = connectors
 
-    def run_historical_ingestion(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def run_historical_ingestion(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         all_records = []
         for connector in self.connectors:
             raw = connector.fetch_historical(artist_id, start_date, end_date)

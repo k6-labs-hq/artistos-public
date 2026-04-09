@@ -63,7 +63,9 @@ def test_branding_observability_records_white_label_disabled_event():
     reset_branding_observability()
 
     org_id = f"org-disabled-{uuid.uuid4().hex[:8]}"
-    profile = get_branding_profile(_FakeSession(row=_profile_row(org_id, white_label_enabled=False)), org_id)
+    profile = get_branding_profile(
+        _FakeSession(row=_profile_row(org_id, white_label_enabled=False)), org_id
+    )
 
     assert profile["org_id"] == org_id
     counters = branding_observability_snapshot()

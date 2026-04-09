@@ -6,6 +6,7 @@ GET  /artists/{artist_id}/recovery-score/history
 GET  /artists/{artist_id}/recovery-score/actions
 POST /admin/advances/recovery-score/{artist_id}
 """
+
 from __future__ import annotations
 
 import hmac
@@ -55,6 +56,7 @@ def get_recovery_score_history(
     """Historical recovery credit score timeline."""
     get_artist_or_404(artist_id, db)
     from XR7.recovery.immutable_ledger import ImmutableLedgerService
+
     ledger = ImmutableLedgerService(db)
     entries = ledger.list_entries(artist_id)
     history = [
@@ -66,11 +68,14 @@ def get_recovery_score_history(
         for e in entries
         if e.entry_type == "recovery_credit_score_calculated"
     ]
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "history": history,
-        "count": len(history),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "history": history,
+            "count": len(history),
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/recovery-score/actions")
@@ -83,12 +88,15 @@ def get_recovery_score_actions(
     get_artist_or_404(artist_id, db)
     scorer = RecoveryCreditScore(db)
     result = scorer.calculate(artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "actions": result.get("actions", []),
-        "current_score": result.get("score"),
-        "current_tier": result.get("tier"),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "actions": result.get("actions", []),
+            "current_score": result.get("score"),
+            "current_tier": result.get("tier"),
+        },
+    )
 
 
 class AdvanceQualificationRequest(BaseModel):

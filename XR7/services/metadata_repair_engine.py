@@ -72,8 +72,18 @@ def _normalize_title_for_storage(value: str | None) -> str:
 def _era_normalized_title(value: str | None) -> str:
     """Normalize era/version suffixes to a canonical title for matching."""
     title = _normalize_title_for_storage(value)
-    title = re.sub(r"\s*\((remaster(ed)?|live|acoustic|radio edit|mono|stereo|deluxe)[^)]*\)", "", title, flags=re.I)
-    title = re.sub(r"\s*-\s*(remaster(ed)?|live|acoustic|radio edit|mono|stereo|deluxe)\b.*$", "", title, flags=re.I)
+    title = re.sub(
+        r"\s*\((remaster(ed)?|live|acoustic|radio edit|mono|stereo|deluxe)[^)]*\)",
+        "",
+        title,
+        flags=re.I,
+    )
+    title = re.sub(
+        r"\s*-\s*(remaster(ed)?|live|acoustic|radio edit|mono|stereo|deluxe)\b.*$",
+        "",
+        title,
+        flags=re.I,
+    )
     return re.sub(r"\s+", " ", title).strip()
 
 
@@ -138,14 +148,24 @@ class MetadataRepairEngine:
             "rationale": repair_rationale,
             "ts": _now().isoformat(),
         }
-        issue.chain_of_custody_hash = hashlib.sha256(_json_dump(chain_input).encode("utf-8")).hexdigest()
+        issue.chain_of_custody_hash = hashlib.sha256(
+            _json_dump(chain_input).encode("utf-8")
+        ).hexdigest()
         if repair_status == "AUTO_REPAIRED":
             issue.repaired_at = _now()
         return issue
 
-    def _scan_statement_crosswalk_gaps(self, artist_id: str, works: list[Work], statements: list[Statement]) -> None:
-        has_pro_like = any((s.format_detected or "").lower() in {"ascap", "bmi", "sesac", "pro"} for s in statements)
-        has_dist_like = any((s.format_detected or "").lower() in {"distrokid", "tunecore", "cd_baby", "generic"} for s in statements)
+    def _scan_statement_crosswalk_gaps(
+        self, artist_id: str, works: list[Work], statements: list[Statement]
+    ) -> None:
+        has_pro_like = any(
+            (s.format_detected or "").lower() in {"ascap", "bmi", "sesac", "pro"}
+            for s in statements
+        )
+        has_dist_like = any(
+            (s.format_detected or "").lower() in {"distrokid", "tunecore", "cd_baby", "generic"}
+            for s in statements
+        )
         if not (has_pro_like and has_dist_like):
             return
         for work in works:
@@ -189,8 +209,14 @@ class MetadataRepairEngine:
                 projected_leakage_avoided=80.0,
             )
 
-    def _scan_pro_registration_mismatch(self, artist_id: str, works: list[Work], statements: list[Statement]) -> None:
-        pro_statements = [s for s in statements if (s.format_detected or "").strip().lower() in {"ascap", "bmi", "sesac", "pro"}]
+    def _scan_pro_registration_mismatch(
+        self, artist_id: str, works: list[Work], statements: list[Statement]
+    ) -> None:
+        pro_statements = [
+            s
+            for s in statements
+            if (s.format_detected or "").strip().lower() in {"ascap", "bmi", "sesac", "pro"}
+        ]
         if not pro_statements:
             return
         for work in works:
@@ -221,13 +247,22 @@ class MetadataRepairEngine:
             after: dict[str, Any] = {}
             if not work.isrc:
                 # Deterministic pseudo-ISRC format: AA + 3 alnum + 7 digits.
-                digest = hashlib.sha256(f"{artist_id}:{work.id}:isrc".encode("utf-8")).hexdigest().upper()
+                digest = (
+                    hashlib.sha256(f"{artist_id}:{work.id}:isrc".encode("utf-8"))
+                    .hexdigest()
+                    .upper()
+                )
                 registrant = re.sub(r"[^A-Z0-9]", "", digest)[:3].ljust(3, "0")
                 year_code = "26"
                 designation = "".join(str((ord(c) % 10)) for c in digest[:5])[:5]
                 after["isrc"] = f"XR{registrant}{year_code}{designation}"
             if not work.iswc:
-                digits = "".join(str((ord(c) % 10)) for c in hashlib.sha256(f"{artist_id}:{work.id}:iswc".encode("utf-8")).hexdigest()[:10])
+                digits = "".join(
+                    str((ord(c) % 10))
+                    for c in hashlib.sha256(
+                        f"{artist_id}:{work.id}:iswc".encode("utf-8")
+                    ).hexdigest()[:10]
+                )
                 after["iswc"] = f"T-{digits[:3]}.{digits[3:6]}.{digits[6:9]}-{digits[9:10]}"
             self._record_issue(
                 artist_id=artist_id,
@@ -243,7 +278,9 @@ class MetadataRepairEngine:
                 projected_leakage_avoided=75.0,
             )
 
-    def _scan_artist_alias_unification(self, artist_id: str, artist: Artist | None, statements: list[Statement]) -> None:
+    def _scan_artist_alias_unification(
+        self, artist_id: str, artist: Artist | None, statements: list[Statement]
+    ) -> None:
         if not artist:
             return
         aliases = {str(v).strip() for v in (artist.stage_names or []) if str(v).strip()}
@@ -275,7 +312,9 @@ class MetadataRepairEngine:
             projected_leakage_avoided=55.0,
         )
 
-    def _audit(self, artist_id: str, works: list[Work], events: list[Event], statements: list[Statement]) -> None:
+    def _audit(
+        self, artist_id: str, works: list[Work], events: list[Event], statements: list[Statement]
+    ) -> None:
         artist = self.db.query(Artist).filter(Artist.id == artist_id).first()
         artist_name_norm = _normalize_text(artist.name if artist else "")
 
@@ -410,7 +449,10 @@ class MetadataRepairEngine:
                     source_system="catalog",
                     work_id=group[0].id,
                     event_id=None,
-                    before_value={"titles": sorted(unique_titles), "artist_name_norm": artist_name_norm},
+                    before_value={
+                        "titles": sorted(unique_titles),
+                        "artist_name_norm": artist_name_norm,
+                    },
                     after_value={"normalized_title": _normalize_title_for_storage(group[0].title)},
                     confidence_score=0.88,
                     projected_leakage_avoided=70.0,
@@ -440,7 +482,9 @@ class MetadataRepairEngine:
         self._scan_artist_alias_unification(artist_id, artist, statements)
         self._infer_missing_identifiers_with_ml(artist_id, works)
 
-    def _apply_auto_repair(self, issue: MetadataIssue, works_by_id: dict[str, Work], events: list[Event]) -> bool:
+    def _apply_auto_repair(
+        self, issue: MetadataIssue, works_by_id: dict[str, Work], events: list[Event]
+    ) -> bool:
         if issue.confidence_score < self.confidence_threshold:
             issue.repair_status = "REQUIRES_REVIEW"
             issue.repair_rationale = "Confidence below auto-repair threshold"
@@ -449,7 +493,11 @@ class MetadataRepairEngine:
         before = _json_load(issue.before_value_json)
         after = _json_load(issue.after_value_json)
 
-        if issue.issue_type in {"TITLE_VARIANT", "TITLE_ERA_NORMALIZATION"} and issue.work_id and issue.work_id in works_by_id:
+        if (
+            issue.issue_type in {"TITLE_VARIANT", "TITLE_ERA_NORMALIZATION"}
+            and issue.work_id
+            and issue.work_id in works_by_id
+        ):
             work = works_by_id[issue.work_id]
             work.title = str(after.get("title") or work.title)
             issue.repair_status = "AUTO_REPAIRED"
@@ -457,27 +505,43 @@ class MetadataRepairEngine:
             issue.repaired_at = _now()
             return True
 
-        if issue.issue_type in {"MALFORMED_ISRC", "MISSING_ISRC"} and issue.work_id and issue.work_id in works_by_id:
+        if (
+            issue.issue_type in {"MALFORMED_ISRC", "MISSING_ISRC"}
+            and issue.work_id
+            and issue.work_id in works_by_id
+        ):
             work = works_by_id[issue.work_id]
             candidate = str(after.get("isrc") or "").upper().strip()
             if candidate and _valid_isrc(candidate):
                 work.isrc = candidate
                 issue.repair_status = "AUTO_REPAIRED"
-                issue.repair_rationale = "Resolved ISRC conflict with normalized high-confidence identifier"
+                issue.repair_rationale = (
+                    "Resolved ISRC conflict with normalized high-confidence identifier"
+                )
                 issue.repaired_at = _now()
                 return True
 
-        if issue.issue_type in {"MALFORMED_ISWC", "MISSING_ISWC"} and issue.work_id and issue.work_id in works_by_id:
+        if (
+            issue.issue_type in {"MALFORMED_ISWC", "MISSING_ISWC"}
+            and issue.work_id
+            and issue.work_id in works_by_id
+        ):
             work = works_by_id[issue.work_id]
             candidate = str(after.get("iswc") or "").upper().strip()
             if candidate and _valid_iswc(candidate):
                 work.iswc = candidate
                 issue.repair_status = "AUTO_REPAIRED"
-                issue.repair_rationale = "Resolved ISWC conflict with normalized high-confidence identifier"
+                issue.repair_rationale = (
+                    "Resolved ISWC conflict with normalized high-confidence identifier"
+                )
                 issue.repaired_at = _now()
                 return True
 
-        if issue.issue_type == "MISSING_IDENTIFIER_INFERRED" and issue.work_id and issue.work_id in works_by_id:
+        if (
+            issue.issue_type == "MISSING_IDENTIFIER_INFERRED"
+            and issue.work_id
+            and issue.work_id in works_by_id
+        ):
             work = works_by_id[issue.work_id]
             candidate_isrc = str(after.get("isrc") or "").strip().upper()
             candidate_iswc = str(after.get("iswc") or "").strip().upper()
@@ -490,7 +554,9 @@ class MetadataRepairEngine:
                 changed = True
             if changed:
                 issue.repair_status = "AUTO_REPAIRED"
-                issue.repair_rationale = "Applied ML-inferred identifiers above confidence threshold"
+                issue.repair_rationale = (
+                    "Applied ML-inferred identifiers above confidence threshold"
+                )
                 issue.repaired_at = _now()
                 return True
 
@@ -506,7 +572,9 @@ class MetadataRepairEngine:
                     if dup is not None:
                         self.db.delete(dup)
                 issue.repair_status = "AUTO_REPAIRED"
-                issue.repair_rationale = "Merged duplicate work registrations and re-linked royalty events"
+                issue.repair_rationale = (
+                    "Merged duplicate work registrations and re-linked royalty events"
+                )
                 issue.repaired_at = _now()
                 return True
 
@@ -594,7 +662,9 @@ class MetadataRepairEngine:
             "recommended_fixes": recommended,
             "issues_found": len(issues),
             "issues_auto_repaired": len(auto_repaired),
-            "issues_requiring_review": len([i for i in issues if i.repair_status == "REQUIRES_REVIEW"]),
+            "issues_requiring_review": len(
+                [i for i in issues if i.repair_status == "REQUIRES_REVIEW"]
+            ),
             "projected_leakage_avoided": avoided,
         }
 
@@ -615,9 +685,7 @@ class MetadataRepairEngine:
         )
         if existing:
             existing.estimated_recoverable = float(health.get("projected_leakage_avoided") or 0.0)
-            existing.description = (
-                "Metadata drift is likely to cause future leakage unless pending repairs are reviewed and applied."
-            )
+            existing.description = "Metadata drift is likely to cause future leakage unless pending repairs are reviewed and applied."
             return
 
         self.db.add(
@@ -687,7 +755,11 @@ class MetadataRepairEngine:
         works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
         events = (
             self.db.query(Event)
-            .filter(Event.artist_id == artist_id, Event.timestamp >= start_date, Event.timestamp <= end_date)
+            .filter(
+                Event.artist_id == artist_id,
+                Event.timestamp >= start_date,
+                Event.timestamp <= end_date,
+            )
             .all()
         )
         statements = self.db.query(Statement).filter(Statement.artist_id == artist_id).all()
@@ -730,7 +802,9 @@ class MetadataRepairEngine:
         health = self._metadata_health(artist_id)
         artist = self.db.query(Artist).filter(Artist.id == artist_id).first()
         if artist is not None and hasattr(artist, "xr7_future_leakage_prevented"):
-            artist.xr7_future_leakage_prevented = float(health.get("projected_leakage_avoided") or 0.0)
+            artist.xr7_future_leakage_prevented = float(
+                health.get("projected_leakage_avoided") or 0.0
+            )
         self._emit_future_risk_anomaly(artist_id, health)
         self._apply_expiration_feedback(artist_id, health)
         self.db.commit()
@@ -769,7 +843,11 @@ class MetadataRepairEngine:
                     "repair_rationale": row.repair_rationale,
                     "chain_of_custody_hash": row.chain_of_custody_hash,
                     "projected_leakage_avoided": row.projected_leakage_avoided,
-                    "metadata_repair_event_date": row.repaired_at.isoformat() if row.repaired_at else (row.created_at.isoformat() if row.created_at else None),
+                    "metadata_repair_event_date": (
+                        row.repaired_at.isoformat()
+                        if row.repaired_at
+                        else (row.created_at.isoformat() if row.created_at else None)
+                    ),
                     "created_at": row.created_at.isoformat() if row.created_at else None,
                     "repaired_at": row.repaired_at.isoformat() if row.repaired_at else None,
                 }

@@ -30,18 +30,18 @@ from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 # Maps distributor name → required credential environment variables
 _DISTRIBUTOR_ENV_VARS: dict[str, tuple[str, ...]] = {
-    "Amuse":          ("AMUSE_API_KEY",),
+    "Amuse": ("AMUSE_API_KEY",),
     "United Masters": ("UNITEDMASTERS_API_KEY",),
-    "ONErpm":         ("ONERPM_API_KEY",),
-    "Stem":           ("STEM_CLIENT_ID", "STEM_CLIENT_SECRET"),
-    "LANDR":          ("LANDR_API_KEY",),
-    "Ditto Music":    ("DITTO_API_KEY",),
-    "ReverbNation":   ("REVERBNATION_API_KEY",),
-    "Bandcamp":       ("BANDCAMP_CLIENT_ID", "BANDCAMP_CLIENT_SECRET"),
+    "ONErpm": ("ONERPM_API_KEY",),
+    "Stem": ("STEM_CLIENT_ID", "STEM_CLIENT_SECRET"),
+    "LANDR": ("LANDR_API_KEY",),
+    "Ditto Music": ("DITTO_API_KEY",),
+    "ReverbNation": ("REVERBNATION_API_KEY",),
+    "Bandcamp": ("BANDCAMP_CLIENT_ID", "BANDCAMP_CLIENT_SECRET"),
     # Legacy / large distributors that also use CSV as primary path
-    "DistroKid":      ("DISTROKID_USERNAME", "DISTROKID_PASSWORD"),
-    "TuneCore":       ("TUNECORE_API_KEY",),
-    "CD Baby":        ("CDBABY_API_KEY",),
+    "DistroKid": ("DISTROKID_USERNAME", "DISTROKID_PASSWORD"),
+    "TuneCore": ("TUNECORE_API_KEY",),
+    "CD Baby": ("CDBABY_API_KEY",),
 }
 
 
@@ -84,8 +84,7 @@ class DistributorConnector(BaseConnector):
         set, ``False`` otherwise.  Does NOT make a real network call.
         """
         return all(
-            self.config.get(v.lower()) or os.environ.get(v, "")
-            for v in self._required_env_vars()
+            self.config.get(v.lower()) or os.environ.get(v, "") for v in self._required_env_vars()
         )
 
     def fetch_historical(
@@ -110,18 +109,20 @@ class DistributorConnector(BaseConnector):
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []
         for record in raw_data:
-            normalized.append({
-                "source": self.distributor_name,
-                "event_type": "STREAM",
-                "artist_id": record.get("artist_id"),
-                "work_id": record.get("work_id"),
-                "quantity": record.get("streams", record.get("quantity", 0)),
-                "unit_value": record.get("rate", record.get("unit_value", 0.004)),
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("country", record.get("territory")),
-                "timestamp": record.get("timestamp"),
-                "platform": self.distributor_name,
-            })
+            normalized.append(
+                {
+                    "source": self.distributor_name,
+                    "event_type": "STREAM",
+                    "artist_id": record.get("artist_id"),
+                    "work_id": record.get("work_id"),
+                    "quantity": record.get("streams", record.get("quantity", 0)),
+                    "unit_value": record.get("rate", record.get("unit_value", 0.004)),
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("country", record.get("territory")),
+                    "timestamp": record.get("timestamp"),
+                    "platform": self.distributor_name,
+                }
+            )
         return normalized
 
     @classmethod

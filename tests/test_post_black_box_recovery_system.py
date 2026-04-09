@@ -70,10 +70,25 @@ def test_discovery_rule_engine_flags_urgent_deadline():
 def test_leakage_benchmark_engine_returns_percentiles():
     engine = LeakageBenchmarkEngine()
     out = engine.compare_against_cohort(
-        {"estimated_leaked": 1000, "total_estimated_earnings": 10000, "recovered": 200, "expired": 300},
+        {
+            "estimated_leaked": 1000,
+            "total_estimated_earnings": 10000,
+            "recovered": 200,
+            "expired": 300,
+        },
         [
-            {"estimated_leaked": 800, "total_estimated_earnings": 10000, "recovered": 300, "expired": 100},
-            {"estimated_leaked": 1400, "total_estimated_earnings": 10000, "recovered": 150, "expired": 400},
+            {
+                "estimated_leaked": 800,
+                "total_estimated_earnings": 10000,
+                "recovered": 300,
+                "expired": 100,
+            },
+            {
+                "estimated_leaked": 1400,
+                "total_estimated_earnings": 10000,
+                "recovered": 150,
+                "expired": 400,
+            },
         ],
     )
     assert "leakage_percentile" in out
@@ -111,7 +126,13 @@ def test_claim_evidence_package_builder_strength_and_checklist():
     package = builder.build(
         claim={"id": "c1", "artist_id": "ar1", "governing_law_state": "US"},
         anomaly={"id": "a1", "subtype": "RATE_DRIFT_UNDERPAYMENT", "description": "Underpayment"},
-        recoverability_payload=build_recoverability_payload({"subtype": "RATE_DRIFT_UNDERPAYMENT", "estimated_recoverable": 1200, "confidence_score": 0.9}),
+        recoverability_payload=build_recoverability_payload(
+            {
+                "subtype": "RATE_DRIFT_UNDERPAYMENT",
+                "estimated_recoverable": 1200,
+                "confidence_score": 0.9,
+            }
+        ),
         trust_score=88,
     )
     assert package["claim_strength_rating"] in {"A", "B", "C", "D"}
@@ -125,7 +146,12 @@ def test_recovery_router_discovery_rule_endpoint():
         token = _artist_token(artist.id)
         resp = client.post(
             f"/artists/{artist.id}/recovery/discovery-rule",
-            json={"statement_receipt_date": (datetime.now(timezone.utc) - timedelta(days=10)).isoformat(), "jurisdiction": "US"},
+            json={
+                "statement_receipt_date": (
+                    datetime.now(timezone.utc) - timedelta(days=10)
+                ).isoformat(),
+                "jurisdiction": "US",
+            },
             headers={"Authorization": f"Bearer {token}"},
         )
         assert resp.status_code == 200

@@ -82,15 +82,26 @@ def test_orchestrator_routes_preparing_artist_to_prep_then_recovery(monkeypatch)
             **state,
             "artist_status": "ready",
             "active_agent": "onboarding_preparation",
-            "handoff": {"handoff_id": "h1", "from_agent": "onboarding_preparation", "to_agent": "recovery_execution"},
+            "handoff": {
+                "handoff_id": "h1",
+                "from_agent": "onboarding_preparation",
+                "to_agent": "recovery_execution",
+            },
         }
 
     async def _recovery(state):
         return {**state, "artist_status": "active", "active_agent": "recovery_execution"}
 
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph._derive_artist_status_from_db", lambda artist_id: "preparing")
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.run_onboarding_preparation_agent", _prep)
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.run_recovery_execution_agent", _recovery)
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph._derive_artist_status_from_db",
+        lambda artist_id: "preparing",
+    )
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph.run_onboarding_preparation_agent", _prep
+    )
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph.run_recovery_execution_agent", _recovery
+    )
 
     out = asyncio.run(run_two_agent_orchestrator("artist-4", "run-4"))
     assert out["active_agent"] == "recovery_execution"
@@ -116,16 +127,27 @@ def test_orchestrator_persists_handoff_record(monkeypatch):
     async def _recovery(state):
         return {**state, "artist_status": "active", "active_agent": "recovery_execution"}
 
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph._derive_artist_status_from_db", lambda artist_id: "preparing")
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.run_onboarding_preparation_agent", _prep)
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.run_recovery_execution_agent", _recovery)
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph._derive_artist_status_from_db",
+        lambda artist_id: "preparing",
+    )
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph.run_onboarding_preparation_agent", _prep
+    )
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph.run_recovery_execution_agent", _recovery
+    )
     monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.SessionLocal", TestSession)
 
     asyncio.run(run_two_agent_orchestrator("artist-5", "run-5"))
 
     db = TestSession()
     try:
-        row = db.query(AgentHandoffRecord).filter(AgentHandoffRecord.handoff_id == "handoff-fixed-1").first()
+        row = (
+            db.query(AgentHandoffRecord)
+            .filter(AgentHandoffRecord.handoff_id == "handoff-fixed-1")
+            .first()
+        )
         assert row is not None
         assert row.artist_id == "artist-5"
         listed = list_handoffs_for_artist("artist-5")

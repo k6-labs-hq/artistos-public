@@ -10,6 +10,7 @@ from XR7.models.invite import InviteChannel
 
 class MessageTemplate(Enum):
     """Message template types."""
+
     EMAIL_INVITATION = "email_invitation"
     EMAIL_INQUIRY_RESPONSE = "email_inquiry_response"
     INSTAGRAM_DM = "instagram_dm"
@@ -259,9 +260,7 @@ XR7 Team
 
         Keep under 160 chars (standard SMS limit).
         """
-        return (
-            f"XR7: Your private analysis session is unlocked: {invite_link}"
-        )
+        return f"XR7: Your private analysis session is unlocked: {invite_link}"
 
     @staticmethod
     def get_message_by_channel(
@@ -293,9 +292,7 @@ XR7 Team
             return InviteMessagingService.get_sms(recipient_name, invite_link)
         else:
             # Default to email
-            return InviteMessagingService.get_email_invitation(
-                recipient_name, invite_link
-            )
+            return InviteMessagingService.get_email_invitation(recipient_name, invite_link)
 
 
 # Singleton

@@ -38,6 +38,7 @@ client = TestClient(app)
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def artist():
     """Create a fresh artist in the test DB and return its ID."""
@@ -76,6 +77,7 @@ def _csv_bytes() -> bytes:
 # GET /terms
 # ---------------------------------------------------------------------------
 
+
 class TestGetTerms:
     def test_returns_200(self):
         resp = client.get("/terms")
@@ -94,6 +96,7 @@ class TestGetTerms:
     def test_sha256_matches_text(self):
         data = client.get("/terms").json()
         import hashlib
+
         expected = hashlib.sha256(data["text"].encode("utf-8")).hexdigest()
         assert data["sha256"] == expected
 
@@ -124,6 +127,7 @@ class TestGetTerms:
 # POST /artists/{id}/terms/accept — happy path
 # ---------------------------------------------------------------------------
 
+
 class TestAcceptTerms:
     def test_accept_returns_201(self, artist):
         resp = _accept_terms(artist)
@@ -152,11 +156,7 @@ class TestAcceptTerms:
     def test_accept_persisted_to_db(self, artist):
         _accept_terms(artist)
         db = _TestSession()
-        record = (
-            db.query(TermsAcceptance)
-            .filter(TermsAcceptance.artist_id == artist)
-            .first()
-        )
+        record = db.query(TermsAcceptance).filter(TermsAcceptance.artist_id == artist).first()
         db.close()
         assert record is not None
         assert record.terms_version == TERMS_VERSION
@@ -165,6 +165,7 @@ class TestAcceptTerms:
 # ---------------------------------------------------------------------------
 # POST /artists/{id}/terms/accept — idempotency
 # ---------------------------------------------------------------------------
+
 
 class TestAcceptTermsIdempotent:
     def test_second_accept_returns_201(self, artist):
@@ -199,6 +200,7 @@ class TestAcceptTermsIdempotent:
 # ---------------------------------------------------------------------------
 # POST /artists/{id}/terms/accept — validation failures
 # ---------------------------------------------------------------------------
+
 
 class TestAcceptTermsValidation:
     def test_wrong_version_returns_409(self, artist):
@@ -248,6 +250,7 @@ class TestAcceptTermsValidation:
 # GET /artists/{id}/terms/status
 # ---------------------------------------------------------------------------
 
+
 class TestTermsStatus:
     def test_status_before_acceptance(self, artist):
         resp = client.get(f"/artists/{artist}/terms/status")
@@ -273,8 +276,14 @@ class TestTermsStatus:
 
     def test_status_has_required_fields(self, artist):
         data = client.get(f"/artists/{artist}/terms/status").json()
-        for field in ("artist_id", "accepted", "terms_version", "accepted_at",
-                      "text_sha256", "pending_version"):
+        for field in (
+            "artist_id",
+            "accepted",
+            "terms_version",
+            "accepted_at",
+            "text_sha256",
+            "pending_version",
+        ):
             assert field in data
 
     def test_status_artist_id_matches(self, artist):
@@ -290,6 +299,7 @@ class TestTermsStatus:
 # ---------------------------------------------------------------------------
 # Statement upload gate (T&C required)
 # ---------------------------------------------------------------------------
+
 
 class TestStatementUploadGate:
     def _upload(self, artist_id: str) -> int:
@@ -356,6 +366,7 @@ class TestStatementUploadGate:
 # Legal content assertions
 # ---------------------------------------------------------------------------
 
+
 class TestTermsLegalContent:
     """Verify that the T&C text contains legally required provisions."""
 
@@ -393,5 +404,6 @@ class TestTermsLegalContent:
     def test_sha256_stable(self):
         """SHA-256 of the live text must match what terms_text_sha256() returns."""
         import hashlib
+
         computed = hashlib.sha256(TERMS_TEXT.encode("utf-8")).hexdigest()
         assert computed == terms_text_sha256()

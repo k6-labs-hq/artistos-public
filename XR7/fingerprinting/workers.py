@@ -65,9 +65,7 @@ def realtime_fingerprint_audio(
 
     audio_data = _fetch_audio(audio_s3_key=audio_s3_key, audio_url=audio_url)
     if not audio_data:
-        logger.warning(
-            "realtime_fingerprint_audio: no audio data artist_id=%s", artist_id
-        )
+        logger.warning("realtime_fingerprint_audio: no audio data artist_id=%s", artist_id)
         return {"status": "skipped", "reason": "no_audio_data"}
 
     request = FingerprintSubmitRequest(
@@ -134,9 +132,7 @@ def batch_fingerprint_audio(
     from XR7.fingerprinting.observability import increment
 
     increment("fp.tasks.batch", {"artist_id": artist_id})
-    logger.info(
-        "batch_fingerprint_audio artist_id=%s items=%d", artist_id, len(items)
-    )
+    logger.info("batch_fingerprint_audio artist_id=%s items=%d", artist_id, len(items))
 
     results_summary: list[dict[str, Any]] = []
     for item in items:
@@ -311,9 +307,7 @@ def anomaly_detection_sweep(self, artist_id: str | None = None) -> dict[str, Any
                     len(anomalies),
                 )
             except Exception as exc:
-                logger.error(
-                    "anomaly_detection_sweep failed artist_id=%s: %s", aid, exc
-                )
+                logger.error("anomaly_detection_sweep failed artist_id=%s: %s", aid, exc)
 
         return {
             "status": "completed",

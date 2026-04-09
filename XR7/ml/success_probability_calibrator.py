@@ -18,8 +18,12 @@ class SuccessProbabilityCalibrator:
     _BETA_PRIOR = 2.0
     _MIN_SCOPE_SAMPLES = 3
 
-    def _snapshot_map(self, artist_id: str, db: Session) -> dict[tuple[str, str], CalibrationSnapshot]:
-        rows = db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == artist_id).all()
+    def _snapshot_map(
+        self, artist_id: str, db: Session
+    ) -> dict[tuple[str, str], CalibrationSnapshot]:
+        rows = (
+            db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == artist_id).all()
+        )
         return {(str(r.scope_type), str(r.scope_key)): r for r in rows}
 
     def posterior_success_rate(self, artist_id: str, db: Session) -> tuple[float, int]:
@@ -35,7 +39,9 @@ class SuccessProbabilityCalibrator:
         )
         return self._posterior_from_rows(feedback_rows)
 
-    def _posterior_from_rows(self, feedback_rows: list[RecoveryOutcomeFeedback]) -> tuple[float, int]:
+    def _posterior_from_rows(
+        self, feedback_rows: list[RecoveryOutcomeFeedback]
+    ) -> tuple[float, int]:
         successes = 0
         failures = 0
         for row in feedback_rows:
@@ -53,10 +59,7 @@ class SuccessProbabilityCalibrator:
         anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
         claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
         anomaly_subtype = {a.id: a.subtype for a in anomalies}
-        claim_subtype = {
-            c.id: (anomaly_subtype.get(c.anomaly_id) or c.claim_type)
-            for c in claims
-        }
+        claim_subtype = {c.id: (anomaly_subtype.get(c.anomaly_id) or c.claim_type) for c in claims}
         return anomaly_subtype, claim_subtype
 
     def _feedback_rows_by_subtype(
@@ -99,7 +102,11 @@ class SuccessProbabilityCalibrator:
                 ],
                 "alpha": round(float(overall_snapshot.alpha), 4),
                 "beta": round(float(overall_snapshot.beta), 4),
-                "last_updated_at": overall_snapshot.last_updated_at.isoformat() if overall_snapshot.last_updated_at else None,
+                "last_updated_at": (
+                    overall_snapshot.last_updated_at.isoformat()
+                    if overall_snapshot.last_updated_at
+                    else None
+                ),
             }
         else:
             rows_by_subtype, all_rows = self._feedback_rows_by_subtype(artist_id, db)
@@ -124,10 +131,15 @@ class SuccessProbabilityCalibrator:
                     "posterior_success_rate": round(float(row.posterior_mean), 6),
                     "sample_count": int(row.sample_count),
                     "sufficient_samples": int(row.sample_count) >= self._MIN_SCOPE_SAMPLES,
-                    "credible_interval": [round(float(row.lower_credible), 6), round(float(row.upper_credible), 6)],
+                    "credible_interval": [
+                        round(float(row.lower_credible), 6),
+                        round(float(row.upper_credible), 6),
+                    ],
                     "alpha": round(float(row.alpha), 4),
                     "beta": round(float(row.beta), 4),
-                    "last_updated_at": row.last_updated_at.isoformat() if row.last_updated_at else None,
+                    "last_updated_at": (
+                        row.last_updated_at.isoformat() if row.last_updated_at else None
+                    ),
                 }
             return output
 
@@ -149,7 +161,9 @@ class SuccessProbabilityCalibrator:
         calibrated: list[dict] = []
 
         for item in items:
-            base_prob = float(item.get("success_probability", item.get("confidence_score", 0.5)) or 0.5)
+            base_prob = float(
+                item.get("success_probability", item.get("confidence_score", 0.5)) or 0.5
+            )
 
             subtype = str(item.get("subtype") or "")
             category = str(item.get("category") or "")
@@ -157,22 +171,32 @@ class SuccessProbabilityCalibrator:
 
             if subtype and ("subtype", subtype) in snapshots:
                 scope_row = snapshots[("subtype", subtype)]
-                scope_rate, scope_samples = float(scope_row.posterior_mean), int(scope_row.sample_count)
+                scope_rate, scope_samples = float(scope_row.posterior_mean), int(
+                    scope_row.sample_count
+                )
                 scope_interval = [float(scope_row.lower_credible), float(scope_row.upper_credible)]
                 scope = f"subtype:{subtype}"
             elif category and ("category", category) in snapshots:
                 scope_row = snapshots[("category", category)]
-                scope_rate, scope_samples = float(scope_row.posterior_mean), int(scope_row.sample_count)
+                scope_rate, scope_samples = float(scope_row.posterior_mean), int(
+                    scope_row.sample_count
+                )
                 scope_interval = [float(scope_row.lower_credible), float(scope_row.upper_credible)]
                 scope = f"category:{category}"
             elif segment and ("segment", segment) in snapshots:
                 scope_row = snapshots[("segment", segment)]
-                scope_rate, scope_samples = float(scope_row.posterior_mean), int(scope_row.sample_count)
+                scope_rate, scope_samples = float(scope_row.posterior_mean), int(
+                    scope_row.sample_count
+                )
                 scope_interval = [float(scope_row.lower_credible), float(scope_row.upper_credible)]
                 scope = f"segment:{segment}"
             else:
                 scope_rate, scope_samples = global_rate, global_samples
-                scope_interval = [0.0, 1.0] if not overall else [float(overall.lower_credible), float(overall.upper_credible)]
+                scope_interval = (
+                    [0.0, 1.0]
+                    if not overall
+                    else [float(overall.lower_credible), float(overall.upper_credible)]
+                )
                 scope = "global"
 
             if scope_samples >= self._MIN_SCOPE_SAMPLES:
@@ -188,7 +212,10 @@ class SuccessProbabilityCalibrator:
                     "calibration": {
                         "posterior_success_rate": round(scope_rate, 6),
                         "sample_count": scope_samples,
-                        "credible_interval": [round(scope_interval[0], 6), round(scope_interval[1], 6)],
+                        "credible_interval": [
+                            round(scope_interval[0], 6),
+                            round(scope_interval[1], 6),
+                        ],
                         "scope": scope,
                         "sufficient_samples": scope_samples >= self._MIN_SCOPE_SAMPLES,
                         "fallback_global_posterior": round(global_rate, 6),

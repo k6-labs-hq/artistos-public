@@ -19,7 +19,9 @@ class AdminAuditLog(Base):
     resource_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     resource_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     details: Mapped[dict | None] = mapped_column(JSON, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class AdminAuditLogSchema(BaseModel):

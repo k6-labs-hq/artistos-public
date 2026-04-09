@@ -27,13 +27,15 @@ class EarningsEngine:
             contract_net = gross * artist_split
             if recoupment > 0:
                 contract_net = max(0.0, contract_net - recoupment)
-            breakdown.append({
-                "contract_id": str(contract.id),
-                "contract_type": contract.contract_type,
-                "artist_split": artist_split,
-                "gross_share": gross * artist_split,
-                "net_after_recoupment": contract_net,
-            })
+            breakdown.append(
+                {
+                    "contract_id": str(contract.id),
+                    "contract_type": contract.contract_type,
+                    "artist_split": artist_split,
+                    "gross_share": gross * artist_split,
+                    "net_after_recoupment": contract_net,
+                }
+            )
             net = contract_net
 
         if not contracts:
@@ -41,7 +43,9 @@ class EarningsEngine:
 
         return {"gross": gross, "net": net, "currency": currency, "breakdown": breakdown}
 
-    def reconstruct_historical(self, artist_id: str, start_date: datetime, end_date: datetime, db_session: Session) -> list[dict]:
+    def reconstruct_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime, db_session: Session
+    ) -> list[dict]:
         events = (
             db_session.query(Event)
             .filter(

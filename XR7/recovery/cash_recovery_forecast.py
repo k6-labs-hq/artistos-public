@@ -59,7 +59,9 @@ def _duration_days(start: datetime | None, end: datetime | None) -> int | None:
     return max(0, int((end - start).days))
 
 
-def _pick_confidence(claim: Claim, anomaly: Anomaly | None, snapshots: list[CalibrationSnapshot]) -> float:
+def _pick_confidence(
+    claim: Claim, anomaly: Anomaly | None, snapshots: list[CalibrationSnapshot]
+) -> float:
     if not snapshots:
         return float(anomaly.confidence_score if anomaly else 0.6)
 
@@ -119,9 +121,17 @@ def _complexity_penalty(claim: Claim, anomaly: Anomaly | None) -> float:
 def _recommended_action(claim: Claim, confidence: float, time_to_cash_days: int) -> str:
     status_key = str(claim.status)
     if status_key in {str(ClaimStatus.IDENTIFIED), str(ClaimStatus.PREPARED)}:
-        return RecommendedNextAction.FILE_CLAIM if confidence >= 0.5 else RecommendedNextAction.COLLECT_EVIDENCE
+        return (
+            RecommendedNextAction.FILE_CLAIM
+            if confidence >= 0.5
+            else RecommendedNextAction.COLLECT_EVIDENCE
+        )
     if status_key in {str(ClaimStatus.SUBMITTED), str(ClaimStatus.FILED)}:
-        return RecommendedNextAction.ESCALATE_PAYER if time_to_cash_days > 35 else RecommendedNextAction.WAIT_FOR_RESPONSE
+        return (
+            RecommendedNextAction.ESCALATE_PAYER
+            if time_to_cash_days > 35
+            else RecommendedNextAction.WAIT_FOR_RESPONSE
+        )
     if status_key == str(ClaimStatus.IN_REVIEW):
         return RecommendedNextAction.NEGOTIATE_SETTLEMENT
     if status_key in {str(ClaimStatus.ACCEPTED), str(ClaimStatus.PAID)}:

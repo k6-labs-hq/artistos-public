@@ -21,7 +21,9 @@ class CatalogConfirmation(Base):
     publisher_confirmed: Mapped[str] = mapped_column(String, default="pending")
     admin_confirmed: Mapped[str] = mapped_column(String, default="pending")
     correction_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
-    confirmed_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    confirmed_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class CatalogConfirmationSchema(BaseModel):

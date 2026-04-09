@@ -5,6 +5,7 @@ GET  /artists/{artist_id}/contracts/drift
 GET  /artists/{artist_id}/contracts/{contract_id}/drift
 POST /artists/{artist_id}/contracts/{contract_id}/drift/dispute
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -70,12 +71,15 @@ def initiate_drift_dispute(
     if drift is None:
         raise HTTPException(status_code=404, detail="Contract not found")
     # Hand off to claims orchestration — return dispute initiation record
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "contract_id": contract_id,
-        "dispute_initiated": True,
-        "drift_classification": drift.get("latest_classification"),
-        "cumulative_drift_cost": drift.get("cumulative_drift_cost"),
-        "reason": body.reason,
-        "action": "Review by analyst team. Claims workflow will be triggered.",
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "contract_id": contract_id,
+            "dispute_initiated": True,
+            "drift_classification": drift.get("latest_classification"),
+            "cumulative_drift_cost": drift.get("cumulative_drift_cost"),
+            "reason": body.reason,
+            "action": "Review by analyst team. Claims workflow will be triggered.",
+        },
+    )

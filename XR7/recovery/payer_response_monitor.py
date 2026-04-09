@@ -34,7 +34,9 @@ def build_payer_response_profile(payer_id: str, claim_rows: list[dict[str, Any]]
 
     anomalies = []
     if rolling_7 > max(rolling_30 * 1.3, 1):
-        anomalies.append({"type": "latency_spike", "rolling_7": rolling_7, "rolling_30": rolling_30})
+        anomalies.append(
+            {"type": "latency_spike", "rolling_7": rolling_7, "rolling_30": rolling_30}
+        )
     if dispute_likelihood >= 0.45:
         anomalies.append({"type": "high_dispute_likelihood", "value": dispute_likelihood})
 
@@ -51,10 +53,17 @@ def build_payer_response_profile(payer_id: str, claim_rows: list[dict[str, Any]]
 
     return {
         "payer_id": payer_id,
-        "response_latency": {"rolling_7": rolling_7, "rolling_30": rolling_30, "rolling_90": rolling_90},
+        "response_latency": {
+            "rolling_7": rolling_7,
+            "rolling_30": rolling_30,
+            "rolling_90": rolling_90,
+        },
         "dispute_likelihood": dispute_likelihood,
         "settlement_likelihood": settlement_likelihood,
-        "escalation_thresholds": {"warn_days": max(10, rolling_30), "critical_days": max(21, rolling_90)},
+        "escalation_thresholds": {
+            "warn_days": max(10, rolling_30),
+            "critical_days": max(21, rolling_90),
+        },
         "historical_behavior_patterns": patterns,
         "behavior_anomalies": anomalies,
         "auto_escalation_triggers": triggers,

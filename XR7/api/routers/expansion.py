@@ -120,7 +120,9 @@ def _utc_now() -> datetime:
 def _session_or_404(artist_id: str, session_id: str, db: Session) -> OAuthConnectorSession:
     session = (
         db.query(OAuthConnectorSession)
-        .filter(OAuthConnectorSession.id == session_id, OAuthConnectorSession.artist_id == artist_id)
+        .filter(
+            OAuthConnectorSession.id == session_id, OAuthConnectorSession.artist_id == artist_id
+        )
         .first()
     )
     if not session:
@@ -139,9 +141,9 @@ def _account_or_404(artist_id: str, account_id: str, db: Session) -> ConnectorAc
     return account
 
 
-
-
-@router.put("/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema)
+@router.put(
+    "/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema
+)
 def upsert_notification_preferences(
     artist_id: str,
     payload: NotificationPreferenceUpsert,
@@ -157,7 +159,11 @@ def upsert_notification_preferences(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+    pref = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist_id)
+        .first()
+    )
     if not pref:
         pref = NotificationPreference(artist_id=artist_id)
         db.add(pref)
@@ -176,7 +182,9 @@ def upsert_notification_preferences(
     return pref
 
 
-@router.get("/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema)
+@router.get(
+    "/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema
+)
 def get_notification_preferences(
     artist_id: str,
     db: Session = Depends(get_db),
@@ -191,7 +199,11 @@ def get_notification_preferences(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+    pref = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist_id)
+        .first()
+    )
     if not pref:
         pref = NotificationPreference(artist_id=artist_id)
         db.add(pref)
@@ -216,7 +228,11 @@ def dispatch_notification(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+    pref = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist_id)
+        .first()
+    )
     result = send_event_notification(
         pref,
         payload.event_key,
@@ -224,7 +240,9 @@ def dispatch_notification(
         payload.body,
         current_hour_utc=datetime.now(timezone.utc).hour,
     )
-    return inject_branding_metadata(db, {"artist_id": artist_id, "event_key": payload.event_key, **result})
+    return inject_branding_metadata(
+        db, {"artist_id": artist_id, "event_key": payload.event_key, **result}
+    )
 
 
 @router.post("/artists/{artist_id}/notifications/urgent-sol-check")
@@ -242,7 +260,11 @@ def urgent_sol_notification_check(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+    pref = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist_id)
+        .first()
+    )
 
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
     urgent = []
@@ -259,7 +281,11 @@ def urgent_sol_notification_check(
                     "id": claim.id,
                     "claim_type": claim.claim_type,
                     "sol_status": sol.get("sol_status"),
-                    "sol_deadline": sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None,
+                    "sol_deadline": (
+                        sol.get("sol_deadline").date().isoformat()
+                        if sol.get("sol_deadline")
+                        else None
+                    ),
                     "sol_days_remaining": sol.get("sol_days_remaining"),
                     "citation": sol.get("sol_citation_source"),
                     "estimated_recoverable": float(claim.recovered_amount or 0.0),
@@ -267,7 +293,9 @@ def urgent_sol_notification_check(
             )
 
     if not urgent:
-        return inject_branding_metadata(db, {"artist_id": artist_id, "sent": False, "reason": "no_urgent_items"})
+        return inject_branding_metadata(
+            db, {"artist_id": artist_id, "sent": False, "reason": "no_urgent_items"}
+        )
 
     top = urgent[0]
     amount = float(top.get("estimated_recoverable") or 0.0)
@@ -320,7 +348,9 @@ def dashboard_charts_data(
     for a in anomalies:
         dt = a.created_at or cutoff
         key = f"{dt.year:04d}-{dt.month:02d}"
-        leakage_by_month[key] = leakage_by_month.get(key, 0.0) + float(a.estimated_recoverable or 0.0)
+        leakage_by_month[key] = leakage_by_month.get(key, 0.0) + float(
+            a.estimated_recoverable or 0.0
+        )
 
     recovered_by_month: dict[str, float] = {}
     for p in payments:
@@ -329,8 +359,12 @@ def dashboard_charts_data(
         recovered_by_month[key] = recovered_by_month.get(key, 0.0) + float(p.amount or 0.0)
 
     months = sorted(set(leakage_by_month.keys()) | set(recovered_by_month.keys()))
-    leakage_series = [{"month": m, "amount": round(leakage_by_month.get(m, 0.0), 2)} for m in months]
-    recovered_series = [{"month": m, "amount": round(recovered_by_month.get(m, 0.0), 2)} for m in months]
+    leakage_series = [
+        {"month": m, "amount": round(leakage_by_month.get(m, 0.0), 2)} for m in months
+    ]
+    recovered_series = [
+        {"month": m, "amount": round(recovered_by_month.get(m, 0.0), 2)} for m in months
+    ]
 
     observed = [p["amount"] for p in recovered_series if p["amount"] > 0]
     baseline = sum(observed) / len(observed) if observed else 0.0
@@ -356,9 +390,23 @@ def dashboard_charts_data(
 
 
 def _summary_report_payload(artist_id: str, db: Session) -> dict:
-    leakage = db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0)).filter(Anomaly.artist_id == artist_id).scalar() or 0.0
-    recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(Payment.artist_id == artist_id).scalar() or 0.0
-    open_claims = db.query(Claim).filter(Claim.artist_id == artist_id, Claim.status.notin_(["PAID", "CLOSED"])).count()
+    leakage = (
+        db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0))
+        .filter(Anomaly.artist_id == artist_id)
+        .scalar()
+        or 0.0
+    )
+    recovered = (
+        db.query(func.coalesce(func.sum(Payment.amount), 0.0))
+        .filter(Payment.artist_id == artist_id)
+        .scalar()
+        or 0.0
+    )
+    open_claims = (
+        db.query(Claim)
+        .filter(Claim.artist_id == artist_id, Claim.status.notin_(["PAID", "CLOSED"]))
+        .count()
+    )
     anomaly_count = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()
     claim_rows = db.query(Claim).filter(Claim.artist_id == artist_id).all()
     sol_rows = [
@@ -379,7 +427,9 @@ def _summary_report_payload(artist_id: str, db: Session) -> dict:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "total_leakage_estimated": round(float(leakage), 2),
         "total_recovered": round(float(recovered), 2),
-        "recovered_vs_potential_pct": round((float(recovered) / float(leakage) * 100.0), 2) if leakage else 0.0,
+        "recovered_vs_potential_pct": (
+            round((float(recovered) / float(leakage) * 100.0), 2) if leakage else 0.0
+        ),
         "open_claim_count": open_claims,
         "anomaly_count": anomaly_count,
         "sol_expired_count": sol_expired_count,
@@ -457,7 +507,9 @@ def create_oauth_session(
         actor_role=x_actor_role,
     )
     now = _utc_now()
-    state = hashlib.sha256(f"{artist_id}:{payload.provider}:{uuid.uuid4()}".encode("utf-8")).hexdigest()
+    state = hashlib.sha256(
+        f"{artist_id}:{payload.provider}:{uuid.uuid4()}".encode("utf-8")
+    ).hexdigest()
     provider_service = OAuthProviderService(payload.provider)
     requested_scopes = _normalize_scopes(payload.scopes) or provider_service.default_scopes()
     oauth_session = OAuthConnectorSession(
@@ -483,19 +535,22 @@ def create_oauth_session(
         scopes=requested_scopes,
         tenant_id=payload.tenant_id,
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "session_id": oauth_session.id,
-        "provider": payload.provider,
-        "oauth_state": state,
-        "redirect_uri": payload.redirect_uri,
-        "requested_scopes": requested_scopes,
-        "tenant_id": payload.tenant_id,
-        "authorization_url": authorize_url,
-        "provider_configured": provider_service.configured(),
-        "expires_at": oauth_session.expires_at.isoformat(),
-        "note": "Use this state token for callback validation, then call exchange endpoint to store linked account tokens.",
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "session_id": oauth_session.id,
+            "provider": payload.provider,
+            "oauth_state": state,
+            "redirect_uri": payload.redirect_uri,
+            "requested_scopes": requested_scopes,
+            "tenant_id": payload.tenant_id,
+            "authorization_url": authorize_url,
+            "provider_configured": provider_service.configured(),
+            "expires_at": oauth_session.expires_at.isoformat(),
+            "note": "Use this state token for callback validation, then call exchange endpoint to store linked account tokens.",
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/connect/oauth-session/{session_id}/exchange")
@@ -553,7 +608,9 @@ def exchange_oauth_code(
         if not granted_scopes:
             granted_scopes = requested_scopes
 
-    missing_scopes = sorted(set(s.lower() for s in requested_scopes) - set(s.lower() for s in granted_scopes))
+    missing_scopes = sorted(
+        set(s.lower() for s in requested_scopes) - set(s.lower() for s in granted_scopes)
+    )
 
     if missing_scopes and not payload.allow_partial_scope_grant:
         raise HTTPException(
@@ -630,22 +687,27 @@ def exchange_oauth_code(
     db.commit()
     db.refresh(account)
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "provider": oauth_session.provider,
-        "session_id": oauth_session.id,
-        "account": ConnectorAccountLinkSchema.model_validate(account),
-        "scope_check": {
-            "requested": requested_scopes,
-            "granted": granted_scopes,
-            "missing": missing_scopes,
-            "full_grant": len(missing_scopes) == 0,
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "provider": oauth_session.provider,
+            "session_id": oauth_session.id,
+            "account": ConnectorAccountLinkSchema.model_validate(account),
+            "scope_check": {
+                "requested": requested_scopes,
+                "granted": granted_scopes,
+                "missing": missing_scopes,
+                "full_grant": len(missing_scopes) == 0,
+            },
+            "linked": True,
+            "oauth_code_consumed": bool(payload.code),
+            "provider_configured": provider_service.configured(),
+            "provider_exchange_mode": (
+                "live" if token_data and not token_data.get("simulated") else "simulated"
+            ),
         },
-        "linked": True,
-        "oauth_code_consumed": bool(payload.code),
-        "provider_configured": provider_service.configured(),
-        "provider_exchange_mode": "live" if token_data and not token_data.get("simulated") else "simulated",
-    })
+    )
 
 
 @router.get("/artists/{artist_id}/connect/accounts")
@@ -686,11 +748,14 @@ def list_connected_accounts(
         item["needs_refresh"] = needs_refresh
         accounts.append(item)
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "count": len(accounts),
-        "accounts": accounts,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "count": len(accounts),
+            "accounts": accounts,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/connect/accounts/{account_id}/refresh")
@@ -720,13 +785,16 @@ def refresh_connected_account_token(
     now = _utc_now()
     token_expires_at = _as_utc(account.token_expires_at)
     if not payload.force and token_expires_at and token_expires_at > now + timedelta(minutes=2):
-        return inject_branding_metadata(db, {
-            "artist_id": artist_id,
-            "account_id": account_id,
-            "refreshed": False,
-            "reason": "token_still_valid",
-            "token_expires_at": token_expires_at.isoformat(),
-        })
+        return inject_branding_metadata(
+            db,
+            {
+                "artist_id": artist_id,
+                "account_id": account_id,
+                "refreshed": False,
+                "reason": "token_still_valid",
+                "token_expires_at": token_expires_at.isoformat(),
+            },
+        )
 
     provider_service = OAuthProviderService(account.provider)
     try:
@@ -742,22 +810,29 @@ def refresh_connected_account_token(
         account.refresh_token = refreshed.get("refresh_token")
     account.token_type = refreshed.get("token_type") or account.token_type
     account.last_refreshed_at = now
-    account.token_expires_at = now + timedelta(seconds=max(0, int(refreshed.get("expires_in") or payload.expires_in_seconds)))
+    account.token_expires_at = now + timedelta(
+        seconds=max(0, int(refreshed.get("expires_in") or payload.expires_in_seconds))
+    )
     account.updated_at = now
 
     db.commit()
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "account_id": account_id,
-        "provider": account.provider,
-        "tenant_id": account.tenant_id,
-        "refreshed": True,
-        "token_expires_at": account.token_expires_at.isoformat() if account.token_expires_at else None,
-        "rotated_refresh_token": payload.rotate_refresh_token,
-        "provider_configured": provider_service.configured(),
-        "provider_refresh_mode": "live" if not refreshed.get("simulated") else "simulated",
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "account_id": account_id,
+            "provider": account.provider,
+            "tenant_id": account.tenant_id,
+            "refreshed": True,
+            "token_expires_at": (
+                account.token_expires_at.isoformat() if account.token_expires_at else None
+            ),
+            "rotated_refresh_token": payload.rotate_refresh_token,
+            "provider_configured": provider_service.configured(),
+            "provider_refresh_mode": "live" if not refreshed.get("simulated") else "simulated",
+        },
+    )
 
 
 @router.delete("/artists/{artist_id}/connect/accounts/{account_id}")
@@ -783,11 +858,14 @@ def disconnect_connected_account(
     account.updated_at = _utc_now()
     db.commit()
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "account_id": account_id,
-        "disconnected": True,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "account_id": account_id,
+            "disconnected": True,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/connect/fallbacks")
@@ -805,28 +883,31 @@ def list_connect_fallbacks(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "fallbacks": [
-            {
-                "source": "spotify_for_artists",
-                "mode": "guided_export",
-                "steps": [
-                    "Login to Spotify for Artists",
-                    "Export revenue CSV",
-                    "Upload via /artists/{id}/statements/upload",
-                ],
-            },
-            {
-                "source": "major_distributors",
-                "mode": "bulk_csv_upload",
-                "steps": [
-                    "Download monthly statements",
-                    "Upload via /artists/{id}/statements/upload-batch",
-                ],
-            },
-        ],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "fallbacks": [
+                {
+                    "source": "spotify_for_artists",
+                    "mode": "guided_export",
+                    "steps": [
+                        "Login to Spotify for Artists",
+                        "Export revenue CSV",
+                        "Upload via /artists/{id}/statements/upload",
+                    ],
+                },
+                {
+                    "source": "major_distributors",
+                    "mode": "bulk_csv_upload",
+                    "steps": [
+                        "Download monthly statements",
+                        "Upload via /artists/{id}/statements/upload-batch",
+                    ],
+                },
+            ],
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/team/members", response_model=TeamMemberSchema, status_code=201)
@@ -839,7 +920,9 @@ def add_team_member(
 ):
     _artist_or_404(artist_id, db)
 
-    existing_any = db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
+    existing_any = (
+        db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
+    )
     if not existing_any:
         if payload.role != TeamRole.ARTIST:
             raise HTTPException(
@@ -907,7 +990,11 @@ def remove_team_member(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    member = db.query(TeamMember).filter(TeamMember.id == member_id, TeamMember.artist_id == artist_id).first()
+    member = (
+        db.query(TeamMember)
+        .filter(TeamMember.id == member_id, TeamMember.artist_id == artist_id)
+        .first()
+    )
     if not member:
         raise HTTPException(status_code=404, detail="Team member not found")
     db.delete(member)
@@ -930,23 +1017,33 @@ def benchmark_percentiles(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    avg_unit = db.query(func.coalesce(func.avg(Event.unit_value), 0.0)).filter(Event.artist_id == artist_id).scalar() or 0.0
+    avg_unit = (
+        db.query(func.coalesce(func.avg(Event.unit_value), 0.0))
+        .filter(Event.artist_id == artist_id)
+        .scalar()
+        or 0.0
+    )
     # Heuristic percentile band for MVP. Replace with cohort model when dataset scales.
     percentile = max(1, min(99, int((float(avg_unit) / 0.02) * 100)))
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "benchmarks": {
-            "effective_rate_percentile": percentile,
-            "message": f"Your effective rate is around the {percentile}th percentile among similar catalogs.",
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "benchmarks": {
+                "effective_rate_percentile": percentile,
+                "message": f"Your effective rate is around the {percentile}th percentile among similar catalogs.",
+            },
+            "privacy": {"minimum_cohort_size_enforced": True},
         },
-        "privacy": {"minimum_cohort_size_enforced": True},
-    })
+    )
 
 
 @router.get("/stats/public/recovery")
 def public_recovery_stats(db: Session = Depends(get_db)):
     total_recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0)).scalar() or 0.0
-    total_leakage = db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0)).scalar() or 0.0
+    total_leakage = (
+        db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0)).scalar() or 0.0
+    )
     artists = db.query(func.count(Artist.id)).scalar() or 0
     uplift_pct = (float(total_recovered) / float(total_leakage) * 100.0) if total_leakage else 0.0
     return {
@@ -988,7 +1085,9 @@ def generate_claim_template(
         f"Evidence:\n{payload.evidence_summary or 'XR7 evidence packet available upon request.'}\n\n"
         "Please confirm next steps and settlement timeline.\n"
     )
-    return inject_branding_metadata(db, {"artist_id": artist_id, "letter": letter, "email": email_body})
+    return inject_branding_metadata(
+        db, {"artist_id": artist_id, "letter": letter, "email": email_body}
+    )
 
 
 @router.post("/artists/{artist_id}/intelligence/withholding-estimate")
@@ -1011,17 +1110,20 @@ def estimate_withholding(
     withheld = gross * max(0.0, payload.withholding_rate)
     net_source = gross - withheld
     net_payout = net_source * max(0.0, payload.fx_rate)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "gross_amount": round(gross, 2),
-        "source_currency": payload.source_currency,
-        "withholding_rate": payload.withholding_rate,
-        "withheld_amount": round(withheld, 2),
-        "net_source_amount": round(net_source, 2),
-        "fx_rate": payload.fx_rate,
-        "payout_currency": payload.payout_currency,
-        "net_payout_amount": round(net_payout, 2),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "gross_amount": round(gross, 2),
+            "source_currency": payload.source_currency,
+            "withholding_rate": payload.withholding_rate,
+            "withheld_amount": round(withheld, 2),
+            "net_source_amount": round(net_source, 2),
+            "fx_rate": payload.fx_rate,
+            "payout_currency": payload.payout_currency,
+            "net_payout_amount": round(net_payout, 2),
+        },
+    )
 
 
 @router.post(
@@ -1038,9 +1140,13 @@ def anchor_evidence_packet(claim_id: str, db: Session = Depends(get_db)):
     packet_hash = integrity.get("packet_hash")
     chain_hash = integrity.get("chain_hash")
     if not packet_hash or not chain_hash:
-        raise HTTPException(status_code=400, detail="Claim has no evidence integrity hashes to anchor")
+        raise HTTPException(
+            status_code=400, detail="Claim has no evidence integrity hashes to anchor"
+        )
 
-    anchor_ref = hashlib.sha256(f"{claim_id}:{packet_hash}:{chain_hash}".encode("utf-8")).hexdigest()
+    anchor_ref = hashlib.sha256(
+        f"{claim_id}:{packet_hash}:{chain_hash}".encode("utf-8")
+    ).hexdigest()
     anchor = EvidenceAnchor(
         claim_id=claim_id,
         packet_hash=packet_hash,
@@ -1070,8 +1176,18 @@ def predict_total_recoverable(
         actor_email=x_actor_email,
         actor_role=x_actor_role,
     )
-    leakage = db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0)).filter(Anomaly.artist_id == artist_id).scalar() or 0.0
-    recovered = db.query(func.coalesce(func.sum(Payment.amount), 0.0)).filter(Payment.artist_id == artist_id).scalar() or 0.0
+    leakage = (
+        db.query(func.coalesce(func.sum(Anomaly.estimated_recoverable), 0.0))
+        .filter(Anomaly.artist_id == artist_id)
+        .scalar()
+        or 0.0
+    )
+    recovered = (
+        db.query(func.coalesce(func.sum(Payment.amount), 0.0))
+        .filter(Payment.artist_id == artist_id)
+        .scalar()
+        or 0.0
+    )
     anomaly_count = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).count()
 
     catalog_size = payload.catalog_size or 0
@@ -1080,16 +1196,19 @@ def predict_total_recoverable(
     residual = max(float(leakage) - float(recovered), 0.0)
     projected = (residual + anomaly_count * 120.0 + catalog_size * 35.0) * genre_multiplier
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "predicted_total_recoverable": round(projected, 2),
-        "inputs": {
-            "observed_residual": round(residual, 2),
-            "anomaly_count": anomaly_count,
-            "catalog_size": catalog_size,
-            "genre": payload.genre,
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "predicted_total_recoverable": round(projected, 2),
+            "inputs": {
+                "observed_residual": round(residual, 2),
+                "anomaly_count": anomaly_count,
+                "catalog_size": catalog_size,
+                "genre": payload.genre,
+            },
         },
-    })
+    )
 
 
 @router.get("/education/guides")
@@ -1122,7 +1241,9 @@ def white_label_portfolio(org_id: str, db: Session = Depends(get_db)):
     return {
         "org_id": org_id,
         "branding": {**branding_metadata(brand), "mode": "white_label_ready"},
-        "artists": [{"id": a.id, "name": a.name, "created_at": a.created_at.isoformat()} for a in artists],
+        "artists": [
+            {"id": a.id, "name": a.name, "created_at": a.created_at.isoformat()} for a in artists
+        ],
     }
 
 
@@ -1142,7 +1263,11 @@ def generate_audit_demand_letter(
     )
     artist = _artist_or_404(artist_id, db)
     recommendations = analyze_audit_eligibility([], [])
-    note = "No active contract recommendations found." if not recommendations else "Review attached recommended contracts."
+    note = (
+        "No active contract recommendations found."
+        if not recommendations
+        else "Review attached recommended contracts."
+    )
     letter = (
         f"To Whom It May Concern,\n\n"
         f"On behalf of {artist.name}, this is a formal request to initiate an audit under applicable contractual rights. "

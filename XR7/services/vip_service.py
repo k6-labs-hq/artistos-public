@@ -4,6 +4,7 @@ Handles invite-code validation, membership creation, admin grants,
 persona enrichment dispatch, concierge messaging, copilot queries,
 referral management, and weekly brief generation.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -37,10 +38,10 @@ logger = get_logger(__name__)
 # Constants
 # ---------------------------------------------------------------------------
 
-VIP_CODE_BYTES = 24          # 192-bit entropy → 32-char base64url
+VIP_CODE_BYTES = 24  # 192-bit entropy → 32-char base64url
 VIP_CODE_DEFAULT_TTL_DAYS = 30
 VIP_REFERRAL_PERKS = {
-    "referrer": "fee_discount_0_5pct",   # 0.5% contingency reduction (one-time)
+    "referrer": "fee_discount_0_5pct",  # 0.5% contingency reduction (one-time)
     "referred": "priority_queue_access",
 }
 DEFAULT_VIP_DROPS: list[dict] = [
@@ -72,6 +73,7 @@ DEFAULT_VIP_DROPS: list[dict] = [
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _hash_code(code: str) -> str:
     return hashlib.sha3_256(code.encode()).hexdigest()
 
@@ -87,6 +89,7 @@ def _now() -> datetime:
 # ---------------------------------------------------------------------------
 # VIP Membership
 # ---------------------------------------------------------------------------
+
 
 class VipService:
     def __init__(self, db: Session) -> None:
@@ -112,11 +115,7 @@ class VipService:
         return self.get_membership(artist_id) is not None
 
     def get_persona(self, artist_id: str) -> Optional[PersonaProfile]:
-        return (
-            self.db.query(PersonaProfile)
-            .filter(PersonaProfile.artist_id == artist_id)
-            .first()
-        )
+        return self.db.query(PersonaProfile).filter(PersonaProfile.artist_id == artist_id).first()
 
     # ------------------------------------------------------------------
     # Invite codes
@@ -152,11 +151,7 @@ class VipService:
 
     def _lookup_code(self, code: str) -> Optional[VipInviteCode]:
         code_hash = _hash_code(code)
-        return (
-            self.db.query(VipInviteCode)
-            .filter(VipInviteCode.code_hash == code_hash)
-            .first()
-        )
+        return self.db.query(VipInviteCode).filter(VipInviteCode.code_hash == code_hash).first()
 
     def claim_invite(self, artist_id: str, code: str) -> FoundersCircleMember:
         """Validate invite code, create membership, mark code used."""
@@ -183,7 +178,7 @@ class VipService:
         membership = FoundersCircleMember(
             artist_id=artist_id,
             tier_level=invite.tier_level,
-            invite_code_used=code[:8] + "****",   # store partial so we can trace without leaking
+            invite_code_used=code[:8] + "****",  # store partial so we can trace without leaking
             granted_by_admin=False,
             activated_at=now,
             is_active=True,
@@ -207,7 +202,9 @@ class VipService:
         self.db.add(invite)
         self.db.commit()
         self.db.refresh(membership)
-        logger.info("VIP membership activated", extra={"artist_id": artist_id, "tier": invite.tier_level})
+        logger.info(
+            "VIP membership activated", extra={"artist_id": artist_id, "tier": invite.tier_level}
+        )
         return membership
 
     # ------------------------------------------------------------------
@@ -287,7 +284,9 @@ class VipService:
         membership.updated_at = _now()
         self.db.add(membership)
         self.db.commit()
-        logger.info("VIP membership revoked", extra={"artist_id": artist_id, "revoked_by": admin_id})
+        logger.info(
+            "VIP membership revoked", extra={"artist_id": artist_id, "revoked_by": admin_id}
+        )
         return True
 
     # ------------------------------------------------------------------

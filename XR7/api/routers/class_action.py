@@ -1,4 +1,5 @@
 """Pillar 8 — Class-action evidence signals (admin + artist-facing)."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
@@ -22,10 +23,13 @@ def run_class_action_aggregation(
     Requires admin role. Returns created/updated signal records.
     """
     signals = aggregate_class_action_signals(db)
-    return inject_branding_metadata(db, {
-        "signals_upserted": len(signals),
-        "signals": signals,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "signals_upserted": len(signals),
+            "signals": signals,
+        },
+    )
 
 
 @router.get("/admin/class-action/signals")
@@ -35,7 +39,10 @@ def list_class_action_signals(
 ) -> dict:
     """Return all active class-action evidence signals."""
     signals = get_active_signals(db)
-    return inject_branding_metadata(db, {
-        "count": len(signals),
-        "signals": signals,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "count": len(signals),
+            "signals": signals,
+        },
+    )

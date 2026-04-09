@@ -101,10 +101,23 @@ CATALOG_GRAPH_EXAMPLE: dict[str, Any] = {
     "graph_version": "xr7.catalog_graph.v1",
     "generated_at": "2026-03-14T00:00:00+00:00",
     "nodes": [
-        {"id": "work-1", "node_type": "work", "attributes": {"title": "Midnight Tape", "isrc": "USAAA1234567"}},
-        {"id": "reg-1", "node_type": "registration", "attributes": {"registration_id": "iswc:T-000.000.001-0"}},
+        {
+            "id": "work-1",
+            "node_type": "work",
+            "attributes": {"title": "Midnight Tape", "isrc": "USAAA1234567"},
+        },
+        {
+            "id": "reg-1",
+            "node_type": "registration",
+            "attributes": {"registration_id": "iswc:T-000.000.001-0"},
+        },
     ],
     "edges": [
-        {"source_id": "work-1", "target_id": "reg-1", "edge_type": "registered_in", "attributes": {}},
+        {
+            "source_id": "work-1",
+            "target_id": "reg-1",
+            "edge_type": "registered_in",
+            "attributes": {},
+        },
     ],
 }

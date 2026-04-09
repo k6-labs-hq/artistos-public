@@ -14,7 +14,7 @@ from XR7.recovery.payer_playbooks.templates import (
 def _detect_payer(claim: Claim, anomaly: Anomaly | None) -> str:
     evidence = claim.evidence or {}
     if isinstance(evidence, dict):
-        contracts = ((evidence.get("legal_support") or {}).get("contract_basis") or [])
+        contracts = (evidence.get("legal_support") or {}).get("contract_basis") or []
         if contracts and isinstance(contracts, list):
             counterparty = str((contracts[0] or {}).get("counterparty") or "").strip().lower()
             for key in TEMPLATES_BY_PAYER:
@@ -41,7 +41,9 @@ def build_claim_playbook(claim: Claim, anomaly: Anomaly | None = None) -> dict[s
     instructions = list(template.packet_instructions)
     discrepancy = float((reconciliation or {}).get("discrepancy_amount") or 0.0)
     if discrepancy > 0:
-        instructions.append(f"Address reconciliation discrepancy ${discrepancy:,.2f} before submission.")
+        instructions.append(
+            f"Address reconciliation discrepancy ${discrepancy:,.2f} before submission."
+        )
 
     return {
         "claim_id": claim.id,
@@ -57,12 +59,11 @@ def build_claim_playbook(claim: Claim, anomaly: Anomaly | None = None) -> dict[s
     }
 
 
-def summarize_artist_playbooks(claims: list[Claim], anomalies_by_id: dict[str, Anomaly]) -> dict[str, Any]:
+def summarize_artist_playbooks(
+    claims: list[Claim], anomalies_by_id: dict[str, Anomaly]
+) -> dict[str, Any]:
     """Summarize playbook coverage and SLA heat-map across an artist's open claims."""
-    rows = [
-        build_claim_playbook(c, anomalies_by_id.get(c.anomaly_id))
-        for c in claims
-    ]
+    rows = [build_claim_playbook(c, anomalies_by_id.get(c.anomaly_id)) for c in claims]
     if not rows:
         return {"total_claims": 0, "by_payer": {}, "slowest_sla_days": 0, "claims": []}
 

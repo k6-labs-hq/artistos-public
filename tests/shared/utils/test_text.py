@@ -14,6 +14,7 @@ from shared.utils.text import decode_bytes
 # decode_bytes – UTF-8
 # ---------------------------------------------------------------------------
 
+
 class TestDecodeBytesUtf8:
     def test_plain_ascii(self):
         assert decode_bytes(b"hello world") == "hello world"
@@ -23,7 +24,7 @@ class TestDecodeBytesUtf8:
         assert decode_bytes(original.encode("utf-8")) == original
 
     def test_utf8_emoji(self):
-        original = "music \U0001F3B5"
+        original = "music \U0001f3b5"
         assert decode_bytes(original.encode("utf-8")) == original
 
     def test_empty_bytes(self):
@@ -36,6 +37,7 @@ class TestDecodeBytesUtf8:
 # ---------------------------------------------------------------------------
 # decode_bytes – UTF-8 with BOM (utf-8-sig)
 # ---------------------------------------------------------------------------
+
 
 class TestDecodeBytesUtf8Bom:
     def test_bom_is_stripped(self):
@@ -53,6 +55,7 @@ class TestDecodeBytesUtf8Bom:
 # ---------------------------------------------------------------------------
 # decode_bytes – latin-1 fallback
 # ---------------------------------------------------------------------------
+
 
 class TestDecodeBytesLatin1:
     def test_latin1_only_bytes_decoded(self):
@@ -78,6 +81,7 @@ class TestDecodeBytesLatin1:
 # decode_bytes – errors parameter
 # ---------------------------------------------------------------------------
 
+
 class TestDecodeBytesErrorsParam:
     def test_default_errors_replace_used_as_fallback(self):
         # Bytes that are valid latin-1 will decode without invoking errors= at all;
@@ -96,13 +100,17 @@ class TestDecodeBytesErrorsParam:
 # decode_bytes – return type guarantee
 # ---------------------------------------------------------------------------
 
+
 class TestDecodeBytesReturnType:
-    @pytest.mark.parametrize("raw", [
-        b"ascii",
-        b"\xef\xbb\xbfbom",
-        b"\xe9",
-        b"",
-    ])
+    @pytest.mark.parametrize(
+        "raw",
+        [
+            b"ascii",
+            b"\xef\xbb\xbfbom",
+            b"\xe9",
+            b"",
+        ],
+    )
     def test_always_returns_str(self, raw):
         assert isinstance(decode_bytes(raw), str)
 
@@ -110,6 +118,7 @@ class TestDecodeBytesReturnType:
 # ---------------------------------------------------------------------------
 # Additional branches and edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestDecodeBytesEncodingPriority:
     def test_bom_only_bytes_return_empty_string(self):
@@ -170,12 +179,15 @@ class TestDecodeBytesErrorsArgScope:
 
 
 class TestDecodeBytesRoundTrip:
-    @pytest.mark.parametrize("original", [
-        "hello world",
-        "café résumé",
-        "日本語",
-        "music \U0001F3B5",
-        "\n\r\t",
-    ])
+    @pytest.mark.parametrize(
+        "original",
+        [
+            "hello world",
+            "café résumé",
+            "日本語",
+            "music \U0001f3b5",
+            "\n\r\t",
+        ],
+    )
     def test_utf8_encode_then_decode_bytes_roundtrip(self, original):
         assert decode_bytes(original.encode("utf-8")) == original

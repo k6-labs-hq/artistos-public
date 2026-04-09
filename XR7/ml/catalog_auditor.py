@@ -62,13 +62,17 @@ class CatalogAuditor:
         for node in nodes:
             node_id = str(node.get("id") or "")
             if node_id:
-                graph.add_node(node_id, **(node.get("attributes") or {}), node_type=node.get("node_type"))
+                graph.add_node(
+                    node_id, **(node.get("attributes") or {}), node_type=node.get("node_type")
+                )
 
         for edge in edges:
             src = str(edge.get("source_id") or "")
             dst = str(edge.get("target_id") or "")
             if src and dst:
-                graph.add_edge(src, dst, **(edge.get("attributes") or {}), edge_type=edge.get("edge_type"))
+                graph.add_edge(
+                    src, dst, **(edge.get("attributes") or {}), edge_type=edge.get("edge_type")
+                )
 
         return graph
 
@@ -185,13 +189,21 @@ class CatalogAuditor:
         for issue in issues:
             issue_type = str(issue.get("issue_type") or "unknown")
             if issue_type == "missing_isrc":
-                suggestions.setdefault(issue_type, []).append("Add ISRC via MusicBrainz lookup and distributor metadata sync.")
+                suggestions.setdefault(issue_type, []).append(
+                    "Add ISRC via MusicBrainz lookup and distributor metadata sync."
+                )
             elif issue_type == "split_conflict":
-                suggestions.setdefault(issue_type, []).append("Reconcile contract split terms and update writer/publisher shares in source systems.")
+                suggestions.setdefault(issue_type, []).append(
+                    "Reconcile contract split terms and update writer/publisher shares in source systems."
+                )
             elif issue_type == "rate_drift":
-                suggestions.setdefault(issue_type, []).append("Run historical rate benchmark and request statement-level true-up from payer.")
+                suggestions.setdefault(issue_type, []).append(
+                    "Run historical rate benchmark and request statement-level true-up from payer."
+                )
             elif issue_type == "ai_generation_risk":
-                suggestions.setdefault(issue_type, []).append("Collect provenance docs and register explicit AI-rights clauses in contract metadata.")
+                suggestions.setdefault(issue_type, []).append(
+                    "Collect provenance docs and register explicit AI-rights clauses in contract metadata."
+                )
 
         return {
             "generated_at": datetime.now(timezone.utc).isoformat(),
@@ -206,8 +218,26 @@ class CatalogAuditor:
         payments = self.db.query(Payment).filter(Payment.artist_id == artist_id).all()
 
         earnings_summary = {
-            "total_expected": sum(float((c.evidence or {}).get("proof", {}).get("totals", {}).get("total_expected_amount") or 0.0) for c in claims),
-            "total_received": sum(float((c.evidence or {}).get("proof", {}).get("totals", {}).get("total_received_amount") or 0.0) for c in claims),
+            "total_expected": sum(
+                float(
+                    (c.evidence or {})
+                    .get("proof", {})
+                    .get("totals", {})
+                    .get("total_expected_amount")
+                    or 0.0
+                )
+                for c in claims
+            ),
+            "total_received": sum(
+                float(
+                    (c.evidence or {})
+                    .get("proof", {})
+                    .get("totals", {})
+                    .get("total_received_amount")
+                    or 0.0
+                )
+                for c in claims
+            ),
         }
 
         report = self.scorer.score(
@@ -243,26 +273,60 @@ class AutomatedRegistrationFixer:
         issues: list[dict[str, Any]] = []
         for w in works:
             if not w.isrc:
-                issues.append({"type": "missing_isrc", "work_id": w.id, "title": w.title, "suggested_source": "MusicBrainz"})
+                issues.append(
+                    {
+                        "type": "missing_isrc",
+                        "work_id": w.id,
+                        "title": w.title,
+                        "suggested_source": "MusicBrainz",
+                    }
+                )
             if not w.iswc:
-                issues.append({"type": "missing_iswc", "work_id": w.id, "title": w.title, "suggested_source": "PRO portal"})
+                issues.append(
+                    {
+                        "type": "missing_iswc",
+                        "work_id": w.id,
+                        "title": w.title,
+                        "suggested_source": "PRO portal",
+                    }
+                )
         if not works:
             issues.append({"type": "catalog_empty", "detail": "No works registered for artist"})
         return issues
 
-    def auto_suggest_and_apply_fixes(self, artist_id: str, issues: list[dict[str, Any]]) -> dict[str, Any]:
+    def auto_suggest_and_apply_fixes(
+        self, artist_id: str, issues: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         rows = []
         instructions = []
         for issue in issues:
             issue_type = str(issue.get("type") or "unknown")
             if issue_type == "missing_isrc":
-                rows.append({"work_id": issue.get("work_id"), "action": "populate_isrc", "source": "musicbrainz_lookup"})
-                instructions.append("Upload generated ISRC CSV to DistroKid/label portal and re-sync catalog.")
+                rows.append(
+                    {
+                        "work_id": issue.get("work_id"),
+                        "action": "populate_isrc",
+                        "source": "musicbrainz_lookup",
+                    }
+                )
+                instructions.append(
+                    "Upload generated ISRC CSV to DistroKid/label portal and re-sync catalog."
+                )
             elif issue_type == "missing_iswc":
-                rows.append({"work_id": issue.get("work_id"), "action": "submit_pro_registration", "source": "pro_simulation"})
-                instructions.append("Submit generated PRO registration payload in your PRO dashboard.")
+                rows.append(
+                    {
+                        "work_id": issue.get("work_id"),
+                        "action": "submit_pro_registration",
+                        "source": "pro_simulation",
+                    }
+                )
+                instructions.append(
+                    "Submit generated PRO registration payload in your PRO dashboard."
+                )
             else:
-                rows.append({"work_id": issue.get("work_id"), "action": "manual_review", "source": "system"})
+                rows.append(
+                    {"work_id": issue.get("work_id"), "action": "manual_review", "source": "system"}
+                )
 
         package = {
             "artist_instructions": list(dict.fromkeys(instructions)) or ["No fixes required."],
@@ -287,6 +351,8 @@ class AutomatedRegistrationFixer:
             "artist_id": artist_id,
             "issues": issues,
             "fixes": fixes,
-            "updated_catalog_health_score": (report.get("catalog_health") or {}).get("health_score"),
+            "updated_catalog_health_score": (report.get("catalog_health") or {}).get(
+                "health_score"
+            ),
             "catalog_health": report.get("catalog_health"),
         }

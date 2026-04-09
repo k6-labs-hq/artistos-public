@@ -69,10 +69,19 @@ def test_run_orchestrator_for_preparing_artist_transitions_to_agent_execution(mo
         return {**state, "artist_status": "ready", "active_agent": "onboarding_preparation"}
 
     async def _recovery(state):
-        return {**state, "artist_status": "active", "active_agent": "recovery_execution", "workflow_phase": "recovery_execution"}
+        return {
+            **state,
+            "artist_status": "active",
+            "active_agent": "recovery_execution",
+            "workflow_phase": "recovery_execution",
+        }
 
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.run_onboarding_preparation_agent", _prep)
-    monkeypatch.setattr("XR7.agents.two_agent_orchestrator_graph.run_recovery_execution_agent", _recovery)
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph.run_onboarding_preparation_agent", _prep
+    )
+    monkeypatch.setattr(
+        "XR7.agents.two_agent_orchestrator_graph.run_recovery_execution_agent", _recovery
+    )
 
     out = asyncio.run(orchestrator.run_xr7_recovery_orchestra(artist_id, "run-prep"))
     assert out["artist_id"] == artist_id
@@ -97,7 +106,12 @@ def test_run_tvfilm_vertical_orchestra_sets_tvfilm_mode(monkeypatch):
     artist_id = _create_artist(status="ACTIVE")
 
     async def _recovery(state):
-        return {**state, "artist_status": "active", "active_agent": "recovery_execution", "tvfilm_mode": True}
+        return {
+            **state,
+            "artist_status": "active",
+            "active_agent": "recovery_execution",
+            "tvfilm_mode": True,
+        }
 
     monkeypatch.setattr("XR7.agents.orchestrator.run_recovery_execution_agent", _recovery)
 
@@ -123,23 +137,31 @@ def test_workflow_handoffs_endpoint_returns_records(monkeypatch):
     captured: dict[str, object] = {}
     monkeypatch.setattr(
         "XR7.api.routers.workflow.query_handoffs",
-        lambda **kwargs: captured.update(kwargs) or {
+        lambda **kwargs: captured.update(kwargs)
+        or {
             "total": 1,
-            "items": [
-                {
-                    "id": "row-1",
-                    "run_id": "run-handoff-1",
-                    "artist_id": kwargs["artist_id"],
-                    "handoff_id": "handoff-endpoint-1",
-                    "from_agent": "onboarding_preparation",
-                    "to_agent": "recovery_execution",
-                    "readiness_score": 91.0,
-                    "readiness_threshold": 85.0,
-                    "status": "active",
-                    "payload": {"artist_id": kwargs["artist_id"], "handoff_id": "handoff-endpoint-1"},
-                    "created_at": None,
-                }
-            ] if kwargs["artist_id"] == artist_id else [],
+            "items": (
+                [
+                    {
+                        "id": "row-1",
+                        "run_id": "run-handoff-1",
+                        "artist_id": kwargs["artist_id"],
+                        "handoff_id": "handoff-endpoint-1",
+                        "from_agent": "onboarding_preparation",
+                        "to_agent": "recovery_execution",
+                        "readiness_score": 91.0,
+                        "readiness_threshold": 85.0,
+                        "status": "active",
+                        "payload": {
+                            "artist_id": kwargs["artist_id"],
+                            "handoff_id": "handoff-endpoint-1",
+                        },
+                        "created_at": None,
+                    }
+                ]
+                if kwargs["artist_id"] == artist_id
+                else []
+            ),
         },
     )
 
@@ -187,10 +209,17 @@ def test_dashboard_exposes_handoff_status(monkeypatch):
         "follow_up_actions": [],
         "agent_activity": [],
     }
-    monkeypatch.setattr("XR7.api.routers.dashboard.get_latest_artist_state", lambda aid: sample_state if aid == artist_id else None)
+    monkeypatch.setattr(
+        "XR7.api.routers.dashboard.get_latest_artist_state",
+        lambda aid: sample_state if aid == artist_id else None,
+    )
     monkeypatch.setattr(
         "XR7.api.routers.dashboard.list_handoffs_for_artist",
-        lambda aid, limit=1: [{"handoff_id": "handoff-dashboard-1", "artist_id": artist_id}] if aid == artist_id else [],
+        lambda aid, limit=1: (
+            [{"handoff_id": "handoff-dashboard-1", "artist_id": artist_id}]
+            if aid == artist_id
+            else []
+        ),
     )
 
     client = TestClient(app)
@@ -207,7 +236,8 @@ def test_admin_handoffs_endpoint_returns_paginated_results(monkeypatch):
     captured: dict[str, object] = {}
     monkeypatch.setattr(
         "XR7.api.routers.admin_console.query_handoffs",
-        lambda **kwargs: captured.update(kwargs) or {
+        lambda **kwargs: captured.update(kwargs)
+        or {
             "total": 1,
             "limit": kwargs["limit"],
             "offset": kwargs["offset"],
@@ -290,7 +320,7 @@ def test_admin_handoffs_endpoint_exports_csv(monkeypatch):
     )
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/csv")
-    assert "attachment; filename=\"workflow_handoffs.csv\"" == response.headers["content-disposition"]
+    assert 'attachment; filename="workflow_handoffs.csv"' == response.headers["content-disposition"]
     body = response.text
     assert "artist_name" in body
     assert "Orchestra Test Artist" in body

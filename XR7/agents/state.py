@@ -267,7 +267,9 @@ def update_onboarding_progress(state: XR7State, *, completed_step: str | None = 
     }
 
 
-def add_trace_event(state: XR7State, *, node: str, event: str, payload: dict[str, Any] | None = None) -> XR7State:
+def add_trace_event(
+    state: XR7State, *, node: str, event: str, payload: dict[str, Any] | None = None
+) -> XR7State:
     return {
         "trace": [
             {

@@ -25,7 +25,12 @@ def test_parameter_becomes_required_is_breaking():
             "/items": {
                 "get": {
                     "parameters": [
-                        {"name": "limit", "in": "query", "required": False, "schema": {"type": "integer"}},
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "schema": {"type": "integer"},
+                        },
                     ],
                     "responses": {"200": {"description": "ok"}},
                 }
@@ -37,7 +42,12 @@ def test_parameter_becomes_required_is_breaking():
             "/items": {
                 "get": {
                     "parameters": [
-                        {"name": "limit", "in": "query", "required": True, "schema": {"type": "integer"}},
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": True,
+                            "schema": {"type": "integer"},
+                        },
                     ],
                     "responses": {"200": {"description": "ok"}},
                 }

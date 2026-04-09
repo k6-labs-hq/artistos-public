@@ -18,7 +18,11 @@ def _now() -> datetime:
 
 
 def get_catalog_health(db: Session, *, tenant_id: str, artist_id: str) -> dict[str, object]:
-    tracks = db.query(XR7Track).filter(XR7Track.tenant_id == tenant_id, XR7Track.artist_id == artist_id).all()
+    tracks = (
+        db.query(XR7Track)
+        .filter(XR7Track.tenant_id == tenant_id, XR7Track.artist_id == artist_id)
+        .all()
+    )
     if not tracks:
         return {
             "score": 0.0,
@@ -73,11 +77,18 @@ def get_or_create_valuation_snapshot(
             "baseline_value": existing.baseline_value,
             "corrected_value": existing.corrected_value,
             "upside_value": existing.upside_value,
-            "confidence_interval": [existing.confidence_interval_low, existing.confidence_interval_high],
+            "confidence_interval": [
+                existing.confidence_interval_low,
+                existing.confidence_interval_high,
+            ],
             "assumptions": json.loads(existing.assumptions_json or "{}"),
         }
 
-    usage = db.query(XR7UsageEvent).filter(XR7UsageEvent.tenant_id == tenant_id, XR7UsageEvent.artist_id == artist_id).all()
+    usage = (
+        db.query(XR7UsageEvent)
+        .filter(XR7UsageEvent.tenant_id == tenant_id, XR7UsageEvent.artist_id == artist_id)
+        .all()
+    )
     baseline = round(sum(float(u.monetization_estimate or 0.0) for u in usage), 2)
     corrected = round(baseline * 1.17, 2)
     upside = round(corrected - baseline, 2)
@@ -91,7 +102,9 @@ def get_or_create_valuation_snapshot(
         upside_value=upside,
         confidence_interval_low=round(corrected * 0.9, 2),
         confidence_interval_high=round(corrected * 1.1, 2),
-        assumptions_json=json.dumps({"model": "xr7_valuation_v1", "base_usage_events": len(usage)}, sort_keys=True),
+        assumptions_json=json.dumps(
+            {"model": "xr7_valuation_v1", "base_usage_events": len(usage)}, sort_keys=True
+        ),
     )
     db.add(snap)
     db.commit()
@@ -116,7 +129,11 @@ def forecast_recovery(
     horizon_days: int,
     scenario_overrides: dict[str, object] | None,
 ) -> dict[str, object]:
-    usage = db.query(XR7UsageEvent).filter(XR7UsageEvent.tenant_id == tenant_id, XR7UsageEvent.artist_id == artist_id).all()
+    usage = (
+        db.query(XR7UsageEvent)
+        .filter(XR7UsageEvent.tenant_id == tenant_id, XR7UsageEvent.artist_id == artist_id)
+        .all()
+    )
     baseline_month = sum(float(u.monetization_estimate or 0.0) for u in usage)
     base_multiplier = {30: 1.0, 90: 2.6, 365: 9.5}.get(horizon_days, max(1.0, horizon_days / 30.0))
     override_factor = float((scenario_overrides or {}).get("uplift_factor", 1.0))

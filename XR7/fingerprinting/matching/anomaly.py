@@ -91,10 +91,7 @@ class FingerprintAnomalyDetectionEngine:
             from XR7.models.payment import Payment
 
             payments = (
-                self._db.query(Payment)
-                .filter(Payment.artist_id == artist_id)
-                .limit(500)
-                .all()
+                self._db.query(Payment).filter(Payment.artist_id == artist_id).limit(500).all()
             )
             for payment in payments:
                 isrc: str | None = None
@@ -103,6 +100,7 @@ class FingerprintAnomalyDetectionEngine:
                 notes: str = getattr(payment, "notes", "") or ""
                 # Attempt to find ISRC-like string (12 alphanumeric chars)
                 import re
+
                 matches = re.findall(r"\b[A-Z]{2}[A-Z0-9]{3}[0-9]{7}\b", notes + source)
                 if matches:
                     isrc = matches[0]
@@ -148,8 +146,7 @@ class FingerprintAnomalyDetectionEngine:
                         match_type=MatchType.UNKNOWN,
                         anomaly_type=AnomalyType.ISRC_CONFLICT,
                         description=(
-                            f"ISRC {isrc} is assigned to multiple catalog works: "
-                            f"{work_ids}"
+                            f"ISRC {isrc} is assigned to multiple catalog works: " f"{work_ids}"
                         ),
                     )
                 )
@@ -168,8 +165,7 @@ class FingerprintAnomalyDetectionEngine:
                         match_type=MatchType.UNKNOWN,
                         anomaly_type=AnomalyType.ISWC_CONFLICT,
                         description=(
-                            f"ISWC {iswc} is assigned to multiple catalog works: "
-                            f"{work_ids}"
+                            f"ISWC {iswc} is assigned to multiple catalog works: " f"{work_ids}"
                         ),
                     )
                 )
@@ -210,6 +206,7 @@ class FingerprintAnomalyDetectionEngine:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _gap_key(gap: RoyaltyGapResult) -> tuple:
     at = gap.anomaly_type.value if hasattr(gap.anomaly_type, "value") else str(gap.anomaly_type)

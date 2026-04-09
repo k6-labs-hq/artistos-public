@@ -71,6 +71,7 @@ class TestInviteTokenGenerator:
 
         # Should raise InvalidTokenError
         import jwt
+
         with pytest.raises(jwt.InvalidTokenError):
             generator.validate(token)
 
@@ -86,6 +87,7 @@ class TestInviteTokenGenerator:
         tampered = token[:-10] + "corrupted!!"
 
         import jwt
+
         with pytest.raises(jwt.InvalidTokenError):
             generator.validate(tampered)
 
@@ -123,9 +125,7 @@ class TestInviteService:
         assert token is not None
 
         # Check event was recorded
-        events = db.query(InviteEvent).filter(
-            InviteEvent.invite_id == invite.id
-        ).all()
+        events = db.query(InviteEvent).filter(InviteEvent.invite_id == invite.id).all()
         assert len(events) > 0
         assert events[0].event_type == "created"
 

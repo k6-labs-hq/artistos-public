@@ -8,6 +8,7 @@ Explicit disclaimer: this is an algorithmic estimate for informational
 purposes only and is NOT a certified appraisal for transactional, legal,
 or tax purposes.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -102,7 +103,9 @@ class CatalogValueAppraiser:
         concentration_discount = -(concentration_score - 0.2) * 0.3
 
         # Age & trajectory
-        trajectory_factor = {"GROWING": 0.10, "STABLE": 0.0, "DECLINING": -0.15}.get(trajectory, 0.0)
+        trajectory_factor = {"GROWING": 0.10, "STABLE": 0.0, "DECLINING": -0.15}.get(
+            trajectory, 0.0
+        )
 
         # Aggregate multiplier adjustment
         total_adj = (
@@ -213,24 +216,38 @@ def _compute_drivers_risks(
     risks: list[str] = []
 
     if catalog_health_score > 0.75:
-        drivers.append(f"High catalog health score ({catalog_health_score:.0%}) improves metadata matching and royalty capture.")
+        drivers.append(
+            f"High catalog health score ({catalog_health_score:.0%}) improves metadata matching and royalty capture."
+        )
     if total_recoverable > 0:
-        drivers.append(f"Recovery pipeline of ${total_recoverable:,.0f} represents upside not yet in trailing earnings.")
+        drivers.append(
+            f"Recovery pipeline of ${total_recoverable:,.0f} represents upside not yet in trailing earnings."
+        )
     if territory_coverage_ratio > 0.7:
-        drivers.append(f"Strong territory coverage ({territory_coverage_ratio:.0%}) across major royalty markets.")
+        drivers.append(
+            f"Strong territory coverage ({territory_coverage_ratio:.0%}) across major royalty markets."
+        )
     if trajectory == "GROWING":
         drivers.append("Catalog is on a GROWING trajectory, supporting a higher earnings multiple.")
 
     if concentration_score > 0.5:
-        risks.append("High platform concentration — significant exposure if top platform changes rates.")
+        risks.append(
+            "High platform concentration — significant exposure if top platform changes rates."
+        )
     if catalog_health_score < 0.5:
-        risks.append("Below-average catalog health reduces identifier matching and royalty capture.")
+        risks.append(
+            "Below-average catalog health reduces identifier matching and royalty capture."
+        )
     if territory_coverage_ratio < 0.5:
-        risks.append("Limited territory coverage — significant royalty streams may be unregistered.")
+        risks.append(
+            "Limited territory coverage — significant royalty streams may be unregistered."
+        )
     if trajectory == "DECLINING":
         risks.append("Declining catalog trajectory reduces the applicable earnings multiple.")
     if trailing_nps < 1000:
-        risks.append("Low trailing earnings base — valuation may shift significantly with small income changes.")
+        risks.append(
+            "Low trailing earnings base — valuation may shift significantly with small income changes."
+        )
 
     return drivers[:3], risks[:3]
 
@@ -249,11 +266,31 @@ def _build_waterfall(
     base_val = trailing_nps * ((base_low + base_high) / 2.0)
     return [
         {"label": "Base NPS Multiple", "value": round(base_val, 2), "type": "base"},
-        {"label": "Catalog Health Premium", "value": round(trailing_nps * catalog_health_premium, 2), "type": ("up" if catalog_health_premium >= 0 else "down")},
-        {"label": "Recovery Upside", "value": round(trailing_nps * recovery_upside_multiplier, 2), "type": "up"},
-        {"label": "Territory Coverage", "value": round(trailing_nps * territory_factor, 2), "type": ("up" if territory_factor >= 0 else "down")},
-        {"label": "Concentration Discount", "value": round(trailing_nps * concentration_discount, 2), "type": ("up" if concentration_discount >= 0 else "down")},
-        {"label": "Trajectory Adjustment", "value": round(trailing_nps * trajectory_factor, 2), "type": ("up" if trajectory_factor >= 0 else "down")},
+        {
+            "label": "Catalog Health Premium",
+            "value": round(trailing_nps * catalog_health_premium, 2),
+            "type": ("up" if catalog_health_premium >= 0 else "down"),
+        },
+        {
+            "label": "Recovery Upside",
+            "value": round(trailing_nps * recovery_upside_multiplier, 2),
+            "type": "up",
+        },
+        {
+            "label": "Territory Coverage",
+            "value": round(trailing_nps * territory_factor, 2),
+            "type": ("up" if territory_factor >= 0 else "down"),
+        },
+        {
+            "label": "Concentration Discount",
+            "value": round(trailing_nps * concentration_discount, 2),
+            "type": ("up" if concentration_discount >= 0 else "down"),
+        },
+        {
+            "label": "Trajectory Adjustment",
+            "value": round(trailing_nps * trajectory_factor, 2),
+            "type": ("up" if trajectory_factor >= 0 else "down"),
+        },
         {"label": "Final Estimated Value", "value": valuation_expected, "type": "total"},
     ]
 
@@ -272,14 +309,14 @@ def _generate_narrative(
         f"{trajectory.lower()} trajectory, XR7 estimates your catalog value in the range of "
         f"${valuation_low:,.0f}–${valuation_high:,.0f}, with an expected value of ${valuation_expected:,.0f}. "
         f"Your open recovery pipeline adds an estimated ${recovery_upside_value:,.0f} in potential upside "
-        "if successfully recovered. "
-        + VALUATION_DISCLAIMER
+        "if successfully recovered. " + VALUATION_DISCLAIMER
     )
 
 
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def run_appraisal(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.catalog_value.run_appraisal"""

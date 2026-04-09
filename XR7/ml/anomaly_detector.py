@@ -40,6 +40,7 @@ _MODEL_VERSION = "ml-hybrid-iforest-v2"
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _to_feature_matrix(records: list[dict], feature_keys: list[str]) -> np.ndarray:
     """Extract numeric features from a list of dicts into an ndarray."""
     rows = []
@@ -75,6 +76,7 @@ def _normalize_if_scores(scores: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 # IsolationForest outlier detector
 # ---------------------------------------------------------------------------
+
 
 def detect_payment_outliers(
     artist_id: str,
@@ -139,7 +141,20 @@ def detect_payment_outliers(
                         float(
                             min(
                                 1.0,
-                                (0.8 * norm_score + 0.2 * min(abs((float(p.get('amount') or 0.0) - float(peer_mean_amount or p.get('amount') or 0.0)) / max(float(peer_mean_amount or 1.0), 1e-6)), 1.0))
+                                (
+                                    0.8 * norm_score
+                                    + 0.2
+                                    * min(
+                                        abs(
+                                            (
+                                                float(p.get("amount") or 0.0)
+                                                - float(peer_mean_amount or p.get("amount") or 0.0)
+                                            )
+                                            / max(float(peer_mean_amount or 1.0), 1e-6)
+                                        ),
+                                        1.0,
+                                    )
+                                )
                                 * quality_multiplier,
                             )
                         ),
@@ -153,6 +168,7 @@ def detect_payment_outliers(
 # ---------------------------------------------------------------------------
 # Drift detector
 # ---------------------------------------------------------------------------
+
 
 def detect_rate_drift(
     artist_id: str,
@@ -199,7 +215,9 @@ def detect_rate_drift(
             if abs(z) > zscore_threshold:
                 direction = "HIGH" if z > 0 else "LOW"
                 severity = "HIGH" if abs(z) > zscore_threshold * 1.5 else "MEDIUM"
-                quality = float(metadata_quality_score if metadata_quality_score is not None else 1.0)
+                quality = float(
+                    metadata_quality_score if metadata_quality_score is not None else 1.0
+                )
                 quality_multiplier = 1.0 + max(0.0, min(1.0, (1.0 - quality))) * 0.15
                 anomalies.append(
                     {
@@ -209,7 +227,10 @@ def detect_rate_drift(
                         "severity": severity,
                         "actual_amount": values[idx],
                         "confidence_score": round(
-                            float(np.clip((abs(z) - zscore_threshold) / zscore_threshold, 0.0, 1.0)), 4
+                            float(
+                                np.clip((abs(z) - zscore_threshold) / zscore_threshold, 0.0, 1.0)
+                            ),
+                            4,
                         ),
                         "description": (
                             f"{event_type} unit_value {values[idx]:.6f} has Z-score "
@@ -226,11 +247,21 @@ def detect_rate_drift(
                                     1.0,
                                     (
                                         0.7
-                                        * np.clip((abs(z) - zscore_threshold) / max(zscore_threshold, 1e-6), 0.0, 1.0)
+                                        * np.clip(
+                                            (abs(z) - zscore_threshold)
+                                            / max(zscore_threshold, 1e-6),
+                                            0.0,
+                                            1.0,
+                                        )
                                         + 0.3
                                         * np.clip(
-                                            abs(values[idx] - float(peer_unit_value_baseline or values[idx]))
-                                            / max(abs(float(peer_unit_value_baseline or 1.0)), 1e-6),
+                                            abs(
+                                                values[idx]
+                                                - float(peer_unit_value_baseline or values[idx])
+                                            )
+                                            / max(
+                                                abs(float(peer_unit_value_baseline or 1.0)), 1e-6
+                                            ),
                                             0.0,
                                             1.0,
                                         )
@@ -248,6 +279,7 @@ def detect_rate_drift(
 # ---------------------------------------------------------------------------
 # Missingness detector
 # ---------------------------------------------------------------------------
+
 
 def detect_missing_periodic_payments(
     artist_id: str,
@@ -334,6 +366,7 @@ def detect_missing_periodic_payments(
 # ---------------------------------------------------------------------------
 # Convenience wrapper
 # ---------------------------------------------------------------------------
+
 
 class MLAnomalyDetector:
     """

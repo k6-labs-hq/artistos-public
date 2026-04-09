@@ -95,8 +95,16 @@ def test_generate_attorney_evidence_pdf_marks_claim_generated():
             grace_period_days=60,
             sol_deadline=now + timedelta(days=180),
             communications=[
-                {"date": (now - timedelta(days=68)).date().isoformat(), "type": "email", "summary": "Initial proof sent"},
-                {"date": (now - timedelta(days=55)).date().isoformat(), "type": "follow_up", "summary": "No response"},
+                {
+                    "date": (now - timedelta(days=68)).date().isoformat(),
+                    "type": "email",
+                    "summary": "Initial proof sent",
+                },
+                {
+                    "date": (now - timedelta(days=55)).date().isoformat(),
+                    "type": "follow_up",
+                    "summary": "No response",
+                },
             ],
             anomaly_report={
                 "detectedAt": (now - timedelta(days=72)).isoformat(),
@@ -105,7 +113,11 @@ def test_generate_attorney_evidence_pdf_marks_claim_generated():
                 "estimatedLeakage": 9150.0,
             },
             supporting_documents=[
-                {"name": "proof_of_non_payment.pdf", "uploadedAt": (now - timedelta(days=70)).isoformat(), "fileRef": "s3://bucket/proof.pdf"}
+                {
+                    "name": "proof_of_non_payment.pdf",
+                    "uploadedAt": (now - timedelta(days=70)).isoformat(),
+                    "fileRef": "s3://bucket/proof.pdf",
+                }
             ],
         )
         db.add(claim)
@@ -121,7 +133,10 @@ def test_generate_attorney_evidence_pdf_marks_claim_generated():
         assert resp.status_code == 200
         assert resp.headers["content-type"].startswith("application/pdf")
         assert "XR7_Evidence_" in resp.headers.get("content-disposition", "")
-        assert resp.headers.get("x-evidence-file-ready") == "Evidence file ready. Share with your attorney."
+        assert (
+            resp.headers.get("x-evidence-file-ready")
+            == "Evidence file ready. Share with your attorney."
+        )
         assert resp.content.startswith(b"%PDF-")
 
         db.refresh(claim)

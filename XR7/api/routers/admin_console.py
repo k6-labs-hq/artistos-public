@@ -42,14 +42,20 @@ def _require_admin(
 ) -> str:
     expected = os.environ.get("ADMIN_API_KEY") or os.environ.get("WIDGET_ADMIN_KEY", "")
     if not expected:
-        raise HTTPException(status_code=503, detail="Admin API key is not configured on this server.")
+        raise HTTPException(
+            status_code=503, detail="Admin API key is not configured on this server."
+        )
     if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
         raise HTTPException(status_code=401, detail="Invalid or missing admin key.")
     return (x_admin_actor or "unknown-admin")[:128]
 
 
-def _log(db: Session, actor: str, action: str, resource_type: str, details: dict | None = None) -> None:
-    row = AdminAuditLog(actor=actor, action=action, resource_type=resource_type, details=details or {})
+def _log(
+    db: Session, actor: str, action: str, resource_type: str, details: dict | None = None
+) -> None:
+    row = AdminAuditLog(
+        actor=actor, action=action, resource_type=resource_type, details=details or {}
+    )
     db.add(row)
     db.commit()
 
@@ -66,43 +72,48 @@ def _founder_label(artist: Artist) -> str:
 
 def _handoff_items_with_artist_names(db: Session, items: list[dict]) -> list[dict]:
     artist_ids = [item["artist_id"] for item in items]
-    artist_names = {
-        row.id: row.name
-        for row in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()
-    } if artist_ids else {}
+    artist_names = (
+        {row.id: row.name for row in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()}
+        if artist_ids
+        else {}
+    )
     return [{**item, "artist_name": artist_names.get(item["artist_id"])} for item in items]
 
 
 def _handoff_csv_response(items: list[dict]) -> StreamingResponse:
     out = io.StringIO()
     writer = csv.writer(out)
-    writer.writerow([
-        "id",
-        "run_id",
-        "artist_id",
-        "artist_name",
-        "handoff_id",
-        "from_agent",
-        "to_agent",
-        "status",
-        "readiness_score",
-        "readiness_threshold",
-        "created_at",
-    ])
+    writer.writerow(
+        [
+            "id",
+            "run_id",
+            "artist_id",
+            "artist_name",
+            "handoff_id",
+            "from_agent",
+            "to_agent",
+            "status",
+            "readiness_score",
+            "readiness_threshold",
+            "created_at",
+        ]
+    )
     for item in items:
-        writer.writerow([
-            item.get("id") or "",
-            item.get("run_id") or "",
-            item.get("artist_id") or "",
-            item.get("artist_name") or "",
-            item.get("handoff_id") or "",
-            item.get("from_agent") or "",
-            item.get("to_agent") or "",
-            item.get("status") or "",
-            item.get("readiness_score") or 0,
-            item.get("readiness_threshold") or 0,
-            item.get("created_at") or "",
-        ])
+        writer.writerow(
+            [
+                item.get("id") or "",
+                item.get("run_id") or "",
+                item.get("artist_id") or "",
+                item.get("artist_name") or "",
+                item.get("handoff_id") or "",
+                item.get("from_agent") or "",
+                item.get("to_agent") or "",
+                item.get("status") or "",
+                item.get("readiness_score") or 0,
+                item.get("readiness_threshold") or 0,
+                item.get("created_at") or "",
+            ]
+        )
     return StreamingResponse(
         io.BytesIO(out.getvalue().encode("utf-8")),
         media_type="text/csv",
@@ -114,7 +125,9 @@ def _handoff_csv_response(items: list[dict]) -> StreamingResponse:
 def list_artists(
     status: str | None = Query(default=None),
     q: str | None = Query(default=None),
-    sort: str = Query(default="created_at_desc", pattern="^(created_at_desc|created_at_asc|name_asc|name_desc)$"),
+    sort: str = Query(
+        default="created_at_desc", pattern="^(created_at_desc|created_at_asc|name_asc|name_desc)$"
+    ),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     actor: str = Depends(_require_admin),
@@ -151,7 +164,10 @@ def list_claims(
     status: str | None = Query(default=None),
     artist_id: str | None = Query(default=None),
     jurisdiction: str | None = Query(default=None),
-    sort: str = Query(default="updated_at_desc", pattern="^(updated_at_desc|updated_at_asc|amount_desc|amount_asc)$"),
+    sort: str = Query(
+        default="updated_at_desc",
+        pattern="^(updated_at_desc|updated_at_asc|amount_desc|amount_asc)$",
+    ),
     limit: int = Query(default=50, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
     actor: str = Depends(_require_admin),
@@ -181,9 +197,17 @@ def list_claims(
         actor,
         "list",
         "claims",
-        {"total": total, "status": status, "artist_id": artist_id, "jurisdiction": jurisdiction, "sort": sort},
+        {
+            "total": total,
+            "status": status,
+            "artist_id": artist_id,
+            "jurisdiction": jurisdiction,
+            "sort": sort,
+        },
     )
-    return _paginated_response([ClaimSchema.model_validate(r).model_dump() for r in rows], total, limit, offset)
+    return _paginated_response(
+        [ClaimSchema.model_validate(r).model_dump() for r in rows], total, limit, offset
+    )
 
 
 @router.get("/reports/sol-risk")
@@ -214,7 +238,9 @@ def sol_risk_report(
                 "artist_id": claim.artist_id,
                 "status": status,
                 "days_remaining": sol.get("sol_days_remaining"),
-                "deadline": sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None,
+                "deadline": (
+                    sol.get("sol_deadline").date().isoformat() if sol.get("sol_deadline") else None
+                ),
                 "governing_law_state": sol.get("governing_law_state"),
                 "contract_type": sol.get("contract_type"),
                 "citation": sol.get("sol_citation_source"),
@@ -304,8 +330,19 @@ def list_transactions(
 
     total = query.count()
     rows = query.order_by(TrolleyTransaction.updated_at.desc()).offset(offset).limit(limit).all()
-    _log(db, actor, "list", "transactions", {"total": total, "status": status, "tx_type": tx_type, "artist_id": artist_id})
-    return _paginated_response([TrolleyTransactionSchema.model_validate(r).model_dump() for r in rows], total, limit, offset)
+    _log(
+        db,
+        actor,
+        "list",
+        "transactions",
+        {"total": total, "status": status, "tx_type": tx_type, "artist_id": artist_id},
+    )
+    return _paginated_response(
+        [TrolleyTransactionSchema.model_validate(r).model_dump() for r in rows],
+        total,
+        limit,
+        offset,
+    )
 
 
 @router.get("/review-queue")
@@ -335,7 +372,9 @@ def list_review_queue(
         "review_queue",
         {"total": total, "status": status, "artist_id": artist_id, "source_type": source_type},
     )
-    return _paginated_response([ReviewItemSchema.model_validate(r).model_dump() for r in rows], total, limit, offset)
+    return _paginated_response(
+        [ReviewItemSchema.model_validate(r).model_dump() for r in rows], total, limit, offset
+    )
 
 
 @router.get("/audit-logs", response_model=list[AdminAuditLogSchema])
@@ -353,7 +392,13 @@ def list_audit_logs(
     if action:
         query = query.filter(AdminAuditLog.action == action)
     rows = query.order_by(AdminAuditLog.created_at.desc()).offset(offset).limit(limit).all()
-    _log(db, actor, "list", "audit_logs", {"actor_filter": actor_filter, "action": action, "returned": len(rows)})
+    _log(
+        db,
+        actor,
+        "list",
+        "audit_logs",
+        {"actor_filter": actor_filter, "action": action, "returned": len(rows)},
+    )
     return rows
 
 
@@ -375,8 +420,7 @@ def list_workflow_handoffs(
     artist_ids: list[str] | None = None
     if q:
         artist_ids = [
-            row.id
-            for row in db.query(Artist.id).filter(Artist.name.ilike(f"%{q.strip()}%")).all()
+            row.id for row in db.query(Artist.id).filter(Artist.name.ilike(f"%{q.strip()}%")).all()
         ]
     results = query_handoffs(
         artist_id=artist_id,
@@ -434,7 +478,10 @@ def admin_overview(actor: str = Depends(_require_admin), db: Session = Depends(g
         "claims": db.query(func.count(Claim.id)).scalar() or 0,
         "anomalies": db.query(func.count(Anomaly.id)).scalar() or 0,
         "transactions": db.query(func.count(TrolleyTransaction.id)).scalar() or 0,
-        "review_queue_open": db.query(func.count(ReviewItem.id)).filter(ReviewItem.status == "OPEN").scalar() or 0,
+        "review_queue_open": db.query(func.count(ReviewItem.id))
+        .filter(ReviewItem.status == "OPEN")
+        .scalar()
+        or 0,
         "founder_cohort": {
             "slots_total": founder["slots_total"],
             "slots_filled": founder["slots_filled"],
@@ -466,7 +513,9 @@ def founder_roster(
             "artist_name": row.name,
             "slot_number": row.founder_slot_number,
             "activated_at": row.activated_at.isoformat() if row.activated_at else None,
-            "founder_locked_at": row.founder_locked_at.isoformat() if row.founder_locked_at else None,
+            "founder_locked_at": (
+                row.founder_locked_at.isoformat() if row.founder_locked_at else None
+            ),
             "contingency_fee_percent": float(row.contingency_fee_percent or 0.0),
         }
         for row in rows
@@ -483,11 +532,19 @@ def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = De
     founder_ids = [a.id for a in founders]
     standard_ids = [a.id for a in standard]
 
-    founder_claims = db.query(Claim).filter(Claim.artist_id.in_(founder_ids)).all() if founder_ids else []
-    standard_claims = db.query(Claim).filter(Claim.artist_id.in_(standard_ids)).all() if standard_ids else []
+    founder_claims = (
+        db.query(Claim).filter(Claim.artist_id.in_(founder_ids)).all() if founder_ids else []
+    )
+    standard_claims = (
+        db.query(Claim).filter(Claim.artist_id.in_(standard_ids)).all() if standard_ids else []
+    )
 
-    founder_recovered = [float(c.recovered_amount or 0.0) for c in founder_claims if c.recovered_amount is not None]
-    standard_recovered = [float(c.recovered_amount or 0.0) for c in standard_claims if c.recovered_amount is not None]
+    founder_recovered = [
+        float(c.recovered_amount or 0.0) for c in founder_claims if c.recovered_amount is not None
+    ]
+    standard_recovered = [
+        float(c.recovered_amount or 0.0) for c in standard_claims if c.recovered_amount is not None
+    ]
     founder_fees = [float(c.contingency_fee or 0.0) for c in founder_claims]
 
     cohort = founder_status_payload(db)
@@ -515,22 +572,36 @@ def assign_founder_manually(
 
     cfg = get_or_create_platform_config(db, for_update=True)
     if artist.is_founder and artist.founder_slot_number is not None:
-        _log(db, actor, "update", "founder_assign", {"artist_id": artist_id, "noop": "already_founder"})
+        _log(
+            db,
+            actor,
+            "update",
+            "founder_assign",
+            {"artist_id": artist_id, "noop": "already_founder"},
+        )
         return {
             "artist_id": artist_id,
             "is_founder": True,
             "founder_slot_number": artist.founder_slot_number,
-            "contingency_fee_percent": float(artist.contingency_fee_percent or cfg.founder_fee_percent),
+            "contingency_fee_percent": float(
+                artist.contingency_fee_percent or cfg.founder_fee_percent
+            ),
         }
 
     if int(cfg.founder_slots_filled) >= int(cfg.founder_cohort_limit):
-        raise HTTPException(status_code=409, detail="Founder cohort is full. Increase cohort limit before assigning.")
+        raise HTTPException(
+            status_code=409,
+            detail="Founder cohort is full. Increase cohort limit before assigning.",
+        )
 
     cfg.founder_slots_filled = int(cfg.founder_slots_filled) + 1
     artist.is_founder = True
     artist.founder_slot_number = int(cfg.founder_slots_filled)
     artist.founder_locked_at = artist.founder_locked_at or datetime.now(timezone.utc)
-    artist.contingency_fee_percent = min(float(payload.contingency_fee_percent or cfg.founder_fee_percent), float(cfg.founder_fee_percent))
+    artist.contingency_fee_percent = min(
+        float(payload.contingency_fee_percent or cfg.founder_fee_percent),
+        float(cfg.founder_fee_percent),
+    )
 
     db.commit()
     _log(
@@ -585,6 +656,7 @@ def update_founder_cohort_limit(
 # ---------------------------------------------------------------------------
 # OPS-401 — Backup / restore validation report
 # ---------------------------------------------------------------------------
+
 
 @router.get("/ops/backup-report")
 def backup_report(

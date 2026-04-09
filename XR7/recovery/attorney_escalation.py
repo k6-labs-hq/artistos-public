@@ -49,7 +49,9 @@ class AttorneyNetworkEscalator:
 
         zip_buf = io.BytesIO()
         with zipfile.ZipFile(zip_buf, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
-            zf.writestr("claim.json", json.dumps({"id": claim.id, "artist_id": claim.artist_id}, indent=2))
+            zf.writestr(
+                "claim.json", json.dumps({"id": claim.id, "artist_id": claim.artist_id}, indent=2)
+            )
             zf.writestr("evidence.json", json.dumps(claim.evidence or {}, indent=2))
             zf.writestr("demand_letter.md", letter)
 
@@ -73,6 +75,10 @@ class AttorneyNetworkEscalator:
         ImmutableLedgerService(self.db).append(
             claim.artist_id,
             "legal_outcome",
-            {"claim_id": claim_id, "settlement_amount": settlement_amount, "at": datetime.now(timezone.utc).isoformat()},
+            {
+                "claim_id": claim_id,
+                "settlement_amount": settlement_amount,
+                "at": datetime.now(timezone.utc).isoformat(),
+            },
         )
         return {"claim_id": claim_id, "settlement_amount": settlement_amount, "updated": True}

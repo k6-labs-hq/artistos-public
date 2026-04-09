@@ -1,4 +1,5 @@
 """Connector reliability router — webhook ingestion, DLQ replay, sync cursor."""
+
 from __future__ import annotations
 
 import os
@@ -32,6 +33,7 @@ def _require_admin(x_admin_key: str = Header(...)):
 # Webhook ingestion
 # ---------------------------------------------------------------------------
 
+
 class WebhookIngestRequest(BaseModel):
     source: str
     event_type: str
@@ -60,6 +62,7 @@ def ingest_webhook_event(
 # ---------------------------------------------------------------------------
 # DLQ — admin replay
 # ---------------------------------------------------------------------------
+
 
 @router.get(
     "/admin/connectors/webhook/queue",
@@ -91,6 +94,7 @@ def replay_webhook_event(event_id: str, db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 # Sync cursor
 # ---------------------------------------------------------------------------
+
 
 @router.get(
     "/artists/{artist_id}/connectors/{integration}/sync-cursor",

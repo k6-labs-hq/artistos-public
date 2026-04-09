@@ -49,7 +49,11 @@ def calculate_sol(
 
     ctype = _normalize_contract_type(contract_type, default_contract_type)
     j_rules = jurisdictions.get(jurisdiction) or {}
-    c_rules = j_rules.get(ctype) or (jurisdictions.get(default_jurisdiction) or {}).get(default_contract_type) or {}
+    c_rules = (
+        j_rules.get(ctype)
+        or (jurisdictions.get(default_jurisdiction) or {}).get(default_contract_type)
+        or {}
+    )
 
     years = int(c_rules.get("years") or 3)
     citation = str(c_rules.get("citation") or "Rule unavailable")

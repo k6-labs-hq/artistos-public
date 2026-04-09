@@ -5,6 +5,7 @@ Identifies works in the artist's catalog that are registered with PROs and
 present on DSPs but have returned $0 for one or more periods where activity
 data suggests revenue should have been generated.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -119,7 +120,8 @@ class GhostCatalogDetector:
             # Determine last payment date (or use a far-past sentinel)
             if work_payments:
                 last_pay_dt = max(
-                    _ensure_utc(getattr(p, "received_at", None) or getattr(p, "period_start", None)) for p in work_payments
+                    _ensure_utc(getattr(p, "received_at", None) or getattr(p, "period_start", None))
+                    for p in work_payments
                 )
                 zero_days = (now - last_pay_dt).days
             else:
@@ -138,9 +140,7 @@ class GhostCatalogDetector:
 
             score = _ghost_score(work, zero_days, has_activity_signal)
             zero_months = max(1, zero_days // 30)
-            missing_value = _estimate_missing_value(
-                work, self._PEER_AVG_MONTHLY_USD, zero_months
-            )
+            missing_value = _estimate_missing_value(work, self._PEER_AVG_MONTHLY_USD, zero_months)
             cause = _infer_cause(work, work_payments)
             ghost_start = (
                 last_pay_dt.isoformat()
@@ -237,6 +237,7 @@ def _recommended_action(cause: str) -> str:
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def run_scan(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.ghost_catalog.run_scan"""

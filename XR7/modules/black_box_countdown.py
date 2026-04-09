@@ -5,6 +5,7 @@ Tracks society-specific redistribution deadlines for every open anomaly.
 Distinct from the SOL tracker: this is about the point at which unmatched
 royalties are redistributed to other rights holders and become unrecoverable.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -28,10 +29,10 @@ logger = get_logger(__name__)
 # ---------------------------------------------------------------------------
 _REDISTRIBUTION_RULES: dict[str, int] = {
     # Society: days until redistribution
-    "ASCAP": 730,          # 2 years
+    "ASCAP": 730,  # 2 years
     "BMI": 730,
-    "MLC": 1095,           # 3 years (digital mechanicals)
-    "JASRAC": 548,         # ~18 months conservatively
+    "MLC": 1095,  # 3 years (digital mechanicals)
+    "JASRAC": 548,  # ~18 months conservatively
     "PRS": 1095,
     "GEMA": 1095,
     "SACEM": 1095,
@@ -64,7 +65,6 @@ def _urgency_tier(days: int, is_expired: bool) -> str:
 def _compute_hash(artist_id: str, payload: dict) -> str:
     raw = json.dumps({"artist_id": artist_id, "payload": payload}, sort_keys=True)
     return hashlib.sha256(raw.encode()).hexdigest()
-
 
 
 def _society_from_anomaly(anomaly: Anomaly) -> str:
@@ -108,6 +108,7 @@ def is_frozen(society: str, as_of: datetime) -> bool:
 # Core engine
 # ---------------------------------------------------------------------------
 
+
 class BlackBoxCountdown:
     def __init__(self, db: Session):
         self.db = db
@@ -148,7 +149,9 @@ class BlackBoxCountdown:
         chain_hash = _compute_hash(artist_id, payload_for_hash)
         try:
             ImmutableLedgerService(self.db).append(
-                artist_id, "black_box_countdown_refresh", {**payload_for_hash, "chain_hash": chain_hash}
+                artist_id,
+                "black_box_countdown_refresh",
+                {**payload_for_hash, "chain_hash": chain_hash},
             )
         except Exception:  # noqa: BLE001
             logger.warning("Failed to append ledger for black_box_countdown")
@@ -212,6 +215,7 @@ class BlackBoxCountdown:
 # ---------------------------------------------------------------------------
 # Celery task entry point
 # ---------------------------------------------------------------------------
+
 
 def refresh_countdowns(artist_id: str) -> dict[str, Any]:
     """Callable by Celery: xr7.modules.black_box_countdown.refresh_countdowns"""

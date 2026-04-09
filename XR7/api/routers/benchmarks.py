@@ -12,6 +12,7 @@ Uses pre-seeded ``BenchmarkAggregate`` cohort rows (genre × role_type ×
 catalog_size_bucket).  If no exact cohort match exists, the nearest bucket
 is used; if the table is empty the endpoint returns a calibrated placeholder.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -58,6 +59,7 @@ class BenchmarkPercentileResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _catalog_size_bucket(n: int) -> str:
     if n < 50:
@@ -123,9 +125,7 @@ def _label_and_comparison(percentile: int, metric_display: str) -> tuple[str, st
         tier = "slightly below"
     else:
         tier = "well below"
-    comparison = (
-        f"{tier} than {percentile}% of similar artists in {metric_display}"
-    )
+    comparison = f"{tier} than {percentile}% of similar artists in {metric_display}"
     return label, comparison
 
 
@@ -182,11 +182,7 @@ def _find_cohort(
         return row
 
     # Relax genre
-    row = (
-        db.query(BenchmarkAggregate)
-        .filter(BenchmarkAggregate.role_type == role_type)
-        .first()
-    )
+    row = db.query(BenchmarkAggregate).filter(BenchmarkAggregate.role_type == role_type).first()
     if row:
         return row
 
@@ -218,6 +214,7 @@ def get_benchmark_percentiles(
     role_type = str(artist.role or "recording_artist").lower().replace(" ", "_")
 
     from XR7.models.work import Work
+
     work_count = db.query(Work).filter(Work.artist_id == artist_id).count()
     bucket = _catalog_size_bucket(work_count)
 
@@ -251,32 +248,20 @@ def get_benchmark_percentiles(
 
     total_expected = sum(float(a.expected_amount or 0.0) for a in anomalies)
     total_recoverable = sum(float(a.estimated_recoverable or 0.0) for a in anomalies)
-    artist_leakage_pct = (
-        (total_recoverable / total_expected * 100.0) if total_expected > 0 else 0.0
-    )
+    artist_leakage_pct = (total_recoverable / total_expected * 100.0) if total_expected > 0 else 0.0
 
-    closed_claims = [
-        c for c in claims if str(c.status).upper() in ("PAID", "CLOSED", "SETTLED")
-    ]
-    artist_recovery_rate = (
-        len(closed_claims) / len(claims) if claims else 0.0
-    )
+    closed_claims = [c for c in claims if str(c.status).upper() in ("PAID", "CLOSED", "SETTLED")]
+    artist_recovery_rate = len(closed_claims) / len(claims) if claims else 0.0
 
     total_recovered = sum(
-        float(c.amount_recovered or 0.0) for c in closed_claims
-        if hasattr(c, "amount_recovered")
+        float(c.amount_recovered or 0.0) for c in closed_claims if hasattr(c, "amount_recovered")
     )
     if not total_recovered:
         # Fallback: sum estimated_recoverable from paid claims' linked anomalies
-        closed_anomalies = [
-            a for a in anomalies
-            if str(a.status).upper() in ("CLOSED",)
-        ]
+        closed_anomalies = [a for a in anomalies if str(a.status).upper() in ("CLOSED",)]
         total_recovered = sum(float(a.estimated_recoverable or 0.0) for a in closed_anomalies)
 
-    artist_avg_recovered = (
-        total_recovered / len(closed_claims) if closed_claims else 0.0
-    )
+    artist_avg_recovered = total_recovered / len(closed_claims) if closed_claims else 0.0
 
     # ── Compute percentiles ───────────────────────────────────────────────
     leakage_pct = _percentile_from_p_values(
@@ -305,7 +290,11 @@ def get_benchmark_percentiles(
     rr_label, rr_cmp = _label_and_comparison(recovery_pct, "streaming recovery efficiency")
     ar_label, ar_cmp = _label_and_comparison(avg_recovered_pct, "average $ recovered per claim")
 
-    if cohort.genre != genre or cohort.role_type != role_type or cohort.catalog_size_bucket != bucket:
+    if (
+        cohort.genre != genre
+        or cohort.role_type != role_type
+        or cohort.catalog_size_bucket != bucket
+    ):
         note = (
             f"Exact cohort ({genre}/{role_type}/{bucket}) not found; "
             f"using nearest match ({cohort.genre}/{cohort.role_type}/{cohort.catalog_size_bucket})."

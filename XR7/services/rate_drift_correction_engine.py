@@ -37,7 +37,9 @@ class RateDriftCorrectionEngine:
                 continue
         return None
 
-    def _contract_term_discrepancies(self, artist_id: str, events: list[Event], contracts: list[Contract]) -> list[dict[str, Any]]:
+    def _contract_term_discrepancies(
+        self, artist_id: str, events: list[Event], contracts: list[Contract]
+    ) -> list[dict[str, Any]]:
         if not events:
             return []
         avg_rate = sum(float(e.unit_value or 0.0) for e in events) / max(len(events), 1)
@@ -70,7 +72,9 @@ class RateDriftCorrectionEngine:
 
         discrepancy_reports: list[dict[str, Any]] = []
         if events:
-            backend_expected = sum(float(e.unit_value or 0.0) * float(e.quantity or 0.0) for e in events)
+            backend_expected = sum(
+                float(e.unit_value or 0.0) * float(e.quantity or 0.0) for e in events
+            )
             backend_received = sum(float(p.amount or 0.0) for p in payments)
             missing_backend = max(0.0, backend_expected - backend_received)
             if missing_backend > 0.0:
@@ -84,7 +88,11 @@ class RateDriftCorrectionEngine:
                 )
 
         foreign_events = [e for e in events if (e.territory or "US").upper() not in {"US", "USA"}]
-        foreign_payments = [p for p in payments if str(p.source or "").strip().upper() in {"FOREIGN", "SUB_PUBLISHER", "CMO"}]
+        foreign_payments = [
+            p
+            for p in payments
+            if str(p.source or "").strip().upper() in {"FOREIGN", "SUB_PUBLISHER", "CMO"}
+        ]
         if foreign_events and not foreign_payments:
             discrepancy_reports.append(
                 {
@@ -123,7 +131,9 @@ class RateDriftCorrectionEngine:
                         artist_id=artist_id,
                         category=AnomalyCategory.ROYALTY,
                         subtype="RATE_DRIFT_FUTURE_RISK",
-                        severity=AnomalySeverity.HIGH if projected > 1000 else AnomalySeverity.MEDIUM,
+                        severity=(
+                            AnomalySeverity.HIGH if projected > 1000 else AnomalySeverity.MEDIUM
+                        ),
                         estimated_recoverable=projected,
                         confidence_score=0.82,
                         status=AnomalyStatus.OPEN,

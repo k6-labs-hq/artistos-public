@@ -14,7 +14,9 @@ def _find_top_payer(dashboard: dict[str, Any]) -> dict[str, Any] | None:
     payers = dashboard.get("payers_owing") or []
     if not isinstance(payers, list) or not payers:
         return None
-    sorted_rows = sorted(payers, key=lambda r: _as_float((r or {}).get("recoverable_estimate"), 0.0), reverse=True)
+    sorted_rows = sorted(
+        payers, key=lambda r: _as_float((r or {}).get("recoverable_estimate"), 0.0), reverse=True
+    )
     return sorted_rows[0] if sorted_rows else None
 
 
@@ -63,7 +65,15 @@ async def ArtistSupportAgent(state: dict[str, Any]) -> dict[str, Any]:
         "Run catalog readiness check",
     ]
 
-    destructive_markers = ["create claim", "charge", "disburse", "delete", "void", "skip payer", "close claim"]
+    destructive_markers = [
+        "create claim",
+        "charge",
+        "disburse",
+        "delete",
+        "void",
+        "skip payer",
+        "close claim",
+    ]
     if any(token in lowered for token in destructive_markers):
         response = (
             "I can only run safe read-only or low-risk actions in chat. "
@@ -79,7 +89,9 @@ async def ArtistSupportAgent(state: dict[str, Any]) -> dict[str, Any]:
                 matched = True
                 break
 
-        if not matched and ("top payer" in lowered or "show my payers" in lowered or "payer" in lowered):
+        if not matched and (
+            "top payer" in lowered or "show my payers" in lowered or "payer" in lowered
+        ):
             top = _find_top_payer(dashboard)
             if top:
                 response = (
@@ -101,7 +113,9 @@ async def ArtistSupportAgent(state: dict[str, Any]) -> dict[str, Any]:
             confidence = 0.86
             matched = True
 
-        if not matched and ("what should i do" in lowered or "next step" in lowered or "should i" in lowered):
+        if not matched and (
+            "what should i do" in lowered or "next step" in lowered or "should i" in lowered
+        ):
             response = _build_recommendation(dashboard)
             confidence = 0.84
             matched = True
@@ -133,5 +147,8 @@ async def ArtistSupportAgent(state: dict[str, Any]) -> dict[str, Any]:
         "support_suggested_replies": quick_replies,
         "support_escalation_recommended": needs_human,
         "next_action": "human_review" if needs_human else "proceed",
-        "confidence_scores": {**(state.get("confidence_scores") or {}), "artist_support": round(confidence, 4)},
+        "confidence_scores": {
+            **(state.get("confidence_scores") or {}),
+            "artist_support": round(confidence, 4),
+        },
     }

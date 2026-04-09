@@ -33,12 +33,16 @@ class SocietySignalFeed:
             "payer_or_society": payer,
             "freeze_event": freeze,
             "royalty_type": str(signal.get("royalty_type") or "unmatched_royalties").lower(),
-            "effective_at": str(signal.get("effective_at") or datetime.now(timezone.utc).isoformat()),
+            "effective_at": str(
+                signal.get("effective_at") or datetime.now(timezone.utc).isoformat()
+            ),
             "source": str(signal.get("source") or "partner_feed"),
             "raw": signal,
         }
 
-    def apply_signal(self, signal: dict[str, Any], anomalies: list[dict[str, Any]]) -> dict[str, Any]:
+    def apply_signal(
+        self, signal: dict[str, Any], anomalies: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         parsed = self.parse_signal(signal)
         target_payer = parsed["payer_or_society"]
         before_after: dict[str, int] = {}
@@ -55,20 +59,37 @@ class SocietySignalFeed:
 
         updates: list[dict[str, Any]] = []
         for anomaly in anomalies:
-            payer = str(anomaly.get("payer") or anomaly.get("society") or anomaly.get("subtype") or "").upper()
+            payer = str(
+                anomaly.get("payer") or anomaly.get("society") or anomaly.get("subtype") or ""
+            ).upper()
             if target_payer not in payer and target_payer != "GENERIC":
                 continue
             affected += 1
-            previous = str((anomaly.get("recoverability") or {}).get("recoverability_class") or anomaly.get("recoverability_class") or "UNSET")
+            previous = str(
+                (anomaly.get("recoverability") or {}).get("recoverability_class")
+                or anomaly.get("recoverability_class")
+                or "UNSET"
+            )
             new_payload = build_recoverability_payload(anomaly)
-            new_class = str((new_payload.get("recoverability") or {}).get("recoverability_class") or "UNSET")
-            before_after[f"{previous}->{new_class}"] = before_after.get(f"{previous}->{new_class}", 0) + 1
-            updates.append({
-                "anomaly_id": anomaly.get("id"),
-                "previous_class": previous,
-                "new_class": new_class,
-                "urgent_flag": bool((new_payload.get("black_box_expiration") or {}).get("days_remaining", 999999) <= 90),
-            })
+            new_class = str(
+                (new_payload.get("recoverability") or {}).get("recoverability_class") or "UNSET"
+            )
+            before_after[f"{previous}->{new_class}"] = (
+                before_after.get(f"{previous}->{new_class}", 0) + 1
+            )
+            updates.append(
+                {
+                    "anomaly_id": anomaly.get("id"),
+                    "previous_class": previous,
+                    "new_class": new_class,
+                    "urgent_flag": bool(
+                        (new_payload.get("black_box_expiration") or {}).get(
+                            "days_remaining", 999999
+                        )
+                        <= 90
+                    ),
+                }
+            )
 
         entry = SignalLogEntry(
             source=parsed["source"],

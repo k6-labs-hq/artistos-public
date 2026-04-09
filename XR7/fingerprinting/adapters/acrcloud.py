@@ -161,9 +161,7 @@ class ACRCloudAdapter(IFingerprintingProvider):
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.error(
-                "ACRCloud HTTP error status=%s url=%s", exc.response.status_code, endpoint
-            )
+            logger.error("ACRCloud HTTP error status=%s url=%s", exc.response.status_code, endpoint)
             raise
         except httpx.TimeoutException:
             logger.error("ACRCloud identify request timed out endpoint=%s", endpoint)
@@ -251,9 +249,7 @@ class ACRCloudAdapter(IFingerprintingProvider):
                 checked_at=datetime.now(timezone.utc),
             )
 
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         """Normalize ACRCloud JSON identify response.
 
         Response shape::
@@ -289,9 +285,7 @@ class ACRCloudAdapter(IFingerprintingProvider):
             ext_ids: dict[str, str] = track.get("external_ids", {})
             isrc: str | None = ext_ids.get("isrc") or ext_ids.get("ISRC")
 
-            artist_name: str = ", ".join(
-                a.get("name", "") for a in track.get("artists", [])
-            )
+            artist_name: str = ", ".join(a.get("name", "") for a in track.get("artists", []))
             duration_ms: int | None = track.get("duration_ms")
 
             results.append(
@@ -306,7 +300,11 @@ class ACRCloudAdapter(IFingerprintingProvider):
                     anomaly_type=AnomalyType.NONE,
                     title=track.get("title"),
                     artist_name=artist_name or None,
-                    album=track.get("album", {}).get("name") if isinstance(track.get("album"), dict) else track.get("album"),
+                    album=(
+                        track.get("album", {}).get("name")
+                        if isinstance(track.get("album"), dict)
+                        else track.get("album")
+                    ),
                     duration_seconds=duration_ms / 1000.0 if duration_ms else None,
                     raw_provider_payload=track,
                 )

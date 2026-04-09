@@ -1,4 +1,5 @@
 """SLO Metric and Tenant Cost Ledger models."""
+
 from __future__ import annotations
 
 import uuid
@@ -14,12 +15,11 @@ from XR7.models.base import Base
 # SloMetric
 # ---------------------------------------------------------------------------
 
+
 class SloMetric(Base):
     __tablename__ = "slo_metrics"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     org_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     metric_name: Mapped[str] = mapped_column(String, nullable=False)
     # Measurement window in seconds, e.g. 3600 = 1 h, 86400 = 1 d
@@ -75,13 +75,12 @@ class SloMetricSchema(BaseModel):
 # TenantCostLedger
 # ---------------------------------------------------------------------------
 
+
 class TenantCostLedger(Base):
     __tablename__ = "tenant_cost_ledger"
     __table_args__ = (UniqueConstraint("org_id", "period_start", name="uq_cost_org_period"),)
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     org_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     period_start: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     period_end: Mapped[datetime] = mapped_column(DateTime, nullable=False)

@@ -13,7 +13,9 @@ client = TestClient(app)
 
 
 def _create_artist() -> str:
-    response = client.post("/artists/", json={"name": f"Artist-{uuid.uuid4()}", "ipi_number": None, "stage_names": []})
+    response = client.post(
+        "/artists/", json={"name": f"Artist-{uuid.uuid4()}", "ipi_number": None, "stage_names": []}
+    )
     assert response.status_code == 201
     return response.json()["id"]
 
@@ -25,7 +27,9 @@ def test_required_auth_statement_catalog_variance_recovery_ledger_routes():
     assert providers.status_code == 200
     assert any(p["provider"] == "spotify" for p in providers.json()["providers"])
 
-    connect = client.post("/auth/connect/spotify", params={"redirect_uri": "https://example.org/callback"})
+    connect = client.post(
+        "/auth/connect/spotify", params={"redirect_uri": "https://example.org/callback"}
+    )
     assert connect.status_code == 200
     assert connect.json()["provider"] == "spotify"
 
@@ -62,7 +66,12 @@ def test_required_auth_statement_catalog_variance_recovery_ledger_routes():
         json={
             "artist_id": artist_id,
             "works": [
-                {"work_id": "work-1", "title": "Track", "writer_name": "Writer A", "publisher_name": "Publisher A"}
+                {
+                    "work_id": "work-1",
+                    "title": "Track",
+                    "writer_name": "Writer A",
+                    "publisher_name": "Publisher A",
+                }
             ],
         },
     )

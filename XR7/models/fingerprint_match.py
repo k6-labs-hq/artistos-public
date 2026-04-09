@@ -18,9 +18,7 @@ from XR7.models.base import Base
 class FingerprintMatch(Base):
     __tablename__ = "fingerprint_matches"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     job_id: Mapped[str] = mapped_column(
         String, ForeignKey("fingerprint_jobs.id"), nullable=False, index=True
     )

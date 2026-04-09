@@ -18,7 +18,9 @@ class UGCClaimGenerator:
     def __init__(self, db: Session):
         self.db = db
 
-    def generate_from_ugc(self, use_data: dict[str, Any], platform: str, artist_id: str) -> dict[str, Any]:
+    def generate_from_ugc(
+        self, use_data: dict[str, Any], platform: str, artist_id: str
+    ) -> dict[str, Any]:
         lower_platform = platform.lower()
         if lower_platform in {"tiktok", "instagram"}:
             subtype = "UGC_SYNC"
@@ -66,7 +68,9 @@ class UGCClaimGenerator:
             artist_id,
         )
 
-    async def auto_escalate_if_high_value(self, claim_id: str, threshold: float = 5000.0) -> dict[str, Any]:
+    async def auto_escalate_if_high_value(
+        self, claim_id: str, threshold: float = 5000.0
+    ) -> dict[str, Any]:
         claim = self.db.query(Claim).filter(Claim.id == claim_id).first()
         if not claim:
             return {"escalated": False, "reason": "claim_not_found"}

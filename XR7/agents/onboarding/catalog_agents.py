@@ -1,4 +1,5 @@
 """Catalog, upload, and portal-navigation agents for onboarding."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -31,7 +32,9 @@ async def ArtistIntentInterpreterAgent(state: XR7State) -> XR7State:
     intent, score = _intent_from_text(f"{ui_action} {free_text}".strip())
     prompt = None
     if intent == "clarify":
-        prompt = "Are you trying to upload statements, fix metadata, check earnings, or start recovery?"
+        prompt = (
+            "Are you trying to upload statements, fix metadata, check earnings, or start recovery?"
+        )
     updates: XR7State = {
         "artist_intent": intent,
         "dashboard_prompt": prompt,

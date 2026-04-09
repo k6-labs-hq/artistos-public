@@ -213,7 +213,12 @@ def test_parser_plugin_registry_and_sync_job_lifecycle():
 
     job_create = client.post(
         f"/artists/{artist_id}/sync/jobs",
-        json={"integration": "distributor", "max_attempts": 2, "run_async": False, "queue_backend": "inline"},
+        json={
+            "integration": "distributor",
+            "max_attempts": 2,
+            "run_async": False,
+            "queue_backend": "inline",
+        },
     )
     assert job_create.status_code == 200
     job_id = job_create.json()["id"]
@@ -255,7 +260,12 @@ def test_plugin_runtime_error_and_sync_requeue_and_workflow_run():
 
     queued = client.post(
         f"/artists/{artist_id}/sync/jobs",
-        json={"integration": "distributor", "max_attempts": 2, "run_async": True, "queue_backend": "celery"},
+        json={
+            "integration": "distributor",
+            "max_attempts": 2,
+            "run_async": True,
+            "queue_backend": "celery",
+        },
     )
     assert queued.status_code == 200
     job_id = queued.json()["id"]

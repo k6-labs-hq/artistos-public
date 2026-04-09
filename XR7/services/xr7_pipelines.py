@@ -149,7 +149,8 @@ def run_api_ingestion_pipeline(
                 title=str(item.get("title") or item.get("name") or "Unknown Track"),
                 version=str(item.get("version") or "") or None,
                 duration_ms=int(item.get("duration_ms") or item.get("duration") or 0) or None,
-                primary_artist_name=str(item.get("artist") or item.get("artist_name") or "") or None,
+                primary_artist_name=str(item.get("artist") or item.get("artist_name") or "")
+                or None,
                 isrc=str(item.get("isrc") or "") or None,
                 upc=str(item.get("upc") or "") or None,
                 label_name=str(item.get("label") or "") or None,
@@ -280,7 +281,11 @@ def run_fingerprinting_pipeline(
     platform: str,
     detections: list[dict[str, Any]],
 ) -> XR7PipelineResult:
-    tracks = db.query(XR7Track).filter(XR7Track.tenant_id == tenant_id, XR7Track.artist_id == artist_id).all()
+    tracks = (
+        db.query(XR7Track)
+        .filter(XR7Track.tenant_id == tenant_id, XR7Track.artist_id == artist_id)
+        .all()
+    )
     processed = 0
     matched = 0
 
@@ -305,7 +310,9 @@ def run_fingerprinting_pipeline(
                 best_score = score
                 best = track
 
-        conf = confidence_score(best_score, float(row.get("fingerprint_score") or 0.0), 0.5, 0.6, 0.0)
+        conf = confidence_score(
+            best_score, float(row.get("fingerprint_score") or 0.0), 0.5, 0.6, 0.0
+        )
         event = XR7UsageEvent(
             tenant_id=tenant_id,
             artist_id=artist_id,
@@ -346,11 +353,17 @@ def run_reconciliation_pipeline(
     artist_id: str,
     min_auto_match: float = 0.92,
 ) -> XR7PipelineResult:
-    works = db.query(XR7Work).filter(XR7Work.tenant_id == tenant_id, XR7Work.artist_id == artist_id).all()
+    works = (
+        db.query(XR7Work)
+        .filter(XR7Work.tenant_id == tenant_id, XR7Work.artist_id == artist_id)
+        .all()
+    )
     lines = (
         db.query(XR7RoyaltyStatementLine)
         .join(XR7RoyaltyStatement, XR7RoyaltyStatement.id == XR7RoyaltyStatementLine.statement_id)
-        .filter(XR7RoyaltyStatement.tenant_id == tenant_id, XR7RoyaltyStatement.artist_id == artist_id)
+        .filter(
+            XR7RoyaltyStatement.tenant_id == tenant_id, XR7RoyaltyStatement.artist_id == artist_id
+        )
         .all()
     )
 
@@ -397,18 +410,26 @@ def run_reconciliation_pipeline(
 
 
 def build_royalty_gap_report(db: Session, *, tenant_id: str, artist_id: str) -> XR7RoyaltyGapReport:
-    usage = db.query(XR7UsageEvent).filter(XR7UsageEvent.tenant_id == tenant_id, XR7UsageEvent.artist_id == artist_id).all()
+    usage = (
+        db.query(XR7UsageEvent)
+        .filter(XR7UsageEvent.tenant_id == tenant_id, XR7UsageEvent.artist_id == artist_id)
+        .all()
+    )
     statement_lines = (
         db.query(XR7RoyaltyStatementLine)
         .join(XR7RoyaltyStatement, XR7RoyaltyStatement.id == XR7RoyaltyStatementLine.statement_id)
-        .filter(XR7RoyaltyStatement.tenant_id == tenant_id, XR7RoyaltyStatement.artist_id == artist_id)
+        .filter(
+            XR7RoyaltyStatement.tenant_id == tenant_id, XR7RoyaltyStatement.artist_id == artist_id
+        )
         .all()
     )
 
     expected_by_key: dict[tuple[str, str], float] = {}
     for row in usage:
         key = (row.platform, row.territory or "GLOBAL")
-        expected_by_key[key] = expected_by_key.get(key, 0.0) + float(row.monetization_estimate or 0.0)
+        expected_by_key[key] = expected_by_key.get(key, 0.0) + float(
+            row.monetization_estimate or 0.0
+        )
 
     reported_by_key: dict[tuple[str, str], float] = {}
     for row in statement_lines:

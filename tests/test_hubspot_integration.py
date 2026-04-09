@@ -17,7 +17,9 @@ client = TestClient(app)
 
 def _create_artist_db() -> str:
     db = _TestSession()
-    artist = Artist(id=str(uuid.uuid4()), name="HubSpot Test", created_at=datetime.now(timezone.utc))
+    artist = Artist(
+        id=str(uuid.uuid4()), name="HubSpot Test", created_at=datetime.now(timezone.utc)
+    )
     db.add(artist)
     db.commit()
     artist_id = artist.id
@@ -33,7 +35,9 @@ def test_artist_create_triggers_hubspot_sync(monkeypatch):
 
     monkeypatch.setattr("XR7.api.routers.artists.hubspot_sync_artist.delay", _fake_delay)
 
-    resp = client.post("/artists/", json={"name": "CRM Artist", "email": "crm@example.com", "role": "artist"})
+    resp = client.post(
+        "/artists/", json={"name": "CRM Artist", "email": "crm@example.com", "role": "artist"}
+    )
     assert resp.status_code == 201
     assert calls
     assert calls[0][1] == "artist_created"
@@ -159,5 +163,8 @@ def test_statement_upload_and_anomaly_detection_trigger_hubspot_updates(monkeypa
     detect = client.post(f"/artists/{artist_id}/anomalies/detect")
     assert detect.status_code == 200
 
-    assert any(evt in {"first_statement_uploaded", "statement_batch_uploaded", "anomalies_detected"} for _, evt in calls)
+    assert any(
+        evt in {"first_statement_uploaded", "statement_batch_uploaded", "anomalies_detected"}
+        for _, evt in calls
+    )
     assert statement_calls

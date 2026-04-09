@@ -14,7 +14,9 @@ client = TestClient(app)
 
 def _create_artist() -> str:
     db = _TestSession()
-    artist = Artist(id=str(uuid.uuid4()), name="ML Feedback Artist", created_at=datetime.now(timezone.utc))
+    artist = Artist(
+        id=str(uuid.uuid4()), name="ML Feedback Artist", created_at=datetime.now(timezone.utc)
+    )
     db.add(artist)
     db.commit()
     artist_id = artist.id

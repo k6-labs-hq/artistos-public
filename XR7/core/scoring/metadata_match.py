@@ -5,6 +5,7 @@ No DB, no ORM imports.  All inputs are plain Python primitives, making these
 functions callable from n8n HTTP steps, LangGraph nodes, or unit tests without
 any infrastructure setup.
 """
+
 from __future__ import annotations
 
 import math
@@ -14,13 +15,12 @@ from difflib import SequenceMatcher
 # Text helpers
 # ---------------------------------------------------------------------------
 
+
 def normalize_text(text: str | None) -> str:
     """Lowercase, keep only alphanumeric + spaces, collapse whitespace."""
     if not text:
         return ""
-    cleaned = "".join(
-        ch.lower() if ch.isalnum() or ch.isspace() else " " for ch in text
-    )
+    cleaned = "".join(ch.lower() if ch.isalnum() or ch.isspace() else " " for ch in text)
     return " ".join(cleaned.split())
 
 
@@ -36,6 +36,7 @@ def text_similarity(a: str | None, b: str | None) -> float:
 # ---------------------------------------------------------------------------
 # Composite scoring
 # ---------------------------------------------------------------------------
+
 
 def metadata_triangulation_score(
     *,
@@ -61,12 +62,7 @@ def metadata_triangulation_score(
     title_score = text_similarity(title_a, title_b)
     artist_score = text_similarity(artist_a, artist_b)
 
-    if (
-        duration_ms_a is None
-        or duration_ms_b is None
-        or duration_ms_a <= 0
-        or duration_ms_b <= 0
-    ):
+    if duration_ms_a is None or duration_ms_b is None or duration_ms_a <= 0 or duration_ms_b <= 0:
         duration_score = 0.5
     else:
         delta = abs(duration_ms_a - duration_ms_b)

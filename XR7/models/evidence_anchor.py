@@ -22,7 +22,9 @@ class EvidenceAnchor(Base):
     cid: Mapped[str | None] = mapped_column(String, nullable=True)
     tx_hash: Mapped[str | None] = mapped_column(String, nullable=True)
     blockchain_status: Mapped[str] = mapped_column(String, default="PENDING")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class EvidenceAnchorSchema(BaseModel):

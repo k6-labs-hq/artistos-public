@@ -32,7 +32,9 @@ def test_forensic_route_chain_e2e_with_queue_assertion():
     assert providers.status_code == 200
     assert any(p["provider"] == "spotify" for p in providers.json()["providers"])
 
-    connect = client.post("/auth/connect/spotify", params={"redirect_uri": "https://example.test/callback"})
+    connect = client.post(
+        "/auth/connect/spotify", params={"redirect_uri": "https://example.test/callback"}
+    )
     assert connect.status_code == 200
     assert "authorization_url" in connect.json()
 
@@ -126,7 +128,10 @@ def test_forensic_route_chain_e2e_with_queue_assertion():
     assert evidence.json()["variance_id"] == anomaly_id
 
     # 6) Recovery submit with explicit queue assertion
-    with patch("XR7.api.routers.forensic.submit_recovery_action.delay", return_value=SimpleNamespace(id="task-123")) as mocked_delay:
+    with patch(
+        "XR7.api.routers.forensic.submit_recovery_action.delay",
+        return_value=SimpleNamespace(id="task-123"),
+    ) as mocked_delay:
         submit = client.post(f"/recovery/{claim_id}/submit")
     assert submit.status_code == 200
     assert submit.json()["queued"] is True

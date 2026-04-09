@@ -181,17 +181,23 @@ async def llm_demand_letter(
         if not evidence_data:
             evidence_data = claim.evidence or {}
 
-    markdown = await claim_drafter.async_generate_demand_letter(anomaly_data, evidence_data, artist_id)
+    markdown = await claim_drafter.async_generate_demand_letter(
+        anomaly_data, evidence_data, artist_id
+    )
 
     if claim is not None:
         claim.evidence = claim.evidence or {}
         claim.evidence.setdefault("llm_outputs", {})
         claim.evidence["llm_outputs"]["demand_letter_markdown"] = markdown
-        claim.evidence["llm_outputs"]["demand_letter_generated_at"] = datetime.now(timezone.utc).isoformat()
+        claim.evidence["llm_outputs"]["demand_letter_generated_at"] = datetime.now(
+            timezone.utc
+        ).isoformat()
         db.commit()
         llm_generate_demand_letter_task.delay(claim.id, anomaly_data, evidence_data, artist_id)
 
-    evidence_zip_link = f"/claims/{payload.claim_id}/evidence/export?format=zip" if payload.claim_id else None
+    evidence_zip_link = (
+        f"/claims/{payload.claim_id}/evidence/export?format=zip" if payload.claim_id else None
+    )
     return DemandLetterResponse(
         artist_id=artist_id,
         claim_id=payload.claim_id,
@@ -200,7 +206,9 @@ async def llm_demand_letter(
     )
 
 
-@router.post("/artists/{artist_id}/llm/negotiation-script", response_model=NegotiationScriptResponse)
+@router.post(
+    "/artists/{artist_id}/llm/negotiation-script", response_model=NegotiationScriptResponse
+)
 @rate_limit_2026(limit=25, window_seconds=60)
 async def llm_negotiation_script(
     artist_id: str,
@@ -233,7 +241,9 @@ async def llm_negotiation_script(
             row.evidence = row.evidence or {}
             row.evidence.setdefault("llm_outputs", {})
             row.evidence["llm_outputs"]["negotiation_script"] = script
-            row.evidence["llm_outputs"]["negotiation_script_generated_at"] = datetime.now(timezone.utc).isoformat()
+            row.evidence["llm_outputs"]["negotiation_script_generated_at"] = datetime.now(
+                timezone.utc
+            ).isoformat()
             db.commit()
             llm_generate_negotiation_script_task.delay(claim_id, claim_payload)
 

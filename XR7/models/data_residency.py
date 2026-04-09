@@ -4,6 +4,7 @@ Stores the data residency policy for each org/tenant, and provides a
 guard that raises HTTP 451 (Unavailable For Legal Reasons) when a
 cross-region storage operation would violate the policy.
 """
+
 from __future__ import annotations
 
 import enum
@@ -30,9 +31,7 @@ class DataRegion(str, enum.Enum):
 class DataResidencyPolicy(Base):
     __tablename__ = "data_residency_policies"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     org_id: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     # Primary region where data must reside
     primary_region: Mapped[str] = mapped_column(

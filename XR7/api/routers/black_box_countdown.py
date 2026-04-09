@@ -5,6 +5,7 @@ GET  /artists/{artist_id}/anomalies/countdown
 GET  /artists/{artist_id}/anomalies/{anomaly_id}/countdown
 POST /admin/society-rules/freeze
 """
+
 from __future__ import annotations
 
 import hmac

@@ -76,6 +76,7 @@ _MAX_BATCH_FILES = 100
 # Supported-formats catalogue endpoint
 # ---------------------------------------------------------------------------
 
+
 @router.get("/ingestion/supported-formats")
 def supported_formats() -> dict:
     """
@@ -120,6 +121,7 @@ def supported_formats() -> dict:
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _save_events(db: Session, events: list[dict]) -> int:
     """Persist normalised event dicts to the DB, returning the count saved."""
@@ -186,6 +188,7 @@ def _save_payments(db: Session, payments: list[dict]) -> int:
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/artists/{artist_id}/statements/upload",
@@ -265,7 +268,9 @@ async def upload_statement(
 
     # Parse
     result = parse_statement_file(content, artist_id, filename=file.filename or "statement.csv")
-    statement_signals = extract_statement_signals(content, file.filename or "statement.csv", format_detected=result.format_detected)
+    statement_signals = extract_statement_signals(
+        content, file.filename or "statement.csv", format_detected=result.format_detected
+    )
     status = "PROCESSED"
     error_summary: str | None = None
 
@@ -284,14 +289,21 @@ async def upload_statement(
             anomaly_engine = AnomalyEngine(EarningsEngine(rg), rg)
             anomaly_engine.detect_all(artist_id, db)
         except Exception:  # noqa: BLE001
-            logger.exception("Anomaly detection after upload failed (non-blocking)", extra={"artist_id": artist_id})
+            logger.exception(
+                "Anomaly detection after upload failed (non-blocking)",
+                extra={"artist_id": artist_id},
+            )
 
     anomaly_count_after = (
         db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
     )
     new_anomalies = max(0, int(anomaly_count_after) - int(anomaly_count_before))
     if new_anomalies > 0:
-        pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+        pref = (
+            db.query(NotificationPreference)
+            .filter(NotificationPreference.artist_id == artist_id)
+            .first()
+        )
         send_event_notification(
             pref,
             "anomaly_detected",
@@ -333,7 +345,9 @@ async def upload_statement(
             try:
                 hubspot_sync_recovery_update.delay(artist_id, event="first_anomalies_detected")
             except Exception:  # noqa: BLE001
-                logger.exception("Failed to enqueue HubSpot first anomalies sync", extra={"artist_id": artist_id})
+                logger.exception(
+                    "Failed to enqueue HubSpot first anomalies sync", extra={"artist_id": artist_id}
+                )
 
     # Create audit record
     statement = Statement(
@@ -364,7 +378,9 @@ async def upload_statement(
 
     if status != "FAILED" and became_active and not artist.trolley_recipient_id:
         first_name = artist.first_name or (artist.name.split(" ")[0] if artist.name else "")
-        last_name = artist.last_name or (" ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else "")
+        last_name = artist.last_name or (
+            " ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else ""
+        )
         try:
             payload = {
                 "type": "individual",
@@ -383,20 +399,27 @@ async def upload_statement(
                 artist.payout_account_status = "pending"
                 db.commit()
         except TrolleyException:
-            logger.exception("Failed to auto-create Trolley recipient", extra={"artist_id": artist.id})
+            logger.exception(
+                "Failed to auto-create Trolley recipient", extra={"artist_id": artist.id}
+            )
 
     if status != "FAILED" and int(processed_before) == 0:
         try:
             hubspot_sync_recovery_update.delay(artist_id, event="first_statement_uploaded")
         except Exception:  # noqa: BLE001
-            logger.exception("Failed to enqueue HubSpot first statement sync", extra={"artist_id": artist_id})
+            logger.exception(
+                "Failed to enqueue HubSpot first statement sync", extra={"artist_id": artist_id}
+            )
 
     identity_match = None
     if status != "FAILED":
         try:
             identity_match = persist_identity_match(db, artist, statement, statement_signals)
         except Exception:  # noqa: BLE001
-            logger.exception("Identity auto-match failed (non-blocking)", extra={"artist_id": artist_id, "statement_id": statement.id})
+            logger.exception(
+                "Identity auto-match failed (non-blocking)",
+                extra={"artist_id": artist_id, "statement_id": statement.id},
+            )
 
         try:
             hubspot_sync_statement_ingestion.delay(
@@ -406,13 +429,19 @@ async def upload_statement(
                 event="statement_uploaded",
             )
         except Exception:  # noqa: BLE001
-            logger.exception("Failed to enqueue HubSpot statement ingestion sync", extra={"artist_id": artist_id, "statement_id": statement.id})
+            logger.exception(
+                "Failed to enqueue HubSpot statement ingestion sync",
+                extra={"artist_id": artist_id, "statement_id": statement.id},
+            )
 
     if status != "FAILED" and result.format_detected == "soundcloud":
         try:
             on_soundcloud_statement_upload.delay(artist_id, statement.id)
         except Exception:  # noqa: BLE001
-            logger.exception("Failed to enqueue SoundCloud statement follow-up workflow", extra={"artist_id": artist_id})
+            logger.exception(
+                "Failed to enqueue SoundCloud statement follow-up workflow",
+                extra={"artist_id": artist_id},
+            )
 
     if status == "FAILED":
         raise HTTPException(
@@ -429,7 +458,9 @@ async def upload_statement(
         )
 
     if status != "FAILED" and new_anomalies > 0:
-        existing_claims = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
+        existing_claims = (
+            db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
+        )
         if int(existing_claims) == 0:
             first_anomaly = (
                 db.query(Anomaly)
@@ -470,7 +501,9 @@ async def upload_statement_batch(
     if not files:
         raise HTTPException(status_code=400, detail="At least one file is required")
     if len(files) > _MAX_BATCH_FILES:
-        raise HTTPException(status_code=400, detail=f"Batch exceeds max file count ({_MAX_BATCH_FILES})")
+        raise HTTPException(
+            status_code=400, detail=f"Batch exceeds max file count ({_MAX_BATCH_FILES})"
+        )
 
     processed = []
     failed = []
@@ -516,18 +549,24 @@ async def upload_statement_batch(
             )
             if existing:
                 duplicates += 1
-                failed.append({"filename": filename, "error": "duplicate", "statement_id": existing.id})
+                failed.append(
+                    {"filename": filename, "error": "duplicate", "statement_id": existing.id}
+                )
                 continue
 
             if filename.lower().endswith(".pdf"):
                 result = parse_csv(b"", artist_id)
                 result.events = []
                 result.payments = []
-                result.errors = ["PDF parsing deferred to OCR pipeline; metadata-only statement record created"]
+                result.errors = [
+                    "PDF parsing deferred to OCR pipeline; metadata-only statement record created"
+                ]
                 result.format_detected = "pdf"
             else:
                 result = parse_statement_file(content, artist_id, filename=filename)
-            statement_signals = extract_statement_signals(content, filename, format_detected=result.format_detected)
+            statement_signals = extract_statement_signals(
+                content, filename, format_detected=result.format_detected
+            )
             events_created = _save_events(db, result.events)
             payments_created = _save_payments(db, result.payments)
 
@@ -542,7 +581,9 @@ async def upload_statement_batch(
                 payments_created=payments_created,
                 skipped_rows=result.skipped_rows,
                 status="PROCESSED" if result.events or result.payments else "FAILED",
-                error_summary="; ".join(result.errors[:5]) if result.errors and not result.events else None,
+                error_summary=(
+                    "; ".join(result.errors[:5]) if result.errors and not result.events else None
+                ),
                 ingestion_metadata_json=to_json(statement_signals),
                 uploaded_at=datetime.now(timezone.utc),
             )
@@ -550,13 +591,15 @@ async def upload_statement_batch(
             db.commit()
             db.refresh(statement)
 
-            processed.append({
-                "filename": filename,
-                "statement_id": statement.id,
-                "events_created": events_created,
-                "payments_created": payments_created,
-                "status": statement.status,
-            })
+            processed.append(
+                {
+                    "filename": filename,
+                    "statement_id": statement.id,
+                    "events_created": events_created,
+                    "payments_created": payments_created,
+                    "status": statement.status,
+                }
+            )
             if statement.status != "FAILED":
                 extracted_signals.append(statement_signals)
         except Exception as exc:  # noqa: BLE001
@@ -571,7 +614,9 @@ async def upload_statement_batch(
             db.commit()
         if became_active and not artist.trolley_recipient_id:
             first_name = artist.first_name or (artist.name.split(" ")[0] if artist.name else "")
-            last_name = artist.last_name or (" ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else "")
+            last_name = artist.last_name or (
+                " ".join(artist.name.split(" ")[1:]) if artist.name and " " in artist.name else ""
+            )
             try:
                 payload = {
                     "type": "individual",
@@ -590,11 +635,15 @@ async def upload_statement_batch(
                     artist.payout_account_status = "pending"
                     db.commit()
             except TrolleyException:
-                logger.exception("Failed to auto-create Trolley recipient", extra={"artist_id": artist.id})
+                logger.exception(
+                    "Failed to auto-create Trolley recipient", extra={"artist_id": artist.id}
+                )
         try:
             hubspot_sync_recovery_update.delay(artist_id, event="statement_batch_uploaded")
         except Exception:  # noqa: BLE001
-            logger.exception("Failed to enqueue HubSpot statement batch sync", extra={"artist_id": artist_id})
+            logger.exception(
+                "Failed to enqueue HubSpot statement batch sync", extra={"artist_id": artist_id}
+            )
         try:
             merged_signals = merge_statement_signals(extracted_signals)
             hubspot_sync_statement_ingestion.delay(
@@ -604,27 +653,37 @@ async def upload_statement_batch(
                 event="statement_batch_uploaded",
             )
         except Exception:  # noqa: BLE001
-            logger.exception("Failed to enqueue HubSpot batch statement signal sync", extra={"artist_id": artist_id})
+            logger.exception(
+                "Failed to enqueue HubSpot batch statement signal sync",
+                extra={"artist_id": artist_id},
+            )
         try:
             rg = RightsGraph()
             AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)
         except Exception:  # noqa: BLE001
-            logger.exception("Batch anomaly detection failed (non-blocking)", extra={"artist_id": artist_id})
+            logger.exception(
+                "Batch anomaly detection failed (non-blocking)", extra={"artist_id": artist_id}
+            )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "requested": len(files),
-        "expanded_files": len(expanded),
-        "processed_count": len(processed),
-        "failed_count": len(failed),
-        "duplicate_count": duplicates,
-        "processed": processed,
-        "failed": failed,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "requested": len(files),
+            "expanded_files": len(expanded),
+            "processed_count": len(processed),
+            "failed_count": len(failed),
+            "duplicate_count": duplicates,
+            "processed": processed,
+            "failed": failed,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/connect/soundexchange-mlc")
-async def connect_soundexchange_mlc(artist_id: str, years_back: int = 10, db: Session = Depends(get_db)):
+async def connect_soundexchange_mlc(
+    artist_id: str, years_back: int = 10, db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
     connector = SoundExchangeMLCConnector()
     rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
@@ -649,7 +708,9 @@ def soundexchange_mlc_status(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/artists/{artist_id}/connect/regional-global")
-async def connect_regional_global(artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)):
+async def connect_regional_global(
+    artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
     connector = RegionalGlobalConnector()
     rows = await connector.fetch_statements(artist_id, genre, territory)
@@ -676,8 +737,6 @@ def regional_global_status(artist_id: str, db: Session = Depends(get_db)):
             "territories": ["LATAM", "JP", "KR", "AFRICA", "IN", "CN"],
         },
     )
-
-
 
 
 @router.get(

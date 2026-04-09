@@ -18,7 +18,9 @@ class IngestionConnector(BaseConnector):
     def connect(self) -> bool:
         return True
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         return []
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:

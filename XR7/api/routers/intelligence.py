@@ -384,11 +384,16 @@ def simulate_expected_payout(
                 "contract_terms_used": result.get("contract_terms_used"),
             },
         )
-    return {"artist_id": artist_id,
-        "branding": branding_metadata(get_branding_for_artist(db, artist_id)), **result}
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        **result,
+    }
 
 
-@router.post("/artists/{artist_id}/intelligence/feedback", response_model=RecoveryOutcomeFeedbackSchema)
+@router.post(
+    "/artists/{artist_id}/intelligence/feedback", response_model=RecoveryOutcomeFeedbackSchema
+)
 def create_outcome_feedback(
     artist_id: str,
     payload: StructuredFeedbackRequest,
@@ -448,7 +453,9 @@ def create_outcome_feedback(
     return feedback
 
 
-@router.get("/artists/{artist_id}/intelligence/feedback/events", response_model=list[MLFeedbackEventSchema])
+@router.get(
+    "/artists/{artist_id}/intelligence/feedback/events", response_model=list[MLFeedbackEventSchema]
+)
 def list_feedback_events(
     artist_id: str,
     db: Session = Depends(get_db),
@@ -617,7 +624,9 @@ def financing_matches(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/artists/{artist_id}/ml/simulate-optimization")
-def simulate_optimization(artist_id: str, payload: OptimizationSimulationRequest, db: Session = Depends(get_db)):
+def simulate_optimization(
+    artist_id: str, payload: OptimizationSimulationRequest, db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
     opt = RoyaltyOptimizer()
     simulation = opt.simulate_scenario(artist_id, payload.changes)

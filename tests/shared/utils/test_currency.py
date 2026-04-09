@@ -12,6 +12,7 @@ from shared.utils.currency import coerce_currency
 # coerce_currency – typical inputs
 # ---------------------------------------------------------------------------
 
+
 class TestCoerceCurrencyTypical:
     def test_lowercase_usd_uppercased(self):
         assert coerce_currency("usd") == "USD"
@@ -23,9 +24,27 @@ class TestCoerceCurrencyTypical:
         assert coerce_currency("GBP") == "GBP"
 
     def test_known_codes_returned_as_is(self):
-        known = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF",
-                 "SEK", "NOK", "DKK", "NZD", "HKD", "SGD", "MXN",
-                 "BRL", "ZAR", "INR", "KRW", "CNY"]
+        known = [
+            "USD",
+            "EUR",
+            "GBP",
+            "CAD",
+            "AUD",
+            "JPY",
+            "CHF",
+            "SEK",
+            "NOK",
+            "DKK",
+            "NZD",
+            "HKD",
+            "SGD",
+            "MXN",
+            "BRL",
+            "ZAR",
+            "INR",
+            "KRW",
+            "CNY",
+        ]
         for code in known:
             assert coerce_currency(code) == code
 
@@ -40,6 +59,7 @@ class TestCoerceCurrencyTypical:
 # ---------------------------------------------------------------------------
 # coerce_currency – None / empty → fallback
 # ---------------------------------------------------------------------------
+
 
 class TestCoerceCurrencyFallback:
     def test_none_returns_usd(self):
@@ -70,6 +90,7 @@ class TestCoerceCurrencyFallback:
 # coerce_currency – whitespace stripping
 # ---------------------------------------------------------------------------
 
+
 class TestCoerceCurrencyStripping:
     def test_leading_whitespace_stripped(self):
         assert coerce_currency("  usd") == "USD"
@@ -85,6 +106,7 @@ class TestCoerceCurrencyStripping:
 # coerce_currency – return type
 # ---------------------------------------------------------------------------
 
+
 class TestCoerceCurrencyReturnType:
     def test_always_returns_str(self):
         assert isinstance(coerce_currency("usd"), str)
@@ -95,6 +117,7 @@ class TestCoerceCurrencyReturnType:
 # ---------------------------------------------------------------------------
 # Additional branches and edge cases
 # ---------------------------------------------------------------------------
+
 
 class TestCoerceCurrencySecondFallbackBranch:
     def test_tab_whitespace_hits_second_fallback(self):

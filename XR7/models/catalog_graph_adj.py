@@ -21,7 +21,9 @@ class CatalogGraphNode(Base):
     external_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     label: Mapped[str | None] = mapped_column(String, nullable=True)
     attributes_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class CatalogGraphEdge(Base):
@@ -31,11 +33,17 @@ class CatalogGraphEdge(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    source_node_id: Mapped[str] = mapped_column(String, ForeignKey("catalog_graph_nodes.id"), nullable=False, index=True)
-    target_node_id: Mapped[str] = mapped_column(String, ForeignKey("catalog_graph_nodes.id"), nullable=False, index=True)
+    source_node_id: Mapped[str] = mapped_column(
+        String, ForeignKey("catalog_graph_nodes.id"), nullable=False, index=True
+    )
+    target_node_id: Mapped[str] = mapped_column(
+        String, ForeignKey("catalog_graph_nodes.id"), nullable=False, index=True
+    )
     edge_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     attributes_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class CatalogGraphNodeSchema(BaseModel):

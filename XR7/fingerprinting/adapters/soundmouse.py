@@ -67,9 +67,7 @@ class SoundmouseAdapter(IFingerprintingProvider):
         self._cfg = config or fingerprinting_config.soundmouse
         self._client: httpx.AsyncClient | None = None
         self._cb = get_circuit_registry().get(self.provider_name)
-        self._limiter = get_rate_limiter(
-            self.provider_name, self._cfg.rate_limit_per_minute
-        )
+        self._limiter = get_rate_limiter(self.provider_name, self._cfg.rate_limit_per_minute)
 
     @property
     def provider_name(self) -> str:
@@ -121,7 +119,9 @@ class SoundmouseAdapter(IFingerprintingProvider):
         if isrc:
             form_data["isrc"] = isrc
         if metadata:
-            form_data.update({k: str(v) for k, v in metadata.items() if isinstance(v, (str, int, float))})
+            form_data.update(
+                {k: str(v) for k, v in metadata.items() if isinstance(v, (str, int, float))}
+            )
 
         endpoint = f"{self._cfg.endpoint}/catalog"
         response = await self._guarded(
@@ -147,7 +147,9 @@ class SoundmouseAdapter(IFingerprintingProvider):
         client = self._client_()
         form_data: dict[str, str] = {}
         if metadata:
-            form_data.update({k: str(v) for k, v in metadata.items() if isinstance(v, (str, int, float))})
+            form_data.update(
+                {k: str(v) for k, v in metadata.items() if isinstance(v, (str, int, float))}
+            )
 
         endpoint = f"{self._cfg.endpoint}/audio/identify"
         try:
@@ -161,7 +163,9 @@ class SoundmouseAdapter(IFingerprintingProvider):
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
-            logger.error("Soundmouse HTTP error status=%d url=%s", exc.response.status_code, endpoint)
+            logger.error(
+                "Soundmouse HTTP error status=%d url=%s", exc.response.status_code, endpoint
+            )
             raise
         except httpx.TimeoutException:
             logger.error("Soundmouse identify request timed out endpoint=%s", endpoint)
@@ -183,9 +187,7 @@ class SoundmouseAdapter(IFingerprintingProvider):
 
         endpoint = f"{self._cfg.endpoint}/catalog/{reference_id}/detections"
         try:
-            response = await self._guarded(
-                client.get(endpoint, params=params)
-            )
+            response = await self._guarded(client.get(endpoint, params=params))
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
@@ -251,9 +253,7 @@ class SoundmouseAdapter(IFingerprintingProvider):
                 checked_at=datetime.now(timezone.utc),
             )
 
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         """Normalize Soundmouse /audio/identify response.
 
         Expected shape::
@@ -278,9 +278,7 @@ class SoundmouseAdapter(IFingerprintingProvider):
             logger.debug("Soundmouse: non-success status=%s", status)
             return []
 
-        raw_matches: list[dict[str, Any]] = (
-            raw.get("matches") or raw.get("results") or []
-        )
+        raw_matches: list[dict[str, Any]] = raw.get("matches") or raw.get("results") or []
         results: list[NormalizedMatchResult] = []
         for item in raw_matches:
             confidence = float(item.get("confidence", 0.0))

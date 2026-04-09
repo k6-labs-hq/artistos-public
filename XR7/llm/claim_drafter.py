@@ -116,7 +116,11 @@ class ClaimDrafter:
             raise RuntimeError("LLM_API_KEY is not configured")
 
         if self.provider in {"xai", "xai-grok", "grok"} and ChatXAI is not None:
-            return ChatXAI(model=os.environ.get("LLM_MODEL", "grok-beta"), api_key=self.api_key, temperature=0.2)
+            return ChatXAI(
+                model=os.environ.get("LLM_MODEL", "grok-beta"),
+                api_key=self.api_key,
+                temperature=0.2,
+            )
 
         if ChatOpenAI is None:
             raise RuntimeError("langchain_openai is not installed")
@@ -130,7 +134,9 @@ class ClaimDrafter:
             raise RuntimeError("langchain_core is not installed")
 
         llm = await self._build_llm()
-        result = await llm.ainvoke([SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)])
+        result = await llm.ainvoke(
+            [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
+        )
         content = getattr(result, "content", "")
         if isinstance(content, list):
             return "\n".join(str(c) for c in content)
@@ -177,7 +183,12 @@ class ClaimDrafter:
         payer = "generic"
         if isinstance(claim.evidence, dict):
             payer = str(
-                ((claim.evidence or {}).get("legal_support", {}).get("contract_basis", [{}])[0].get("counterparty"))
+                (
+                    (claim.evidence or {})
+                    .get("legal_support", {})
+                    .get("contract_basis", [{}])[0]
+                    .get("counterparty")
+                )
                 or "generic"
             ).lower()
 
@@ -213,7 +224,9 @@ class ClaimDrafter:
             "Prioritize missing metadata cleanup (ISRC/ISWC), then escalate claims with evidence discrepancy flags."
         )
 
-    async def async_generate_demand_letter(self, anomaly: dict, evidence: dict, artist_id: str) -> str:
+    async def async_generate_demand_letter(
+        self, anomaly: dict, evidence: dict, artist_id: str
+    ) -> str:
         """Generate professional demand-letter markdown from anomaly + evidence payloads."""
         try:
             payload = ClaimDraftInput(
@@ -272,7 +285,9 @@ class ClaimDrafter:
                     currency=str(claim.get("currency") or "USD"),
                     created_at=datetime.now(timezone.utc),
                     updated_at=datetime.now(timezone.utc),
-                    evidence=claim.get("evidence") if isinstance(claim.get("evidence"), dict) else {},
+                    evidence=(
+                        claim.get("evidence") if isinstance(claim.get("evidence"), dict) else {}
+                    ),
                 )
             )
 
@@ -352,7 +367,11 @@ class AILicensingAdvisor:
         projected = round(baseline * 0.12, 2)
         prompt_context = {
             "trend_year": 2026,
-            "models": ["influence-based licensing", "tiered royalty floors", "synthetic voice safeguards"],
+            "models": [
+                "influence-based licensing",
+                "tiered royalty floors",
+                "synthetic voice safeguards",
+            ],
             "catalog": artist_catalog,
         }
         guidance = await self.drafter.async_generate_personalized_advice(prompt_context)
@@ -402,7 +421,9 @@ class RoyaltyChatAgent:
         self.drafter = claim_drafter
         self._history: dict[str, list[dict[str, str]]] = {}
 
-    async def handle_query(self, artist_id: str, question: str, context: dict | None = None) -> dict[str, Any]:
+    async def handle_query(
+        self, artist_id: str, question: str, context: dict | None = None
+    ) -> dict[str, Any]:
         history = self._history.setdefault(artist_id, [])
         history.append({"role": "user", "content": question})
         response = await self.drafter.async_generate_personalized_advice(
@@ -419,7 +440,9 @@ class RoyaltyChatAgent:
             "artist_id": artist_id,
             "response": response,
             "conversation_history": self._history[artist_id],
-            "citations": [{"source": "dashboard", "evidence_hash": (context or {}).get("evidence_hash")}],
+            "citations": [
+                {"source": "dashboard", "evidence_hash": (context or {}).get("evidence_hash")}
+            ],
         }
 
 

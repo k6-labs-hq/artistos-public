@@ -37,10 +37,18 @@ class NotificationPreferenceRequest(BaseModel):
     quiet_hours_end: int = 7
 
 
-@router.post("/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema)
-def set_notification_preferences(artist_id: str, payload: NotificationPreferenceRequest, db: Session = Depends(get_db)):
+@router.post(
+    "/artists/{artist_id}/notifications/preferences", response_model=NotificationPreferenceSchema
+)
+def set_notification_preferences(
+    artist_id: str, payload: NotificationPreferenceRequest, db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
-    row = db.query(NotificationPreference).filter(NotificationPreference.artist_id == artist_id).first()
+    row = (
+        db.query(NotificationPreference)
+        .filter(NotificationPreference.artist_id == artist_id)
+        .first()
+    )
     if not row:
         row = NotificationPreference(artist_id=artist_id)
         db.add(row)
@@ -67,7 +75,9 @@ def dispatch_notifications(artist_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/artists/{artist_id}/notifications/push-register")
-def push_register(artist_id: str, token: str, platform: str = "firebase", db: Session = Depends(get_db)):
+def push_register(
+    artist_id: str, token: str, platform: str = "firebase", db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
     out = register_push_token(artist_id, token, platform)
     brand = get_branding_for_artist(db, artist_id)
@@ -100,11 +110,7 @@ def get_delivery_log(
     db: Session = Depends(get_db),
 ):
     """Return persisted delivery log rows for audit and debugging."""
-    q = db.query(NotificationDeliveryLog).filter(
-        NotificationDeliveryLog.artist_id == artist_id
-    )
+    q = db.query(NotificationDeliveryLog).filter(NotificationDeliveryLog.artist_id == artist_id)
     if event_key:
         q = q.filter(NotificationDeliveryLog.event_key == event_key)
-    return (
-        q.order_by(NotificationDeliveryLog.created_at.desc()).limit(limit).all()
-    )
+    return q.order_by(NotificationDeliveryLog.created_at.desc()).limit(limit).all()

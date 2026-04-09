@@ -74,9 +74,7 @@ class PexAdapter(IFingerprintingProvider):
         self._access_token: str | None = None
         self._token_expiry: float = 0.0
         self._cb = get_circuit_registry().get(self.provider_name)
-        self._limiter = get_rate_limiter(
-            self.provider_name, self._cfg.rate_limit_per_minute
-        )
+        self._limiter = get_rate_limiter(self.provider_name, self._cfg.rate_limit_per_minute)
 
     @property
     def provider_name(self) -> str:
@@ -167,9 +165,7 @@ class PexAdapter(IFingerprintingProvider):
 
         # Step 1: Create asset record
         create_endpoint = f"{self._cfg.endpoint}/assets"
-        response = await self._guarded(
-            client.post(create_endpoint, json=asset_body, headers=auth)
-        )
+        response = await self._guarded(client.post(create_endpoint, json=asset_body, headers=auth))
         response.raise_for_status()
         asset_id: str = response.json().get("asset_id") or response.json().get("id") or "unknown"
 
@@ -231,21 +227,19 @@ class PexAdapter(IFingerprintingProvider):
 
         endpoint = f"{self._cfg.endpoint}/assets/{reference_id}/occurrences"
         try:
-            response = await self._guarded(
-                client.get(endpoint, params=params, headers=auth)
-            )
+            response = await self._guarded(client.get(endpoint, params=params, headers=auth))
             response.raise_for_status()
             raw = response.json()
         except httpx.HTTPStatusError as exc:
             logger.error("Pex detect_usage HTTP error: %s", exc)
             raise
 
-        occurrences: list[dict[str, Any]] = (
-            raw.get("occurrences") or raw.get("matches") or []
-        )
+        occurrences: list[dict[str, Any]] = raw.get("occurrences") or raw.get("matches") or []
         results: list[NormalizedMatchResult] = []
         for occ in occurrences:
-            occ_type = (occ.get("type") or occ.get("match_type") or occ.get("detection_type") or "").lower()
+            occ_type = (
+                occ.get("type") or occ.get("match_type") or occ.get("detection_type") or ""
+            ).lower()
             results.append(
                 NormalizedMatchResult(
                     track_id=reference_id,
@@ -306,9 +300,7 @@ class PexAdapter(IFingerprintingProvider):
                 checked_at=datetime.now(timezone.utc),
             )
 
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         """Normalize Pex /identify response.
 
         Expected shape::
@@ -340,7 +332,9 @@ class PexAdapter(IFingerprintingProvider):
         results: list[NormalizedMatchResult] = []
         for item in raw_results:
             confidence = float(item.get("confidence", 0.0))
-            occ_type = (item.get("type") or item.get("match_type") or item.get("detection_type") or "").lower()
+            occ_type = (
+                item.get("type") or item.get("match_type") or item.get("detection_type") or ""
+            ).lower()
             results.append(
                 NormalizedMatchResult(
                     track_id=item.get("asset_id") or item.get("track_id") or item.get("id"),

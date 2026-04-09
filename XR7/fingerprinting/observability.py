@@ -97,6 +97,7 @@ def get_metrics() -> dict[str, int]:
 # Retry / backoff
 # ---------------------------------------------------------------------------
 
+
 def with_retry(
     max_attempts: int = 3,
     backoff_base: float = 1.0,
@@ -150,6 +151,7 @@ def with_retry(
 # Provider outage alerts
 # ---------------------------------------------------------------------------
 
+
 def alert_provider_outage(provider: str, error_message: str) -> None:
     """Emit an outage alert for a fingerprinting provider.
 
@@ -167,6 +169,7 @@ def alert_provider_outage(provider: str, error_message: str) -> None:
 # ---------------------------------------------------------------------------
 # Matching Engine audit logs
 # ---------------------------------------------------------------------------
+
 
 def audit_matching_run(
     artist_id: str,

@@ -5,6 +5,7 @@ pipeline steps.
 No ORM objects are imported.  All functions accept plain Python primitives so
 they can be driven by n8n, LangGraph, or unit tests without a DB session.
 """
+
 from __future__ import annotations
 
 from typing import Any

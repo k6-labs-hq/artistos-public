@@ -27,7 +27,9 @@ def authorize_team_access(
 
     Bootstrap mode: if the artist has no team members yet, access is allowed.
     """
-    members_exist = db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
+    members_exist = (
+        db.query(TeamMember.id).filter(TeamMember.artist_id == artist_id).first() is not None
+    )
     if not members_exist:
         return
 

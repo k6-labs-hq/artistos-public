@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 
-def likely_outcome_for_claim(claim: dict[str, Any], payer_profile: dict[str, Any]) -> dict[str, Any]:
+def likely_outcome_for_claim(
+    claim: dict[str, Any], payer_profile: dict[str, Any]
+) -> dict[str, Any]:
     """Predict likely settlement percent/time/outcome and escalation probability."""
     accept = float(payer_profile.get("settlement_likelihood") or 0.6)
     dispute = float(payer_profile.get("dispute_likelihood") or 0.4)

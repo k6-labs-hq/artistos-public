@@ -231,18 +231,25 @@ def run_recovery_autopilot(
     if payload.include_rights_registration:
         state = _merge_agent_state(state, asyncio.run(RightsRegistrationAgent(state)))
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "autopilot": {
-            "executed_agents": [a.get("step") for a in state.get("agent_activity") or []],
-            "confidence_scores": state.get("confidence_scores") or {},
-            "payer_chase_actions": state.get("payer_chase_actions") or [],
-            "sol_guardian_alerts": state.get("sol_guardian_alerts") or [],
-            "settlement_tracker": state.get("settlement_tracker") or {},
-            "rights_registration_plan": state.get("rights_registration_plan") if payload.include_rights_registration else None,
-            "evidence_packet": state.get("recovery_evidence_packet") or {},
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "autopilot": {
+                "executed_agents": [a.get("step") for a in state.get("agent_activity") or []],
+                "confidence_scores": state.get("confidence_scores") or {},
+                "payer_chase_actions": state.get("payer_chase_actions") or [],
+                "sol_guardian_alerts": state.get("sol_guardian_alerts") or [],
+                "settlement_tracker": state.get("settlement_tracker") or {},
+                "rights_registration_plan": (
+                    state.get("rights_registration_plan")
+                    if payload.include_rights_registration
+                    else None
+                ),
+                "evidence_packet": state.get("recovery_evidence_packet") or {},
+            },
         },
-    })
+    )
 
 
 @router.get("/{artist_id}/recovery/sol-status")
@@ -257,8 +264,7 @@ def sol_status(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
 
     anomalies = [
-        _anomaly_to_dict(a)
-        for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
     ]
     classified = classify_anomalies(anomalies)
     summary = sol_summary(anomalies)
@@ -282,10 +288,7 @@ def rate_benchmark(artist_id: str, db: Session = Depends(get_db)):
     """
     get_artist_or_404(artist_id, db)
 
-    events = [
-        _event_to_dict(e)
-        for e in db.query(Event).filter(Event.artist_id == artist_id).all()
-    ]
+    events = [_event_to_dict(e) for e in db.query(Event).filter(Event.artist_id == artist_id).all()]
     benchmarker = RateBenchmarker()
     report = benchmarker.benchmark(artist_id, events)
     return {
@@ -310,8 +313,7 @@ def audit_eligibility(artist_id: str, db: Session = Depends(get_db)):
         for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()
     ]
     payments = [
-        _payment_to_dict(p)
-        for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+        _payment_to_dict(p) for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
     ]
     recommendations = analyze_audit_eligibility(contracts, payments)
     summary = audit_summary(recommendations)
@@ -341,8 +343,7 @@ def recoupment(artist_id: str, db: Session = Depends(get_db)):
         for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()
     ]
     payments = [
-        _payment_to_dict(p)
-        for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+        _payment_to_dict(p) for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
     ]
     positions = compute_recoupment(contracts, payments)
     summary = recoupment_summary(positions)
@@ -380,8 +381,12 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
         .all()
     ]
     claims_full = db.query(Claim).filter(Claim.artist_id == artist_id).all()
-    anomalies_by_id = {a.id: a for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()}
-    snapshots = db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == artist_id).all()
+    anomalies_by_id = {
+        a.id: a for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    }
+    snapshots = (
+        db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == artist_id).all()
+    )
 
     works = db.query(Work).filter(Work.artist_id == artist_id).all()
     payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
@@ -405,7 +410,13 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
             "payer": _claim_payer(c),
             "status": str(c.status),
             "settlement_days": 45,
-            "settlement_percent": min(1.0, max(0.1, float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0))),
+            "settlement_percent": min(
+                1.0,
+                max(
+                    0.1,
+                    float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0),
+                ),
+            ),
         }
         for c in claims_full
     ]
@@ -429,10 +440,16 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
     for row in claims_raw:
         forecast = forecast_index.get(row.get("id")) or {}
         payer_behavior = payer_behavior_cache.get(str(row.get("payer") or "generic"), {})
-        row["confidence_score"] = float(forecast.get("confidence") or row.get("confidence_score") or 0.7)
+        row["confidence_score"] = float(
+            forecast.get("confidence") or row.get("confidence_score") or 0.7
+        )
         row["confidence_score"] = min(
             0.99,
-            max(0.05, (row["confidence_score"] * 0.7) + (float(payer_behavior.get("acceptance_probability") or 0.5) * 0.3)),
+            max(
+                0.05,
+                (row["confidence_score"] * 0.7)
+                + (float(payer_behavior.get("acceptance_probability") or 0.5) * 0.3),
+            ),
         )
         row["effort_adjustment"] = float(row.get("effort_adjustment") or 1.0) * max(
             0.8,
@@ -442,7 +459,9 @@ def priority_queue(artist_id: str, db: Session = Depends(get_db)):
     for row in anomalies_raw:
         behavior = payer_behavior_rows[0] if payer_behavior_rows else None
         rp = anomaly_recovery_probability(row, behavior)
-        row["confidence_score"] = float(rp.get("probability_of_recovery") or row.get("confidence_score") or 0.5)
+        row["confidence_score"] = float(
+            rp.get("probability_of_recovery") or row.get("confidence_score") or 0.5
+        )
         row["effort_adjustment"] = float(row.get("effort_adjustment") or 1.0) * max(
             0.8,
             min(1.6, float(rp.get("expected_effort_hours") or 4.0) / 6.0),
@@ -504,8 +523,13 @@ def deadline_risk(artist_id: str, db: Session = Depends(get_db)):
         }
         for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
     ]
-    contracts = [_contract_to_dict(c) for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()]
-    payments = [_payment_to_dict(p) for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()]
+    contracts = [
+        _contract_to_dict(c)
+        for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()
+    ]
+    payments = [
+        _payment_to_dict(p) for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+    ]
 
     risk = evaluate_deadline_risk(anomalies, claims, contracts, payments)
     return {
@@ -618,15 +642,22 @@ def split_conflicts(artist_id: str, db: Session = Depends(get_db)):
 def recovery_expected_value(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
 
-    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    anomalies = [
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
-    contracts = [_contract_to_dict(c) for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()]
+    contracts = [
+        _contract_to_dict(c)
+        for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()
+    ]
 
     total_claims = max(len(claims), 1)
     paid_claims = sum(1 for c in claims if str(c.get("status")) in {"PAID", "CLOSED"})
     historical_recovery_rate = float(paid_claims) / float(total_claims)
 
-    payer_rows = [payer_behavior_profile(str(c.get("payer") or "generic"), claims) for c in claims[:10]]
+    payer_rows = [
+        payer_behavior_profile(str(c.get("payer") or "generic"), claims) for c in claims[:10]
+    ]
     catalog_health_score = max(40.0, 100.0 - (len(anomalies) * 2.0))
 
     return {
@@ -646,7 +677,9 @@ def recovery_expected_value(artist_id: str, db: Session = Depends(get_db)):
 @router.get("/{artist_id}/recovery/funnel")
 def recovery_funnel(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
-    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    anomalies = [
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
     claims = [
         {
             **_claim_to_dict(c),
@@ -656,7 +689,9 @@ def recovery_funnel(artist_id: str, db: Session = Depends(get_db)):
     ]
     deposits = [
         _payment_to_dict(p)
-        for p in db.query(Payment).filter(Payment.artist_id == artist_id, Payment.payment_type == "PAYOUT").all()
+        for p in db.query(Payment)
+        .filter(Payment.artist_id == artist_id, Payment.payment_type == "PAYOUT")
+        .all()
     ]
     return {
         "artist_id": artist_id,
@@ -677,7 +712,10 @@ def catalog_integrity(artist_id: str, db: Session = Depends(get_db)):
         }
         for w in db.query(Work).filter(Work.artist_id == artist_id).all()
     ]
-    contracts = [_contract_to_dict(c) for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()]
+    contracts = [
+        _contract_to_dict(c)
+        for c in db.query(Contract).filter(Contract.artist_id == artist_id).all()
+    ]
     events = [
         {
             "work_id": e.work_id,
@@ -724,7 +762,10 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
         }
         for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
     ]
-    statements = [_statement_to_dict(s) for s in db.query(Statement).filter(Statement.artist_id == artist_id).all()]
+    statements = [
+        _statement_to_dict(s)
+        for s in db.query(Statement).filter(Statement.artist_id == artist_id).all()
+    ]
     return {
         "artist_id": artist_id,
         "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
@@ -746,7 +787,9 @@ def sla_status(artist_id: str, db: Session = Depends(get_db)):
 @router.get("/{artist_id}/recovery/heatmap")
 def underpayment_heatmap(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
-    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    anomalies = [
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
@@ -758,7 +801,9 @@ def underpayment_heatmap(artist_id: str, db: Session = Depends(get_db)):
 @router.get("/{artist_id}/recovery/roi")
 def recovery_roi(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
-    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    anomalies = [
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
     claims = [_claim_to_dict(c) for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()]
     return {
         "artist_id": artist_id,
@@ -780,12 +825,13 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
         for e in db.query(Event).filter(Event.artist_id == artist_id).all()
     ]
     payments = [
-        {"amount": p.amount}
-        for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+        {"amount": p.amount} for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
     ]
     end = datetime.now(timezone.utc)
     start = datetime(2000, 1, 1, tzinfo=timezone.utc)
-    metadata_result = MetadataRepairEngine(db).run_historical_audit_and_repair(artist_id, start, end)
+    metadata_result = MetadataRepairEngine(db).run_historical_audit_and_repair(
+        artist_id, start, end
+    )
     metadata_health = MetadataRepairEngine(db).get_metadata_health(artist_id)
     rate_drift = RateDriftCorrectionEngine(db).detect_and_record(artist_id)
     foreign_crosswalk = ForeignSocietyCrosswalkEngine(db).analyze(artist_id)
@@ -819,7 +865,9 @@ def reconstruct_historical(artist_id: str, db: Session = Depends(get_db)):
 @router.get("/{artist_id}/recovery/attribution")
 def recovery_attribution(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
-    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    anomalies = [
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
     claims = [
         {
             **_claim_to_dict(c),
@@ -848,7 +896,8 @@ def artist_benchmarking(artist_id: str, db: Session = Depends(get_db)):
             {
                 "leakage": sum(float(a.estimated_recoverable or 0.0) for a in peer_anomalies),
                 "recovery": sum(float(c.recovered_amount or 0.0) for c in peer_claims),
-                "anomaly_density": float(len(peer_anomalies)) / max(1.0, float(len(peer_claims) or 1.0)),
+                "anomaly_density": float(len(peer_anomalies))
+                / max(1.0, float(len(peer_claims) or 1.0)),
                 "catalog_health": max(20.0, 100.0 - (len(peer_anomalies) * 2.0)),
             }
         )
@@ -858,7 +907,8 @@ def artist_benchmarking(artist_id: str, db: Session = Depends(get_db)):
     artist_summary = {
         "leakage": sum(float(a.estimated_recoverable or 0.0) for a in current_anomalies),
         "recovery": sum(float(c.recovered_amount or 0.0) for c in current_claims),
-        "anomaly_density": float(len(current_anomalies)) / max(1.0, float(len(current_claims) or 1.0)),
+        "anomaly_density": float(len(current_anomalies))
+        / max(1.0, float(len(current_claims) or 1.0)),
         "catalog_health": max(20.0, 100.0 - (len(current_anomalies) * 2.0)),
     }
     return {
@@ -900,14 +950,15 @@ async def ugc_monitor(artist_id: str, db: Session = Depends(get_db)):
         "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "viral_usage": uses,
         "ugc_opportunities": [
-            {**u, "estimated_recoverable": monitor.calculate_lost_sync_value(u)}
-            for u in uses
+            {**u, "estimated_recoverable": monitor.calculate_lost_sync_value(u)} for u in uses
         ],
     }
 
 
 @router.post("/{artist_id}/ugc/claim")
-async def ugc_claim(artist_id: str, use_data: dict, platform: str = "tiktok", db: Session = Depends(get_db)):
+async def ugc_claim(
+    artist_id: str, use_data: dict, platform: str = "tiktok", db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
     generator = UGCClaimGenerator(db)
     claim_id = await generator.create_claim(artist_id, platform, use_data)
@@ -931,7 +982,9 @@ async def ugc_global_scan(artist_id: str, db: Session = Depends(get_db)):
         "artist_id": artist_id,
         "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "detected_uses": uses,
-        "global_ugc_potential": round(sum(float(p.get("estimated_recoverable") or 0.0) for p in packets), 2),
+        "global_ugc_potential": round(
+            sum(float(p.get("estimated_recoverable") or 0.0) for p in packets), 2
+        ),
         "evidence_packets": packets,
     }
 
@@ -939,7 +992,12 @@ async def ugc_global_scan(artist_id: str, db: Session = Depends(get_db)):
 @router.post("/{artist_id}/recovery/ugc-auto-claim")
 async def ugc_auto_claim(artist_id: str, platform: str, use_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
-    use_data = {"use_id": use_id, "platform": platform, "views": 1000000, "url": f"https://example.com/{platform}/{use_id}"}
+    use_data = {
+        "use_id": use_id,
+        "platform": platform,
+        "views": 1000000,
+        "url": f"https://example.com/{platform}/{use_id}",
+    }
     claim_id = await UGCClaimGenerator(db).create_claim(artist_id, platform, use_data)
     return inject_branding_metadata(
         db,
@@ -952,12 +1010,16 @@ async def ugc_auto_claim(artist_id: str, platform: str, use_id: str, db: Session
 
 
 @router.post("/{artist_id}/recovery/touring-audit")
-async def touring_audit(artist_id: str, settlement_csv: str = "", merch_csv: str = "", db: Session = Depends(get_db)):
+async def touring_audit(
+    artist_id: str, settlement_csv: str = "", merch_csv: str = "", db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
     auditor = TouringRecoupmentAuditor(db)
     discrepancies = auditor.detect_settlement_discrepancies(settlement_csv, merch_csv)
     overages = auditor.analyze_recoupment_overages(artist_id)
-    letter = await auditor.generate_audit_demand_letter(artist_id, {"discrepancies": discrepancies, "overages": overages})
+    letter = await auditor.generate_audit_demand_letter(
+        artist_id, {"discrepancies": discrepancies, "overages": overages}
+    )
     return inject_branding_metadata(
         db,
         {
@@ -1006,9 +1068,13 @@ async def edm_festival_audit(
     db: Session = Depends(get_db),
 ):
     auditor = EDMFestivalAuditor()
-    discrepancies = auditor.detect_settlement_and_merch_discrepancies(settlements or [], merch or [])
+    discrepancies = auditor.detect_settlement_and_merch_discrepancies(
+        settlements or [], merch or []
+    )
     recoup = auditor.analyze_recoupment_for_tour_packages(packages or [])
-    letter = await auditor.generate_audit_letter(artist_id, {"discrepancies": discrepancies, "recoupment": recoup})
+    letter = await auditor.generate_audit_letter(
+        artist_id, {"discrepancies": discrepancies, "recoupment": recoup}
+    )
     return inject_branding_metadata(
         db,
         {
@@ -1052,7 +1118,9 @@ def train_black_box_model(artist_id: str, payload: dict[str, Any], db: Session =
             "model_version": "xr7-blackbox-prob-v1",
             "trained_at": datetime.now(timezone.utc).isoformat(),
         }
-    return inject_branding_metadata(db, {"artist_id": artist_id, **training, "snapshot": export_black_box_model_snapshot()})
+    return inject_branding_metadata(
+        db, {"artist_id": artist_id, **training, "snapshot": export_black_box_model_snapshot()}
+    )
 
 
 @router.post("/{artist_id}/recovery/leakage-benchmark")
@@ -1070,7 +1138,9 @@ def leakage_benchmark(artist_id: str, payload: dict[str, Any], db: Session = Dep
 def ingest_society_signal(artist_id: str, payload: dict[str, Any], db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
 
-    anomalies = [_anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()]
+    anomalies = [
+        _anomaly_to_dict(a) for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+    ]
     feed = SocietySignalFeed()
     result = feed.apply_signal(payload, anomalies)
 
@@ -1083,11 +1153,18 @@ def ingest_society_signal(artist_id: str, payload: dict[str, Any], db: Session =
     )
     db.add(row)
     db.commit()
-    return inject_branding_metadata(db, {"artist_id": artist_id, **result, "society_activity_feed": feed.dashboard_feed()})
+    return inject_branding_metadata(
+        db, {"artist_id": artist_id, **result, "society_activity_feed": feed.dashboard_feed()}
+    )
 
 
 @router.post("/{artist_id}/claims/{claim_id}/evidence-package")
-def build_claim_evidence_package(artist_id: str, claim_id: str, payload: dict[str, Any] | None = None, db: Session = Depends(get_db)):
+def build_claim_evidence_package(
+    artist_id: str,
+    claim_id: str,
+    payload: dict[str, Any] | None = None,
+    db: Session = Depends(get_db),
+):
     get_artist_or_404(artist_id, db)
     claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
     if not claim:
@@ -1098,7 +1175,9 @@ def build_claim_evidence_package(artist_id: str, claim_id: str, payload: dict[st
 
     anomaly_payload = _anomaly_to_dict(anomaly)
     anomaly_payload["description"] = anomaly.description
-    anomaly_payload["event_date"] = anomaly.time_window_end.isoformat() if anomaly.time_window_end else None
+    anomaly_payload["event_date"] = (
+        anomaly.time_window_end.isoformat() if anomaly.time_window_end else None
+    )
     anomaly_payload["created_at"] = anomaly.created_at.isoformat() if anomaly.created_at else None
 
     recoverability = build_recoverability_payload(anomaly_payload)
@@ -1114,7 +1193,11 @@ def build_claim_evidence_package(artist_id: str, claim_id: str, payload: dict[st
         confidence_gate_threshold=float((payload or {}).get("confidence_gate_threshold") or 0.65)
     )
     package = builder.build(
-        claim={"id": claim.id, "artist_id": claim.artist_id, "governing_law_state": claim.governing_law_state},
+        claim={
+            "id": claim.id,
+            "artist_id": claim.artist_id,
+            "governing_law_state": claim.governing_law_state,
+        },
         anomaly=anomaly_payload,
         recoverability_payload=recoverability,
         trust_score=float(trust.get("trust_score") or 0.0),

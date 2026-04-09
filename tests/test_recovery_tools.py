@@ -47,6 +47,7 @@ from XR7.recovery.statute_tracker import (
 # Helpers
 # ===========================================================================
 
+
 def _make_anomaly(
     category: str = "ROYALTY",
     subtype: str = "MISSING_PAYMENT",
@@ -120,6 +121,7 @@ def _make_event(
 # ===========================================================================
 # statute_tracker
 # ===========================================================================
+
 
 class TestStatuteTracker:
     def test_ok_anomaly_recent(self):
@@ -214,6 +216,7 @@ class TestStatuteTracker:
 # rate_benchmarker
 # ===========================================================================
 
+
 class TestRateBenchmarker:
     def test_critical_tier_below_50_percent_of_median(self):
         events = [_make_event(unit_value=0.001)]  # < 50% of $0.004 median
@@ -252,7 +255,9 @@ class TestRateBenchmarker:
         events_high = [_make_event(unit_value=0.001, quantity=10000)]
         r_low = compare_event_rates("artist-1", events_low)[0]
         r_high = compare_event_rates("artist-1", events_high)[0]
-        assert r_high["estimated_underpayment"] == pytest.approx(r_low["estimated_underpayment"] * 100)
+        assert r_high["estimated_underpayment"] == pytest.approx(
+            r_low["estimated_underpayment"] * 100
+        )
 
     def test_benchmarker_report_structure(self):
         events = [_make_event(unit_value=0.001), _make_event(unit_value=0.004)]
@@ -294,6 +299,7 @@ class TestRateBenchmarker:
 # ===========================================================================
 # audit_tracker
 # ===========================================================================
+
 
 class TestAuditTracker:
     def test_never_audited_is_highest_priority(self):
@@ -358,7 +364,9 @@ class TestAuditTracker:
 
     def test_publishing_has_2_year_interval(self):
         last_audit = (date.today() - timedelta(days=2 * 365 + 30)).isoformat()
-        contracts = [_make_contract(contract_type="PUBLISHING", terms={"last_audit_date": last_audit})]
+        contracts = [
+            _make_contract(contract_type="PUBLISHING", terms={"last_audit_date": last_audit})
+        ]
         recs = analyze_audit_eligibility(contracts)
         assert recs[0].audit_interval_years == 2
         assert recs[0].eligibility == AuditEligibility.ELIGIBLE
@@ -367,6 +375,7 @@ class TestAuditTracker:
 # ===========================================================================
 # priority_ranker
 # ===========================================================================
+
 
 class TestPriorityRanker:
     def test_rank_anomalies_returns_list(self):
@@ -396,7 +405,10 @@ class TestPriorityRanker:
         assert results[0].item_id == "urgent"
 
     def test_rank_anomalies_normalised_scores_0_to_100(self):
-        anomalies = [_make_anomaly(anomaly_id=f"a{i}", estimated_recoverable=float(100 * (i + 1))) for i in range(5)]
+        anomalies = [
+            _make_anomaly(anomaly_id=f"a{i}", estimated_recoverable=float(100 * (i + 1)))
+            for i in range(5)
+        ]
         results = rank_anomalies(anomalies)
         scores = [r.normalised_score for r in results]
         assert max(scores) == pytest.approx(100.0)
@@ -410,8 +422,13 @@ class TestPriorityRanker:
 
     def test_rank_claims_returns_correct_action(self):
         claims = [
-            {"id": "cl-1", "artist_id": "artist-1", "claim_type": "ROYALTY", "status": "SUBMITTED",
-             "created_at": datetime.now(timezone.utc).isoformat()}
+            {
+                "id": "cl-1",
+                "artist_id": "artist-1",
+                "claim_type": "ROYALTY",
+                "status": "SUBMITTED",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
         ]
         results = rank_claims(claims)
         assert len(results) == 1
@@ -421,8 +438,13 @@ class TestPriorityRanker:
     def test_build_action_queue_merges_anomalies_and_claims(self):
         anomalies = [_make_anomaly(anomaly_id="a1")]
         claims = [
-            {"id": "c1", "artist_id": "artist-1", "claim_type": "ROYALTY", "status": "SUBMITTED",
-             "created_at": datetime.now(timezone.utc).isoformat()}
+            {
+                "id": "c1",
+                "artist_id": "artist-1",
+                "claim_type": "ROYALTY",
+                "status": "SUBMITTED",
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            }
         ]
         queue = build_action_queue(anomalies, claims)
         assert len(queue) == 2
@@ -438,8 +460,15 @@ class TestPriorityRanker:
         anomalies = [_make_anomaly()]
         results = rank_anomalies(anomalies)
         d = results[0].to_dict()
-        for key in ("item_id", "item_type", "action", "priority_rank",
-                    "normalised_score", "estimated_recoverable", "confidence_score"):
+        for key in (
+            "item_id",
+            "item_type",
+            "action",
+            "priority_rank",
+            "normalised_score",
+            "estimated_recoverable",
+            "confidence_score",
+        ):
             assert key in d
 
     def test_expired_sol_gets_highest_urgency_boost(self):
@@ -454,6 +483,7 @@ class TestPriorityRanker:
 # ===========================================================================
 # recoupment_tracker
 # ===========================================================================
+
 
 class TestRecoupmentTracker:
     def test_unrecouped_when_payments_below_advance(self):
@@ -489,21 +519,29 @@ class TestRecoupmentTracker:
 
     def test_recoupment_discrepancy_flag(self):
         # Our calculation says balance=40k, counterparty claims 60k
-        contracts = [_make_contract(terms={
-            "advance": 50000.0,
-            "recoupment_rate": 1.0,
-            "recoupment_balance": 60000.0,  # reported is much higher
-        })]
+        contracts = [
+            _make_contract(
+                terms={
+                    "advance": 50000.0,
+                    "recoupment_rate": 1.0,
+                    "recoupment_balance": 60000.0,  # reported is much higher
+                }
+            )
+        ]
         payments = [_make_payment(amount=10000.0)]
         positions = compute_recoupment(contracts, payments)
         assert RecoupmentFlag.RECOUPMENT_DISCREPANCY in positions[0].flags
 
     def test_no_flag_when_balance_matches(self):
-        contracts = [_make_contract(terms={
-            "advance": 50000.0,
-            "recoupment_rate": 1.0,
-            "recoupment_balance": 40000.0,  # matches our calculation
-        })]
+        contracts = [
+            _make_contract(
+                terms={
+                    "advance": 50000.0,
+                    "recoupment_rate": 1.0,
+                    "recoupment_balance": 40000.0,  # matches our calculation
+                }
+            )
+        ]
         payments = [_make_payment(amount=10000.0)]
         positions = compute_recoupment(contracts, payments)
         assert RecoupmentFlag.RECOUPMENT_DISCREPANCY not in positions[0].flags
@@ -542,8 +580,15 @@ class TestRecoupmentTracker:
         payments = [_make_payment(amount=1000.0)]
         positions = compute_recoupment(contracts, payments)
         d = positions[0].to_dict()
-        for key in ("contract_id", "contract_type", "advance", "recoupment_balance",
-                    "recoupment_status", "flags", "anomalies"):
+        for key in (
+            "contract_id",
+            "contract_type",
+            "advance",
+            "recoupment_balance",
+            "recoupment_status",
+            "flags",
+            "anomalies",
+        ):
             assert key in d
 
     def test_excess_recoupment_flag(self):
@@ -556,7 +601,9 @@ class TestRecoupmentTracker:
 
     def test_multiple_contracts_tracked_independently(self):
         c1 = _make_contract(contract_id="c1", terms={"advance": 10000.0})
-        c2 = _make_contract(contract_id="c2", contract_type="PUBLISHING", terms={"advance": 20000.0})
+        c2 = _make_contract(
+            contract_id="c2", contract_type="PUBLISHING", terms={"advance": 20000.0}
+        )
         positions = compute_recoupment([c1, c2])
         assert len(positions) == 2
         ids = {p.contract_id for p in positions}

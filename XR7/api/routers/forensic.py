@@ -68,17 +68,30 @@ async def auth_providers() -> dict[str, list[dict[str, Any]]]:
 
 
 @router.post("/auth/connect/{provider}", response_model=AuthConnectResponse)
-async def auth_connect(provider: str, redirect_uri: str = Query(..., min_length=5)) -> AuthConnectResponse:
+async def auth_connect(
+    provider: str, redirect_uri: str = Query(..., min_length=5)
+) -> AuthConnectResponse:
     service = OAuthProviderService(provider)
     if provider.strip().lower() not in PROVIDER_CONFIGS:
         raise HTTPException(status_code=404, detail="Unsupported OAuth provider")
     state = str(uuid.uuid4())
-    url = service.build_authorization_url(redirect_uri=redirect_uri, state=state, scopes=[], tenant_id="default")
-    return AuthConnectResponse(provider=provider.strip().lower(), authorization_url=url, configured=service.configured(), state=state)
+    url = service.build_authorization_url(
+        redirect_uri=redirect_uri, state=state, scopes=[], tenant_id="default"
+    )
+    return AuthConnectResponse(
+        provider=provider.strip().lower(),
+        authorization_url=url,
+        configured=service.configured(),
+        state=state,
+    )
 
 
-@router.post("/statements/upload", response_model=ForensicUniversalRoyaltyEventSchema, status_code=201)
-async def statements_upload(payload: ForensicUniversalRoyaltyEventCreate, db: Session = Depends(get_db)):
+@router.post(
+    "/statements/upload", response_model=ForensicUniversalRoyaltyEventSchema, status_code=201
+)
+async def statements_upload(
+    payload: ForensicUniversalRoyaltyEventCreate, db: Session = Depends(get_db)
+):
     """Minimal statement upload endpoint that stores a normalized universal event row."""
     row = ForensicUniversalRoyaltyEvent(
         event_id=str(uuid.uuid4()),
@@ -113,21 +126,26 @@ async def statements_status(statement_id: str, db: Session = Depends(get_db)):
     statement = db.query(Statement).filter(Statement.id == statement_id).first()
     if not statement:
         raise HTTPException(status_code=404, detail="Statement not found")
-    return inject_branding_metadata(db, {
-        "statement_id": statement.id,
-        "artist_id": statement.artist_id,
-        "status": statement.status,
-        "format_detected": statement.format_detected,
-        "events_created": statement.events_created,
-        "payments_created": statement.payments_created,
-        "uploaded_at": statement.uploaded_at,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "statement_id": statement.id,
+            "artist_id": statement.artist_id,
+            "status": statement.status,
+            "format_detected": statement.format_detected,
+            "events_created": statement.events_created,
+            "payments_created": statement.payments_created,
+            "uploaded_at": statement.uploaded_at,
+        },
+    )
 
 
 @router.get("/catalog")
 async def get_catalog(artist_id: str = Query(...), db: Session = Depends(get_db)):
     graph = CatalogGraphAdjacencyService(db).fetch(artist_id)
-    return inject_branding_metadata(db, {"artist_id": artist_id, "nodes": graph.nodes, "edges": graph.edges})
+    return inject_branding_metadata(
+        db, {"artist_id": artist_id, "nodes": graph.nodes, "edges": graph.edges}
+    )
 
 
 @router.post("/catalog/confirm")
@@ -137,7 +155,11 @@ async def confirm_catalog(payload: CatalogConfirmRequest, db: Session = Depends(
     ImmutableLedgerService(db).append(
         payload.artist_id,
         "catalog_confirmed",
-        {"works": len(payload.works), "created_nodes": summary["created_nodes"], "created_edges": summary["created_edges"]},
+        {
+            "works": len(payload.works),
+            "created_nodes": summary["created_nodes"],
+            "created_edges": summary["created_edges"],
+        },
     )
     return inject_branding_metadata(db, {"artist_id": payload.artist_id, **summary})
 
@@ -150,21 +172,24 @@ async def list_variance(artist_id: str = Query(...), db: Session = Depends(get_d
         .order_by(Anomaly.created_at.desc())
         .all()
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "count": len(rows),
-        "items": [
-            {
-                "id": a.id,
-                "subtype": a.subtype,
-                "severity": str(a.severity),
-                "estimated_recoverable": a.estimated_recoverable,
-                "status": str(a.status),
-                "created_at": a.created_at,
-            }
-            for a in rows
-        ],
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "count": len(rows),
+            "items": [
+                {
+                    "id": a.id,
+                    "subtype": a.subtype,
+                    "severity": str(a.severity),
+                    "estimated_recoverable": a.estimated_recoverable,
+                    "status": str(a.status),
+                    "created_at": a.created_at,
+                }
+                for a in rows
+            ],
+        },
+    )
 
 
 @router.get("/variance/{variance_id}/evidence")
@@ -204,8 +229,12 @@ async def recovery_submit(claim_id: str, db: Session = Depends(get_db)):
         # Keep the endpoint usable in local/test contexts without a running broker.
         queued = False
 
-    ImmutableLedgerService(db).append(claim.artist_id, "recovery_submitted", {"claim_id": claim.id, "task_id": task_id})
-    return RecoverySubmitResponse(claim_id=claim.id, status=str(claim.status), queued=queued, task_id=task_id)
+    ImmutableLedgerService(db).append(
+        claim.artist_id, "recovery_submitted", {"claim_id": claim.id, "task_id": task_id}
+    )
+    return RecoverySubmitResponse(
+        claim_id=claim.id, status=str(claim.status), queued=queued, task_id=task_id
+    )
 
 
 @router.get("/ledger", response_model=list[ImmutableLedgerEntrySchema])

@@ -28,10 +28,16 @@ class TrolleyTransaction(Base):
     __tablename__ = "trolley_transactions"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False, index=True)
-    claim_id: Mapped[str | None] = mapped_column(String, ForeignKey("claims.id"), nullable=True, index=True)
+    artist_id: Mapped[str] = mapped_column(
+        String, ForeignKey("artists.id"), nullable=False, index=True
+    )
+    claim_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("claims.id"), nullable=True, index=True
+    )
     type: Mapped[str] = mapped_column(Enum(TrolleyTxnType), nullable=False)
-    status: Mapped[str] = mapped_column(Enum(TrolleyTxnStatus), nullable=False, default=TrolleyTxnStatus.PENDING)
+    status: Mapped[str] = mapped_column(
+        Enum(TrolleyTxnStatus), nullable=False, default=TrolleyTxnStatus.PENDING
+    )
     gross_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     platform_fee_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
     net_amount: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -45,7 +51,9 @@ class TrolleyTransaction(Base):
     failure_reason: Mapped[str | None] = mapped_column(String, nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     description: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

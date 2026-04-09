@@ -15,7 +15,9 @@ class ImmutableLedgerViewer:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_full_ledger(self, artist_id: str, include_raw_statements: bool = True) -> dict[str, Any]:
+    def get_full_ledger(
+        self, artist_id: str, include_raw_statements: bool = True
+    ) -> dict[str, Any]:
         ledger_rows = (
             self.db.query(ImmutableLedgerEntry)
             .filter(ImmutableLedgerEntry.artist_id == artist_id)
@@ -58,9 +60,7 @@ class ImmutableLedgerViewer:
         anomaly = self.db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
         if not anomaly:
             raise ValueError("Anomaly not found")
-        question = (
-            "Explain in simple terms exactly why this anomaly was flagged and the math behind the estimated recoverable amount"
-        )
+        question = "Explain in simple terms exactly why this anomaly was flagged and the math behind the estimated recoverable amount"
         response = await claim_drafter.async_generate_personalized_advice(
             {
                 "anomaly": {

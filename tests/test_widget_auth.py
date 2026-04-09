@@ -45,6 +45,7 @@ client = TestClient(app)
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture(autouse=True)
 def reset_otp_state():
     """Clear all in-memory OTP state before every test."""
@@ -58,14 +59,19 @@ def now():
     return datetime.now(timezone.utc)
 
 
-def _make_session(phone: str = "+15550001111", email: str = "test@example.com",
-                  name: str = "Test Artist", now=None):
+def _make_session(
+    phone: str = "+15550001111",
+    email: str = "test@example.com",
+    name: str = "Test Artist",
+    now=None,
+):
     return create_session(artist_name=name, phone=phone, email=email, now=now)
 
 
 # ---------------------------------------------------------------------------
 # OTP service — session creation
 # ---------------------------------------------------------------------------
+
 
 class TestCreateSession:
     def test_returns_session_with_id_and_otps(self):
@@ -120,6 +126,7 @@ class TestCreateSession:
 # ---------------------------------------------------------------------------
 # OTP service — verification
 # ---------------------------------------------------------------------------
+
 
 class TestVerifySession:
     def test_correct_otps_return_token(self, now):
@@ -185,6 +192,7 @@ class TestVerifySession:
 # OTP service — token validation
 # ---------------------------------------------------------------------------
 
+
 class TestValidateToken:
     def test_valid_token_returns_token_object(self, now):
         s = _make_session(now=now)
@@ -198,6 +206,7 @@ class TestValidateToken:
 
     def test_expired_token_raises_token_error(self, now):
         from XR7.auth.otp_service import ESTIMATE_TOKEN_EXPIRY_SECONDS
+
         s = _make_session(now=now)
         token = verify_session(s.session_id, s.phone_otp, s.email_otp, now=now)
         future = now + timedelta(seconds=ESTIMATE_TOKEN_EXPIRY_SECONDS + 1)
@@ -208,6 +217,7 @@ class TestValidateToken:
 # ---------------------------------------------------------------------------
 # Mock notification service
 # ---------------------------------------------------------------------------
+
 
 class TestMockNotificationService:
     def test_send_sms_returns_true(self):
@@ -230,7 +240,9 @@ class TestMockNotificationService:
 
     def test_raises_in_production(self, monkeypatch):
         monkeypatch.setenv("XR7_ENV", "production")
-        with pytest.raises(RuntimeError, match="MockNotificationService cannot be used in production"):
+        with pytest.raises(
+            RuntimeError, match="MockNotificationService cannot be used in production"
+        ):
             MockNotificationService()
 
 
@@ -238,13 +250,17 @@ class TestMockNotificationService:
 # Widget API — /widget/register
 # ---------------------------------------------------------------------------
 
+
 class TestRegisterEndpoint:
     def test_successful_registration_returns_session_id(self):
-        resp = client.post("/widget/register", json={
-            "artist_name": "Jane Doe",
-            "phone": "+15551234567",
-            "email": "jane@example.com",
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": "Jane Doe",
+                "phone": "+15551234567",
+                "email": "jane@example.com",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "session_id" in data
@@ -254,37 +270,49 @@ class TestRegisterEndpoint:
         assert "dev_email_otp" in data
 
     def test_dev_otps_are_6_digits(self):
-        resp = client.post("/widget/register", json={
-            "artist_name": "Jane Doe",
-            "phone": "+15551234567",
-            "email": "jane@example.com",
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": "Jane Doe",
+                "phone": "+15551234567",
+                "email": "jane@example.com",
+            },
+        )
         data = resp.json()
         assert data["dev_phone_otp"].isdigit()
         assert len(data["dev_phone_otp"]) == 6
 
     def test_invalid_phone_returns_422(self):
-        resp = client.post("/widget/register", json={
-            "artist_name": "Jane Doe",
-            "phone": "not-a-phone",
-            "email": "jane@example.com",
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": "Jane Doe",
+                "phone": "not-a-phone",
+                "email": "jane@example.com",
+            },
+        )
         assert resp.status_code == 422
 
     def test_invalid_email_returns_422(self):
-        resp = client.post("/widget/register", json={
-            "artist_name": "Jane Doe",
-            "phone": "+15551234567",
-            "email": "not-an-email",
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": "Jane Doe",
+                "phone": "+15551234567",
+                "email": "not-an-email",
+            },
+        )
         assert resp.status_code == 422
 
     def test_empty_artist_name_returns_422(self):
-        resp = client.post("/widget/register", json={
-            "artist_name": "",
-            "phone": "+15551234567",
-            "email": "jane@example.com",
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": "",
+                "phone": "+15551234567",
+                "email": "jane@example.com",
+            },
+        )
         assert resp.status_code == 422
 
     def test_rate_limit_returns_429(self):
@@ -295,11 +323,14 @@ class TestRegisterEndpoint:
         assert resp.status_code == 429
 
     def test_phone_without_plus_is_accepted(self):
-        resp = client.post("/widget/register", json={
-            "artist_name": "Jane Doe",
-            "phone": "15551234567",
-            "email": "jane@example.com",
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": "Jane Doe",
+                "phone": "15551234567",
+                "email": "jane@example.com",
+            },
+        )
         assert resp.status_code == 200
 
 
@@ -307,21 +338,30 @@ class TestRegisterEndpoint:
 # Widget API — /widget/verify
 # ---------------------------------------------------------------------------
 
+
 class TestVerifyEndpoint:
     def _register(self, phone="+15550011111", email="v@test.com", name="V Artist"):
-        resp = client.post("/widget/register", json={
-            "artist_name": name, "phone": phone, "email": email,
-        })
+        resp = client.post(
+            "/widget/register",
+            json={
+                "artist_name": name,
+                "phone": phone,
+                "email": email,
+            },
+        )
         assert resp.status_code == 200
         return resp.json()
 
     def test_correct_otps_return_estimate_token(self):
         reg = self._register()
-        resp = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        })
+        resp = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "estimate_token" in data
@@ -329,43 +369,58 @@ class TestVerifyEndpoint:
 
     def test_wrong_phone_otp_returns_400(self):
         reg = self._register()
-        resp = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": "000000",
-            "email_otp": reg["dev_email_otp"],
-        })
+        resp = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": "000000",
+                "email_otp": reg["dev_email_otp"],
+            },
+        )
         assert resp.status_code == 400
 
     def test_wrong_both_otps_returns_400(self):
         reg = self._register()
-        resp = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": "111111",
-            "email_otp": "222222",
-        })
+        resp = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": "111111",
+                "email_otp": "222222",
+            },
+        )
         assert resp.status_code == 400
 
     def test_unknown_session_returns_404(self):
-        resp = client.post("/widget/verify", json={
-            "session_id": "nonexistent",
-            "phone_otp": "123456",
-            "email_otp": "654321",
-        })
+        resp = client.post(
+            "/widget/verify",
+            json={
+                "session_id": "nonexistent",
+                "phone_otp": "123456",
+                "email_otp": "654321",
+            },
+        )
         assert resp.status_code == 404
 
     def test_lockout_after_max_failures_returns_429(self):
         reg = self._register(phone="+15550022222")
         for _ in range(MAX_ATTEMPTS):
-            client.post("/widget/verify", json={
+            client.post(
+                "/widget/verify",
+                json={
+                    "session_id": reg["session_id"],
+                    "phone_otp": "000000",
+                    "email_otp": "000000",
+                },
+            )
+        resp = client.post(
+            "/widget/verify",
+            json={
                 "session_id": reg["session_id"],
-                "phone_otp": "000000",
-                "email_otp": "000000",
-            })
-        resp = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        })
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        )
         assert resp.status_code == 429
 
 
@@ -373,30 +428,42 @@ class TestVerifyEndpoint:
 # Widget API — /widget/estimate
 # ---------------------------------------------------------------------------
 
+
 class TestEstimateEndpoint:
     def _get_token(self, phone="+15550033333", email="e@test.com", name="E Artist"):
-        reg = client.post("/widget/register", json={
-            "artist_name": name, "phone": phone, "email": email,
-        }).json()
-        ver = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        }).json()
+        reg = client.post(
+            "/widget/register",
+            json={
+                "artist_name": name,
+                "phone": phone,
+                "email": email,
+            },
+        ).json()
+        ver = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        ).json()
         return ver["estimate_token"], name
 
     def test_estimate_returns_full_report(self):
         token, name = self._get_token()
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": token,
-            "career_stage": "DEVELOPING",
-            "genre": "POP",
-            "years_active": 7,
-        })
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token,
+                "career_stage": "DEVELOPING",
+                "genre": "POP",
+                "years_active": 7,
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert data["artist_name"] == name
-        assert "lead_id" in data          # lead persisted
+        assert "lead_id" in data  # lead persisted
         assert data["lead_id"] is not None
         estimate = data["estimate"]
         assert estimate["total_likely"] > 0
@@ -405,46 +472,65 @@ class TestEstimateEndpoint:
         assert len(estimate["streams"]) == 6
 
     def test_estimate_without_token_returns_401(self):
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": "fake-token",
-            "career_stage": "DEVELOPING",
-            "genre": "POP",
-            "years_active": 7,
-        })
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": "fake-token",
+                "career_stage": "DEVELOPING",
+                "genre": "POP",
+                "years_active": 7,
+            },
+        )
         assert resp.status_code == 401
 
     def test_invalid_career_stage_returns_422(self):
         token, _ = self._get_token(phone="+15550044444", email="f@test.com")
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": token,
-            "career_stage": "SUPERSTAR",
-            "genre": "POP",
-            "years_active": 5,
-        })
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token,
+                "career_stage": "SUPERSTAR",
+                "genre": "POP",
+                "years_active": 5,
+            },
+        )
         assert resp.status_code == 422
 
     def test_years_active_out_of_range_returns_422(self):
         token, _ = self._get_token(phone="+15550055555", email="g@test.com")
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": token,
-            "career_stage": "EMERGING",
-            "genre": "POP",
-            "years_active": 99,
-        })
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token,
+                "career_stage": "EMERGING",
+                "genre": "POP",
+                "years_active": 99,
+            },
+        )
         assert resp.status_code == 422
 
     def test_established_artist_gets_larger_estimate_than_emerging(self):
         token_e, _ = self._get_token(phone="+15550066666", email="h@test.com", name="Emerging")
         token_s, _ = self._get_token(phone="+15550077777", email="i@test.com", name="Star")
 
-        resp_e = client.post("/widget/estimate", json={
-            "estimate_token": token_e, "career_stage": "EMERGING",
-            "genre": "POP", "years_active": 5,
-        }).json()
-        resp_s = client.post("/widget/estimate", json={
-            "estimate_token": token_s, "career_stage": "ESTABLISHED",
-            "genre": "POP", "years_active": 5,
-        }).json()
+        resp_e = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token_e,
+                "career_stage": "EMERGING",
+                "genre": "POP",
+                "years_active": 5,
+            },
+        ).json()
+        resp_s = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token_s,
+                "career_stage": "ESTABLISHED",
+                "genre": "POP",
+                "years_active": 5,
+            },
+        ).json()
 
         assert resp_s["estimate"]["total_likely"] > resp_e["estimate"]["total_likely"]
 
@@ -452,39 +538,70 @@ class TestEstimateEndpoint:
         token1, _ = self._get_token(phone="+15550088888", email="j@test.com", name="Short")
         token2, _ = self._get_token(phone="+15550099999", email="k@test.com", name="Long")
 
-        r1 = client.post("/widget/estimate", json={
-            "estimate_token": token1, "career_stage": "DEVELOPING",
-            "genre": "OTHER", "years_active": 2,
-        }).json()
-        r2 = client.post("/widget/estimate", json={
-            "estimate_token": token2, "career_stage": "DEVELOPING",
-            "genre": "OTHER", "years_active": 20,
-        }).json()
+        r1 = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token1,
+                "career_stage": "DEVELOPING",
+                "genre": "OTHER",
+                "years_active": 2,
+            },
+        ).json()
+        r2 = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token2,
+                "career_stage": "DEVELOPING",
+                "genre": "OTHER",
+                "years_active": 20,
+            },
+        ).json()
 
         assert r2["estimate"]["total_likely"] > r1["estimate"]["total_likely"]
 
     def test_all_six_streams_present(self):
         token, _ = self._get_token(phone="+15550111111", email="l@test.com")
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": token, "career_stage": "MID_LEVEL",
-            "genre": "ROCK", "years_active": 10,
-        }).json()
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token,
+                "career_stage": "MID_LEVEL",
+                "genre": "ROCK",
+                "years_active": 10,
+            },
+        ).json()
         stream_types = {s["stream_type"] for s in resp["estimate"]["streams"]}
         expected = {
-            "digital_mechanical", "pro_performance", "international",
-            "sync_licensing", "physical_download", "publishing_advance",
+            "digital_mechanical",
+            "pro_performance",
+            "international",
+            "sync_licensing",
+            "physical_download",
+            "publishing_advance",
         }
         assert expected == stream_types
 
     def test_each_stream_has_required_fields(self):
         token, _ = self._get_token(phone="+15550222222", email="m@test.com")
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": token, "career_stage": "DEVELOPING",
-            "genre": "OTHER", "years_active": 5,
-        }).json()
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": token,
+                "career_stage": "DEVELOPING",
+                "genre": "OTHER",
+                "years_active": 5,
+            },
+        ).json()
         for stream in resp["estimate"]["streams"]:
-            for key in ("stream_type", "label", "description",
-                        "conservative", "likely", "optimistic", "methodology"):
+            for key in (
+                "stream_type",
+                "label",
+                "description",
+                "conservative",
+                "likely",
+                "optimistic",
+                "methodology",
+            ):
                 assert key in stream, f"Missing key {key!r} in stream {stream['stream_type']}"
 
 
@@ -492,24 +609,36 @@ class TestEstimateEndpoint:
 # Lead persistence
 # ---------------------------------------------------------------------------
 
+
 class TestLeadPersistence:
     """Every completed estimate must create a WidgetLead DB record."""
 
     def _full_flow(self, phone="+15550300001", email="lead@test.com", name="Lead Artist"):
-        reg = client.post("/widget/register", json={
-            "artist_name": name, "phone": phone, "email": email,
-        }).json()
-        ver = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        }).json()
-        resp = client.post("/widget/estimate", json={
-            "estimate_token": ver["estimate_token"],
-            "career_stage": "MID_LEVEL",
-            "genre": "HIP_HOP",
-            "years_active": 8,
-        })
+        reg = client.post(
+            "/widget/register",
+            json={
+                "artist_name": name,
+                "phone": phone,
+                "email": email,
+            },
+        ).json()
+        ver = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        ).json()
+        resp = client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": ver["estimate_token"],
+                "career_stage": "MID_LEVEL",
+                "genre": "HIP_HOP",
+                "years_active": 8,
+            },
+        )
         return resp.json()
 
     def test_estimate_returns_lead_id(self):
@@ -541,7 +670,7 @@ class TestLeadPersistence:
         db.close()
         # phone_hash must not be the raw phone number
         assert lead.phone_hash != "+15550300003"
-        assert len(lead.phone_hash) == 64   # SHA-256 hex digest
+        assert len(lead.phone_hash) == 64  # SHA-256 hex digest
 
     def test_estimate_values_persisted_correctly(self):
         data = self._full_flow(phone="+15550300004", email="lead4@test.com")
@@ -558,24 +687,36 @@ class TestLeadPersistence:
 # Results email
 # ---------------------------------------------------------------------------
 
+
 class TestResultsEmail:
     """After a successful estimate, the artist should receive a results email."""
 
     def _full_flow(self, phone="+15550400001", email="email@test.com", name="Email Artist"):
-        reg = client.post("/widget/register", json={
-            "artist_name": name, "phone": phone, "email": email,
-        }).json()
-        ver = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        }).json()
-        return client.post("/widget/estimate", json={
-            "estimate_token": ver["estimate_token"],
-            "career_stage": "DEVELOPING",
-            "genre": "POP",
-            "years_active": 5,
-        }).json()
+        reg = client.post(
+            "/widget/register",
+            json={
+                "artist_name": name,
+                "phone": phone,
+                "email": email,
+            },
+        ).json()
+        ver = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        ).json()
+        return client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": ver["estimate_token"],
+                "career_stage": "DEVELOPING",
+                "genre": "POP",
+                "years_active": 5,
+            },
+        ).json()
 
     def test_results_emailed_flag_is_true(self):
         data = self._full_flow()
@@ -593,8 +734,11 @@ class TestResultsEmail:
             "total_optimistic": 12000.0,
             "currency": "USD",
             "streams": [
-                {"stream_type": "digital_mechanical", "label": "Digital Streaming Mechanicals",
-                 "likely": 2000.0},
+                {
+                    "stream_type": "digital_mechanical",
+                    "label": "Digital Streaming Mechanicals",
+                    "likely": 2000.0,
+                },
             ],
             "disclaimer": "This is indicative only.",
         }
@@ -602,7 +746,7 @@ class TestResultsEmail:
         assert result is True
         assert len(svc.sent_emails) == 1
         sent = svc.sent_emails[0]
-        assert "5,000.00" in sent["body"]           # likely amount
+        assert "5,000.00" in sent["body"]  # likely amount
         assert "Test Artist" in sent["body"]
         assert "Digital Streaming Mechanicals" in sent["body"]
         assert "indicative only" in sent["body"]
@@ -614,22 +758,34 @@ class TestResultsEmail:
 # Claim endpoint
 # ---------------------------------------------------------------------------
 
+
 class TestClaimEndpoint:
     def _full_flow(self, phone="+15550500001", email="claim@test.com", name="Claim Artist"):
-        reg = client.post("/widget/register", json={
-            "artist_name": name, "phone": phone, "email": email,
-        }).json()
-        ver = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        }).json()
-        return client.post("/widget/estimate", json={
-            "estimate_token": ver["estimate_token"],
-            "career_stage": "DEVELOPING",
-            "genre": "OTHER",
-            "years_active": 5,
-        }).json()
+        reg = client.post(
+            "/widget/register",
+            json={
+                "artist_name": name,
+                "phone": phone,
+                "email": email,
+            },
+        ).json()
+        ver = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        ).json()
+        return client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": ver["estimate_token"],
+                "career_stage": "DEVELOPING",
+                "genre": "OTHER",
+                "years_active": 5,
+            },
+        ).json()
 
     def test_claim_returns_200(self):
         data = self._full_flow()
@@ -669,22 +825,34 @@ class TestClaimEndpoint:
 # Admin endpoint — GET /widget/leads
 # ---------------------------------------------------------------------------
 
+
 class TestAdminLeadsEndpoint:
     def _full_flow(self, phone="+15550600001", email="admin@test.com", name="Admin Test Artist"):
-        reg = client.post("/widget/register", json={
-            "artist_name": name, "phone": phone, "email": email,
-        }).json()
-        ver = client.post("/widget/verify", json={
-            "session_id": reg["session_id"],
-            "phone_otp": reg["dev_phone_otp"],
-            "email_otp": reg["dev_email_otp"],
-        }).json()
-        return client.post("/widget/estimate", json={
-            "estimate_token": ver["estimate_token"],
-            "career_stage": "DEVELOPING",
-            "genre": "OTHER",
-            "years_active": 5,
-        }).json()
+        reg = client.post(
+            "/widget/register",
+            json={
+                "artist_name": name,
+                "phone": phone,
+                "email": email,
+            },
+        ).json()
+        ver = client.post(
+            "/widget/verify",
+            json={
+                "session_id": reg["session_id"],
+                "phone_otp": reg["dev_phone_otp"],
+                "email_otp": reg["dev_email_otp"],
+            },
+        ).json()
+        return client.post(
+            "/widget/estimate",
+            json={
+                "estimate_token": ver["estimate_token"],
+                "career_stage": "DEVELOPING",
+                "genre": "OTHER",
+                "years_active": 5,
+            },
+        ).json()
 
     def test_no_admin_key_env_returns_503(self, monkeypatch):
         monkeypatch.delenv("WIDGET_ADMIN_KEY", raising=False)
@@ -712,9 +880,17 @@ class TestAdminLeadsEndpoint:
         assert resp.status_code == 200
         lead = resp.json()[0]
         for field in (
-            "id", "artist_name", "email", "career_stage", "genre",
-            "years_active", "territory", "estimate_likely",
-            "results_emailed", "claimed", "created_at",
+            "id",
+            "artist_name",
+            "email",
+            "career_stage",
+            "genre",
+            "years_active",
+            "territory",
+            "estimate_likely",
+            "results_emailed",
+            "claimed",
+            "created_at",
         ):
             assert field in lead, f"Missing field {field!r} in lead response"
 

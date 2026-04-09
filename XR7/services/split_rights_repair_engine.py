@@ -61,8 +61,15 @@ class SplitRightsRepairEngine:
             work_id = str(r.get("work_id") or "")
             pro = str(r.get("pro") or "").strip().upper()
             pub = str(r.get("publisher") or "").strip().upper()
-            societies = sorted({str(s).strip().upper() for s in (r.get("societies") or []) if str(s).strip()})
-            if pro and pub and pro not in {"ASCAP", "BMI", "SESAC", "PRS", "GEMA", "SACEM", "SOCAN", "APRA", "JASRAC"}:
+            societies = sorted(
+                {str(s).strip().upper() for s in (r.get("societies") or []) if str(s).strip()}
+            )
+            if (
+                pro
+                and pub
+                and pro
+                not in {"ASCAP", "BMI", "SESAC", "PRS", "GEMA", "SACEM", "SOCAN", "APRA", "JASRAC"}
+            ):
                 pro_publisher_mismatches.append(
                     {
                         "work_id": work_id,
@@ -94,7 +101,9 @@ class SplitRightsRepairEngine:
         payout_rows: list[dict[str, Any]],
         metadata_repairs: list[dict[str, Any]] | None = None,
     ) -> SplitRepairResult:
-        analysis = self.analyze(artist_id, rights_rows, payout_rows, metadata_repairs=metadata_repairs)
+        analysis = self.analyze(
+            artist_id, rights_rows, payout_rows, metadata_repairs=metadata_repairs
+        )
         mismatches = list(analysis.get("mismatches") or [])
 
         corrections: list[dict[str, Any]] = []

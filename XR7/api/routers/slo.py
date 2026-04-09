@@ -1,4 +1,5 @@
 """SLO dashboards + tenant cost telemetry router."""
+
 from __future__ import annotations
 
 import os
@@ -32,6 +33,7 @@ def _require_admin(x_admin_key: str = Header(...)):
 # ---------------------------------------------------------------------------
 # SLO metrics
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/admin/orgs/{org_id}/slo",
@@ -83,11 +85,7 @@ def update_slo_measurement(
     db: Session = Depends(get_db),
 ):
     """Record a new measurement against an SLO (publish from telemetry collector)."""
-    metric = (
-        db.query(SloMetric)
-        .filter(SloMetric.id == slo_id, SloMetric.org_id == org_id)
-        .first()
-    )
+    metric = db.query(SloMetric).filter(SloMetric.id == slo_id, SloMetric.org_id == org_id).first()
     if not metric:
         raise HTTPException(status_code=404, detail="SLO metric not found")
 
@@ -111,6 +109,7 @@ def update_slo_measurement(
 # Cost telemetry
 # ---------------------------------------------------------------------------
 
+
 @router.post(
     "/admin/orgs/{org_id}/cost-telemetry",
     response_model=TenantCostLedgerSchema,
@@ -124,10 +123,7 @@ def record_period_costs(
 ):
     """Record period-level cost telemetry for a tenant."""
     total = (
-        body.pipeline_cost_usd
-        + body.compute_cost_usd
-        + body.storage_cost_usd
-        + body.llm_cost_usd
+        body.pipeline_cost_usd + body.compute_cost_usd + body.storage_cost_usd + body.llm_cost_usd
     )
     entry = TenantCostLedger(
         org_id=org_id,

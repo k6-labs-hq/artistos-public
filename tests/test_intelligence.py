@@ -100,7 +100,11 @@ class TestIntelligenceEndpoints:
         assert resp.status_code == 200
         data = resp.json()
         assert data["term_count"] >= 2
-        assert data["extraction_method"] in ("plain_text_decode", "pdf_text_extraction", "image_ocr")
+        assert data["extraction_method"] in (
+            "plain_text_decode",
+            "pdf_text_extraction",
+            "image_ocr",
+        )
 
     def test_simulate_expected_payout(self):
         artist_id = _create_artist()
@@ -127,7 +131,9 @@ class TestIntelligenceEndpoints:
             ],
             "received_amount": 5.5,
         }
-        resp = client.post(f"/artists/{artist_id}/intelligence/simulate-expected-payout", json=payload)
+        resp = client.post(
+            f"/artists/{artist_id}/intelligence/simulate-expected-payout", json=payload
+        )
         assert resp.status_code == 200
         data = resp.json()
         # (1000*0.004)*(1-0.1) + (500*0.006) = 3.6 + 3.0 = 6.6
@@ -165,8 +171,18 @@ class TestIntelligenceEndpoints:
 
         payload = {
             "items": [
-                {"id": "a", "estimated_recoverable": 1000, "success_probability": 0.7, "effort_hours": 2},
-                {"id": "b", "estimated_recoverable": 300, "success_probability": 0.9, "effort_hours": 1},
+                {
+                    "id": "a",
+                    "estimated_recoverable": 1000,
+                    "success_probability": 0.7,
+                    "effort_hours": 2,
+                },
+                {
+                    "id": "b",
+                    "estimated_recoverable": 300,
+                    "success_probability": 0.9,
+                    "effort_hours": 1,
+                },
             ],
             "analyst_hourly_cost": 100,
         }
@@ -244,9 +260,21 @@ class TestIntelligenceModelClasses:
 
     def test_recovery_utility_ranker(self):
         ranker = RecoveryUtilityRanker()
-        ranked = ranker.rank([
-            {"id": "high", "estimated_recoverable": 2000, "success_probability": 0.8, "effort_hours": 2},
-            {"id": "low", "estimated_recoverable": 200, "success_probability": 0.7, "effort_hours": 1},
-        ])
+        ranked = ranker.rank(
+            [
+                {
+                    "id": "high",
+                    "estimated_recoverable": 2000,
+                    "success_probability": 0.8,
+                    "effort_hours": 2,
+                },
+                {
+                    "id": "low",
+                    "estimated_recoverable": 200,
+                    "success_probability": 0.7,
+                    "effort_hours": 1,
+                },
+            ]
+        )
         assert ranked[0]["id"] == "high"
         assert ranked[0]["utility_rank"] == 1

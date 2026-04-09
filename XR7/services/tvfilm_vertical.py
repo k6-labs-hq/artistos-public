@@ -60,7 +60,14 @@ STATEMENT_CATALOG = {
     "streaming_residuals": ["netflix", "hulu", "amazon", "apple", "max", "stream", "residual"],
     "foreign_residuals": ["foreign", "society", "territory", "residual"],
     "production_payroll": ["call sheet", "timecard", "overtime", "meal penalty", "kit rental"],
-    "distribution_licensing": ["syndication", "home video", "fast", "avod", "svod", "international"],
+    "distribution_licensing": [
+        "syndication",
+        "home video",
+        "fast",
+        "avod",
+        "svod",
+        "international",
+    ],
     "ugc_social_clips": ["content id", "youtube", "tiktok", "reels", "clip licensing", "viral"],
 }
 
@@ -109,12 +116,54 @@ ANOMALY_RULE_CATALOG: dict[str, list[str]] = {
 }
 
 EVIDENCE_PACKET_TEMPLATES: dict[str, dict[str, Any]] = {
-    "WGA": {"required_sections": ["writer_contract_excerpt", "residual_schedule", "episode_credit_sheet", "payment_delta_table"]},
-    "SAG-AFTRA": {"required_sections": ["performer_contract_excerpt", "reuse_category_table", "market_window_matrix", "payment_delta_table"]},
-    "DGA": {"required_sections": ["directorial_terms", "distribution_window_matrix", "residual_calc_sheet", "payment_delta_table"]},
-    "IATSE": {"required_sections": ["crew_timesheet", "overtime_penalty_grid", "turnaround_penalty_grid", "payment_delta_table"]},
-    "AFM/AFTRA": {"required_sections": ["cue_sheet", "usage_logs", "distribution_usage_table", "payment_delta_table"]},
-    "STUDIO_GENERIC": {"required_sections": ["deal_memo", "platform_distribution_extract", "territory_breakdown", "payment_delta_table"]},
+    "WGA": {
+        "required_sections": [
+            "writer_contract_excerpt",
+            "residual_schedule",
+            "episode_credit_sheet",
+            "payment_delta_table",
+        ]
+    },
+    "SAG-AFTRA": {
+        "required_sections": [
+            "performer_contract_excerpt",
+            "reuse_category_table",
+            "market_window_matrix",
+            "payment_delta_table",
+        ]
+    },
+    "DGA": {
+        "required_sections": [
+            "directorial_terms",
+            "distribution_window_matrix",
+            "residual_calc_sheet",
+            "payment_delta_table",
+        ]
+    },
+    "IATSE": {
+        "required_sections": [
+            "crew_timesheet",
+            "overtime_penalty_grid",
+            "turnaround_penalty_grid",
+            "payment_delta_table",
+        ]
+    },
+    "AFM/AFTRA": {
+        "required_sections": [
+            "cue_sheet",
+            "usage_logs",
+            "distribution_usage_table",
+            "payment_delta_table",
+        ]
+    },
+    "STUDIO_GENERIC": {
+        "required_sections": [
+            "deal_memo",
+            "platform_distribution_extract",
+            "territory_breakdown",
+            "payment_delta_table",
+        ]
+    },
 }
 
 ANOMALY_TO_CATEGORY = {
@@ -195,7 +244,9 @@ def parse_statement_preview(raw_bytes: bytes, *, filename: str) -> ParsePreview:
     warnings: list[str] = []
 
     for row in reader:
-        production_id = _normalize_production_id(str(row.get("production_id") or row.get("production") or row.get("show_id") or ""))
+        production_id = _normalize_production_id(
+            str(row.get("production_id") or row.get("production") or row.get("show_id") or "")
+        )
         role_value = str(row.get("role") or row.get("credited_role") or "").strip() or "Unspecified"
         episode = _normalize_episode(str(row.get("episode") or row.get("episode_number") or ""))
         season = _normalize_season(str(row.get("season") or row.get("season_number") or ""))
@@ -208,7 +259,9 @@ def parse_statement_preview(raw_bytes: bytes, *, filename: str) -> ParsePreview:
 
         normalized_row = {
             "production_id": production_id,
-            "production_title": str(row.get("production_title") or row.get("title") or "Unknown Production").strip(),
+            "production_title": str(
+                row.get("production_title") or row.get("title") or "Unknown Production"
+            ).strip(),
             "season": season,
             "episode": episode,
             "role": role_value,
@@ -236,7 +289,9 @@ def parse_statement_preview(raw_bytes: bytes, *, filename: str) -> ParsePreview:
     if not normalized_rows:
         warnings.append("No parseable rows were found in file.")
     if statement_type == "unknown_tvfilm_statement":
-        warnings.append("Format not confidently recognized; parser used generic TV/Film normalization.")
+        warnings.append(
+            "Format not confidently recognized; parser used generic TV/Film normalization."
+        )
 
     return ParsePreview(
         statement_type=statement_type,
@@ -337,7 +392,11 @@ def portfolio_rollup(rows: list[dict[str, Any]]) -> dict[str, Any]:
 
     sol_risk_ratio = 0.0
     if rows:
-        risky = sum(1 for row in rows if str(row.get("sol_risk") or "").lower() in {"high", "expired", "urgent"})
+        risky = sum(
+            1
+            for row in rows
+            if str(row.get("sol_risk") or "").lower() in {"high", "expired", "urgent"}
+        )
         sol_risk_ratio = round(risky / max(len(rows), 1), 4)
 
     return {
@@ -346,9 +405,18 @@ def portfolio_rollup(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "total_underpayments": round(total_underpayments, 2),
         "total_backend_participation_missing": round(total_backend_missing, 2),
         "sol_risk_ratio": sol_risk_ratio,
-        "role_level_insights": {k: {"total": round(v["total"], 2), "clients": int(v["clients"])} for k, v in by_role.items()},
-        "union_level_insights": {k: {"total": round(v["total"], 2), "clients": int(v["clients"])} for k, v in by_union.items()},
-        "platform_level_insights": {k: {"total": round(v["total"], 2), "clients": int(v["clients"])} for k, v in by_platform.items()},
+        "role_level_insights": {
+            k: {"total": round(v["total"], 2), "clients": int(v["clients"])}
+            for k, v in by_role.items()
+        },
+        "union_level_insights": {
+            k: {"total": round(v["total"], 2), "clients": int(v["clients"])}
+            for k, v in by_union.items()
+        },
+        "platform_level_insights": {
+            k: {"total": round(v["total"], 2), "clients": int(v["clients"])}
+            for k, v in by_platform.items()
+        },
     }
 
 

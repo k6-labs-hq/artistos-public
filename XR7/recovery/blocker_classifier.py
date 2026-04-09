@@ -3,7 +3,9 @@ from __future__ import annotations
 from typing import Any
 
 
-def classify_blockers(claim: dict[str, Any], evidence_strength: float, metadata_ok: bool, contract_terms_ok: bool) -> dict[str, Any]:
+def classify_blockers(
+    claim: dict[str, Any], evidence_strength: float, metadata_ok: bool, contract_terms_ok: bool
+) -> dict[str, Any]:
     """Detect blockers preventing claim acceleration and resolution."""
     blockers = []
     if not metadata_ok:

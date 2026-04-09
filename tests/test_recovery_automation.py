@@ -1,4 +1,5 @@
 """Tests for XR7/recovery/recovery_automation.py (merged from engine file)."""
+
 from __future__ import annotations
 
 import pytest

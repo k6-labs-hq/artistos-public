@@ -16,12 +16,18 @@ class BrandingProfile(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     org_id: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     display_name: Mapped[str] = mapped_column(String, nullable=False, default="XR7")
-    logo_url: Mapped[str] = mapped_column(String, nullable=False, default="https://assets.xr7.ai/logo.svg")
+    logo_url: Mapped[str] = mapped_column(
+        String, nullable=False, default="https://assets.xr7.ai/logo.svg"
+    )
     primary_color: Mapped[str] = mapped_column(String, nullable=False, default="#1f7a5a")
     secondary_color: Mapped[str] = mapped_column(String, nullable=False, default="#2f9c74")
     accent_color: Mapped[str] = mapped_column(String, nullable=False, default="#f59e0b")
-    dashboard_header_text: Mapped[str] = mapped_column(String, nullable=False, default="Artist Recovery Dashboard")
-    dashboard_footer_text: Mapped[str] = mapped_column(String, nullable=False, default="Powered by XR7 Engine")
+    dashboard_header_text: Mapped[str] = mapped_column(
+        String, nullable=False, default="Artist Recovery Dashboard"
+    )
+    dashboard_footer_text: Mapped[str] = mapped_column(
+        String, nullable=False, default="Powered by XR7 Engine"
+    )
     support_email: Mapped[str] = mapped_column(String, nullable=False, default="support@xr7.ai")
     support_phone: Mapped[str] = mapped_column(String, nullable=False, default="+1-800-XR7-HELP")
     legal_disclaimer: Mapped[str] = mapped_column(
@@ -34,7 +40,9 @@ class BrandingProfile(Base):
     )
     custom_domain: Mapped[str | None] = mapped_column(String, nullable=True)
     white_label_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),
@@ -50,7 +58,9 @@ class BrandingHelpArticle(Base):
     title: Mapped[str] = mapped_column(String, nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     category: Mapped[str] = mapped_column(String, nullable=False, default="faq")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime,
         default=lambda: datetime.now(timezone.utc),

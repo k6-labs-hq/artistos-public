@@ -8,6 +8,7 @@ It detects whether the artist is a VIP member and, if so:
 
 Node placement: after `first_claim_fast_track`, before `welcome_summary`.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -37,6 +38,7 @@ async def VipPersonaEnrichmentNode(state: TwoAgentState) -> dict[str, Any]:
     db = SessionLocal()
     try:
         from XR7.services.vip_service import VipService
+
         svc = VipService(db)
         membership = svc.get_membership(artist_id)
 
@@ -51,15 +53,13 @@ async def VipPersonaEnrichmentNode(state: TwoAgentState) -> dict[str, Any]:
 
         # Check if persona needs enrichment
         profile = svc.get_persona(artist_id)
-        needs_enrichment = (
-            profile is None
-            or profile.enrichment_status in ("pending", "failed")
-        )
+        needs_enrichment = profile is None or profile.enrichment_status in ("pending", "failed")
 
         job_id = None
         if needs_enrichment:
             try:
                 from XR7.tasks.vip_tasks import enrich_artist_persona
+
                 task = enrich_artist_persona.delay(artist_id, force=False)
                 job_id = task.id
                 svc.mark_enrichment_in_progress(artist_id, job_id)
@@ -76,6 +76,7 @@ async def VipPersonaEnrichmentNode(state: TwoAgentState) -> dict[str, Any]:
 
         # Build personalised greeting
         from XR7.models.artist import Artist
+
         artist = db.query(Artist).filter(Artist.id == artist_id).first()
         artist_name = artist.name if artist else "Creator"
 
@@ -92,7 +93,9 @@ async def VipPersonaEnrichmentNode(state: TwoAgentState) -> dict[str, Any]:
             if profile.primary_vertical in ("tv_film", "both"):
                 adaptive_mode = "tv_film"
         elif artist and artist.primary_vertical:
-            adaptive_mode = "tv_film" if "film" in (artist.primary_vertical or "").lower() else "music"
+            adaptive_mode = (
+                "tv_film" if "film" in (artist.primary_vertical or "").lower() else "music"
+            )
 
         perks = list(membership.perks_unlocked or [])
         analyst_name = membership.concierge_analyst_name or "XR7 Strategy Team"

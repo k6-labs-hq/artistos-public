@@ -1,4 +1,5 @@
 """Pillar 5 — Cash advance offers backed by predicted earnings."""
+
 from __future__ import annotations
 
 import enum

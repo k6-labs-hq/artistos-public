@@ -100,19 +100,23 @@ def reconstruct_earnings(artist_id: str, body: ReconstructRequest, db: Session =
         )
         .all()
     )
-    rate_report = RateBenchmarker().benchmark(
-        artist_id,
-        [
-            {
-                "event_type": str(e.event_type),
-                "unit_value": float(e.unit_value or 0.0),
-                "quantity": float(e.quantity or 0.0),
-                "territory": e.territory,
-                "metadata_quality_score": metadata_health.get("consistency_score"),
-            }
-            for e in events
-        ],
-    ).to_dict()
+    rate_report = (
+        RateBenchmarker()
+        .benchmark(
+            artist_id,
+            [
+                {
+                    "event_type": str(e.event_type),
+                    "unit_value": float(e.unit_value or 0.0),
+                    "quantity": float(e.quantity or 0.0),
+                    "territory": e.territory,
+                    "metadata_quality_score": metadata_health.get("consistency_score"),
+                }
+                for e in events
+            ],
+        )
+        .to_dict()
+    )
     rate_report["metadata_health_context"] = {
         "consistency_score": metadata_health.get("consistency_score"),
         "identifier_coverage": metadata_health.get("identifier_coverage"),
@@ -176,7 +180,8 @@ def get_post_repair_forecast(artist_id: str, db: Session = Depends(get_db)):
         "forecast_disclaimer": pipeline.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
         "metadata": {
             "stage": pipeline.get("stage"),
-            "forecast_disclaimer": pipeline.get("metadata", {}).get("forecast_disclaimer") or FORECAST_DISCLAIMER,
+            "forecast_disclaimer": pipeline.get("metadata", {}).get("forecast_disclaimer")
+            or FORECAST_DISCLAIMER,
             "model": pipeline.get("metadata", {}).get("model", "PostRepairEarningsForecaster"),
         },
         "branding": branding_metadata(brand),
@@ -207,4 +212,3 @@ def forecast_earnings(artist_id: str, body: ForecastRequest, db: Session = Depen
             historical, horizon_days=body.horizon_days, confidence=body.confidence
         )
     return inject_branding_metadata(db, {"artist_id": artist_id, "forecast": result})
-

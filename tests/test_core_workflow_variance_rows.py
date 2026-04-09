@@ -19,6 +19,7 @@ Recommended future tests:
   - Feed event_to_universal_row output into a mock UniversalEventService.persist_many().
   - Test negative values (edge case for refunds / adjustments).
 """
+
 from __future__ import annotations
 
 import pytest
@@ -32,6 +33,7 @@ from XR7.core.workflow.variance_rows import (
 # ---------------------------------------------------------------------------
 # Domain-boundary guard
 # ---------------------------------------------------------------------------
+
 
 def test_no_db_imports_in_variance_rows():
     import XR7.core.workflow.variance_rows as mod
@@ -47,6 +49,7 @@ def test_no_db_imports_in_variance_rows():
 # EXPECTED_PAYOUT_UPLIFT constant
 # ---------------------------------------------------------------------------
 
+
 def test_uplift_constant_value():
     assert EXPECTED_PAYOUT_UPLIFT == pytest.approx(1.2)
 
@@ -58,6 +61,7 @@ def test_uplift_is_float():
 # ---------------------------------------------------------------------------
 # event_to_variance_row
 # ---------------------------------------------------------------------------
+
 
 class TestEventToVarianceRow:
     def test_returns_dict(self):
@@ -110,6 +114,7 @@ class TestEventToVarianceRow:
 # ---------------------------------------------------------------------------
 # event_to_universal_row
 # ---------------------------------------------------------------------------
+
 
 class TestEventToUniversalRow:
     def _make(self, **overrides):
@@ -199,8 +204,19 @@ class TestEventToUniversalRow:
     def test_all_required_keys_present(self):
         row = self._make()
         required = {
-            "artist_id", "source_type", "source_name", "record_type",
-            "event_type", "amount", "quantity", "unit_value", "currency",
-            "territory", "work_id", "work_title", "isrc", "metadata",
+            "artist_id",
+            "source_type",
+            "source_name",
+            "record_type",
+            "event_type",
+            "amount",
+            "quantity",
+            "unit_value",
+            "currency",
+            "territory",
+            "work_id",
+            "work_title",
+            "isrc",
+            "metadata",
         }
         assert required.issubset(row.keys())

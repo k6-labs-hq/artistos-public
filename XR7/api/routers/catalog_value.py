@@ -5,6 +5,7 @@ POST /artists/{artist_id}/catalog/value-appraisal
 GET  /artists/{artist_id}/catalog/value-appraisal/result
 GET  /artists/{artist_id}/catalog/value-appraisal/history
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -72,6 +73,7 @@ def get_appraisal_history(
     get_artist_or_404(artist_id, db)
     # Historical appraisals stored in the immutable ledger
     from XR7.recovery.immutable_ledger import ImmutableLedgerService
+
     ledger = ImmutableLedgerService(db)
     entries = ledger.list_entries(artist_id)
     history = [
@@ -83,8 +85,11 @@ def get_appraisal_history(
         for e in entries
         if e.entry_type == "catalog_value_appraisal"
     ]
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "history": history,
-        "count": len(history),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "history": history,
+            "count": len(history),
+        },
+    )

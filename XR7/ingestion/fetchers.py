@@ -40,7 +40,9 @@ class BaseDataFetcher:
             return []
         try:
             with httpx.Client(timeout=8.0) as client:
-                resp = client.get(f"{base}/{path.lstrip('/')}", headers={"Authorization": f"Bearer {api_key}"})
+                resp = client.get(
+                    f"{base}/{path.lstrip('/')}", headers={"Authorization": f"Bearer {api_key}"}
+                )
             resp.raise_for_status()
             payload = resp.json()
             if isinstance(payload, list):
@@ -51,7 +53,9 @@ class BaseDataFetcher:
             return []
         return []
 
-    def pull_historical_statements(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> list[dict[str, Any]]:
+    def pull_historical_statements(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> list[dict[str, Any]]:
         return [
             {
                 "artist_id": artist_id,
@@ -68,8 +72,17 @@ class BaseDataFetcher:
     def pull_registrations(self, artist_id: str) -> list[dict[str, Any]]:
         return [{"artist_id": artist_id, "source": self.source_name, "registration_id": "pending"}]
 
-    def pull_usage_data(self, artist_id: str, since: datetime | None = None) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": self.source_name, "usage_count": 0, "since": since.isoformat() if since else None}]
+    def pull_usage_data(
+        self, artist_id: str, since: datetime | None = None
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "artist_id": artist_id,
+                "source": self.source_name,
+                "usage_count": 0,
+                "since": since.isoformat() if since else None,
+            }
+        ]
 
     def normalize_to_universal_schema(
         self,
@@ -108,7 +121,9 @@ class BaseDataFetcher:
             )
         return events
 
-    def fetch_all(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> FetchBundle:
+    def fetch_all(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> FetchBundle:
         historical = self.pull_historical_statements(artist_id, start=start, end=end)
         catalog = self.pull_catalog_metadata(artist_id)
         registrations = self.pull_registrations(artist_id)
@@ -129,7 +144,9 @@ class DistributorFetcher(BaseDataFetcher):
     api_base_env = "DISTRIBUTOR_API_BASE_URL"
     api_key_env = "DISTRIBUTOR_API_KEY"
 
-    def pull_historical_statements(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> list[dict[str, Any]]:
+    def pull_historical_statements(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> list[dict[str, Any]]:
         live = self._fetch_json(f"artists/{artist_id}/statements")
         if live:
             return live
@@ -148,13 +165,36 @@ class DistributorFetcher(BaseDataFetcher):
         live = self._fetch_json(f"artists/{artist_id}/catalog")
         if live:
             return live
-        return [{"artist_id": artist_id, "source": "distrokid", "work_title": "Demo Track", "isrc": "USXXX1234567"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "distrokid",
+                "work_title": "Demo Track",
+                "isrc": "USXXX1234567",
+            }
+        ]
 
     def pull_registrations(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "distributor", "registration_id": "dist-reg-1", "work_id": "work-1"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "distributor",
+                "registration_id": "dist-reg-1",
+                "work_id": "work-1",
+            }
+        ]
 
-    def pull_usage_data(self, artist_id: str, since: datetime | None = None) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "distributor", "usage_count": 40432, "since": since.isoformat() if since else None}]
+    def pull_usage_data(
+        self, artist_id: str, since: datetime | None = None
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "distributor",
+                "usage_count": 40432,
+                "since": since.isoformat() if since else None,
+            }
+        ]
 
 
 class PROFetcher(BaseDataFetcher):
@@ -163,20 +203,53 @@ class PROFetcher(BaseDataFetcher):
     api_base_env = "PRO_API_BASE_URL"
     api_key_env = "PRO_API_KEY"
 
-    def pull_historical_statements(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> list[dict[str, Any]]:
+    def pull_historical_statements(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> list[dict[str, Any]]:
         live = self._fetch_json(f"artists/{artist_id}/royalties")
         if live:
             return live
-        return [{"artist_id": artist_id, "source": "ascap", "period": "2024-Q1", "amount": 88.10, "quantity": 1200}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "ascap",
+                "period": "2024-Q1",
+                "amount": 88.10,
+                "quantity": 1200,
+            }
+        ]
 
     def pull_catalog_metadata(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "pro", "work_title": "Demo Track", "ipi": "00012345678"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "pro",
+                "work_title": "Demo Track",
+                "ipi": "00012345678",
+            }
+        ]
 
     def pull_registrations(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "pro", "registration_id": "iswc:T-000.000.001-0", "work_id": "work-1"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "pro",
+                "registration_id": "iswc:T-000.000.001-0",
+                "work_id": "work-1",
+            }
+        ]
 
-    def pull_usage_data(self, artist_id: str, since: datetime | None = None) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "pro", "usage_count": 1200, "since": since.isoformat() if since else None}]
+    def pull_usage_data(
+        self, artist_id: str, since: datetime | None = None
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "pro",
+                "usage_count": 1200,
+                "since": since.isoformat() if since else None,
+            }
+        ]
 
 
 class MLCFetcher(BaseDataFetcher):
@@ -185,20 +258,53 @@ class MLCFetcher(BaseDataFetcher):
     api_base_env = "MLC_API_BASE_URL"
     api_key_env = "MLC_API_KEY"
 
-    def pull_historical_statements(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> list[dict[str, Any]]:
+    def pull_historical_statements(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> list[dict[str, Any]]:
         live = self._fetch_json(f"artists/{artist_id}/mechanicals")
         if live:
             return live
-        return [{"artist_id": artist_id, "source": "mlc", "period": "2024-01", "amount": 44.91, "quantity": 6400}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "mlc",
+                "period": "2024-01",
+                "amount": 44.91,
+                "quantity": 6400,
+            }
+        ]
 
     def pull_catalog_metadata(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "mlc", "work_title": "Mechanical Demo", "isrc": "USYYY1234567"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "mlc",
+                "work_title": "Mechanical Demo",
+                "isrc": "USYYY1234567",
+            }
+        ]
 
     def pull_registrations(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "mlc", "registration_id": "mlc-reg-1", "work_id": "work-2"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "mlc",
+                "registration_id": "mlc-reg-1",
+                "work_id": "work-2",
+            }
+        ]
 
-    def pull_usage_data(self, artist_id: str, since: datetime | None = None) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "mlc", "usage_count": 6400, "since": since.isoformat() if since else None}]
+    def pull_usage_data(
+        self, artist_id: str, since: datetime | None = None
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "mlc",
+                "usage_count": 6400,
+                "since": since.isoformat() if since else None,
+            }
+        ]
 
 
 class YouTubeContentIDFetcher(BaseDataFetcher):
@@ -207,20 +313,53 @@ class YouTubeContentIDFetcher(BaseDataFetcher):
     api_base_env = "YOUTUBE_CONTENT_ID_API_BASE_URL"
     api_key_env = "YOUTUBE_API_KEY"
 
-    def pull_historical_statements(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> list[dict[str, Any]]:
+    def pull_historical_statements(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> list[dict[str, Any]]:
         live = self._fetch_json(f"artists/{artist_id}/claims")
         if live:
             return live
-        return [{"artist_id": artist_id, "source": "youtube_content_id", "period": "2024-01", "amount": 31.22, "quantity": 8700}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "youtube_content_id",
+                "period": "2024-01",
+                "amount": 31.22,
+                "quantity": 8700,
+            }
+        ]
 
     def pull_catalog_metadata(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "youtube", "work_title": "UGC Demo", "asset_id": "yt-asset-1"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "youtube",
+                "work_title": "UGC Demo",
+                "asset_id": "yt-asset-1",
+            }
+        ]
 
     def pull_registrations(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "youtube", "registration_id": "content-id-asset-1", "work_id": "work-3"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "youtube",
+                "registration_id": "content-id-asset-1",
+                "work_id": "work-3",
+            }
+        ]
 
-    def pull_usage_data(self, artist_id: str, since: datetime | None = None) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "platform", "usage_count": 8700, "since": since.isoformat() if since else None}]
+    def pull_usage_data(
+        self, artist_id: str, since: datetime | None = None
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "platform",
+                "usage_count": 8700,
+                "since": since.isoformat() if since else None,
+            }
+        ]
 
 
 class SocialPlatformUsageFetcher(BaseDataFetcher):
@@ -229,20 +368,53 @@ class SocialPlatformUsageFetcher(BaseDataFetcher):
     api_base_env = "SOCIAL_PLATFORM_API_BASE_URL"
     api_key_env = "SOCIAL_PLATFORM_API_KEY"
 
-    def pull_historical_statements(self, artist_id: str, start: datetime | None = None, end: datetime | None = None) -> list[dict[str, Any]]:
+    def pull_historical_statements(
+        self, artist_id: str, start: datetime | None = None, end: datetime | None = None
+    ) -> list[dict[str, Any]]:
         live = self._fetch_json(f"artists/{artist_id}/social/earnings")
         if live:
             return live
-        return [{"artist_id": artist_id, "source": "tiktok", "period": "2024-01", "amount": 11.02, "quantity": 5300}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "tiktok",
+                "period": "2024-01",
+                "amount": 11.02,
+                "quantity": 5300,
+            }
+        ]
 
     def pull_catalog_metadata(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "social", "work_title": "Shortform Snippet", "clip_id": "clip-1"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "social",
+                "work_title": "Shortform Snippet",
+                "clip_id": "clip-1",
+            }
+        ]
 
     def pull_registrations(self, artist_id: str) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "social", "registration_id": "social-reg-1", "work_id": "work-4"}]
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "social",
+                "registration_id": "social-reg-1",
+                "work_id": "work-4",
+            }
+        ]
 
-    def pull_usage_data(self, artist_id: str, since: datetime | None = None) -> list[dict[str, Any]]:
-        return [{"artist_id": artist_id, "source": "platform", "usage_count": 5300, "since": since.isoformat() if since else None}]
+    def pull_usage_data(
+        self, artist_id: str, since: datetime | None = None
+    ) -> list[dict[str, Any]]:
+        return [
+            {
+                "artist_id": artist_id,
+                "source": "platform",
+                "usage_count": 5300,
+                "since": since.isoformat() if since else None,
+            }
+        ]
 
 
 def get_fetcher(integration: str) -> BaseDataFetcher:

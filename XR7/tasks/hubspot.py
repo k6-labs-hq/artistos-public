@@ -56,9 +56,13 @@ def _collect_artist_context(db, artist_id: str) -> dict[str, Any]:
     claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
     payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
     events = db.query(Event).filter(Event.artist_id == artist_id).all()
-    oauth_links = db.query(ConnectorAccountLink).filter(ConnectorAccountLink.artist_id == artist_id).all()
+    oauth_links = (
+        db.query(ConnectorAccountLink).filter(ConnectorAccountLink.artist_id == artist_id).all()
+    )
 
-    signal_maps = [_safe_json(s.ingestion_metadata_json) for s in statements if s.ingestion_metadata_json]
+    signal_maps = [
+        _safe_json(s.ingestion_metadata_json) for s in statements if s.ingestion_metadata_json
+    ]
 
     distributors: list[str] = []
     pros: list[str] = []
@@ -104,20 +108,35 @@ def _collect_artist_context(db, artist_id: str) -> dict[str, Any]:
             oauth_sources.append(provider)
         meta = _safe_json(link.profile_metadata_json)
         if not oauth_profile_image:
-            oauth_profile_image = _first_non_empty([meta.get("picture"), meta.get("profile_image"), meta.get("avatar_url")])
+            oauth_profile_image = _first_non_empty(
+                [meta.get("picture"), meta.get("profile_image"), meta.get("avatar_url")]
+            )
         if not oauth_name:
-            oauth_name = _first_non_empty([meta.get("name"), meta.get("display_name"), link.display_name])
+            oauth_name = _first_non_empty(
+                [meta.get("name"), meta.get("display_name"), link.display_name]
+            )
         if not oauth_email:
             oauth_email = _first_non_empty([meta.get("email")])
 
     total_estimated = sum(float(a.estimated_recoverable or 0.0) for a in anomalies)
-    total_recovered = sum(float(c.recovered_amount or 0.0) for c in claims if str(c.status) in {"PAID", "CLOSED"})
+    total_recovered = sum(
+        float(c.recovered_amount or 0.0) for c in claims if str(c.status) in {"PAID", "CLOSED"}
+    )
     claim_count = len(claims)
     anomaly_count = len(anomalies)
     active_claim_count = sum(1 for c in claims if str(c.status) not in {"PAID", "CLOSED"})
 
     # Lightweight catalog health proxy when no dedicated model output is persisted.
-    catalog_health_score = round(max(0.0, min(100.0, 50.0 + (5.0 * min(10, len(events) / 100.0)) - (3.0 * min(10, anomaly_count / 10.0)))), 2)
+    catalog_health_score = round(
+        max(
+            0.0,
+            min(
+                100.0,
+                50.0 + (5.0 * min(10, len(events) / 100.0)) - (3.0 * min(10, anomaly_count / 10.0)),
+            ),
+        ),
+        2,
+    )
 
     return {
         "artist": artist,
@@ -144,7 +163,9 @@ def _collect_artist_context(db, artist_id: str) -> dict[str, Any]:
     }
 
 
-def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[str, Any] | None = None) -> dict:
+def _sync_artist_bundle(
+    artist_id: str, event: str, *, statement_signals: dict[str, Any] | None = None
+) -> dict:
     db = SessionLocal()
     try:
         context = _collect_artist_context(db, artist_id)
@@ -175,16 +196,24 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
         if _is_placeholder_email(merged_email):
             merged_email = _placeholder_email(artist.id)
 
-        if _is_placeholder_email(getattr(artist, "email", None)) and merged_email and not _is_placeholder_email(merged_email):
+        if (
+            _is_placeholder_email(getattr(artist, "email", None))
+            and merged_email
+            and not _is_placeholder_email(merged_email)
+        ):
             artist.email = merged_email
             db.add(artist)
             db.commit()
 
-        pro_writer_id = _first_non_empty([statement_signals.get("pro_writer_id"), context.get("pro_writer_id")])
-        distributor_account_id = _first_non_empty([
-            statement_signals.get("distributor_account_id"),
-            context.get("distributor_account_id"),
-        ])
+        pro_writer_id = _first_non_empty(
+            [statement_signals.get("pro_writer_id"), context.get("pro_writer_id")]
+        )
+        distributor_account_id = _first_non_empty(
+            [
+                statement_signals.get("distributor_account_id"),
+                context.get("distributor_account_id"),
+            ]
+        )
 
         distributors = list(context.get("distributors") or [])
         for d in list(statement_signals.get("distributor_list") or []):
@@ -220,7 +249,9 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
                 "xr7_profile_image_url": context.get("oauth_profile_image"),
                 "xr7_is_founder": bool(getattr(artist, "is_founder", False)),
                 "xr7_founder_slot": getattr(artist, "founder_slot_number", None),
-                "xr7_contingency_fee": float(getattr(artist, "contingency_fee_percent", 0.0) or 0.0),
+                "xr7_contingency_fee": float(
+                    getattr(artist, "contingency_fee_percent", 0.0) or 0.0
+                ),
             },
         )
 
@@ -233,7 +264,9 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
                 "xr7_pro_affiliations": ", ".join(pros[:50]),
                 "xr7_is_founder": bool(getattr(artist, "is_founder", False)),
                 "xr7_founder_slot": getattr(artist, "founder_slot_number", None),
-                "xr7_contingency_fee": float(getattr(artist, "contingency_fee_percent", 0.0) or 0.0),
+                "xr7_contingency_fee": float(
+                    getattr(artist, "contingency_fee_percent", 0.0) or 0.0
+                ),
             },
         )
 
@@ -290,7 +323,9 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
             if artist_company_id and deal_id:
                 client.link_company_to_deal(company_id=str(artist_company_id), deal_id=str(deal_id))
         except Exception:  # noqa: BLE001
-            logger.exception("HubSpot association linking failed", extra={"artist_id": artist.id, "event": event})
+            logger.exception(
+                "HubSpot association linking failed", extra={"artist_id": artist.id, "event": event}
+            )
 
         ok = bool(contact.get("ok") or artist_company.get("ok") or deal.get("ok"))
         if not ok:
@@ -317,13 +352,29 @@ def _sync_artist_bundle(artist_id: str, event: str, *, statement_signals: dict[s
         db.close()
 
 
-@celery_app.task(name="xr7.hubspot.sync_artist", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 4})
-def hubspot_sync_artist(self, artist_id: str, event: str = "artist_created") -> dict:  # noqa: ANN001
+@celery_app.task(
+    name="xr7.hubspot.sync_artist",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 4},
+)
+def hubspot_sync_artist(
+    self, artist_id: str, event: str = "artist_created"
+) -> dict:  # noqa: ANN001
     return _sync_artist_bundle(artist_id, event)
 
 
-@celery_app.task(name="xr7.hubspot.sync_widget_lead", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 4})
-def hubspot_sync_widget_lead(self, lead_id: str, event: str = "widget_estimate") -> dict:  # noqa: ANN001
+@celery_app.task(
+    name="xr7.hubspot.sync_widget_lead",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 4},
+)
+def hubspot_sync_widget_lead(
+    self, lead_id: str, event: str = "widget_estimate"
+) -> dict:  # noqa: ANN001
     db = SessionLocal()
     try:
         lead = db.query(WidgetLead).filter(WidgetLead.id == lead_id).first()
@@ -367,14 +418,25 @@ def hubspot_sync_widget_lead(self, lead_id: str, event: str = "widget_estimate")
             try:
                 hubspot_sync_artist.delay(artist.id, event="artist_email_verified_from_widget")
             except Exception:  # noqa: BLE001
-                logger.exception("Failed to enqueue HubSpot artist email enrichment sync", extra={"artist_id": artist.id})
+                logger.exception(
+                    "Failed to enqueue HubSpot artist email enrichment sync",
+                    extra={"artist_id": artist.id},
+                )
         return {"ok": bool(contact.get("ok") or deal.get("ok")), "contact": contact, "deal": deal}
     finally:
         db.close()
 
 
-@celery_app.task(name="xr7.hubspot.sync_widget_registration", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 4})
-def hubspot_sync_widget_registration(self, *, artist_name: str, email: str, session_id: str) -> dict:  # noqa: ANN001
+@celery_app.task(
+    name="xr7.hubspot.sync_widget_registration",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 4},
+)
+def hubspot_sync_widget_registration(
+    self, *, artist_name: str, email: str, session_id: str
+) -> dict:  # noqa: ANN001
     client = HubSpotClient()
     contact = client.upsert_contact(
         email=email,
@@ -399,12 +461,26 @@ def hubspot_sync_widget_registration(self, *, artist_name: str, email: str, sess
     return {"ok": bool(contact.get("ok") or deal.get("ok")), "contact": contact, "deal": deal}
 
 
-@celery_app.task(name="xr7.hubspot.sync_recovery_update", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 4})
-def hubspot_sync_recovery_update(self, artist_id: str, event: str = "recovery_update") -> dict:  # noqa: ANN001
+@celery_app.task(
+    name="xr7.hubspot.sync_recovery_update",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 4},
+)
+def hubspot_sync_recovery_update(
+    self, artist_id: str, event: str = "recovery_update"
+) -> dict:  # noqa: ANN001
     return _sync_artist_bundle(artist_id, event)
 
 
-@celery_app.task(name="xr7.hubspot.sync_statement_ingestion", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 4})
+@celery_app.task(
+    name="xr7.hubspot.sync_statement_ingestion",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 4},
+)
 def hubspot_sync_statement_ingestion(
     self,
     artist_id: str,
@@ -416,7 +492,11 @@ def hubspot_sync_statement_ingestion(
     if statement_id and not signals:
         db = SessionLocal()
         try:
-            st = db.query(Statement).filter(Statement.id == statement_id, Statement.artist_id == artist_id).first()
+            st = (
+                db.query(Statement)
+                .filter(Statement.id == statement_id, Statement.artist_id == artist_id)
+                .first()
+            )
             if st:
                 signals = _safe_json(st.ingestion_metadata_json)
         finally:

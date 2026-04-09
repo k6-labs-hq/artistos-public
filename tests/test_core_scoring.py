@@ -27,6 +27,7 @@ Recommended future tests:
   - Fuzzing normalize_text() with unicode, control characters, emojis.
   - Verify metadata_triangulation_score against human-rated test pairs.
 """
+
 from __future__ import annotations
 
 import pytest
@@ -42,6 +43,7 @@ from XR7.core.scoring.metadata_match import (
 # ===========================================================================
 # confidence_band
 # ===========================================================================
+
 
 class TestConfidenceBandDomainBoundary:
     def test_no_db_imports(self):
@@ -115,6 +117,7 @@ class TestThresholdConstants:
 # ===========================================================================
 # metadata_match
 # ===========================================================================
+
 
 class TestMetadataMatchDomainBoundary:
     def test_no_db_imports(self):
@@ -210,18 +213,25 @@ class TestMetadataTriangulationScore:
 
     def test_zero_match_is_near_zero(self):
         score = metadata_triangulation_score(
-            title_a="Alpha", title_b="Zygote",
-            artist_a="Artist A", artist_b="Artist Z",
-            duration_ms_a=60000, duration_ms_b=600000,
-            id_match=False, context_match=False,
+            title_a="Alpha",
+            title_b="Zygote",
+            artist_a="Artist A",
+            artist_b="Artist Z",
+            duration_ms_a=60000,
+            duration_ms_b=600000,
+            id_match=False,
+            context_match=False,
         )
         assert score < 0.30
 
     def test_id_match_true_boosts_score(self):
         base = dict(
-            title_a="x", title_b="y",
-            artist_a="a", artist_b="b",
-            duration_ms_a=None, duration_ms_b=None,
+            title_a="x",
+            title_b="y",
+            artist_a="a",
+            artist_b="b",
+            duration_ms_a=None,
+            duration_ms_b=None,
             context_match=False,
         )
         without_id = metadata_triangulation_score(**base, id_match=False)
@@ -230,10 +240,14 @@ class TestMetadataTriangulationScore:
 
     def test_none_durations_use_neutral_weight(self):
         score_no_dur = metadata_triangulation_score(
-            title_a="Work A", title_b="Work A",
-            artist_a="Art A", artist_b="Art A",
-            duration_ms_a=None, duration_ms_b=None,
-            id_match=False, context_match=False,
+            title_a="Work A",
+            title_b="Work A",
+            artist_a="Art A",
+            artist_b="Art A",
+            duration_ms_a=None,
+            duration_ms_b=None,
+            id_match=False,
+            context_match=False,
         )
         # With matching title+artist but no duration (neutral 0.5 weight),
         # score should still be meaningful (>0.5)
@@ -241,16 +255,24 @@ class TestMetadataTriangulationScore:
 
     def test_zero_duration_treated_as_absent(self):
         score_zero = metadata_triangulation_score(
-            title_a="Work A", title_b="Work A",
-            artist_a="Art A", artist_b="Art A",
-            duration_ms_a=0, duration_ms_b=60000,
-            id_match=False, context_match=False,
+            title_a="Work A",
+            title_b="Work A",
+            artist_a="Art A",
+            artist_b="Art A",
+            duration_ms_a=0,
+            duration_ms_b=60000,
+            id_match=False,
+            context_match=False,
         )
         score_none = metadata_triangulation_score(
-            title_a="Work A", title_b="Work A",
-            artist_a="Art A", artist_b="Art A",
-            duration_ms_a=None, duration_ms_b=60000,
-            id_match=False, context_match=False,
+            title_a="Work A",
+            title_b="Work A",
+            artist_a="Art A",
+            artist_b="Art A",
+            duration_ms_a=None,
+            duration_ms_b=60000,
+            id_match=False,
+            context_match=False,
         )
         # Both should use neutral duration weight
         assert score_zero == pytest.approx(score_none)
@@ -258,34 +280,50 @@ class TestMetadataTriangulationScore:
     def test_output_clamped_to_0_1(self):
         for _ in range(10):
             score = metadata_triangulation_score(
-                title_a="T", title_b="T",
-                artist_a="A", artist_b="A",
-                duration_ms_a=120000, duration_ms_b=120000,
-                id_match=True, context_match=True,
+                title_a="T",
+                title_b="T",
+                artist_a="A",
+                artist_b="A",
+                duration_ms_a=120000,
+                duration_ms_b=120000,
+                id_match=True,
+                context_match=True,
             )
             assert 0.0 <= score <= 1.0
 
     def test_returns_float(self):
         score = metadata_triangulation_score(
-            title_a="A", title_b="B",
-            artist_a="x", artist_b="y",
-            duration_ms_a=None, duration_ms_b=None,
-            id_match=False, context_match=False,
+            title_a="A",
+            title_b="B",
+            artist_a="x",
+            artist_b="y",
+            duration_ms_a=None,
+            duration_ms_b=None,
+            id_match=False,
+            context_match=False,
         )
         assert isinstance(score, float)
 
     def test_close_duration_scores_high(self):
         close = metadata_triangulation_score(
-            title_a="T", title_b="T",
-            artist_a="A", artist_b="A",
-            duration_ms_a=180000, duration_ms_b=180100,  # 100ms diff
-            id_match=False, context_match=False,
+            title_a="T",
+            title_b="T",
+            artist_a="A",
+            artist_b="A",
+            duration_ms_a=180000,
+            duration_ms_b=180100,  # 100ms diff
+            id_match=False,
+            context_match=False,
         )
         far = metadata_triangulation_score(
-            title_a="T", title_b="T",
-            artist_a="A", artist_b="A",
-            duration_ms_a=180000, duration_ms_b=360000,  # 3min diff
-            id_match=False, context_match=False,
+            title_a="T",
+            title_b="T",
+            artist_a="A",
+            artist_b="A",
+            duration_ms_a=180000,
+            duration_ms_b=360000,  # 3min diff
+            id_match=False,
+            context_match=False,
         )
         assert close > far
 
@@ -336,12 +374,18 @@ class TestConfidenceScore:
     def test_fingerprint_weight_exceeds_history(self):
         """Fingerprint has weight 1.8 vs history 0.8; increasing fingerprint should help more."""
         fp_boosted = confidence_score(
-            metadata_score=0.5, fingerprint_score=0.8,
-            history_score=0.3, contract_score=0.3, conflict_penalty=0.0,
+            metadata_score=0.5,
+            fingerprint_score=0.8,
+            history_score=0.3,
+            contract_score=0.3,
+            conflict_penalty=0.0,
         )
         hist_boosted = confidence_score(
-            metadata_score=0.5, fingerprint_score=0.3,
-            history_score=0.8, contract_score=0.3, conflict_penalty=0.0,
+            metadata_score=0.5,
+            fingerprint_score=0.3,
+            history_score=0.8,
+            contract_score=0.3,
+            conflict_penalty=0.0,
         )
         assert fp_boosted > hist_boosted
 

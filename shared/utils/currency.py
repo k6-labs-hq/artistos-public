@@ -9,9 +9,25 @@ from __future__ import annotations
 # ISO 4217 codes that the platform currently handles.
 _KNOWN_CURRENCIES: frozenset[str] = frozenset(
     {
-        "USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF",
-        "SEK", "NOK", "DKK", "NZD", "HKD", "SGD", "MXN",
-        "BRL", "ZAR", "INR", "KRW", "CNY",
+        "USD",
+        "EUR",
+        "GBP",
+        "CAD",
+        "AUD",
+        "JPY",
+        "CHF",
+        "SEK",
+        "NOK",
+        "DKK",
+        "NZD",
+        "HKD",
+        "SGD",
+        "MXN",
+        "BRL",
+        "ZAR",
+        "INR",
+        "KRW",
+        "CNY",
     }
 )
 

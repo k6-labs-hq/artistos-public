@@ -1,4 +1,5 @@
 """Connector replay service — HMAC verification + event replay."""
+
 from __future__ import annotations
 
 import hashlib

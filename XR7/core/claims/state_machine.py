@@ -4,6 +4,7 @@ Claim state-machine rules and category mappings.
 Pure module: imports only from XR7.models.claim (an enum, no DB connection).
 Safe to call from n8n, LangGraph nodes, or unit tests without a session.
 """
+
 from __future__ import annotations
 
 from XR7.models.claim import ClaimStatus
@@ -17,12 +18,12 @@ TRANSITIONS: dict[ClaimStatus, ClaimStatus] = {
     ClaimStatus.IDENTIFIED: ClaimStatus.PREPARED,
     # SUBMITTED is kept as an explicit intermediate state for compatibility
     # with existing dashboard and recovery workflows.
-    ClaimStatus.PREPARED:  ClaimStatus.SUBMITTED,
+    ClaimStatus.PREPARED: ClaimStatus.SUBMITTED,
     ClaimStatus.SUBMITTED: ClaimStatus.FILED,
-    ClaimStatus.FILED:     ClaimStatus.IN_REVIEW,
+    ClaimStatus.FILED: ClaimStatus.IN_REVIEW,
     ClaimStatus.IN_REVIEW: ClaimStatus.ACCEPTED,
-    ClaimStatus.ACCEPTED:  ClaimStatus.PAID,
-    ClaimStatus.PAID:      ClaimStatus.CLOSED,
+    ClaimStatus.ACCEPTED: ClaimStatus.PAID,
+    ClaimStatus.PAID: ClaimStatus.CLOSED,
 }
 
 # ---------------------------------------------------------------------------
@@ -30,19 +31,20 @@ TRANSITIONS: dict[ClaimStatus, ClaimStatus] = {
 # ---------------------------------------------------------------------------
 
 _CATEGORY_TO_CONTRACT_TYPE: dict[str, str] = {
-    "ROYALTY":  "LABEL",
-    "TOURING":  "TOURING",
-    "MERCH":    "MERCH",
-    "SYNC":     "SYNC",
+    "ROYALTY": "LABEL",
+    "TOURING": "TOURING",
+    "MERCH": "MERCH",
+    "SYNC": "SYNC",
     "PLATFORM": "LABEL",
-    "BRAND":    "BRAND",
-    "GRANT":    "GRANT",
+    "BRAND": "BRAND",
+    "GRANT": "GRANT",
 }
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def next_status(current: ClaimStatus) -> ClaimStatus:
     """Return the next legal status for *current*, or raise ``ValueError``."""

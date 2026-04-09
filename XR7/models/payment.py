@@ -28,7 +28,9 @@ class Payment(Base):
     period_end: Mapped[date | None] = mapped_column(Date, nullable=True)
     source: Mapped[str | None] = mapped_column(String, nullable=True)
     reference_id: Mapped[str | None] = mapped_column(String, nullable=True)
-    received_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class PaymentSchema(BaseModel):

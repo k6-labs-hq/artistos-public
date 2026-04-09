@@ -5,6 +5,7 @@ POST /artists/{artist_id}/profile/dna
 GET  /artists/{artist_id}/profile/dna/result
 GET  /artists/{artist_id}/profile/dna/insights
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -57,9 +58,12 @@ def get_dna_insights(
     get_artist_or_404(artist_id, db)
     profiler = RoyaltyDNAProfile(db)
     result = profiler.generate(artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "insights": result.get("insights", []),
-        "territory_gaps": result.get("territory_gaps", []),
-        "chain_of_custody_hash": result.get("chain_of_custody_hash"),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "insights": result.get("insights", []),
+            "territory_gaps": result.get("territory_gaps", []),
+            "chain_of_custody_hash": result.get("chain_of_custody_hash"),
+        },
+    )

@@ -7,6 +7,7 @@ Provides:
   - assert_ai_allowed(org_id, db) — raises HTTP 451 if LLM cross-region
     processing is forbidden
 """
+
 from __future__ import annotations
 
 from fastapi import HTTPException

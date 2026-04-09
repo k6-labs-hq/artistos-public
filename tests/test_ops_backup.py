@@ -1,6 +1,7 @@
 """
 OPS-401 — Tests for the backup/restore validation task and its admin endpoints.
 """
+
 from __future__ import annotations
 
 from fastapi.testclient import TestClient
@@ -16,6 +17,7 @@ client = TestClient(app)
 # ---------------------------------------------------------------------------
 # Unit tests — task logic
 # ---------------------------------------------------------------------------
+
 
 def test_run_backup_restore_validation_returns_expected_shape():
     db = TestSession()
@@ -82,6 +84,7 @@ def test_run_backup_restore_validation_multiple_runs_each_log_entry():
 # ---------------------------------------------------------------------------
 # HTTP endpoint tests — admin console
 # ---------------------------------------------------------------------------
+
 
 def test_backup_report_blocks_missing_key():
     resp = client.get("/admin/ops/backup-report")

@@ -20,7 +20,13 @@ from XR7.tasks.xr7_job_schemas import (
 )
 
 
-@celery_app.task(name="xr7.xr7_pipeline.api_ingestion", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 5})
+@celery_app.task(
+    name="xr7.xr7_pipeline.api_ingestion",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 5},
+)
 def api_ingestion_task(self, payload: dict) -> dict:  # noqa: ANN001
     body = APIIngestionJobPayload.model_validate(payload)
     db = SessionLocal()
@@ -38,7 +44,13 @@ def api_ingestion_task(self, payload: dict) -> dict:  # noqa: ANN001
         db.close()
 
 
-@celery_app.task(name="xr7.xr7_pipeline.file_ingestion", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+@celery_app.task(
+    name="xr7.xr7_pipeline.file_ingestion",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
 def file_ingestion_task(self, payload: dict) -> dict:  # noqa: ANN001
     body = FileIngestionJobPayload.model_validate(payload)
     db = SessionLocal()
@@ -57,7 +69,13 @@ def file_ingestion_task(self, payload: dict) -> dict:  # noqa: ANN001
         db.close()
 
 
-@celery_app.task(name="xr7.xr7_pipeline.fingerprinting", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 4})
+@celery_app.task(
+    name="xr7.xr7_pipeline.fingerprinting",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 4},
+)
 def fingerprinting_task(self, payload: dict) -> dict:  # noqa: ANN001
     body = FingerprintJobPayload.model_validate(payload)
     db = SessionLocal()
@@ -74,7 +92,13 @@ def fingerprinting_task(self, payload: dict) -> dict:  # noqa: ANN001
         db.close()
 
 
-@celery_app.task(name="xr7.xr7_pipeline.reconciliation", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+@celery_app.task(
+    name="xr7.xr7_pipeline.reconciliation",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
 def reconciliation_task(self, payload: dict) -> dict:  # noqa: ANN001
     body = ReconciliationJobPayload.model_validate(payload)
     db = SessionLocal()
@@ -90,7 +114,13 @@ def reconciliation_task(self, payload: dict) -> dict:  # noqa: ANN001
         db.close()
 
 
-@celery_app.task(name="xr7.xr7_pipeline.black_box_detection", bind=True, autoretry_for=(Exception,), retry_backoff=True, retry_kwargs={"max_retries": 3})
+@celery_app.task(
+    name="xr7.xr7_pipeline.black_box_detection",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 3},
+)
 def black_box_detection_task(self, payload: dict) -> dict:  # noqa: ANN001
     body = BlackBoxJobPayload.model_validate(payload)
     db = SessionLocal()

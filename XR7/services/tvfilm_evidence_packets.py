@@ -13,7 +13,14 @@ from XR7.models.claim import Claim
 from XR7.services.pdf_builder import build_simple_pdf
 
 
-def build_tvfilm_evidence_packet(*, artist: Artist, claim: Claim, anomaly: Anomaly, feature_snapshot: dict[str, Any], template: str) -> dict[str, Any]:
+def build_tvfilm_evidence_packet(
+    *,
+    artist: Artist,
+    claim: Claim,
+    anomaly: Anomaly,
+    feature_snapshot: dict[str, Any],
+    template: str,
+) -> dict[str, Any]:
     generated_at = datetime.now(timezone.utc).isoformat()
     estimated = float(anomaly.estimated_recoverable or 0.0)
     expected_amount = float(anomaly.expected_amount or 0.0)
@@ -112,10 +119,10 @@ def build_tvfilm_packet_lines(packet: dict[str, Any]) -> list[str]:
         f"Market: {production.get('market')}",
         "",
         "Narrative Summary",
-        str((packet.get('narrative') or {}).get('summary') or ''),
+        str((packet.get("narrative") or {}).get("summary") or ""),
         "",
         "Plain Language",
-        str((packet.get('narrative') or {}).get('plain_language') or ''),
+        str((packet.get("narrative") or {}).get("plain_language") or ""),
     ]
     for section in packet.get("required_sections") or []:
         lines.append(f"Required Section: {section}")
@@ -130,19 +137,26 @@ def build_tvfilm_packet_zip(packet: dict[str, Any]) -> bytes:
     buffer = io.BytesIO()
     pdf_bytes = build_tvfilm_packet_pdf(packet)
 
-    payment_delta = ((packet.get("supporting_tables") or {}).get("payment_delta") or [])
+    payment_delta = (packet.get("supporting_tables") or {}).get("payment_delta") or []
     table_csv = io.StringIO()
-    writer = csv.DictWriter(table_csv, fieldnames=["expected_amount", "actual_amount", "recoverable_delta"])
+    writer = csv.DictWriter(
+        table_csv, fieldnames=["expected_amount", "actual_amount", "recoverable_delta"]
+    )
     writer.writeheader()
     for row in payment_delta:
         writer.writerow(row)
 
     with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("tvfilm_evidence_packet.json", json.dumps(packet, indent=2, sort_keys=True))
-        zf.writestr("tvfilm_evidence_summary.txt", "\n".join(build_tvfilm_packet_lines(packet)) + "\n")
+        zf.writestr(
+            "tvfilm_evidence_summary.txt", "\n".join(build_tvfilm_packet_lines(packet)) + "\n"
+        )
         zf.writestr("tvfilm_evidence_packet.pdf", pdf_bytes)
         zf.writestr("payment_delta.csv", table_csv.getvalue())
-        zf.writestr("integrity_manifest.json", json.dumps(packet.get("integrity") or {}, indent=2, sort_keys=True))
+        zf.writestr(
+            "integrity_manifest.json",
+            json.dumps(packet.get("integrity") or {}, indent=2, sort_keys=True),
+        )
     return buffer.getvalue()
 
 
@@ -159,7 +173,13 @@ def build_tvfilm_bulk_export_zip(items: list[dict[str, Any]]) -> bytes:
         for item in items:
             claim_id = str(item.get("claim_id"))
             packet = item.get("packet") or {}
-            zf.writestr(f"{claim_id}/tvfilm_evidence_packet.json", json.dumps(packet, indent=2, sort_keys=True))
+            zf.writestr(
+                f"{claim_id}/tvfilm_evidence_packet.json",
+                json.dumps(packet, indent=2, sort_keys=True),
+            )
             zf.writestr(f"{claim_id}/tvfilm_evidence_packet.pdf", build_tvfilm_packet_pdf(packet))
-            zf.writestr(f"{claim_id}/tvfilm_evidence_summary.txt", "\n".join(build_tvfilm_packet_lines(packet)) + "\n")
+            zf.writestr(
+                f"{claim_id}/tvfilm_evidence_summary.txt",
+                "\n".join(build_tvfilm_packet_lines(packet)) + "\n",
+            )
     return buffer.getvalue()

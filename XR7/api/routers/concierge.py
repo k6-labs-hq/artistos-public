@@ -8,6 +8,7 @@ Endpoints:
   POST /artists/{artist_id}/persona/enrich      – trigger persona enrichment job
   GET  /artists/{artist_id}/persona             – get persona profile
 """
+
 from __future__ import annotations
 
 import uuid
@@ -34,6 +35,7 @@ router = APIRouter(tags=["concierge"])
 # Guard helper
 # ---------------------------------------------------------------------------
 
+
 def _require_vip(artist_id: str, svc: VipService) -> None:
     if not svc.is_vip(artist_id):
         raise HTTPException(
@@ -45,6 +47,7 @@ def _require_vip(artist_id: str, svc: VipService) -> None:
 # ---------------------------------------------------------------------------
 # Concierge inbox
 # ---------------------------------------------------------------------------
+
 
 @router.get(
     "/artists/{artist_id}/concierge/messages",
@@ -80,6 +83,7 @@ def send_concierge_message(
     artist_name = "You"
     if membership:
         from XR7.models.artist import Artist
+
         art = db.query(Artist).filter(Artist.id == body.artist_id).first()
         if art:
             artist_name = art.name
@@ -138,7 +142,9 @@ def request_human_analyst(
     svc = VipService(db)
     _require_vip(artist_id, svc)
     membership = svc.get_membership(artist_id)
-    analyst_name = (membership.concierge_analyst_name if membership else None) or "XR7 Strategy Team"
+    analyst_name = (
+        membership.concierge_analyst_name if membership else None
+    ) or "XR7 Strategy Team"
     escalation_id = str(uuid.uuid4())
     svc.send_message(
         artist_id,
@@ -163,6 +169,7 @@ def request_human_analyst(
 # Persona enrichment
 # ---------------------------------------------------------------------------
 
+
 class EnrichPersonaResponse(BaseModel):
     job_id: str
     status: str
@@ -184,6 +191,7 @@ def enrich_persona(
 
     # Dispatch Celery task
     from XR7.tasks.vip_tasks import enrich_artist_persona
+
     task = enrich_artist_persona.delay(artist_id, force=body.force)
     job_id = task.id
 

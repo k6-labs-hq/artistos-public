@@ -93,7 +93,9 @@ def _infer_artist_name(rows: list[dict[str, str]]) -> str | None:
     return None
 
 
-def extract_statement_signals(content: bytes, filename: str, *, format_detected: str | None = None) -> dict[str, Any]:
+def extract_statement_signals(
+    content: bytes, filename: str, *, format_detected: str | None = None
+) -> dict[str, Any]:
     rows = _parse_tabular(content, filename)
     if not rows:
         return {
@@ -117,15 +119,21 @@ def extract_statement_signals(content: bytes, filename: str, *, format_detected:
         rows,
         ["distributor account id", "account id", "partner account id", "profile id", "artist id"],
     )
-    pro_writer_id = _first_non_empty(rows, ["pro writer id", "writer id", "ipi", "cae", "ipi number"])
+    pro_writer_id = _first_non_empty(
+        rows, ["pro writer id", "writer id", "ipi", "cae", "ipi number"]
+    )
 
     distributor_list = _collect_values(
         rows,
         ["distributor", "store", "platform", "retailer", "source", "payer", "service"],
     )
-    pro_affiliations = _collect_values(rows, ["pro", "society", "collecting society", "payer"], limit=10)
+    pro_affiliations = _collect_values(
+        rows, ["pro", "society", "collecting society", "payer"], limit=10
+    )
     labels = _collect_values(rows, ["label", "publisher", "publishing", "rights holder"], limit=20)
-    titles = _collect_values(rows, ["title", "track title", "track name", "song", "work title"], limit=25)
+    titles = _collect_values(
+        rows, ["title", "track title", "track name", "song", "work title"], limit=25
+    )
     isrcs = _collect_values(rows, ["isrc"], limit=50)
     iswcs = _collect_values(rows, ["iswc"], limit=50)
     upcs = _collect_values(rows, ["upc", "ean"], limit=50)

@@ -1,4 +1,5 @@
 """Earnings, metadata, UGC, and profile enrichment agents."""
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -47,9 +48,7 @@ async def EarningsExpectationAgent(state: XR7State) -> XR7State:
         "monthly_expected": round(
             float(forecast.get("predicted_total_next_90_days") or 0.0) / 3.0, 2
         ),
-        "quarterly_expected": round(
-            float(forecast.get("predicted_total_next_90_days") or 0.0), 2
-        ),
+        "quarterly_expected": round(float(forecast.get("predicted_total_next_90_days") or 0.0), 2),
         "confidence_interval": {
             "low": float(forecast.get("predicted_low") or 0.0),
             "high": float(forecast.get("predicted_high") or 0.0),
@@ -59,9 +58,7 @@ async def EarningsExpectationAgent(state: XR7State) -> XR7State:
         "per_revenue_stream_forecast": forecast.get("per_stream_forecast") or {},
         "trend_indicator": forecast.get("trend_indicator") or "STABLE",
         "confidence_band": forecast.get("confidence_band") or "LOW",
-        "forecast_adjusted_for_repairs": bool(
-            forecast.get("forecast_adjusted_for_repairs")
-        ),
+        "forecast_adjusted_for_repairs": bool(forecast.get("forecast_adjusted_for_repairs")),
         "leakage_avoided_metrics": forecast.get("leakage_avoided_metrics") or {},
         "forecast_disclaimer": pipeline.get("forecast_disclaimer") or FORECAST_DISCLAIMER,
         "catalog_value_signal": valuation,
@@ -484,9 +481,7 @@ async def ReleaseTimelineAgent(state: XR7State) -> XR7State:
 
 
 async def ArtistReadinessScoreAgent(state: XR7State) -> XR7State:
-    metadata = float(
-        (state.get("catalog_profile") or {}).get("metadata_completeness") or 0.7
-    )
+    metadata = float((state.get("catalog_profile") or {}).get("metadata_completeness") or 0.7)
     split_penalty = 0.2 if (state.get("split_conflicts") or []) else 0.0
     guidance_bonus = 0.1 if (state.get("portal_guidance") or []) else 0.0
     score = _safe_score(metadata - split_penalty + guidance_bonus)

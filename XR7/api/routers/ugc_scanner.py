@@ -6,6 +6,7 @@ Endpoints:
   POST /artists/{artist_id}/ugc/claims/{ugc_anomaly_id}/draft
   GET  /artists/{artist_id}/ugc/opportunities
 """
+
 from __future__ import annotations
 
 import json
@@ -89,8 +90,8 @@ _MOCK_PLATFORM_VIDEOS: dict[str, list[dict[str, Any]]] = {
 
 # Revenue-per-view estimates by platform (USD)
 _RPV: dict[str, float] = {
-    "youtube": 0.0025,   # ~$2.50 CPM avg
-    "tiktok": 0.00025,   # lower monetisation share
+    "youtube": 0.0025,  # ~$2.50 CPM avg
+    "tiktok": 0.00025,  # lower monetisation share
     "meta": 0.0018,
 }
 
@@ -103,6 +104,7 @@ def _estimate_recoverable(platform: str, views: int) -> float:
 # ---------------------------------------------------------------------------
 # Internal scan function
 # ---------------------------------------------------------------------------
+
 
 def _scan_platform(
     db: Session,
@@ -140,7 +142,9 @@ def _scan_platform(
             # Update last_scanned_at
             existing.last_scanned_at = datetime.now(timezone.utc)
             existing.estimated_views = max(existing.estimated_views, views)
-            existing.estimated_recoverable = _estimate_recoverable(platform, existing.estimated_views)
+            existing.estimated_recoverable = _estimate_recoverable(
+                platform, existing.estimated_views
+            )
             continue
 
         recoverable = _estimate_recoverable(platform, views)
@@ -151,7 +155,9 @@ def _scan_platform(
             artist_id=artist.id,
             category=AnomalyCategory.ROYALTY.value,
             subtype="ugc_opportunity",
-            severity=AnomalySeverity.HIGH.value if recoverable >= 500 else AnomalySeverity.MEDIUM.value,
+            severity=(
+                AnomalySeverity.HIGH.value if recoverable >= 500 else AnomalySeverity.MEDIUM.value
+            ),
             estimated_recoverable=recoverable,
             confidence_score=0.78,
             description=(

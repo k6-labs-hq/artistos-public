@@ -29,7 +29,13 @@ class AutonomousNegotiatorAgent:
     def run_negotiation_rounds(self, claim_id: str, rounds: int = 3) -> dict[str, Any]:
         rounds_log = []
         for idx in range(1, rounds + 1):
-            rounds_log.append({"round": idx, "counter_offer": f"{max(40, 100 - idx*12)}% of demand", "status": "simulated"})
+            rounds_log.append(
+                {
+                    "round": idx,
+                    "counter_offer": f"{max(40, 100 - idx*12)}% of demand",
+                    "status": "simulated",
+                }
+            )
         return {"claim_id": claim_id, "rounds": rounds_log}
 
     async def escalate_to_attorney_network(self, claim_id: str) -> dict[str, Any]:

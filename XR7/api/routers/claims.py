@@ -119,7 +119,11 @@ def _build_multipage_pdf(pages: list[list[str]]) -> bytes:
 
     page_refs = " ".join([f"{first_page_obj + i} 0 R" for i in range(page_count)])
     objects.append(b"1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj\n")
-    objects.append(f"2 0 obj << /Type /Pages /Count {page_count} /Kids [{page_refs}] >> endobj\n".encode("utf-8"))
+    objects.append(
+        f"2 0 obj << /Type /Pages /Count {page_count} /Kids [{page_refs}] >> endobj\n".encode(
+            "utf-8"
+        )
+    )
 
     for i in range(page_count):
         page_obj_id = first_page_obj + i
@@ -131,7 +135,11 @@ def _build_multipage_pdf(pages: list[list[str]]) -> bytes:
             ).encode("utf-8")
         )
 
-    objects.append(f"{font_obj} 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n".encode("utf-8"))
+    objects.append(
+        f"{font_obj} 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj\n".encode(
+            "utf-8"
+        )
+    )
 
     for i, lines in enumerate(pages):
         content_obj_id = first_content_obj + i
@@ -216,7 +224,11 @@ def _attorney_escalation_state(claim: Claim, default_grace_days: int) -> dict:
         "payment_response_deadline": deadline,
         "eligible_to_prepare": eligible,
         "attorney_file_generated": bool(claim.attorney_file_generated),
-        "attorney_file_generated_at": _utc(claim.attorney_file_generated_at).isoformat() if claim.attorney_file_generated_at else None,
+        "attorney_file_generated_at": (
+            _utc(claim.attorney_file_generated_at).isoformat()
+            if claim.attorney_file_generated_at
+            else None
+        ),
         "countdown_message": f"Payer has {days_remaining} days remaining to respond",
         "countdown_subtext": (
             f"If payment is not received by {deadline}, you may escalate to your attorney."
@@ -299,9 +311,7 @@ def list_claims(
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
     default_grace_days = int((artist.default_attorney_grace_period_days if artist else 60) or 60)
     snapshots = (
-        db.query(CalibrationSnapshot)
-        .filter(CalibrationSnapshot.artist_id == artist_id)
-        .all()
+        db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == artist_id).all()
     )
     historical_claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
 
@@ -323,7 +333,9 @@ def list_claims(
                 "sol": {
                     "status": sol.get("sol_status"),
                     "days_remaining": sol.get("sol_days_remaining"),
-                    "deadline": sol.get("sol_deadline").isoformat() if sol.get("sol_deadline") else None,
+                    "deadline": (
+                        sol.get("sol_deadline").isoformat() if sol.get("sol_deadline") else None
+                    ),
                     "citation": sol.get("sol_citation_source"),
                     "disclaimer": SOL_DISCLAIMER,
                 },
@@ -399,9 +411,15 @@ def create_claim_for_artist(
             status_code=422,
             detail={
                 "message": "Claim drafting is not allowed for this anomaly recoverability class",
-                "recoverability_class": (recoverability.get("recoverability") or {}).get("recoverability_class"),
-                "recommended_action": (recoverability.get("recoverability") or {}).get("recommended_action"),
-                "rule_applied": (recoverability.get("black_box_expiration") or {}).get("rule_applied"),
+                "recoverability_class": (recoverability.get("recoverability") or {}).get(
+                    "recoverability_class"
+                ),
+                "recommended_action": (recoverability.get("recoverability") or {}).get(
+                    "recommended_action"
+                ),
+                "rule_applied": (recoverability.get("black_box_expiration") or {}).get(
+                    "rule_applied"
+                ),
             },
         )
 
@@ -426,7 +444,11 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             raise HTTPException(status_code=404, detail="Claim not found")
         # Only enforce stronger evidence quality checks when packet exists.
         if isinstance(existing.evidence, dict) and existing.evidence:
-            anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
+            anchor_count = (
+                db.query(EvidenceAnchorModel)
+                .filter(EvidenceAnchorModel.claim_id == claim_id)
+                .count()
+            )
             strength = score_evidence_strength(claim_id, existing.evidence, anchor_count)
             if float(strength.get("overall_strength_score") or 0.0) < 35.0:
                 enqueue_review_item(
@@ -438,9 +460,13 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
                     priority_score=35.0 - float(strength.get("overall_strength_score") or 0.0),
                     payload={"claim_id": existing.id, "strength": strength},
                 )
-                raise HTTPException(status_code=400, detail="Evidence strength is too low to advance claim")
+                raise HTTPException(
+                    status_code=400, detail="Evidence strength is too low to advance claim"
+                )
 
-        status_value_before = existing.status.value if hasattr(existing.status, "value") else str(existing.status)
+        status_value_before = (
+            existing.status.value if hasattr(existing.status, "value") else str(existing.status)
+        )
         if status_value_before in {"PREPARED", "FILED"} and bool(existing.attorney_review_required):
             raise HTTPException(
                 status_code=422,
@@ -466,7 +492,9 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             org_id=org_id_for_artist(db, updated.artist_id),
             db=db,
         )
-        status_value = updated.status.value if hasattr(updated.status, "value") else str(updated.status)
+        status_value = (
+            updated.status.value if hasattr(updated.status, "value") else str(updated.status)
+        )
 
         if status_value in {"IN_REVIEW", "ACCEPTED"}:
             enqueue_review_item(
@@ -490,15 +518,25 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             )
         if status_value in {"FILED", "IN_REVIEW", "PAID", "CLOSED"}:
             try:
-                hubspot_sync_recovery_update.delay(updated.artist_id, event=f"claim_{status_value.lower()}")
+                hubspot_sync_recovery_update.delay(
+                    updated.artist_id, event=f"claim_{status_value.lower()}"
+                )
             except Exception:  # noqa: BLE001
                 logger.exception(
                     "Failed to enqueue HubSpot claim lifecycle sync",
-                    extra={"artist_id": updated.artist_id, "claim_id": updated.id, "status": status_value},
+                    extra={
+                        "artist_id": updated.artist_id,
+                        "claim_id": updated.id,
+                        "status": status_value,
+                    },
                 )
 
         if status_value in {"SUBMITTED", "FILED", "IN_REVIEW"}:
-            historical = db.query(Claim).filter(Claim.artist_id == updated.artist_id, Claim.id != updated.id).all()
+            historical = (
+                db.query(Claim)
+                .filter(Claim.artist_id == updated.artist_id, Claim.id != updated.id)
+                .all()
+            )
             intel = build_negotiation_intel(updated, historical)
             enqueue_review_item(
                 db,
@@ -548,13 +586,17 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
                 )
                 claim.trust_score = float(trust.get("trust_score") or 0.0)
                 claim.attorney_review_required = bool(trust.get("requires_attorney_review"))
-                claim.legal_defensibility_report = TrustDefensibilityService().legal_defensibility_report(
-                    claim_id=claim.id,
-                    anomaly_payload=anomaly_payload,
-                    classification_payload=recoverability,
-                    evidence_package=package,
+                claim.legal_defensibility_report = (
+                    TrustDefensibilityService().legal_defensibility_report(
+                        claim_id=claim.id,
+                        anomaly_payload=anomaly_payload,
+                        classification_payload=recoverability,
+                        evidence_package=package,
+                    )
                 )
-                claim.claim_strength_rating = str(package.get("claim_strength_rating") or "") or None
+                claim.claim_strength_rating = (
+                    str(package.get("claim_strength_rating") or "") or None
+                )
                 db.commit()
         return packet
     except ValueError as e:
@@ -592,7 +634,9 @@ def _coalesce_communications(claim: Claim) -> list[dict]:
     return from_evidence if isinstance(from_evidence, list) else []
 
 
-def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict, brand: dict | None = None) -> list[list[str]]:
+def _attorney_pdf_pages(
+    claim: Claim, artist_name: str, payload: dict, brand: dict | None = None
+) -> list[list[str]]:
     brand_payload = brand or {}
     now_iso = datetime.now(timezone.utc).date().isoformat()
     communications = payload.get("communications") or []
@@ -645,7 +689,9 @@ def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict, brand: di
     ]
     if communications:
         for row in communications[:36]:
-            page4.append(f"- {row.get('date') or 'Unknown date'} | {row.get('type') or 'event'} | {row.get('summary') or ''}")
+            page4.append(
+                f"- {row.get('date') or 'Unknown date'} | {row.get('type') or 'event'} | {row.get('summary') or ''}"
+            )
     else:
         page4.append("- No communications logged.")
 
@@ -655,7 +701,9 @@ def _attorney_pdf_pages(claim: Claim, artist_name: str, payload: dict, brand: di
     ]
     if docs:
         for row in docs[:36]:
-            page5.append(f"- {row.get('name') or 'document'} | uploaded {row.get('uploadedAt') or 'unknown'} | ref {row.get('fileRef') or 'n/a'}")
+            page5.append(
+                f"- {row.get('name') or 'document'} | uploaded {row.get('uploadedAt') or 'unknown'} | ref {row.get('fileRef') or 'n/a'}"
+            )
     else:
         page5.append("- No supporting documents indexed.")
 
@@ -695,9 +743,14 @@ def generate_attorney_evidence_file(
     state = _attorney_escalation_state(claim, default_grace_days)
 
     if bool(claim.attorney_file_generated):
-        raise HTTPException(status_code=409, detail="Attorney evidence file already generated for this claim")
+        raise HTTPException(
+            status_code=409, detail="Attorney evidence file already generated for this claim"
+        )
     if not state.get("eligible_to_prepare"):
-        raise HTTPException(status_code=400, detail="Grace period has not elapsed or claim is not in proof_submitted state")
+        raise HTTPException(
+            status_code=400,
+            detail="Grace period has not elapsed or claim is not in proof_submitted state",
+        )
 
     sol = calculate_sol(
         governing_law_state=claim.governing_law_state,
@@ -716,14 +769,22 @@ def generate_attorney_evidence_file(
         "payerContact": claim.payer_contact,
         "amountOwed": float(claim.recovered_amount or 0.0),
         "currency": claim.currency or "USD",
-        "originalDueDate": _utc(claim.original_due_date).isoformat() if claim.original_due_date else None,
-        "proofSubmittedAt": _utc(claim.proof_submitted_at).isoformat() if claim.proof_submitted_at else None,
+        "originalDueDate": (
+            _utc(claim.original_due_date).isoformat() if claim.original_due_date else None
+        ),
+        "proofSubmittedAt": (
+            _utc(claim.proof_submitted_at).isoformat() if claim.proof_submitted_at else None
+        ),
         "gracePeriodDays": int(state.get("grace_period_days") or default_grace_days),
         "daysElapsedSinceProofSubmission": int(state.get("days_elapsed") or 0),
         "governingLawState": claim.governing_law_state,
         "contractType": claim.contract_type,
-        "infringementDate": _utc(claim.infringement_date).date().isoformat() if claim.infringement_date else None,
-        "discoveryDate": _utc(claim.discovery_date).date().isoformat() if claim.discovery_date else None,
+        "infringementDate": (
+            _utc(claim.infringement_date).date().isoformat() if claim.infringement_date else None
+        ),
+        "discoveryDate": (
+            _utc(claim.discovery_date).date().isoformat() if claim.discovery_date else None
+        ),
         "solCitationSource": sol.get("sol_citation_source") or claim.sol_citation_source,
         "solDeadline": sol_deadline.isoformat() if sol_deadline else None,
         "solStatus": sol.get("sol_status"),
@@ -732,7 +793,9 @@ def generate_attorney_evidence_file(
         "anomalyReport": claim.anomaly_report if isinstance(claim.anomaly_report, dict) else {},
         "supportingDocuments": _coalesce_supporting_documents(claim),
         "additionalNotes": body.additional_notes or "",
-        "attorneyEngagementDeadline": engagement_deadline.date().isoformat() if engagement_deadline else None,
+        "attorneyEngagementDeadline": (
+            engagement_deadline.date().isoformat() if engagement_deadline else None
+        ),
         "checklist": [
             "Original payment agreement / contract reference",
             "Payment history showing the gap",
@@ -759,7 +822,12 @@ def generate_attorney_evidence_file(
     claim.updated_at = generated_at
     db.commit()
 
-    safe_artist = "".join(ch if ch.isalnum() or ch in {"_", "-"} else "_" for ch in payload["artistName"]).strip("_") or "artist"
+    safe_artist = (
+        "".join(
+            ch if ch.isalnum() or ch in {"_", "-"} else "_" for ch in payload["artistName"]
+        ).strip("_")
+        or "artist"
+    )
     filename = f"{str(brand.get('display_name') or 'XR7').replace(' ', '_')}_Evidence_{claim.id}_{safe_artist}_{generated_at.date().isoformat()}.pdf"
 
     return Response(
@@ -788,7 +856,10 @@ def export_evidence_packet(
     try:
         export_state = run_export_prep_pipeline_sync(claim.artist_id)
     except Exception:  # noqa: BLE001
-        logger.exception("Export prep pipeline failed; continuing with existing packet", extra={"claim_id": claim_id, "artist_id": claim.artist_id})
+        logger.exception(
+            "Export prep pipeline failed; continuing with existing packet",
+            extra={"claim_id": claim_id, "artist_id": claim.artist_id},
+        )
         export_state = {}
     if refresh or not isinstance(claim.evidence, dict) or not claim.evidence:
         packet = orchestrator.generate_evidence_packet(claim_id)
@@ -855,7 +926,10 @@ def export_evidence_packet(
         zf.writestr("proof_rows.csv", proof_csv.getvalue())
         zf.writestr("source_citations.csv", citations_csv.getvalue())
         zf.writestr("evidence_packet.pdf", pdf_bytes)
-        zf.writestr("integrity_manifest.json", json.dumps(packet.get("integrity", {}), indent=2, sort_keys=True))
+        zf.writestr(
+            "integrity_manifest.json",
+            json.dumps(packet.get("integrity", {}), indent=2, sort_keys=True),
+        )
         zf.writestr(
             "branding_manifest.json",
             json.dumps(
@@ -876,7 +950,11 @@ def export_evidence_packet(
                 {
                     "ipfs_cid": latest_anchor.cid if latest_anchor else None,
                     "tx_hash": latest_anchor.tx_hash if latest_anchor else None,
-                    "etherscan_link": f"https://polygonscan.com/tx/{latest_anchor.tx_hash}" if latest_anchor and latest_anchor.tx_hash else None,
+                    "etherscan_link": (
+                        f"https://polygonscan.com/tx/{latest_anchor.tx_hash}"
+                        if latest_anchor and latest_anchor.tx_hash
+                        else None
+                    ),
                 },
                 indent=2,
                 sort_keys=True,
@@ -924,9 +1002,16 @@ def export_evidence_packet_expert_mode(
     try:
         export_state = run_export_prep_pipeline_sync(claim.artist_id)
     except Exception:  # noqa: BLE001
-        logger.exception("Expert export prep pipeline failed; continuing with existing packet", extra={"claim_id": claim_id, "artist_id": claim.artist_id})
+        logger.exception(
+            "Expert export prep pipeline failed; continuing with existing packet",
+            extra={"claim_id": claim_id, "artist_id": claim.artist_id},
+        )
         export_state = {}
-    packet = claim.evidence if isinstance(claim.evidence, dict) else ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
+    packet = (
+        claim.evidence
+        if isinstance(claim.evidence, dict)
+        else ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
+    )
     packet = {**packet, **_export_agent_fields(export_state)}
     verification = ClaimsOrchestrator(db).verify_packet_integrity(packet)
 
@@ -940,7 +1025,12 @@ def export_evidence_packet_expert_mode(
             "timestamp": claim.updated_at.isoformat() if claim.updated_at else None,
         },
     ]
-    anchors = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).order_by(EvidenceAnchorModel.created_at.asc()).all()
+    anchors = (
+        db.query(EvidenceAnchorModel)
+        .filter(EvidenceAnchorModel.claim_id == claim_id)
+        .order_by(EvidenceAnchorModel.created_at.asc())
+        .all()
+    )
     for anchor in anchors:
         timeline.append(
             {
@@ -1004,11 +1094,15 @@ def verify_evidence_packet(
         .order_by(EvidenceAnchorModel.created_at.desc())
         .first()
     )
-    verification["blockchain_status"] = latest_anchor.blockchain_status if latest_anchor else "NOT_ANCHORED"
+    verification["blockchain_status"] = (
+        latest_anchor.blockchain_status if latest_anchor else "NOT_ANCHORED"
+    )
     verification["ipfs_cid"] = latest_anchor.cid if latest_anchor else None
     verification["tx_hash"] = latest_anchor.tx_hash if latest_anchor else None
     if latest_anchor:
-        verification["on_chain_verified"] = asyncio.run(BlockchainEvidenceAnchor().verify_on_chain(claim_id))
+        verification["on_chain_verified"] = asyncio.run(
+            BlockchainEvidenceAnchor().verify_on_chain(claim_id)
+        )
     else:
         verification["on_chain_verified"] = False
     return verification
@@ -1043,7 +1137,9 @@ class ReconcileRequest(BaseModel):
 def reconcile_claim(claim_id: str, body: ReconcileRequest, db: Session = Depends(get_db)):
     orchestrator = ClaimsOrchestrator(db)
     try:
-        return orchestrator.reconcile_recovered_amount(claim_id, body.recovered_amount, body.currency)
+        return orchestrator.reconcile_recovered_amount(
+            claim_id, body.recovered_amount, body.currency
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
 
@@ -1054,13 +1150,18 @@ def claim_forecast(claim_id: str, db: Session = Depends(get_db)):
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
     anomaly = db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
-    snapshots = db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == claim.artist_id).all()
+    snapshots = (
+        db.query(CalibrationSnapshot).filter(CalibrationSnapshot.artist_id == claim.artist_id).all()
+    )
     historical = db.query(Claim).filter(Claim.artist_id == claim.artist_id).all()
-    return inject_branding_metadata(db, {
-        "claim_id": claim_id,
-        "artist_id": claim.artist_id,
-        **build_claim_forecast(claim, anomaly, snapshots, historical).to_dict(),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "claim_id": claim_id,
+            "artist_id": claim.artist_id,
+            **build_claim_forecast(claim, anomaly, snapshots, historical).to_dict(),
+        },
+    )
 
 
 @router.get("/claims/{claim_id}/playbook")
@@ -1077,7 +1178,9 @@ def claim_evidence_strength(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
-    anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
+    anchor_count = (
+        db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
+    )
     return score_evidence_strength(claim_id, claim.evidence or {}, anchor_count)
 
 
@@ -1086,7 +1189,9 @@ def claim_negotiation_intel(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
-    historical = db.query(Claim).filter(Claim.artist_id == claim.artist_id, Claim.id != claim.id).all()
+    historical = (
+        db.query(Claim).filter(Claim.artist_id == claim.artist_id, Claim.id != claim.id).all()
+    )
     return build_negotiation_intel(claim, historical)
 
 
@@ -1095,7 +1200,9 @@ def claim_strength_explainer(claim_id: str, db: Session = Depends(get_db)):
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
-    anchor_count = db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
+    anchor_count = (
+        db.query(EvidenceAnchorModel).filter(EvidenceAnchorModel.claim_id == claim_id).count()
+    )
     strength = score_evidence_strength(claim_id, claim.evidence or {}, anchor_count)
 
     contributing = []
@@ -1128,14 +1235,32 @@ def claim_sla_prediction(claim_id: str, db: Session = Depends(get_db)):
 
     payer_rows = [
         {
-            "payer": str((c.evidence or {}).get("legal_support", {}).get("contract_basis", [{}])[0].get("counterparty") or "generic").lower(),
+            "payer": str(
+                (c.evidence or {})
+                .get("legal_support", {})
+                .get("contract_basis", [{}])[0]
+                .get("counterparty")
+                or "generic"
+            ).lower(),
             "status": str(c.status),
             "settlement_days": 45,
-            "settlement_percent": min(1.0, max(0.1, float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0))),
+            "settlement_percent": min(
+                1.0,
+                max(
+                    0.1,
+                    float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0),
+                ),
+            ),
         }
         for c in db.query(Claim).filter(Claim.artist_id == claim.artist_id).all()
     ]
-    payer_id = str((claim.evidence or {}).get("legal_support", {}).get("contract_basis", [{}])[0].get("counterparty") or "generic").lower()
+    payer_id = str(
+        (claim.evidence or {})
+        .get("legal_support", {})
+        .get("contract_basis", [{}])[0]
+        .get("counterparty")
+        or "generic"
+    ).lower()
     behavior = payer_behavior_profile(payer_id, payer_rows)
     return {
         "claim_id": claim_id,
@@ -1162,7 +1287,13 @@ def claim_automation_plan(claim_id: str, db: Session = Depends(get_db)):
                 "id": claim.id,
                 "status": str(claim.status),
             },
-            deadline_risk={"risk_color": "YELLOW" if str(claim.status) in {"SUBMITTED", "FILED", "IN_REVIEW"} else "GREEN"},
+            deadline_risk={
+                "risk_color": (
+                    "YELLOW"
+                    if str(claim.status) in {"SUBMITTED", "FILED", "IN_REVIEW"}
+                    else "GREEN"
+                )
+            },
         ),
     }
 

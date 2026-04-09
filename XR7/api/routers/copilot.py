@@ -7,6 +7,7 @@ Endpoints:
   GET  /artists/{artist_id}/weekly-brief     – latest AI weekly brief
   POST /artists/{artist_id}/weekly-brief/generate – trigger brief generation
 """
+
 from __future__ import annotations
 
 import time
@@ -31,6 +32,7 @@ router = APIRouter(tags=["copilot"])
 # Guard helper (shared pattern)
 # ---------------------------------------------------------------------------
 
+
 def _require_vip(artist_id: str, db: Session) -> None:
     svc = VipService(db)
     if not svc.is_vip(artist_id):
@@ -43,6 +45,7 @@ def _require_vip(artist_id: str, db: Session) -> None:
 # ---------------------------------------------------------------------------
 # Copilot LLM query builder
 # ---------------------------------------------------------------------------
+
 
 def _build_copilot_context(artist_id: str, db: Session) -> dict:
     """Collects catalog, recovery, and persona context for prompt injection."""
@@ -65,6 +68,7 @@ def _build_copilot_context(artist_id: str, db: Session) -> dict:
     ctx["open_claims"] = open_claims
 
     from XR7.services.vip_service import VipService
+
     persona = VipService(db).get_persona(artist_id)
     if persona:
         ctx["detected_roles"] = persona.detected_roles
@@ -84,6 +88,7 @@ def _call_copilot_llm(query: str, context: dict) -> tuple[str, float, list[str]]
     """
     try:
         from XR7.llm.advisor import ask_xr7_advisor
+
         return ask_xr7_advisor(query, context)
     except Exception:
         # Graceful degradation: use a structured template response
@@ -106,6 +111,7 @@ def _call_copilot_llm(query: str, context: dict) -> tuple[str, float, list[str]]
 # ---------------------------------------------------------------------------
 # Copilot endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/artists/{artist_id}/copilot/query",
@@ -196,6 +202,7 @@ def copilot_history(
 ) -> list[CopilotQuerySchema]:
     _require_vip(artist_id, db)
     from XR7.models.vip import CopilotQuery
+
     rows = (
         db.query(CopilotQuery)
         .filter(CopilotQuery.artist_id == artist_id)
@@ -210,6 +217,7 @@ def copilot_history(
 # Weekly brief endpoints
 # ---------------------------------------------------------------------------
 
+
 @router.get(
     "/artists/{artist_id}/weekly-brief",
     response_model=Optional[WeeklyBriefSchema],
@@ -221,6 +229,7 @@ def get_weekly_brief(
 ) -> Optional[WeeklyBriefSchema]:
     _require_vip(artist_id, db)
     from XR7.models.vip import WeeklyBrief
+
     brief = (
         db.query(WeeklyBrief)
         .filter(WeeklyBrief.artist_id == artist_id)

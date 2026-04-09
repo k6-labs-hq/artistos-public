@@ -43,7 +43,11 @@ def evaluate_deadline_risk(
     recoupment = compute_recoupment(contracts, payments)
 
     min_sol_days = min(
-        [int(a.get("sol_days_remaining")) for a in classified if isinstance(a.get("sol_days_remaining"), int)]
+        [
+            int(a.get("sol_days_remaining"))
+            for a in classified
+            if isinstance(a.get("sol_days_remaining"), int)
+        ]
         or [9999]
     )
 
@@ -60,7 +64,11 @@ def evaluate_deadline_risk(
     claim_days_left: list[int] = []
 
     for claim in claims:
-        created_at = _to_utc(claim.get("created_at")) if isinstance(claim.get("created_at"), datetime) else None
+        created_at = (
+            _to_utc(claim.get("created_at"))
+            if isinstance(claim.get("created_at"), datetime)
+            else None
+        )
         if created_at is None and claim.get("created_at"):
             try:
                 created_at = _to_utc(datetime.fromisoformat(str(claim.get("created_at"))))

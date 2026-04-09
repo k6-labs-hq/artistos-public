@@ -31,7 +31,9 @@ class UniversalRoyaltyEvent(Base):
     statement_period: Mapped[str | None] = mapped_column(String, nullable=True)
     source_ref: Mapped[str | None] = mapped_column(String, nullable=True)
     metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    ingested_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    ingested_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class UniversalRoyaltyEventRowSchema(BaseModel):

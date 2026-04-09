@@ -4,7 +4,9 @@ from collections import defaultdict
 from typing import Any
 
 
-def build_underpayment_heatmap(anomalies: list[dict[str, Any]], claims: list[dict[str, Any]]) -> dict[str, Any]:
+def build_underpayment_heatmap(
+    anomalies: list[dict[str, Any]], claims: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Aggregate leakage by platform/territory/work/payer for heatmap visualizations."""
     by_platform: dict[str, float] = defaultdict(float)
     by_territory: dict[str, float] = defaultdict(float)

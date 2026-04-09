@@ -20,26 +20,32 @@ class UGCRepairEngine:
             use_id = str(use.get("use_id") or "")
             est = float(self.scanner.calculate_hidden_value(use) or 0.0)
 
-            findings.append({
-                "use_id": use_id,
-                "platform": platform,
-                "issue": "UNCLAIMED_VIDEO",
-                "estimated_recoverable": round(est, 2),
-            })
+            findings.append(
+                {
+                    "use_id": use_id,
+                    "platform": platform,
+                    "issue": "UNCLAIMED_VIDEO",
+                    "estimated_recoverable": round(est, 2),
+                }
+            )
             if views > 100000:
-                findings.append({
-                    "use_id": use_id,
-                    "platform": platform,
-                    "issue": "MISSING_MONETIZATION_FLAG",
-                    "details": "High-view UGC use should be monetized.",
-                })
+                findings.append(
+                    {
+                        "use_id": use_id,
+                        "platform": platform,
+                        "issue": "MISSING_MONETIZATION_FLAG",
+                        "details": "High-view UGC use should be monetized.",
+                    }
+                )
             if platform in {"youtube", "tiktok"} and views > 0:
-                findings.append({
-                    "use_id": use_id,
-                    "platform": platform,
-                    "issue": "MISSING_FINGERPRINT_MATCH",
-                    "details": "Register or refresh audio fingerprint for this use cluster.",
-                })
+                findings.append(
+                    {
+                        "use_id": use_id,
+                        "platform": platform,
+                        "issue": "MISSING_FINGERPRINT_MATCH",
+                        "details": "Register or refresh audio fingerprint for this use cluster.",
+                    }
+                )
 
             actions.append(
                 {

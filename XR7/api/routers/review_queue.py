@@ -95,8 +95,15 @@ def list_review_items(
     if artist_id:
         query = query.filter(ReviewItem.artist_id == artist_id)
     if assigned_analyst_email:
-        query = query.filter(ReviewItem.assigned_analyst_email == assigned_analyst_email.strip().lower())
-    return query.order_by(ReviewItem.priority_score.desc(), ReviewItem.created_at.asc()).offset(offset).limit(limit).all()
+        query = query.filter(
+            ReviewItem.assigned_analyst_email == assigned_analyst_email.strip().lower()
+        )
+    return (
+        query.order_by(ReviewItem.priority_score.desc(), ReviewItem.created_at.asc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
 
 
 @router.post("/items/{item_id}/assign", response_model=ReviewAssignmentSchema)
@@ -117,7 +124,9 @@ def assign_review_item(
     # Close previous open assignment for this item.
     prev = (
         db.query(ReviewAssignment)
-        .filter(ReviewAssignment.review_item_id == item_id, ReviewAssignment.unassigned_at.is_(None))
+        .filter(
+            ReviewAssignment.review_item_id == item_id, ReviewAssignment.unassigned_at.is_(None)
+        )
         .first()
     )
     if prev:
@@ -211,7 +220,9 @@ def review_queue_metrics(
     metrics = queue_metrics(db)
     by_source = (
         db.query(ReviewItem.source_type, func.count(ReviewItem.id))
-        .filter(ReviewItem.status.in_([ReviewItemStatus.OPEN.value, ReviewItemStatus.IN_REVIEW.value]))
+        .filter(
+            ReviewItem.status.in_([ReviewItemStatus.OPEN.value, ReviewItemStatus.IN_REVIEW.value])
+        )
         .group_by(ReviewItem.source_type)
         .all()
     )

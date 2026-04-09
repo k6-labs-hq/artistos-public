@@ -5,7 +5,9 @@ from statistics import mean
 from typing import Any
 
 
-def advanced_rate_benchmark(events: list[dict[str, Any]], peer_baselines: dict[str, dict[str, float]] | None = None) -> dict[str, Any]:
+def advanced_rate_benchmark(
+    events: list[dict[str, Any]], peer_baselines: dict[str, dict[str, float]] | None = None
+) -> dict[str, Any]:
     """Compute dynamic platform/territory rate benchmarks and drift outliers."""
     baselines = peer_baselines or {
         "spotify:US": {"expected_cpm": 4.0, "peer_percentile_p50": 0.004},
@@ -27,13 +29,15 @@ def advanced_rate_benchmark(events: list[dict[str, Any]], peer_baselines: dict[s
         if baseline:
             expected = float(baseline.get("peer_percentile_p50") or 0.0)
             if expected > 0 and abs(unit_value - expected) / expected > 0.35:
-                drift_flags.append({
-                    "platform": platform,
-                    "territory": territory,
-                    "observed_rate": unit_value,
-                    "expected_rate": expected,
-                    "drift_pct": round(abs(unit_value - expected) / expected, 6),
-                })
+                drift_flags.append(
+                    {
+                        "platform": platform,
+                        "territory": territory,
+                        "observed_rate": unit_value,
+                        "expected_rate": expected,
+                        "drift_pct": round(abs(unit_value - expected) / expected, 6),
+                    }
+                )
 
     curves = []
     for bucket, vals in by_bucket.items():
@@ -47,7 +51,9 @@ def advanced_rate_benchmark(events: list[dict[str, Any]], peer_baselines: dict[s
                 "observed_avg_rate": round(avg, 6),
                 "expected_rate": round(float(baseline.get("peer_percentile_p50") or 0.0), 6),
                 "expected_cpm": float(baseline.get("expected_cpm") or 0.0),
-                "peer_percentile_comparison": round((avg / max(float(baseline.get("peer_percentile_p50") or 1e-6), 1e-6)) * 100.0, 2),
+                "peer_percentile_comparison": round(
+                    (avg / max(float(baseline.get("peer_percentile_p50") or 1e-6), 1e-6)) * 100.0, 2
+                ),
             }
         )
 

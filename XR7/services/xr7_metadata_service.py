@@ -81,7 +81,11 @@ def suggest_metadata_repairs(
 
     quality_before = 0.0
     quality_after = 0.0
-    tracks_all = db.query(XR7Track).filter(XR7Track.tenant_id == tenant_id, XR7Track.artist_id == artist_id).all()
+    tracks_all = (
+        db.query(XR7Track)
+        .filter(XR7Track.tenant_id == tenant_id, XR7Track.artist_id == artist_id)
+        .all()
+    )
     if tracks_all:
         quality_before = sum(t.metadata_quality_score for t in tracks_all) / len(tracks_all)
         quality_after = min(1.0, quality_before + min(0.25, 0.02 * len(suggestions)))

@@ -189,43 +189,99 @@ SUPPORTED_FORMATS: dict[str, dict] = {
     "tunecore": {
         "name": "TuneCore",
         "type": "distributor",
-        "key_columns": ["Sale Month", "Store", "Country", "Title", "ISRC", "Quantity", "Net Revenue"],
+        "key_columns": [
+            "Sale Month",
+            "Store",
+            "Country",
+            "Title",
+            "ISRC",
+            "Quantity",
+            "Net Revenue",
+        ],
         "description": "TuneCore royalty statement CSV.",
     },
     "cdbaby": {
         "name": "CD Baby",
         "type": "distributor",
-        "key_columns": ["Store", "Country", "Sale Date", "Title", "ISRC", "Quantity", "Total Earnings"],
+        "key_columns": [
+            "Store",
+            "Country",
+            "Sale Date",
+            "Title",
+            "ISRC",
+            "Quantity",
+            "Total Earnings",
+        ],
         "description": "CD Baby royalty statement CSV.",
     },
     "amuse": {
         "name": "Amuse",
         "type": "distributor",
-        "key_columns": ["Reporting Period", "Platform", "Country", "Track Title", "ISRC", "Streams", "Revenue"],
+        "key_columns": [
+            "Reporting Period",
+            "Platform",
+            "Country",
+            "Track Title",
+            "ISRC",
+            "Streams",
+            "Revenue",
+        ],
         "description": "Amuse royalty report CSV.",
     },
     "unitedmasters": {
         "name": "United Masters",
         "type": "distributor",
-        "key_columns": ["Period", "Store", "Country/Region", "Track", "ISRC", "Units", "Total Revenue"],
+        "key_columns": [
+            "Period",
+            "Store",
+            "Country/Region",
+            "Track",
+            "ISRC",
+            "Units",
+            "Total Revenue",
+        ],
         "description": "United Masters earnings export CSV.",
     },
     "onerpm": {
         "name": "ONErpm",
         "type": "distributor",
-        "key_columns": ["Sale Date", "Retailer", "Country", "Track Title", "ISRC", "Qty", "Net Amount"],
+        "key_columns": [
+            "Sale Date",
+            "Retailer",
+            "Country",
+            "Track Title",
+            "ISRC",
+            "Qty",
+            "Net Amount",
+        ],
         "description": "ONErpm royalty statement CSV.",
     },
     "stem": {
         "name": "Stem",
         "type": "distributor",
-        "key_columns": ["Period", "Platform", "Country Code", "Track Name", "ISRC", "Streams", "Net Revenue"],
+        "key_columns": [
+            "Period",
+            "Platform",
+            "Country Code",
+            "Track Name",
+            "ISRC",
+            "Streams",
+            "Net Revenue",
+        ],
         "description": "Stem earnings report CSV.",
     },
     "landr": {
         "name": "LANDR",
         "type": "distributor",
-        "key_columns": ["Month", "Store", "Territory", "Track Name", "ISRC", "Net Quantity", "Net Revenue"],
+        "key_columns": [
+            "Month",
+            "Store",
+            "Territory",
+            "Track Name",
+            "ISRC",
+            "Net Quantity",
+            "Net Revenue",
+        ],
         "description": "LANDR (formerly PUSH) royalty statement CSV.",
     },
     "ditto": {
@@ -243,7 +299,15 @@ SUPPORTED_FORMATS: dict[str, dict] = {
     "bandcamp": {
         "name": "Bandcamp",
         "type": "distributor",
-        "key_columns": ["Date", "Item Name", "Buyer Name", "Country", "Item Type", "Quantity", "Revenue"],
+        "key_columns": [
+            "Date",
+            "Item Name",
+            "Buyer Name",
+            "Country",
+            "Item Type",
+            "Quantity",
+            "Revenue",
+        ],
         "description": "Bandcamp sales CSV (download from Fan Dashboard → Sales).",
     },
     "ascap": {
@@ -285,7 +349,12 @@ SUPPORTED_FORMATS: dict[str, dict] = {
     "generic": {
         "name": "Generic / Other",
         "type": "generic",
-        "key_columns": ["date/period", "source/store/platform", "quantity/streams", "amount/revenue/earnings"],
+        "key_columns": [
+            "date/period",
+            "source/store/platform",
+            "quantity/streams",
+            "amount/revenue/earnings",
+        ],
         "description": (
             "Automatic fallback for any distributor not listed above.  "
             "Works for any CSV that contains recognisable date, platform, "
@@ -297,24 +366,55 @@ SUPPORTED_FORMATS: dict[str, dict] = {
 
 # Columns that indicate the generic fallback
 _GENERIC_DATE_COLS = {
-    "date", "timestamp", "period", "month", "sale date", "sale month",
-    "performance date", "report date", "reporting period",
+    "date",
+    "timestamp",
+    "period",
+    "month",
+    "sale date",
+    "sale month",
+    "performance date",
+    "report date",
+    "reporting period",
 }
 _GENERIC_AMOUNT_COLS = {
-    "amount", "royalty", "revenue", "earnings", "net revenue",
-    "total earnings", "stream revenue", "net", "net amount",
-    "total revenue", "revenue (usd)", "net revenue (usd)",
+    "amount",
+    "royalty",
+    "revenue",
+    "earnings",
+    "net revenue",
+    "total earnings",
+    "stream revenue",
+    "net",
+    "net amount",
+    "total revenue",
+    "revenue (usd)",
+    "net revenue (usd)",
 }
 _GENERIC_QUANTITY_COLS = {
-    "quantity", "streams", "plays", "units", "impressions", "views",
-    "qty", "net quantity",
+    "quantity",
+    "streams",
+    "plays",
+    "units",
+    "impressions",
+    "views",
+    "qty",
+    "net quantity",
 }
 _GENERIC_SOURCE_COLS = {
-    "source", "platform", "store", "distributor", "payer", "channel",
+    "source",
+    "platform",
+    "store",
+    "distributor",
+    "payer",
+    "channel",
     "retailer",
 }
 _GENERIC_TERRITORY_COLS = {
-    "country", "territory", "region", "country/region", "country code",
+    "country",
+    "territory",
+    "region",
+    "country/region",
+    "country code",
 }
 
 
@@ -347,9 +447,8 @@ def detect_format(headers: list[str]) -> str:
         return "soundcloud"
 
     # Variant with no explicit provider key but with SoundCloud-specific metadata fields.
-    if (
-        ("waveform duration" in normalised or "soundcloud track id" in normalised)
-        and ("plays" in normalised or "stream count" in normalised or "streams" in normalised)
+    if ("waveform duration" in normalised or "soundcloud track id" in normalised) and (
+        "plays" in normalised or "stream count" in normalised or "streams" in normalised
     ):
         return "soundcloud"
 
@@ -365,9 +464,17 @@ def detect_format(headers: list[str]) -> str:
 # ---------------------------------------------------------------------------
 
 _DATE_FMTS = [
-    "%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y", "%Y/%m/%d",
-    "%B %Y", "%b %Y", "%m-%Y", "%Y-%m",
-    "%m/%Y", "%d-%b-%Y", "%b-%Y",
+    "%Y-%m-%d",
+    "%m/%d/%Y",
+    "%d/%m/%Y",
+    "%Y/%m/%d",
+    "%B %Y",
+    "%b %Y",
+    "%m-%Y",
+    "%Y-%m",
+    "%m/%Y",
+    "%d-%b-%Y",
+    "%b-%Y",
 ]
 
 
@@ -386,6 +493,7 @@ def _parse_date(value: str) -> datetime | None:
 def _month_end(dt: datetime) -> date:
     """Return the last day of the month for a given datetime."""
     import calendar
+
     last_day = calendar.monthrange(dt.year, dt.month)[1]
     return date(dt.year, dt.month, last_day)
 
@@ -393,6 +501,7 @@ def _month_end(dt: datetime) -> date:
 # ---------------------------------------------------------------------------
 # Currency / amount helpers
 # ---------------------------------------------------------------------------
+
 
 def _parse_amount(value: str) -> float | None:
     """Strip currency symbols and parse a float, returning None on failure."""
@@ -421,6 +530,7 @@ def _row_hash(row: dict, fmt: str) -> str:
 # Parse result
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ParseResult:
     """Result of parsing a statement CSV."""
@@ -446,6 +556,7 @@ class ParseResult:
 # ---------------------------------------------------------------------------
 # Format-specific parsers
 # ---------------------------------------------------------------------------
+
 
 def _col(row: dict[str, str], *names: str) -> str:
     """Return the first non-empty value from a list of possible column names."""
@@ -648,42 +759,47 @@ def _parse_distributor_row(
 
 
 # Thin wrappers so that _FORMAT_PARSERS entries remain plain callables.
-# Each lambda closes over the frozen spec — no per-call allocation.
-_parse_distrokid = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["distrokid"], row, artist_id)  # noqa: E731
+# Each delegates to _parse_distributor_row with the frozen column spec.
 
 
-_parse_tunecore = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["tunecore"], row, artist_id)  # noqa: E731
+def _parse_distrokid(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["distrokid"], row, artist_id)
 
 
-_parse_cdbaby = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["cdbaby"], row, artist_id)  # noqa: E731
+def _parse_tunecore(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["tunecore"], row, artist_id)
 
 
-_parse_amuse = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["amuse"], row, artist_id)  # noqa: E731
+def _parse_cdbaby(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["cdbaby"], row, artist_id)
 
 
-_parse_unitedmasters = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["unitedmasters"], row, artist_id)  # noqa: E731
+def _parse_amuse(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["amuse"], row, artist_id)
 
 
-_parse_onerpm = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["onerpm"], row, artist_id)  # noqa: E731
+def _parse_unitedmasters(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["unitedmasters"], row, artist_id)
 
 
-_parse_stem = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["stem"], row, artist_id)  # noqa: E731
+def _parse_onerpm(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["onerpm"], row, artist_id)
 
 
-_parse_landr = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["landr"], row, artist_id)  # noqa: E731
+def _parse_stem(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["stem"], row, artist_id)
+
+
+def _parse_landr(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["landr"], row, artist_id)
 
 
 def _parse_ditto(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
-    raw_date = _col(row, "month", "period", "date")
-    _parse_date(raw_date) or datetime.now(timezone.utc)
-    _parse_int(_col(row, "streams", "plays", "quantity"))
-    amount_str = _col(row, "net revenue", "revenue", "amount")
-    amount = _parse_amount(amount_str)
-    if amount is None:
-        return None, None
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["ditto"], row, artist_id)
 
-_parse_ditto = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["ditto"], row, artist_id)  # noqa: E731
-_parse_reverbnation = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["reverbnation"], row, artist_id)  # noqa: E731
+
+def _parse_reverbnation(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    return _parse_distributor_row(_DISTRIBUTOR_COLS["reverbnation"], row, artist_id)
 
 
 def _parse_bandcamp(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
@@ -978,19 +1094,22 @@ _FORMAT_PARSERS: dict[str, Any] = {
     for fmt in _DISTRIBUTOR_COLS
 }
 # PRO / DSP formats with non-standard field semantics keep dedicated parsers.
-_FORMAT_PARSERS.update({
-    "bandcamp": _parse_bandcamp,   # SALE event, item_type source label
-    "ascap": _parse_ascap,         # per-performance, fixed territory US
-    "bmi": _parse_bmi,             # per-performance, fixed territory US
-    "spotify": _parse_spotify,     # stream revenue column name
-    "soundcloud": _parse_soundcloud,  # extra SC-specific metadata fields
-    "generic": _parse_generic,     # column-sniffing fallback
-})
+_FORMAT_PARSERS.update(
+    {
+        "bandcamp": _parse_bandcamp,  # SALE event, item_type source label
+        "ascap": _parse_ascap,  # per-performance, fixed territory US
+        "bmi": _parse_bmi,  # per-performance, fixed territory US
+        "spotify": _parse_spotify,  # stream revenue column name
+        "soundcloud": _parse_soundcloud,  # extra SC-specific metadata fields
+        "generic": _parse_generic,  # column-sniffing fallback
+    }
+)
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> ParseResult:
     """
@@ -1027,7 +1146,9 @@ def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> Pa
     return _parse_table_rows(list(reader), list(reader.fieldnames), artist_id)
 
 
-def _parse_table_rows(rows: list[dict[str, str]], headers: list[str], artist_id: str) -> ParseResult:
+def _parse_table_rows(
+    rows: list[dict[str, str]], headers: list[str], artist_id: str
+) -> ParseResult:
     fmt = detect_format(headers)
     parser = _FORMAT_PARSERS[fmt]
 
@@ -1070,7 +1191,9 @@ def _parse_table_rows(rows: list[dict[str, str]], headers: list[str], artist_id:
     )
 
 
-def parse_delimited(content: bytes, artist_id: str, *, delimiter: str = ",", encoding: str = "utf-8-sig") -> ParseResult:
+def parse_delimited(
+    content: bytes, artist_id: str, *, delimiter: str = ",", encoding: str = "utf-8-sig"
+) -> ParseResult:
     try:
         text = content.decode(encoding)
     except UnicodeDecodeError:
@@ -1078,7 +1201,11 @@ def parse_delimited(content: bytes, artist_id: str, *, delimiter: str = ",", enc
 
     reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
     if reader.fieldnames is None:
-        return ParseResult(format_detected="unknown", row_count=0, errors=["Delimited file has no header row or is empty."])
+        return ParseResult(
+            format_detected="unknown",
+            row_count=0,
+            errors=["Delimited file has no header row or is empty."],
+        )
 
     rows = list(reader)
     return _parse_table_rows(rows, list(reader.fieldnames), artist_id)
@@ -1088,10 +1215,14 @@ def parse_xlsx(content: bytes, artist_id: str) -> ParseResult:
     try:
         wb = load_workbook(io.BytesIO(content), data_only=True, read_only=True)
     except Exception as exc:  # noqa: BLE001
-        return ParseResult(format_detected="unknown", row_count=0, errors=[f"Unable to open XLSX file: {exc}"])
+        return ParseResult(
+            format_detected="unknown", row_count=0, errors=[f"Unable to open XLSX file: {exc}"]
+        )
 
     if not wb.worksheets:
-        return ParseResult(format_detected="unknown", row_count=0, errors=["XLSX file has no worksheets."])
+        return ParseResult(
+            format_detected="unknown", row_count=0, errors=["XLSX file has no worksheets."]
+        )
 
     ws = wb.worksheets[0]
     iterator = ws.iter_rows(values_only=True)
@@ -1102,7 +1233,9 @@ def parse_xlsx(content: bytes, artist_id: str) -> ParseResult:
 
     headers = [str(cell).strip() if cell is not None else "" for cell in header_row]
     if not any(headers):
-        return ParseResult(format_detected="unknown", row_count=0, errors=["XLSX header row is empty."])
+        return ParseResult(
+            format_detected="unknown", row_count=0, errors=["XLSX header row is empty."]
+        )
 
     rows: list[dict[str, str]] = []
     for cells in iterator:
@@ -1122,7 +1255,9 @@ def parse_xlsx(content: bytes, artist_id: str) -> ParseResult:
     return _parse_table_rows(rows, headers, artist_id)
 
 
-def parse_statement_file(content: bytes, artist_id: str, *, filename: str = "statement.csv", encoding: str = "utf-8-sig") -> ParseResult:
+def parse_statement_file(
+    content: bytes, artist_id: str, *, filename: str = "statement.csv", encoding: str = "utf-8-sig"
+) -> ParseResult:
     ext = Path(filename.lower()).suffix
     if ext == ".csv":
         return parse_csv(content, artist_id, encoding=encoding)

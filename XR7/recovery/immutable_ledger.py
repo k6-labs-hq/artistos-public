@@ -13,7 +13,9 @@ class ImmutableLedgerService:
     def __init__(self, db: Session):
         self.db = db
 
-    def append(self, artist_id: str, entry_type: str, payload: dict[str, Any]) -> ImmutableLedgerEntry:
+    def append(
+        self, artist_id: str, entry_type: str, payload: dict[str, Any]
+    ) -> ImmutableLedgerEntry:
         prior = (
             self.db.query(ImmutableLedgerEntry)
             .filter(ImmutableLedgerEntry.artist_id == artist_id)

@@ -48,7 +48,11 @@ class PostRepairForecastPipeline:
         events = {
             str(e.id): e
             for e in self.db.query(Event)
-            .filter(Event.artist_id == artist_id, Event.timestamp >= start_date, Event.timestamp <= end_date)
+            .filter(
+                Event.artist_id == artist_id,
+                Event.timestamp >= start_date,
+                Event.timestamp <= end_date,
+            )
             .all()
         }
 
@@ -81,7 +85,9 @@ class PostRepairForecastPipeline:
         repair_logs = metadata_engine.catalog_repairs(artist_id, limit=500)
 
         works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
-        unified_work_nodes = [{"id": w.id, "title": w.title, "isrc": w.isrc, "iswc": w.iswc} for w in works]
+        unified_work_nodes = [
+            {"id": w.id, "title": w.title, "isrc": w.isrc, "iswc": w.iswc} for w in works
+        ]
 
         rights_rows = [
             {
@@ -116,22 +122,30 @@ class PostRepairForecastPipeline:
 
         events = (
             self.db.query(Event)
-            .filter(Event.artist_id == artist_id, Event.timestamp >= start_date, Event.timestamp <= end_date)
+            .filter(
+                Event.artist_id == artist_id,
+                Event.timestamp >= start_date,
+                Event.timestamp <= end_date,
+            )
             .all()
         )
-        rate_report = RateBenchmarker().benchmark(
-            artist_id,
-            [
-                {
-                    "event_type": str(e.event_type),
-                    "unit_value": float(e.unit_value or 0.0),
-                    "quantity": float(e.quantity or 0.0),
-                    "territory": e.territory,
-                    "metadata_quality_score": metadata_health.get("consistency_score"),
-                }
-                for e in events
-            ],
-        ).to_dict()
+        rate_report = (
+            RateBenchmarker()
+            .benchmark(
+                artist_id,
+                [
+                    {
+                        "event_type": str(e.event_type),
+                        "unit_value": float(e.unit_value or 0.0),
+                        "quantity": float(e.quantity or 0.0),
+                        "territory": e.territory,
+                        "metadata_quality_score": metadata_health.get("consistency_score"),
+                    }
+                    for e in events
+                ],
+            )
+            .to_dict()
+        )
 
         ugc_report = self._run_ugc_analysis_sync(artist_id)
         foreign_report = ForeignSocietyCrosswalkEngine(self.db).analyze(artist_id)
@@ -144,9 +158,20 @@ class PostRepairForecastPipeline:
         )
 
         metadata_quality = float(metadata_health.get("consistency_score") or 0.5)
-        split_factor = 1.0 + (float(split_repairs.corrections_applied) / max(float(split_repairs.mismatch_count or 1), 1.0)) * 0.08
-        corrected_rate_events = float((rate_report.get("summary") or {}).get("events_below_p50") or 0.0)
-        total_rate_events = max(float((rate_report.get("summary") or {}).get("total_events") or 1.0), 1.0)
+        split_factor = (
+            1.0
+            + (
+                float(split_repairs.corrections_applied)
+                / max(float(split_repairs.mismatch_count or 1), 1.0)
+            )
+            * 0.08
+        )
+        corrected_rate_events = float(
+            (rate_report.get("summary") or {}).get("events_below_p50") or 0.0
+        )
+        total_rate_events = max(
+            float((rate_report.get("summary") or {}).get("total_events") or 1.0), 1.0
+        )
         rate_factor = max(0.85, min(1.15, 1.0 - (corrected_rate_events / total_rate_events) * 0.1))
         ugc_mult = 1.0 + min(float(ugc_report.get("auto_claim_count") or 0.0) * 0.01, 0.18)
         foreign_lag_factor = 1.0 - min(len(foreign_report.findings) * 0.015, 0.12)
@@ -165,16 +190,26 @@ class PostRepairForecastPipeline:
         leakage_rows = leakage_predictor.predict_per_work(
             unified_work_nodes,
             metadata_completeness=float(metadata_health.get("completeness_score") or 0.0),
-            identifier_coverage=float((metadata_health.get("identifier_coverage") or {}).get("both_coverage") or 0.0),
+            identifier_coverage=float(
+                (metadata_health.get("identifier_coverage") or {}).get("both_coverage") or 0.0
+            ),
             anomaly_density=float(len(events)) / max(float(len(unified_work_nodes) or 1), 1.0),
             payment_regularity=max(0.0, min(1.0, rate_factor)),
             catalog_age_years=4.0 if unified_work_nodes else 0.0,
-            distributor_footprint=len({str(e.platform or "").strip().lower() for e in events if str(e.platform or "").strip()}),
+            distributor_footprint=len(
+                {
+                    str(e.platform or "").strip().lower()
+                    for e in events
+                    if str(e.platform or "").strip()
+                }
+            ),
         )
         avg_risk = 0.0
         if leakage_rows:
             avg_risk = sum(float(r.probability) for r in leakage_rows) / len(leakage_rows)
-        repair_uplift = min(float(metadata_health.get("projected_leakage_avoided") or 0.0) / 100000.0, 0.2)
+        repair_uplift = min(
+            float(metadata_health.get("projected_leakage_avoided") or 0.0) / 100000.0, 0.2
+        )
         risk_penalty = min(avg_risk * 0.12, 0.18)
         adjust_factor = max(0.75, min(1.25, 1.0 - risk_penalty + repair_uplift))
 
@@ -189,12 +224,18 @@ class PostRepairForecastPipeline:
                 row["confidence_interval"]["low"] = row["low"]
                 row["confidence_interval"]["high"] = row["high"]
 
-        base["predicted_total_next_90_days"] = float((base.get("horizons") or {}).get("90", {}).get("expected") or 0.0)
+        base["predicted_total_next_90_days"] = float(
+            (base.get("horizons") or {}).get("90", {}).get("expected") or 0.0
+        )
         base["predicted_low"] = float((base.get("horizons") or {}).get("90", {}).get("low") or 0.0)
-        base["predicted_high"] = float((base.get("horizons") or {}).get("90", {}).get("high") or 0.0)
+        base["predicted_high"] = float(
+            (base.get("horizons") or {}).get("90", {}).get("high") or 0.0
+        )
         base["forecast_adjusted_for_repairs"] = True
         base["leakage_avoided_metrics"] = {
-            "projected_leakage_avoided": float(metadata_health.get("projected_leakage_avoided") or 0.0),
+            "projected_leakage_avoided": float(
+                metadata_health.get("projected_leakage_avoided") or 0.0
+            ),
             "adjustment_factor": round(float(adjust_factor), 4),
             "risk_penalty": round(float(risk_penalty), 4),
             "repair_uplift": round(float(repair_uplift), 4),
@@ -235,14 +276,18 @@ class PostRepairForecastPipeline:
                 "forecast_adjusted_for_repairs": base.get("forecast_adjusted_for_repairs", False),
                 "leakage_avoided_metrics": base.get("leakage_avoided_metrics", {}),
                 "confidence_intervals": {
-                    horizon: (base.get("horizons", {}).get(horizon, {}).get("confidence_interval") or {})
+                    horizon: (
+                        base.get("horizons", {}).get(horizon, {}).get("confidence_interval") or {}
+                    )
                     for horizon in ("30", "60", "90", "180")
                 },
             },
             "forecast_disclaimer": FORECAST_DISCLAIMER,
             "metadata": {
                 "forecast_disclaimer": FORECAST_DISCLAIMER,
-                "model": (base.get("model_metadata") or {}).get("model_name", "PostRepairEarningsForecaster"),
+                "model": (base.get("model_metadata") or {}).get(
+                    "model_name", "PostRepairEarningsForecaster"
+                ),
             },
         }
 

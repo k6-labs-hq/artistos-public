@@ -110,7 +110,11 @@ def test_xr7_valuation_and_forecast_endpoints() -> None:
 
     forecast = client.post(
         f"/artists/{artist_id}/xr7/forecast/recovery",
-        json={"tenant_id": "default", "horizon_days": 90, "scenario_overrides": {"uplift_factor": 1.1}},
+        json={
+            "tenant_id": "default",
+            "horizon_days": 90,
+            "scenario_overrides": {"uplift_factor": 1.1},
+        },
     )
     assert forecast.status_code == 200
     assert "forecast_amount" in forecast.json()

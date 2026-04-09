@@ -7,6 +7,7 @@ After a creator's analysis finishes, this endpoint:
   4. Returns a ready-to-copy share message containing the creator's personal
      invite link so they can forward it to their collaborators.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -78,6 +79,7 @@ class CollaboratorShareResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoint
 # ---------------------------------------------------------------------------
+
 
 @router.post(
     "/artists/{artist_id}/collaborator-share",
@@ -203,6 +205,7 @@ def generate_collaborator_share(
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _format_name_list(names: list[str]) -> str:
     if len(names) == 1:

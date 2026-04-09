@@ -90,7 +90,9 @@ def _build_top_payers_snapshot(dashboard: dict[str, Any], limit: int = 5) -> lis
     rows = dashboard.get("payers_owing") or []
     if not isinstance(rows, list):
         return []
-    sorted_rows = sorted(rows, key=lambda r: float((r or {}).get("recoverable_estimate") or 0.0), reverse=True)
+    sorted_rows = sorted(
+        rows, key=lambda r: float((r or {}).get("recoverable_estimate") or 0.0), reverse=True
+    )
     return [
         {
             "payer_id": r.get("payer_id"),
@@ -109,7 +111,9 @@ def _build_proactive_suggestions(dashboard: dict[str, Any]) -> list[str]:
     deadlines = dashboard.get("deadlines") or {}
     urgent = int(deadlines.get("urgent_count") or 0)
     if urgent > 0:
-        tips.append(f"You have {urgent} urgent SOL items. Prioritize those claims to avoid deadline loss.")
+        tips.append(
+            f"You have {urgent} urgent SOL items. Prioritize those claims to avoid deadline loss."
+        )
 
     payers = _build_top_payers_snapshot(dashboard, limit=1)
     if payers:
@@ -121,14 +125,20 @@ def _build_proactive_suggestions(dashboard: dict[str, Any]) -> list[str]:
 
     readiness = dashboard.get("readiness_score")
     if readiness is not None and float(readiness) < 70:
-        tips.append("Your readiness score is below 70. Run catalog readiness checks before filing additional claims.")
+        tips.append(
+            "Your readiness score is below 70. Run catalog readiness checks before filing additional claims."
+        )
 
     leakage = (dashboard.get("leakage_discovered") or {}).get("total_estimated_recoverable")
     if leakage and float(leakage) > 0:
-        tips.append(f"Estimated leakage is ${float(leakage):,.2f}. Use priority actions to convert this into active claims.")
+        tips.append(
+            f"Estimated leakage is ${float(leakage):,.2f}. Use priority actions to convert this into active claims."
+        )
 
     if not tips:
-        tips.append("No urgent blockers detected. Keep uploading new statements to surface additional recoverable anomalies.")
+        tips.append(
+            "No urgent blockers detected. Keep uploading new statements to surface additional recoverable anomalies."
+        )
 
     return tips[:5]
 
@@ -159,7 +169,9 @@ def support_chat(
         dashboard_context=dashboard,
     )
 
-    response_text = str(agent_state.get("support_response") or "I can help with dashboard context and safe actions.")
+    response_text = str(
+        agent_state.get("support_response") or "I can help with dashboard context and safe actions."
+    )
     confidence = float(agent_state.get("support_confidence") or 0.0)
     quick_replies = list(agent_state.get("support_suggested_replies") or [])[:5]
     escalate = bool(agent_state.get("support_escalation_recommended") or confidence < 0.75)
@@ -229,7 +241,9 @@ def support_history(
         try:
             cursor_ts = datetime.fromisoformat(cursor)
         except ValueError as exc:
-            raise HTTPException(status_code=400, detail="Invalid cursor format. Use ISO8601 timestamp.") from exc
+            raise HTTPException(
+                status_code=400, detail="Invalid cursor format. Use ISO8601 timestamp."
+            ) from exc
         base = base.filter(SupportMessage.created_at < cursor_ts)
 
     total = base.count()
@@ -293,14 +307,17 @@ def support_action(
     if action == "show_top_payers":
         top = _build_top_payers_snapshot(dashboard, limit=5)
         result = {"top_payers": top}
-        formatted_message = (
-            "Top payer insights are ready. "
-            + (f"Highest recoverable payer is {top[0].get('payer_name')}." if top else "No payer data available yet.")
+        formatted_message = "Top payer insights are ready. " + (
+            f"Highest recoverable payer is {top[0].get('payer_name')}."
+            if top
+            else "No payer data available yet."
         )
     elif action == "explain_anomaly":
         anomaly_id = str((payload.payload or {}).get("anomaly_id") or "").strip()
         if not anomaly_id:
-            raise HTTPException(status_code=400, detail="payload.anomaly_id is required for explain_anomaly")
+            raise HTTPException(
+                status_code=400, detail="payload.anomaly_id is required for explain_anomaly"
+            )
         anomaly = (
             db.query(Anomaly)
             .filter(Anomaly.id == anomaly_id, Anomaly.artist_id == artist_id)
@@ -330,7 +347,9 @@ def support_action(
             artist_id=artist_id,
             anomalies=anomalies,
             claims=claims,
-            contracts=[{"id": c.id, "terms": c.terms or {}, "territory": c.territory} for c in contracts],
+            contracts=[
+                {"id": c.id, "terms": c.terms or {}, "territory": c.territory} for c in contracts
+            ],
             payments=[{"id": p.id, "amount": p.amount, "source": p.source} for p in payments],
         )
         result = {"digest_preview": digest}
@@ -360,7 +379,9 @@ def support_action(
 
             readiness_output = asyncio.run(readiness)
         result = {
-            "readiness_score": readiness_output.get("readiness_score", dashboard.get("readiness_score")),
+            "readiness_score": readiness_output.get(
+                "readiness_score", dashboard.get("readiness_score")
+            ),
             "dashboard_readiness_score": dashboard.get("readiness_score"),
         }
         formatted_message = "Catalog readiness check completed."

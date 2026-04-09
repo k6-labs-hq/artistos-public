@@ -13,6 +13,7 @@ Workflow:
   4. Create ``Anomaly`` records with subtype="black_box_match".
   5. Log in the immutable ledger.
 """
+
 from __future__ import annotations
 
 import uuid
@@ -142,6 +143,7 @@ _MLC_BLACKBOX_POOL: list[dict[str, Any]] = [
 # Matching logic
 # ---------------------------------------------------------------------------
 
+
 def _artist_identifiers(artist: Artist) -> tuple[set[str], str | None]:
     """Return (lowercased name variants, ipi_number)."""
     names: set[str] = set()
@@ -166,8 +168,10 @@ def _match_entry(
     match_type = str(entry.get("match_type") or BlackboxMatchType.NAME_ALIAS.value)
 
     if match_type == BlackboxMatchType.IPI_CAE.value:
-        return bool(ipi_number) and bool(entry.get("ipi_hint")) and (
-            str(ipi_number).strip() == str(entry.get("ipi_hint") or "").strip()
+        return (
+            bool(ipi_number)
+            and bool(entry.get("ipi_hint"))
+            and (str(ipi_number).strip() == str(entry.get("ipi_hint") or "").strip())
         )
 
     if match_type == BlackboxMatchType.PRO_WRITER_ID.value:
@@ -203,10 +207,12 @@ def _already_matched(
             BlackboxMatch.society == society,
             BlackboxMatch.source_list == source_list,
             BlackboxMatch.match_type == match_type,
-            BlackboxMatch.status.notin_([
-                BlackboxMatchStatus.EXPIRED.value,
-                BlackboxMatchStatus.DISMISSED.value,
-            ]),
+            BlackboxMatch.status.notin_(
+                [
+                    BlackboxMatchStatus.EXPIRED.value,
+                    BlackboxMatchStatus.DISMISSED.value,
+                ]
+            ),
         )
         .first()
     )
@@ -215,6 +221,7 @@ def _already_matched(
 # ---------------------------------------------------------------------------
 # Core scan function (used both by Celery task and on-demand endpoint)
 # ---------------------------------------------------------------------------
+
 
 def run_blackbox_scan(artist_id: str, db) -> dict[str, Any]:
     """
@@ -260,7 +267,9 @@ def run_blackbox_scan(artist_id: str, db) -> dict[str, Any]:
             artist_id=artist_id,
             category=AnomalyCategory.ROYALTY.value,
             subtype="black_box_match",
-            severity=AnomalySeverity.HIGH.value if urgency_days < 180 else AnomalySeverity.MEDIUM.value,
+            severity=(
+                AnomalySeverity.HIGH.value if urgency_days < 180 else AnomalySeverity.MEDIUM.value
+            ),
             estimated_recoverable=(amount_low + amount_high) / 2.0,
             confidence_score=0.72,
             description=(
@@ -282,7 +291,9 @@ def run_blackbox_scan(artist_id: str, db) -> dict[str, Any]:
             artist_id=artist_id,
             society=society,
             match_type=match_type,
-            matched_identifier=ipi_number if match_type == BlackboxMatchType.IPI_CAE.value else None,
+            matched_identifier=(
+                ipi_number if match_type == BlackboxMatchType.IPI_CAE.value else None
+            ),
             source_list=source_list,
             amount_range_low=amount_low,
             amount_range_high=amount_high,
@@ -319,7 +330,10 @@ def run_blackbox_scan(artist_id: str, db) -> dict[str, Any]:
     db.commit()
     logger.info(
         "Blackbox scan for artist %s: %d new matches ($%.0f–$%.0f)",
-        artist_id, new_match_count, total_low, total_high,
+        artist_id,
+        new_match_count,
+        total_low,
+        total_high,
     )
     return {
         "artist_id": artist_id,
@@ -334,6 +348,7 @@ def run_blackbox_scan(artist_id: str, db) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Celery task
 # ---------------------------------------------------------------------------
+
 
 @celery_app.task(
     name="xr7.tasks.blackbox.scan_artist_blackbox",
@@ -360,11 +375,8 @@ def scan_all_artists_blackbox(self) -> dict[str, Any]:  # noqa: ANN001
     db = SessionLocal()
     try:
         from XR7.models.artist import ArtistLifecycleStatus
-        artists = (
-            db.query(Artist)
-            .filter(Artist.status == ArtistLifecycleStatus.ACTIVE.value)
-            .all()
-        )
+
+        artists = db.query(Artist).filter(Artist.status == ArtistLifecycleStatus.ACTIVE.value).all()
         queued = 0
         for artist in artists:
             scan_artist_blackbox.delay(artist.id)

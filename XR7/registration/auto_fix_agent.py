@@ -14,11 +14,21 @@ class AutoFixRegistrationAgent:
 
     def scan_registration_gaps(self, artist_id: str) -> list[dict[str, Any]]:
         return [
-            {"type": "missing_pro_registration", "severity": "high", "suggested_action": "Register work with PRO"},
-            {"type": "missing_isrc", "severity": "medium", "suggested_action": "Create ISRC and update distributor metadata"},
+            {
+                "type": "missing_pro_registration",
+                "severity": "high",
+                "suggested_action": "Register work with PRO",
+            },
+            {
+                "type": "missing_isrc",
+                "severity": "medium",
+                "suggested_action": "Create ISRC and update distributor metadata",
+            },
         ]
 
-    def auto_register_or_prepare_submission(self, artist_id: str, issues: list[dict[str, Any]]) -> dict[str, Any]:
+    def auto_register_or_prepare_submission(
+        self, artist_id: str, issues: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         forms = [
             {"issue": i["type"], "submission_mode": "simulated", "status": "prepared"}
             for i in issues
@@ -34,4 +44,9 @@ class AutoFixRegistrationAgent:
 
     def track_success(self, artist_id: str, submitted: int, accepted: int) -> dict[str, Any]:
         ratio = (accepted / submitted) if submitted else 0.0
-        return {"artist_id": artist_id, "submitted": submitted, "accepted": accepted, "success_ratio": round(ratio, 4)}
+        return {
+            "artist_id": artist_id,
+            "submitted": submitted,
+            "accepted": accepted,
+            "success_ratio": round(ratio, 4),
+        }

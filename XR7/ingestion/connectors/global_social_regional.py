@@ -12,12 +12,18 @@ class GlobalSocialRegionalConnector(IngestionConnector):
 
     def __init__(self, config: dict | None = None):
         super().__init__(config=config or {})
-        self.simulated = os.environ.get("XR7_GLOBAL_SOCIAL_SIMULATED", "1").strip().lower() in {"1", "true", "yes"}
+        self.simulated = os.environ.get("XR7_GLOBAL_SOCIAL_SIMULATED", "1").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+        }
 
     def connect(self) -> bool:
         return True
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict[str, Any]]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict[str, Any]]:
         return []
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict[str, Any]]:
@@ -41,7 +47,7 @@ class GlobalSocialRegionalConnector(IngestionConnector):
                 "amount": 0.0,
                 "currency": "USD",
                 "work_id": f"{platform}-work-1",
-                "metadata_json": "{\"mode\":\"simulated\"}",
+                "metadata_json": '{"mode":"simulated"}',
                 "detected_at": datetime.now(timezone.utc).isoformat(),
             }
         ]
@@ -50,7 +56,11 @@ class GlobalSocialRegionalConnector(IngestionConnector):
         return [
             {"platform": "youtube", "title": "Viral vlog sync", "estimated_recoverable": 4200.0},
             {"platform": "tiktok", "title": "Dance trend usage", "estimated_recoverable": 5100.0},
-            {"platform": "soundcloud", "title": "Unofficial remix repost cluster", "estimated_recoverable": 2300.0},
+            {
+                "platform": "soundcloud",
+                "title": "Unofficial remix repost cluster",
+                "estimated_recoverable": 2300.0,
+            },
         ]
 
     def generate_csv_export_instructions(self, platform: str) -> dict[str, Any]:

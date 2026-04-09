@@ -36,23 +36,24 @@ from datetime import datetime, timedelta, timezone
 # ---------------------------------------------------------------------------
 
 OTP_LENGTH = 6
-OTP_EXPIRY_SECONDS = 300          # 5 minutes
-SESSION_LOCKOUT_SECONDS = 900     # 15 minutes after 3 failed attempts
+OTP_EXPIRY_SECONDS = 300  # 5 minutes
+SESSION_LOCKOUT_SECONDS = 900  # 15 minutes after 3 failed attempts
 MAX_ATTEMPTS = 3
 MAX_SENDS_PER_PHONE_PER_HOUR = 3
-ESTIMATE_TOKEN_EXPIRY_SECONDS = 3600   # 1 hour
+ESTIMATE_TOKEN_EXPIRY_SECONDS = 3600  # 1 hour
 
 
 # ---------------------------------------------------------------------------
 # Internal data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class OTPSession:
     session_id: str
     artist_name: str
-    phone: str          # stored for rate-limit lookup; never logged
-    email: str          # stored for routing; never logged
+    phone: str  # stored for rate-limit lookup; never logged
+    email: str  # stored for routing; never logged
     phone_otp: str
     email_otp: str
     created_at: datetime
@@ -104,6 +105,7 @@ _tokens: dict[str, EstimateToken] = {}
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _now() -> datetime:
     return datetime.now(timezone.utc)
 
@@ -147,9 +149,7 @@ def _check_rate_limit(phone: str, now: datetime | None = None) -> None:
     # Keep only timestamps within the last hour
     recent = [ts for ts in history if ts >= window_start]
     if len(recent) >= MAX_SENDS_PER_PHONE_PER_HOUR:
-        raise RateLimitError(
-            "Too many verification requests.  Please wait before trying again."
-        )
+        raise RateLimitError("Too many verification requests.  Please wait before trying again.")
     recent.append(ref)
     _send_log[key] = recent
 
@@ -157,6 +157,7 @@ def _check_rate_limit(phone: str, now: datetime | None = None) -> None:
 # ---------------------------------------------------------------------------
 # Custom exceptions
 # ---------------------------------------------------------------------------
+
 
 class OTPError(Exception):
     """Base class for OTP service errors."""
@@ -185,6 +186,7 @@ class TokenError(OTPError):
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 def create_session(
     artist_name: str,

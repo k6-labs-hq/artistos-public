@@ -17,7 +17,9 @@ class TouringRecoupmentAuditor:
     def __init__(self, db: Session):
         self.db = db
 
-    def detect_settlement_discrepancies(self, settlement_data: str, merch_data: str) -> list[dict[str, Any]]:
+    def detect_settlement_discrepancies(
+        self, settlement_data: str, merch_data: str
+    ) -> list[dict[str, Any]]:
         def _sum_amounts(raw: str) -> float:
             total = 0.0
             reader = csv.DictReader(io.StringIO(raw))
@@ -30,7 +32,14 @@ class TouringRecoupmentAuditor:
         delta = round(abs(settle - merch), 2)
         if delta < 1:
             return []
-        return [{"type": "touring_settlement_delta", "delta": delta, "settlement_total": settle, "merch_total": merch}]
+        return [
+            {
+                "type": "touring_settlement_delta",
+                "delta": delta,
+                "settlement_total": settle,
+                "merch_total": merch,
+            }
+        ]
 
     def analyze_recoupment_overages(self, artist_id: str) -> dict[str, Any]:
         return {

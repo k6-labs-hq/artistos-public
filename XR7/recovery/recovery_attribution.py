@@ -4,7 +4,9 @@ from collections import defaultdict
 from typing import Any
 
 
-def attribute_recovery(anomalies: list[dict[str, Any]], claims: list[dict[str, Any]]) -> dict[str, Any]:
+def attribute_recovery(
+    anomalies: list[dict[str, Any]], claims: list[dict[str, Any]]
+) -> dict[str, Any]:
     """Attribute recovered value to anomalies, claims, catalog issues, and contract issues."""
     by_anomaly: dict[str, float] = defaultdict(float)
     by_claim: dict[str, float] = defaultdict(float)

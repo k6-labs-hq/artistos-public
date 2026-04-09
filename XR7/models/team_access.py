@@ -24,7 +24,9 @@ class TeamMember(Base):
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     user_email: Mapped[str] = mapped_column(String, nullable=False, index=True)
     role: Mapped[str] = mapped_column(Enum(TeamRole), nullable=False, default=TeamRole.MANAGER)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class TeamMemberSchema(BaseModel):

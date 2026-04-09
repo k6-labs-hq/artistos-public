@@ -8,6 +8,7 @@ These tests are intentionally kept lightweight so they run quickly in CI
 while still catching gross regressions.  For full load-test evidence use
 scripts/benchmark_slo.py with --iterations 200 or higher.
 """
+
 from __future__ import annotations
 
 import time
@@ -26,7 +27,7 @@ client = TestClient(app)
 # SLO thresholds (p95, milliseconds) — same as scripts/benchmark_slo.py
 # ---------------------------------------------------------------------------
 SLO_P95_MS: dict[str, float] = {
-    "/health": 100.0,           # generous headroom for in-process overhead
+    "/health": 100.0,  # generous headroom for in-process overhead
     "anomalies": 600.0,
     "dashboard": 1000.0,
     "earnings_summary": 600.0,
@@ -67,9 +68,9 @@ class TestSloHealth:
     def test_health_p95_under_threshold(self):
         times = _measure("/health")
         p95 = _p95(times)
-        assert p95 <= SLO_P95_MS["/health"], (
-            f"GET /health p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['/health']:.0f}ms"
-        )
+        assert (
+            p95 <= SLO_P95_MS["/health"]
+        ), f"GET /health p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['/health']:.0f}ms"
 
 
 class TestSloArtistEndpoints:
@@ -80,23 +81,23 @@ class TestSloArtistEndpoints:
     def test_anomalies_p95_under_threshold(self, artist_id):
         times = _measure(f"/artists/{artist_id}/anomalies")
         p95 = _p95(times)
-        assert p95 <= SLO_P95_MS["anomalies"], (
-            f"GET /anomalies p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['anomalies']:.0f}ms"
-        )
+        assert (
+            p95 <= SLO_P95_MS["anomalies"]
+        ), f"GET /anomalies p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['anomalies']:.0f}ms"
 
     def test_dashboard_p95_under_threshold(self, artist_id):
         times = _measure(f"/artists/{artist_id}/dashboard")
         p95 = _p95(times)
-        assert p95 <= SLO_P95_MS["dashboard"], (
-            f"GET /dashboard p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['dashboard']:.0f}ms"
-        )
+        assert (
+            p95 <= SLO_P95_MS["dashboard"]
+        ), f"GET /dashboard p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['dashboard']:.0f}ms"
 
     def test_earnings_summary_p95_under_threshold(self, artist_id):
         times = _measure(f"/artists/{artist_id}/earnings/summary")
         p95 = _p95(times)
-        assert p95 <= SLO_P95_MS["earnings_summary"], (
-            f"GET /earnings/summary p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['earnings_summary']:.0f}ms"
-        )
+        assert (
+            p95 <= SLO_P95_MS["earnings_summary"]
+        ), f"GET /earnings/summary p95 = {p95:.1f}ms exceeds SLO of {SLO_P95_MS['earnings_summary']:.0f}ms"
 
     def test_slo_report_keys_present_in_benchmark_script(self):
         """Smoke test: the standalone benchmark script remains importable and defines thresholds."""

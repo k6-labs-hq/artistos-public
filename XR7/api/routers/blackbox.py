@@ -4,6 +4,7 @@ Black-Box / Unclaimed Royalties — API endpoints.
 GET  /artists/{artist_id}/blackbox/matches
 POST /artists/{artist_id}/blackbox/scan   (on-demand trigger)
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
@@ -93,6 +94,7 @@ def trigger_blackbox_scan(
 
     try:
         from XR7.tasks.blackbox import scan_artist_blackbox
+
         result = scan_artist_blackbox.delay(artist_id)
         task_id = str(result.id) if result else None
         return BlackboxScanTriggerResponse(
@@ -104,6 +106,7 @@ def trigger_blackbox_scan(
     except Exception:
         # Celery unavailable (e.g. tests without broker) — run inline
         from XR7.tasks.blackbox import run_blackbox_scan
+
         summary = run_blackbox_scan(artist_id, db)
         return BlackboxScanTriggerResponse(
             artist_id=artist_id,

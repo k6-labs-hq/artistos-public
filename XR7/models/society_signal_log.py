@@ -18,4 +18,6 @@ class SocietySignalLog(Base):
     payer_or_society: Mapped[str] = mapped_column(String, nullable=False, index=True)
     affected_anomaly_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     classification_impact_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, nullable=False, default=lambda: datetime.now(timezone.utc)
+    )

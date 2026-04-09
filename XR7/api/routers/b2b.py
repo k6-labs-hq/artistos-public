@@ -68,7 +68,14 @@ def b2b_dashboard(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"publisher_admin", "publisher_analyst", "manager", "label_ops", "attorney", "viewer"},
+        allowed_roles={
+            "publisher_admin",
+            "publisher_analyst",
+            "manager",
+            "label_ops",
+            "attorney",
+            "viewer",
+        },
     )
     brand = get_branding_profile(db=None, org_id=org_id)
     return {
@@ -94,7 +101,14 @@ def org_portfolio(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"publisher_admin", "publisher_analyst", "manager", "label_ops", "attorney", "viewer"},
+        allowed_roles={
+            "publisher_admin",
+            "publisher_analyst",
+            "manager",
+            "label_ops",
+            "attorney",
+            "viewer",
+        },
     )
     brand = get_branding_profile(db=None, org_id=org_id)
     return {
@@ -142,7 +156,13 @@ def management_dashboard(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
     payload = OrgDashboardService(db).management_dashboard(org_id)
     brand = get_branding_profile(db, org_id)
@@ -173,7 +193,13 @@ def management_dashboard_v2(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
 
     service = OrgDashboardService(db)
@@ -236,7 +262,13 @@ def management_artist_drilldown(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
     try:
         payload = OrgDashboardService(db).management_artist_detail(org_id, artist_id)
@@ -262,7 +294,13 @@ def management_catalog_drilldown(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
     payload = OrgDashboardService(db).management_catalog(org_id)
     payload["branding"] = branding_metadata(get_branding_profile(db, org_id))
@@ -288,7 +326,13 @@ def management_anomalies_drilldown(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
     payload = OrgDashboardService(db).management_anomalies(
         org_id,
@@ -319,7 +363,13 @@ def management_claims_drilldown(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
     payload = OrgDashboardService(db).management_claims(
         org_id,
@@ -346,7 +396,13 @@ def management_forecast(
     role = _require_org_access(
         x_org_key=x_org_key,
         x_org_role=x_org_role,
-        allowed_roles={"org_admin", "org_analyst", "org_manager", "publisher_admin", "publisher_analyst"},
+        allowed_roles={
+            "org_admin",
+            "org_analyst",
+            "org_manager",
+            "publisher_admin",
+            "publisher_analyst",
+        },
     )
     payload = OrgDashboardService(db).management_forecast(org_id)
     payload["branding"] = branding_metadata(get_branding_profile(db, org_id))
@@ -427,15 +483,13 @@ def export_portfolio_csv(
         else []
     ):
         anomaly_counts[a.artist_id] = anomaly_counts.get(a.artist_id, 0) + 1
-        recoverable_totals[a.artist_id] = (
-            recoverable_totals.get(a.artist_id, 0.0) + float(a.estimated_recoverable or 0.0)
+        recoverable_totals[a.artist_id] = recoverable_totals.get(a.artist_id, 0.0) + float(
+            a.estimated_recoverable or 0.0
         )
 
     claim_counts: dict[str, int] = {}
     for c in (
-        db.query(Claim.artist_id)
-        .filter(Claim.artist_id.in_(artist_ids))
-        .all()
+        db.query(Claim.artist_id).filter(Claim.artist_id.in_(artist_ids)).all()
         if artist_ids
         else []
     ):
@@ -443,26 +497,30 @@ def export_portfolio_csv(
 
     out = io.StringIO()
     writer = csv.writer(out)
-    writer.writerow([
-        "artist_id",
-        "artist_name",
-        "total_anomalies",
-        "total_estimated_recoverable_usd",
-        "total_claims",
-        "export_org_id",
-        "exported_at",
-    ])
+    writer.writerow(
+        [
+            "artist_id",
+            "artist_name",
+            "total_anomalies",
+            "total_estimated_recoverable_usd",
+            "total_claims",
+            "export_org_id",
+            "exported_at",
+        ]
+    )
     exported_at = datetime.now(timezone.utc).isoformat()
     for artist in artists:
-        writer.writerow([
-            artist.id,
-            artist.name or "",
-            anomaly_counts.get(artist.id, 0),
-            round(recoverable_totals.get(artist.id, 0.0), 2),
-            claim_counts.get(artist.id, 0),
-            org_id,
-            exported_at,
-        ])
+        writer.writerow(
+            [
+                artist.id,
+                artist.name or "",
+                anomaly_counts.get(artist.id, 0),
+                round(recoverable_totals.get(artist.id, 0.0), 2),
+                claim_counts.get(artist.id, 0),
+                org_id,
+                exported_at,
+            ]
+        )
 
     return StreamingResponse(
         io.BytesIO(out.getvalue().encode("utf-8")),
@@ -508,32 +566,36 @@ def export_legal_packets_csv(
 
     out = io.StringIO()
     writer = csv.writer(out)
-    writer.writerow([
-        "claim_id",
-        "artist_id",
-        "status",
-        "recovered_amount",
-        "sol_deadline",
-        "governing_law_state",
-        "contract_type",
-        "attorney_review_required",
-        "export_org_id",
-        "exported_at",
-    ])
+    writer.writerow(
+        [
+            "claim_id",
+            "artist_id",
+            "status",
+            "recovered_amount",
+            "sol_deadline",
+            "governing_law_state",
+            "contract_type",
+            "attorney_review_required",
+            "export_org_id",
+            "exported_at",
+        ]
+    )
     exported_at = datetime.now(timezone.utc).isoformat()
     for claim in claims:
-        writer.writerow([
-            claim.id,
-            claim.artist_id,
-            str(claim.status.value if hasattr(claim.status, "value") else claim.status),
-            round(float(claim.recovered_amount or 0.0), 2),
-            claim.sol_deadline.isoformat() if claim.sol_deadline else "",
-            claim.governing_law_state or "",
-            claim.contract_type or "",
-            claim.attorney_review_required,
-            org_id,
-            exported_at,
-        ])
+        writer.writerow(
+            [
+                claim.id,
+                claim.artist_id,
+                str(claim.status.value if hasattr(claim.status, "value") else claim.status),
+                round(float(claim.recovered_amount or 0.0), 2),
+                claim.sol_deadline.isoformat() if claim.sol_deadline else "",
+                claim.governing_law_state or "",
+                claim.contract_type or "",
+                claim.attorney_review_required,
+                org_id,
+                exported_at,
+            ]
+        )
 
     return StreamingResponse(
         io.BytesIO(out.getvalue().encode("utf-8")),

@@ -4,6 +4,7 @@ Every call to send_event_notification that reaches the dispatch stage writes
 a row here, regardless of outcome.  This satisfies the backlog acceptance
 signal: "Delivery events persisted for auditability."
 """
+
 from __future__ import annotations
 
 import uuid
@@ -19,14 +20,10 @@ from XR7.models.base import Base
 class NotificationDeliveryLog(Base):
     __tablename__ = "notification_delivery_logs"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     event_key: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    channel: Mapped[str] = mapped_column(
-        String, nullable=False
-    )  # "sms" | "email"
+    channel: Mapped[str] = mapped_column(String, nullable=False)  # "sms" | "email"
     recipient: Mapped[str | None] = mapped_column(String, nullable=True)
     sent: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     # skip_reason is set when sent=False (e.g. "quiet_hours", "event_disabled")

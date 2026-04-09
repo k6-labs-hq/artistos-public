@@ -36,13 +36,14 @@ from dataclasses import dataclass
 # we expect more true-positives than false-positives.  The prior mean is
 # 2/(2+1) ≈ 0.667, which is deliberately more optimistic than a flat Beta(1,1)
 # prior (mean 0.5) but still shrinks towards 1.0 as evidence accumulates.
-_PRIOR_ALPHA = 2.0   # pseudo-counts: confirmed true-positives
-_PRIOR_BETA = 1.0    # pseudo-counts: confirmed false-positives
+_PRIOR_ALPHA = 2.0  # pseudo-counts: confirmed true-positives
+_PRIOR_BETA = 1.0  # pseudo-counts: confirmed false-positives
 
 
 # ---------------------------------------------------------------------------
 # Beta distribution helpers
 # ---------------------------------------------------------------------------
+
 
 def _beta_mean(alpha: float, beta: float) -> float:
     return alpha / (alpha + beta)
@@ -57,14 +58,16 @@ def _beta_std(alpha: float, beta: float) -> float:
 # Outcome type
 # ---------------------------------------------------------------------------
 
+
 class AnomalyOutcome:
-    TRUE_POSITIVE = "TRUE_POSITIVE"   # claim accepted / recovered amount > 0
-    FALSE_POSITIVE = "FALSE_POSITIVE" # claim closed with no recovery
+    TRUE_POSITIVE = "TRUE_POSITIVE"  # claim accepted / recovered amount > 0
+    FALSE_POSITIVE = "FALSE_POSITIVE"  # claim closed with no recovery
 
 
 # ---------------------------------------------------------------------------
 # Updater class
 # ---------------------------------------------------------------------------
+
 
 @dataclass
 class _Prior:
@@ -172,17 +175,12 @@ class ConfidenceUpdater:
             "beta": prior.beta,
             "posterior_mean": round(_beta_mean(prior.alpha, prior.beta), 4),
             "posterior_std": round(_beta_std(prior.alpha, prior.beta), 4),
-            "sample_count": int(
-                prior.alpha + prior.beta - _PRIOR_ALPHA - _PRIOR_BETA
-            ),
+            "sample_count": int(prior.alpha + prior.beta - _PRIOR_ALPHA - _PRIOR_BETA),
         }
 
     def all_stats(self) -> list[dict]:
         """Return precision stats for every (category, subtype) that has been updated."""
-        return [
-            self.precision_stats(cat, sub)
-            for cat, sub in self._priors
-        ]
+        return [self.precision_stats(cat, sub) for cat, sub in self._priors]
 
     def bulk_record_from_claims(self, claims: list[dict]) -> None:
         """
@@ -208,8 +206,6 @@ class ConfidenceUpdater:
                 continue
             recovered = float(claim.get("recovered_amount", 0.0) or 0.0)
             outcome = (
-                AnomalyOutcome.TRUE_POSITIVE
-                if recovered > 0.0
-                else AnomalyOutcome.FALSE_POSITIVE
+                AnomalyOutcome.TRUE_POSITIVE if recovered > 0.0 else AnomalyOutcome.FALSE_POSITIVE
             )
             self.record_outcome(category, subtype, outcome)

@@ -15,14 +15,18 @@ class CatalogGraphSnapshot(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    graph_version: Mapped[str] = mapped_column(String, nullable=False, default="xr7.catalog_graph.v1")
+    graph_version: Mapped[str] = mapped_column(
+        String, nullable=False, default="xr7.catalog_graph.v1"
+    )
     nodes_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     edges_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     duplicates_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     missing_metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     ownership_conflicts_json: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     contract_address: Mapped[str | None] = mapped_column(String, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class CatalogGraphSnapshotSchema(BaseModel):

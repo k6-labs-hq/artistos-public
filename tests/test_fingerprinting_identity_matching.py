@@ -23,6 +23,7 @@ Recommended future tests:
   - apply_identity_decision() confirms/rejects a match and audits correctly.
   - Property-based: arbitrary signals → score always in [0.0, 1.0].
 """
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock
@@ -38,6 +39,7 @@ from XR7.models.identity_match import (
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 def _make_artist(
     name: str = "Ed Sheeran",
@@ -65,9 +67,11 @@ def _make_work(
 # compute_identity_match — result structure
 # ---------------------------------------------------------------------------
 
+
 class TestComputeIdentityMatchStructure:
     def test_returns_identity_match_result(self):
         from XR7.fingerprinting.matching.identity_matching import IdentityMatchResult
+
         artist = _make_artist()
         result = compute_identity_match(artist, {}, [])
         assert isinstance(result, IdentityMatchResult)
@@ -102,6 +106,7 @@ class TestComputeIdentityMatchStructure:
 # No signals → require confirmation band
 # ---------------------------------------------------------------------------
 
+
 class TestNoSignals:
     def test_empty_signals_score_zero(self):
         result = compute_identity_match(_make_artist(), {}, [])
@@ -116,6 +121,7 @@ class TestNoSignals:
 # ---------------------------------------------------------------------------
 # Stage name signal (weight 0.35)
 # ---------------------------------------------------------------------------
+
 
 class TestStageNameSignal:
     def test_exact_stage_name_match_contributes_full_weight(self):
@@ -146,6 +152,7 @@ class TestStageNameSignal:
 # IPI / PRO writer ID signal (weight 0.20)
 # ---------------------------------------------------------------------------
 
+
 class TestIpiSignal:
     def test_matched_ipi_contributes_full_weight(self):
         artist = _make_artist(ipi_number="00123456789")
@@ -168,6 +175,7 @@ class TestIpiSignal:
 # ---------------------------------------------------------------------------
 # ISRC signal (weight 0.15)
 # ---------------------------------------------------------------------------
+
 
 class TestIsrcSignal:
     def test_matching_isrc_contributes_full_weight(self):
@@ -193,6 +201,7 @@ class TestIsrcSignal:
 # ISWC signal (weight 0.10)
 # ---------------------------------------------------------------------------
 
+
 class TestIswcSignal:
     def test_matching_iswc_contributes_full_weight(self):
         works = [_make_work(iswc="T-034.524.680-1")]
@@ -204,6 +213,7 @@ class TestIswcSignal:
 # ---------------------------------------------------------------------------
 # UPC signal (weight 0.05)
 # ---------------------------------------------------------------------------
+
 
 class TestUpcSignal:
     def test_upc_present_gives_one(self):
@@ -219,6 +229,7 @@ class TestUpcSignal:
 # ---------------------------------------------------------------------------
 # Band assignment thresholds
 # ---------------------------------------------------------------------------
+
 
 class TestBandAssignment:
     def _high_confidence_signals(self):

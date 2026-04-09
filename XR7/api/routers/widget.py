@@ -66,6 +66,7 @@ logger = get_logger(__name__)
 # Admin authentication
 # ---------------------------------------------------------------------------
 
+
 def _require_admin(x_admin_key: str = Header(default="")) -> None:
     """
     Dependency that validates the ``X-Admin-Key`` header against the
@@ -82,6 +83,7 @@ def _require_admin(x_admin_key: str = Header(default="")) -> None:
         )
     if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
         raise HTTPException(status_code=401, detail="Invalid or missing admin key.")
+
 
 # ---------------------------------------------------------------------------
 # Input validation helpers
@@ -136,6 +138,7 @@ def _validate_artist_name(name: str) -> str:
 # ---------------------------------------------------------------------------
 # Request / response schemas
 # ---------------------------------------------------------------------------
+
 
 class RegisterRequest(BaseModel):
     artist_name: str
@@ -192,9 +195,7 @@ class EstimateRequest(BaseModel):
     def stage_must_be_valid(cls, v: str) -> str:
         upper = v.strip().upper()
         if upper not in VALID_CAREER_STAGES:
-            raise ValueError(
-                f"career_stage must be one of: {', '.join(VALID_CAREER_STAGES)}"
-            )
+            raise ValueError(f"career_stage must be one of: {', '.join(VALID_CAREER_STAGES)}")
         return upper
 
     @field_validator("genre")
@@ -215,6 +216,7 @@ class EstimateRequest(BaseModel):
 # Dependency: notification service
 # ---------------------------------------------------------------------------
 
+
 def _get_notification_service():
     return get_notification_service()
 
@@ -222,6 +224,7 @@ def _get_notification_service():
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
 
 @router.post("/register", response_model=RegisterResponse)
 def register(body: RegisterRequest):
@@ -266,7 +269,10 @@ def register(body: RegisterRequest):
             session_id=session.session_id,
         )
     except Exception:  # noqa: BLE001
-        logger.exception("Failed to enqueue widget registration HubSpot sync", extra={"session_id": session.session_id})
+        logger.exception(
+            "Failed to enqueue widget registration HubSpot sync",
+            extra={"session_id": session.session_id},
+        )
 
     return RegisterResponse(
         session_id=session.session_id,
@@ -381,6 +387,7 @@ def estimate(body: EstimateRequest, db: Session = Depends(get_db)):
 # CTA — Claim My Recovery
 # ---------------------------------------------------------------------------
 
+
 class ClaimRequest(BaseModel):
     lead_id: str
 
@@ -417,6 +424,7 @@ def claim(body: ClaimRequest, db: Session = Depends(get_db)):
 # Admin — list all leads
 # ---------------------------------------------------------------------------
 
+
 @router.get("/leads", response_model=List[WidgetLeadSchema])
 def list_leads(
     db: Session = Depends(get_db),
@@ -428,9 +436,5 @@ def list_leads(
     Requires the ``X-Admin-Key`` request header to equal the
     ``WIDGET_ADMIN_KEY`` environment variable.
     """
-    leads = (
-        db.query(WidgetLead)
-        .order_by(WidgetLead.created_at.desc())
-        .all()
-    )
+    leads = db.query(WidgetLead).order_by(WidgetLead.created_at.desc()).all()
     return leads

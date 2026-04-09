@@ -33,11 +33,17 @@ class OAuthConnectorSession(Base):
     state: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     requested_scopes: Mapped[str] = mapped_column(Text, nullable=False, default="")
     tenant_id: Mapped[str] = mapped_column(String, nullable=False, default="default", index=True)
-    status: Mapped[str] = mapped_column(Enum(OAuthSessionStatus), nullable=False, default=OAuthSessionStatus.PENDING)
+    status: Mapped[str] = mapped_column(
+        Enum(OAuthSessionStatus), nullable=False, default=OAuthSessionStatus.PENDING
+    )
     created_by_email: Mapped[str | None] = mapped_column(String, nullable=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class ConnectorAccountLink(Base):
@@ -65,11 +71,17 @@ class ConnectorAccountLink(Base):
     token_type: Mapped[str] = mapped_column(String, nullable=False, default="Bearer")
     token_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     last_refreshed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    status: Mapped[str] = mapped_column(Enum(ConnectorAccountStatus), nullable=False, default=ConnectorAccountStatus.ACTIVE)
+    status: Mapped[str] = mapped_column(
+        Enum(ConnectorAccountStatus), nullable=False, default=ConnectorAccountStatus.ACTIVE
+    )
     created_by_email: Mapped[str | None] = mapped_column(String, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class OAuthConnectorSessionSchema(BaseModel):

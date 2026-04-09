@@ -381,9 +381,8 @@ class InviteService:
 
         # Role distribution
         role_dist = {}
-        role_counts = (
-            self.db.query(Invite.role, func.count(Invite.id))
-            .filter(Invite.created_at >= cutoff)
+        role_counts = self.db.query(Invite.role, func.count(Invite.id)).filter(
+            Invite.created_at >= cutoff
         )
         if campaign:
             role_counts = role_counts.filter(Invite.campaign == campaign)

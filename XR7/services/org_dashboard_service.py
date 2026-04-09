@@ -85,12 +85,20 @@ class OrgDashboardService:
 
         anomalies = self.db.query(Anomaly).filter(Anomaly.artist_id.in_(artist_ids)).all()
         claims = self.db.query(Claim).filter(Claim.artist_id.in_(artist_ids)).all()
-        metadata_issues = self.db.query(MetadataIssue).filter(MetadataIssue.artist_id.in_(artist_ids)).all()
+        metadata_issues = (
+            self.db.query(MetadataIssue).filter(MetadataIssue.artist_id.in_(artist_ids)).all()
+        )
         sync_jobs = self.db.query(SyncJob).filter(SyncJob.artist_id.in_(artist_ids)).all()
-        ledger_entries = self.db.query(ImmutableLedgerEntry).filter(ImmutableLedgerEntry.artist_id.in_(artist_ids)).all()
+        ledger_entries = (
+            self.db.query(ImmutableLedgerEntry)
+            .filter(ImmutableLedgerEntry.artist_id.in_(artist_ids))
+            .all()
+        )
         claim_ids = [str(c.id) for c in claims]
         evidence_anchors = (
-            self.db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id.in_(claim_ids)).all() if claim_ids else []
+            self.db.query(EvidenceAnchor).filter(EvidenceAnchor.claim_id.in_(claim_ids)).all()
+            if claim_ids
+            else []
         )
 
         return {
@@ -133,7 +141,9 @@ class OrgDashboardService:
                     "predicted_low": round(low, 2),
                     "predicted_high": round(high, 2),
                     "trend_indicator": forecast.get("trend_indicator") or "stable",
-                    "forecast_adjusted_for_repairs": bool(forecast.get("forecast_adjusted_for_repairs")),
+                    "forecast_adjusted_for_repairs": bool(
+                        forecast.get("forecast_adjusted_for_repairs")
+                    ),
                 }
             )
 
@@ -142,7 +152,9 @@ class OrgDashboardService:
             "predicted_low": round(predicted_low, 2),
             "predicted_high": round(predicted_high, 2),
             "artist_count": len(artists),
-            "average_adjustment_factor": round(sum(adjustments) / len(adjustments), 4) if adjustments else 1.0,
+            "average_adjustment_factor": (
+                round(sum(adjustments) / len(adjustments), 4) if adjustments else 1.0
+            ),
             "forecast_disclaimer": FORECAST_DISCLAIMER,
             "per_artist": per_artist,
         }
@@ -159,15 +171,25 @@ class OrgDashboardService:
 
         open_anomalies = [a for a in anomalies if str(a.status) == AnomalyStatus.OPEN.value]
         active_claims = [c for c in claims if str(c.status) in _ACTIVE_CLAIM_STATUSES]
-        recovered_paid = [c for c in claims if str(c.status) in {ClaimStatus.PAID.value, ClaimStatus.CLOSED.value}]
+        recovered_paid = [
+            c for c in claims if str(c.status) in {ClaimStatus.PAID.value, ClaimStatus.CLOSED.value}
+        ]
 
         total_recoverable = sum(_to_float(a.estimated_recoverable) for a in anomalies)
         active_recoverable = sum(_to_float(a.estimated_recoverable) for a in open_anomalies)
         recovered_total = sum(_to_float(c.recovered_amount) for c in recovered_paid)
-        money_left_index = round((active_recoverable / max(active_recoverable + recovered_total, 1.0)) * 100.0, 2)
+        money_left_index = round(
+            (active_recoverable / max(active_recoverable + recovered_total, 1.0)) * 100.0, 2
+        )
 
-        resolved_issues = [i for i in metadata_issues if str(i.repair_status).upper() in {"REPAIRED", "AUTO_REPAIRED"}]
-        metadata_health_score = round((len(resolved_issues) / max(len(metadata_issues), 1)) * 100.0, 2)
+        resolved_issues = [
+            i
+            for i in metadata_issues
+            if str(i.repair_status).upper() in {"REPAIRED", "AUTO_REPAIRED"}
+        ]
+        metadata_health_score = round(
+            (len(resolved_issues) / max(len(metadata_issues), 1)) * 100.0, 2
+        )
 
         now = datetime.now(timezone.utc)
         sol_urgent = 0
@@ -252,7 +274,9 @@ class OrgDashboardService:
                 },
                 "ugc_scanner": {
                     "ugc_signal_count": len(ugc_candidates),
-                    "estimated_ugc_recoverable": round(sum(_to_float(a.estimated_recoverable) for a in ugc_candidates), 2),
+                    "estimated_ugc_recoverable": round(
+                        sum(_to_float(a.estimated_recoverable) for a in ugc_candidates), 2
+                    ),
                 },
                 "money_left_index": {
                     "score": money_left_index,
@@ -266,8 +290,16 @@ class OrgDashboardService:
                 },
                 "evidence_vault": {
                     "anchors_total": len(evidence_anchors),
-                    "anchored": sum(1 for e in evidence_anchors if str(e.blockchain_status).upper() == "ANCHORED"),
-                    "pending": sum(1 for e in evidence_anchors if str(e.blockchain_status).upper() != "ANCHORED"),
+                    "anchored": sum(
+                        1
+                        for e in evidence_anchors
+                        if str(e.blockchain_status).upper() == "ANCHORED"
+                    ),
+                    "pending": sum(
+                        1
+                        for e in evidence_anchors
+                        if str(e.blockchain_status).upper() != "ANCHORED"
+                    ),
                 },
             },
             "forecast": forecast,
@@ -287,7 +319,9 @@ class OrgDashboardService:
 
         anomalies = self.db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
         claims = self.db.query(Claim).filter(Claim.artist_id == artist_id).all()
-        metadata_issues = self.db.query(MetadataIssue).filter(MetadataIssue.artist_id == artist_id).all()
+        metadata_issues = (
+            self.db.query(MetadataIssue).filter(MetadataIssue.artist_id == artist_id).all()
+        )
         forecast = self._aggregate_org_forecast([artist])
 
         return {
@@ -302,7 +336,9 @@ class OrgDashboardService:
             "anomalies": {
                 "count": len(anomalies),
                 "open": sum(1 for a in anomalies if str(a.status) == AnomalyStatus.OPEN.value),
-                "estimated_recoverable": round(sum(_to_float(a.estimated_recoverable) for a in anomalies), 2),
+                "estimated_recoverable": round(
+                    sum(_to_float(a.estimated_recoverable) for a in anomalies), 2
+                ),
             },
             "claims": {
                 "count": len(claims),
@@ -312,7 +348,9 @@ class OrgDashboardService:
             "catalog": {
                 "metadata_issue_count": len(metadata_issues),
                 "metadata_repairs": sum(
-                    1 for i in metadata_issues if str(i.repair_status).upper() in {"REPAIRED", "AUTO_REPAIRED"}
+                    1
+                    for i in metadata_issues
+                    if str(i.repair_status).upper() in {"REPAIRED", "AUTO_REPAIRED"}
                 ),
             },
             "forecast": {
@@ -327,9 +365,13 @@ class OrgDashboardService:
         artists = self.scoped_artists_for_org(org_id)
         artist_ids = [str(a.id) for a in artists]
         metadata_issues = (
-            self.db.query(MetadataIssue).filter(MetadataIssue.artist_id.in_(artist_ids)).all() if artist_ids else []
+            self.db.query(MetadataIssue).filter(MetadataIssue.artist_id.in_(artist_ids)).all()
+            if artist_ids
+            else []
         )
-        by_artist: dict[str, dict[str, Any]] = {str(a.id): {"artist_name": a.name, "issue_count": 0, "repaired": 0} for a in artists}
+        by_artist: dict[str, dict[str, Any]] = {
+            str(a.id): {"artist_name": a.name, "issue_count": 0, "repaired": 0} for a in artists
+        }
         for issue in metadata_issues:
             row = by_artist.get(str(issue.artist_id))
             if not row:
@@ -344,7 +386,9 @@ class OrgDashboardService:
                 {
                     "artist_id": artist_id,
                     **data,
-                    "repair_rate": round((data["repaired"] / max(data["issue_count"], 1)) * 100.0, 2),
+                    "repair_rate": round(
+                        (data["repaired"] / max(data["issue_count"], 1)) * 100.0, 2
+                    ),
                 }
                 for artist_id, data in by_artist.items()
             ],
@@ -480,7 +524,11 @@ class OrgDashboardService:
                     "run_id": run_id,
                     "artist_id": state.get("artist_id"),
                     "current_step": state.get("current_step"),
-                    "last_updated_at": _iso(state.get("updated_at") if isinstance(state.get("updated_at"), datetime) else now),
+                    "last_updated_at": _iso(
+                        state.get("updated_at")
+                        if isinstance(state.get("updated_at"), datetime)
+                        else now
+                    ),
                 }
             )
 
@@ -490,14 +538,18 @@ class OrgDashboardService:
                 "open_anomaly_count": len(open_anomalies),
                 "active_claim_count": len(active_claims),
                 "metadata_issue_backlog": sum(
-                    1 for i in metadata_issues if str(i.repair_status).upper() not in {"REPAIRED", "AUTO_REPAIRED"}
+                    1
+                    for i in metadata_issues
+                    if str(i.repair_status).upper() not in {"REPAIRED", "AUTO_REPAIRED"}
                 ),
                 "failed_sync_jobs": queue_depth["failed"],
             },
             "system_health": {
                 "sync_queue_depth": queue_depth,
                 "retry_pressure_score": round(
-                    (queue_depth["retrying"] + queue_depth["failed"]) / max(sum(queue_depth.values()), 1) * 100.0,
+                    (queue_depth["retrying"] + queue_depth["failed"])
+                    / max(sum(queue_depth.values()), 1)
+                    * 100.0,
                     2,
                 ),
             },

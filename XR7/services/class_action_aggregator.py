@@ -3,6 +3,7 @@
 Watches for common payer-drift anomalies across multiple artists and
 automatically promotes threshold clusters to class-action signal packets.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -91,14 +92,16 @@ def aggregate_class_action_signals(db: Session) -> list[dict[str, Any]]:
             "class_action_signal_upserted",
             extra={"payer": payer, "type": atype, "count": count, "loss": total_loss},
         )
-        created_or_updated.append({
-            "id": signal.id,
-            "payer_name": payer,
-            "anomaly_type": atype,
-            "affected_artist_count": count,
-            "total_estimated_loss": round(total_loss, 2),
-            "status": signal.status,
-        })
+        created_or_updated.append(
+            {
+                "id": signal.id,
+                "payer_name": payer,
+                "anomaly_type": atype,
+                "affected_artist_count": count,
+                "total_estimated_loss": round(total_loss, 2),
+                "status": signal.status,
+            }
+        )
 
     return created_or_updated
 

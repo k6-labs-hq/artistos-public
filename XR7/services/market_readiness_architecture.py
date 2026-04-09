@@ -24,7 +24,9 @@ def evaluate_architecture_readiness(*, environment: str) -> dict[str, Any]:
         ),
         GateResult(
             name="queue_configured",
-            passed=bool(settings.redis_url and settings.celery_broker_url and settings.celery_result_backend),
+            passed=bool(
+                settings.redis_url and settings.celery_broker_url and settings.celery_result_backend
+            ),
             detail="Redis + Celery broker/result are configured",
         ),
         GateResult(

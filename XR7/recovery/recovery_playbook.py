@@ -25,7 +25,11 @@ def generate_recovery_playbook(
         "next_90_days": ["Close accepted claims", "Benchmark payer settlement outcomes"],
     }
 
-    escalation = ["Tier 1: support ticket", "Tier 2: account manager escalation", "Tier 3: legal notice"]
+    escalation = [
+        "Tier 1: support ticket",
+        "Tier 2: account manager escalation",
+        "Tier 3: legal notice",
+    ]
     if str(deadline_risk.get("risk_color")) == "RED":
         escalation.append("Emergency legal filing window protection")
 

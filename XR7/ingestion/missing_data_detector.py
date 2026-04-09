@@ -19,7 +19,9 @@ def detect_missing_data(
     registration_ids = [r.get("registration_id") for r in registration_rows]
     missing_pro_registrations = len([r for r in registration_ids if not r or r == "pending"])
 
-    usage_sources = {str(u.get("source", "")).strip().lower() for u in usage_rows if u.get("source")}
+    usage_sources = {
+        str(u.get("source", "")).strip().lower() for u in usage_rows if u.get("source")
+    }
     missing_usage_sources = sorted(REQUIRED_USAGE_SOURCES - usage_sources)
 
     missing_metadata_fields: dict[str, int] = {"isrc": 0, "work_title": 0, "publisher": 0}

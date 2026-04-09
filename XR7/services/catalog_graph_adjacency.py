@@ -117,8 +117,12 @@ class CatalogGraphAdjacencyService:
         return {"created_nodes": created_nodes, "created_edges": created_edges}
 
     def fetch(self, artist_id: str) -> CatalogGraphPayload:
-        nodes = self.db.query(CatalogGraphNode).filter(CatalogGraphNode.artist_id == artist_id).all()
-        edges = self.db.query(CatalogGraphEdge).filter(CatalogGraphEdge.artist_id == artist_id).all()
+        nodes = (
+            self.db.query(CatalogGraphNode).filter(CatalogGraphNode.artist_id == artist_id).all()
+        )
+        edges = (
+            self.db.query(CatalogGraphEdge).filter(CatalogGraphEdge.artist_id == artist_id).all()
+        )
 
         node_map = {n.id: n.external_id for n in nodes}
         payload_nodes = [
@@ -156,13 +160,29 @@ def build_minimal_catalog_graph(works: Iterable[dict[str, Any]]) -> CatalogGraph
         nodes.append({"id": work_id, "node_type": "Work", "label": w.get("title"), "attributes": w})
         if writer:
             writer_id = f"writer:{writer.lower()}"
-            nodes.append({"id": writer_id, "node_type": "Writer", "label": writer, "attributes": {}})
-            edges.append({"source_id": work_id, "target_id": writer_id, "edge_type": "written_by", "attributes": {}})
+            nodes.append(
+                {"id": writer_id, "node_type": "Writer", "label": writer, "attributes": {}}
+            )
+            edges.append(
+                {
+                    "source_id": work_id,
+                    "target_id": writer_id,
+                    "edge_type": "written_by",
+                    "attributes": {},
+                }
+            )
         if publisher:
             publisher_id = f"publisher:{publisher.lower()}"
-            nodes.append({"id": publisher_id, "node_type": "Publisher", "label": publisher, "attributes": {}})
+            nodes.append(
+                {"id": publisher_id, "node_type": "Publisher", "label": publisher, "attributes": {}}
+            )
             edges.append(
-                {"source_id": work_id, "target_id": publisher_id, "edge_type": "published_by", "attributes": {}}
+                {
+                    "source_id": work_id,
+                    "target_id": publisher_id,
+                    "edge_type": "published_by",
+                    "attributes": {},
+                }
             )
 
     # Deduplicate nodes by (id, node_type)

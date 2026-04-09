@@ -125,7 +125,10 @@ def _append_ledger(artist_id: str, entry_type: str, payload: dict[str, Any]) -> 
         row = ImmutableLedgerService(db).append(artist_id, entry_type, payload)
         return row.entry_hash
     except Exception:
-        logger.exception("Failed to append immutable ledger entry", extra={"artist_id": artist_id, "entry_type": entry_type})
+        logger.exception(
+            "Failed to append immutable ledger entry",
+            extra={"artist_id": artist_id, "entry_type": entry_type},
+        )
         return None
     finally:
         db.close()
@@ -189,7 +192,9 @@ class DetectionAgent:
         for use in global_uses:
             est = float(self.scanner.calculate_hidden_value(use) or 0.0)
             if est >= 3000:
-                claim_id = await generator.create_claim(artist_id, str(use.get("platform") or "global"), use)
+                claim_id = await generator.create_claim(
+                    artist_id, str(use.get("platform") or "global"), use
+                )
                 claim_ids.append({"id": claim_id, "estimated_recoverable": est})
 
         review = await self.llm.structured_review(
@@ -202,7 +207,10 @@ class DetectionAgent:
             },
         )
         conf = float(review.get("confidence_score") or 0.9)
-        reflection = _self_reflect({**state, "confidence_scores": {"detection": conf}, "sol_checked": True}, component="detection")
+        reflection = _self_reflect(
+            {**state, "confidence_scores": {"detection": conf}, "sol_checked": True},
+            component="detection",
+        )
 
         entry_hash = _append_ledger(
             artist_id,
@@ -267,8 +275,12 @@ class EvidenceVerifierAgent:
 
                 # Self-correction loop: rebuild minimal integrity block if absent.
                 claim.evidence.setdefault("integrity", {})
-                claim.evidence["integrity"].setdefault("packet_hash", str(abs(hash(json.dumps(claim.evidence, sort_keys=True)))))
-                claim.evidence["integrity"].setdefault("chain_hash", str(abs(hash(claim.evidence["integrity"]["packet_hash"]))))
+                claim.evidence["integrity"].setdefault(
+                    "packet_hash", str(abs(hash(json.dumps(claim.evidence, sort_keys=True))))
+                )
+                claim.evidence["integrity"].setdefault(
+                    "chain_hash", str(abs(hash(claim.evidence["integrity"]["packet_hash"])))
+                )
                 claim.evidence["integrity"].setdefault("signature", "self-corrected")
                 claim.evidence["integrity"].setdefault("signature_algorithm", "HMAC-SHA256")
                 self.db.add(claim)
@@ -292,7 +304,10 @@ class EvidenceVerifierAgent:
             },
         )
         conf = float(review.get("confidence_score") or (0.93 if not failures else 0.78))
-        reflection = _self_reflect({**state, "confidence_scores": {"evidence": conf}, "sol_checked": True}, component="evidence")
+        reflection = _self_reflect(
+            {**state, "confidence_scores": {"evidence": conf}, "sol_checked": True},
+            component="evidence",
+        )
 
         entry_hash = _append_ledger(
             artist_id,
@@ -383,7 +398,10 @@ class NegotiationAgent:
             payload={"artist_id": artist_id, "history": history[:15], "stalled": stalled},
         )
         conf = float(review.get("confidence_score") or (0.88 if not stalled else 0.79))
-        reflection = _self_reflect({**state, "confidence_scores": {"negotiation": conf}, "sol_checked": True}, component="negotiation")
+        reflection = _self_reflect(
+            {**state, "confidence_scores": {"negotiation": conf}, "sol_checked": True},
+            component="negotiation",
+        )
 
         entry_hash = _append_ledger(
             artist_id,
@@ -405,7 +423,11 @@ class NegotiationAgent:
                 {
                     "step": "NegotiationAgent",
                     "status": "running" if stalled else "completed",
-                    "decision": "Counter-offer rounds complete" if not stalled else "Negotiation stalled, recommend escalation",
+                    "decision": (
+                        "Counter-offer rounds complete"
+                        if not stalled
+                        else "Negotiation stalled, recommend escalation"
+                    ),
                     "confidence": conf,
                     "evidence_hash": entry_hash,
                 }
@@ -552,8 +574,16 @@ async def reflection_node(state: dict[str, Any]) -> dict[str, Any]:
 
 # Additional suite requested for expanded XR7 agent graph support.
 async def DeadlineSentinelAgent(state: dict[str, Any]) -> dict[str, Any]:
-    urgent = [a for a in list(state.get("anomalies") or []) if str(a.get("sol_status") or "") in {"URGENT", "EXPIRED"}]
-    return {"deadline_urgent": bool(urgent), "current_step": "deadline_sentinel", "error_log": list(state.get("error_log") or [])}
+    urgent = [
+        a
+        for a in list(state.get("anomalies") or [])
+        if str(a.get("sol_status") or "") in {"URGENT", "EXPIRED"}
+    ]
+    return {
+        "deadline_urgent": bool(urgent),
+        "current_step": "deadline_sentinel",
+        "error_log": list(state.get("error_log") or []),
+    }
 
 
 async def PreventionAgent(state: dict[str, Any]) -> dict[str, Any]:
@@ -576,7 +606,10 @@ async def PayerResponseReaderAgent(state: dict[str, Any]) -> dict[str, Any]:
     return {
         "current_step": "payer_response_reader",
         "payer_responses": [{"status": status, "last_round": last}],
-        "confidence_scores": {**(state.get("confidence_scores") or {}), "payer_response_reader": 0.88},
+        "confidence_scores": {
+            **(state.get("confidence_scores") or {}),
+            "payer_response_reader": 0.88,
+        },
     }
 
 
@@ -605,10 +638,17 @@ async def CatalogValuationAgent(state: dict[str, Any]) -> dict[str, Any]:
     return {
         "current_step": "catalog_valuation_agent",
         "catalog_valuation": {
-            "estimated_value": float((estimated.get("expected_earnings") or {}).get("catalog_value_signal") or 0.0),
-            "quarterly_expected": float((estimated.get("expected_earnings") or {}).get("quarterly_expected") or 0.0),
+            "estimated_value": float(
+                (estimated.get("expected_earnings") or {}).get("catalog_value_signal") or 0.0
+            ),
+            "quarterly_expected": float(
+                (estimated.get("expected_earnings") or {}).get("quarterly_expected") or 0.0
+            ),
         },
-        "confidence_scores": {**(state.get("confidence_scores") or {}), "catalog_valuation_agent": 0.9},
+        "confidence_scores": {
+            **(state.get("confidence_scores") or {}),
+            "catalog_valuation_agent": 0.9,
+        },
     }
 
 
@@ -616,11 +656,16 @@ async def FraudDetectorAgent(state: dict[str, Any]) -> dict[str, Any]:
     alerts = []
     for anomaly in state.get("anomalies") or []:
         if float(anomaly.get("confidence") or 0.0) < 0.5:
-            alerts.append({"anomaly_id": anomaly.get("id"), "risk": "suspicious_confidence_pattern"})
+            alerts.append(
+                {"anomaly_id": anomaly.get("id"), "risk": "suspicious_confidence_pattern"}
+            )
     return {
         "current_step": "fraud_detector_agent",
         "fraud_alerts": alerts,
-        "confidence_scores": {**(state.get("confidence_scores") or {}), "fraud_detector_agent": 0.86},
+        "confidence_scores": {
+            **(state.get("confidence_scores") or {}),
+            "fraud_detector_agent": 0.86,
+        },
     }
 
 
@@ -630,7 +675,10 @@ async def CrossArtistSplitAgent(state: dict[str, Any]) -> dict[str, Any]:
         "current_step": "cross_artist_split_agent",
         "split_conflicts": resolved.get("split_conflicts") or [],
         "split_suggestions": resolved.get("split_suggestions") or [],
-        "confidence_scores": {**(state.get("confidence_scores") or {}), "cross_artist_split_agent": 0.88},
+        "confidence_scores": {
+            **(state.get("confidence_scores") or {}),
+            "cross_artist_split_agent": 0.88,
+        },
     }
 
 

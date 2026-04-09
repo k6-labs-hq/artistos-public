@@ -63,7 +63,9 @@ test_engine = create_engine(
     connect_args={"check_same_thread": False},
     poolclass=StaticPool,
 )
-TestSession = sessionmaker(autocommit=False, autoflush=False, expire_on_commit=False, bind=test_engine)
+TestSession = sessionmaker(
+    autocommit=False, autoflush=False, expire_on_commit=False, bind=test_engine
+)
 
 # Create all tables once
 Base.metadata.create_all(bind=test_engine)

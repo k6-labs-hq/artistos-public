@@ -1,4 +1,5 @@
 """Pillar 6 — Natural-language business manager: chat, message feed, weekly story."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
@@ -36,11 +37,14 @@ def get_feed(
 ) -> dict:
     """Return the artist's message feed (onboarding, comfort, claim, SOL, deposit, weekly story)."""
     messages = get_message_feed(db, artist_id, limit=limit, unread_only=unread_only)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "count": len(messages),
-        "messages": messages,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "count": len(messages),
+            "messages": messages,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/messages/chat")
@@ -73,11 +77,14 @@ def business_manager_chat(
             "and I'll give you a grounded answer from your live data."
         )
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "question": payload.message,
-        "answer": answer,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "question": payload.message,
+            "answer": answer,
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/messages/weekly-story")
@@ -98,21 +105,26 @@ def create_weekly_story(
         deposits=payload.deposits,
         currency=payload.currency,
     )
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "message_id": msg.id,
-        "story": msg.body,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "message_id": msg.id,
+            "story": msg.body,
+        },
+    )
 
 
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
 def _explain_platform_variance(db: Session, artist_id: str, question: str) -> str:
     """Look up open anomalies matching the question and return a plain-English explanation."""
     try:
         from XR7.models.anomaly import Anomaly
+
         anomalies = (
             db.query(Anomaly)
             .filter(Anomaly.artist_id == artist_id)
@@ -140,6 +152,7 @@ def _explain_platform_variance(db: Session, artist_id: str, question: str) -> st
 def _explain_claims(db: Session, artist_id: str) -> str:
     try:
         from XR7.models.claim import Claim, ClaimStatus
+
         open_claims = (
             db.query(Claim)
             .filter(
@@ -167,6 +180,7 @@ def _explain_advance(db: Session, artist_id: str) -> str:
 def _explain_rights(db: Session, artist_id: str) -> str:
     try:
         from XR7.models.rights_scan import RightsScanResult
+
         count = (
             db.query(RightsScanResult)
             .filter(

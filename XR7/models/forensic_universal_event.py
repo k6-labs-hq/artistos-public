@@ -15,7 +15,9 @@ class ForensicUniversalRoyaltyEvent(Base):
 
     __tablename__ = "forensic_universal_royalty_events"
 
-    event_id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    event_id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     work_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     isrc: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     iswc: Mapped[str | None] = mapped_column(String, nullable=True, index=True)

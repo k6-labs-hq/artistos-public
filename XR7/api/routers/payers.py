@@ -32,7 +32,13 @@ def payer_behavior(payer_id: str, db: Session = Depends(get_db)):
             "payer": _claim_payer(c),
             "status": str(c.status),
             "settlement_days": 45,
-            "settlement_percent": min(1.0, max(0.1, float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0))),
+            "settlement_percent": min(
+                1.0,
+                max(
+                    0.1,
+                    float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0),
+                ),
+            ),
         }
         for c in claims
     ]
@@ -48,7 +54,13 @@ def payer_risk(payer_id: str, db: Session = Depends(get_db)):
             "payer": _claim_payer(c),
             "status": str(c.status),
             "settlement_days": 45,
-            "settlement_percent": min(1.0, max(0.1, float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0))),
+            "settlement_percent": min(
+                1.0,
+                max(
+                    0.1,
+                    float(c.recovered_amount or 0.0) / max(float(c.recovered_amount or 1.0), 1.0),
+                ),
+            ),
         }
         for c in claims
     ]

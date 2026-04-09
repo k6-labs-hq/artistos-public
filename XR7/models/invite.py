@@ -16,16 +16,18 @@ from XR7.models.base import Base
 
 class InviteStatus(str, Enum):
     """Invite lifecycle status."""
-    PENDING = "pending"         # Created, not yet sent
-    SENT = "sent"               # Sent to recipient
-    OPENED = "opened"           # Recipient opened the link
-    REDEEMED = "redeemed"       # Recipient completed onboarding
-    EXPIRED = "expired"         # Token expired
-    REVOKED = "revoked"         # Manually revoked
+
+    PENDING = "pending"  # Created, not yet sent
+    SENT = "sent"  # Sent to recipient
+    OPENED = "opened"  # Recipient opened the link
+    REDEEMED = "redeemed"  # Recipient completed onboarding
+    EXPIRED = "expired"  # Token expired
+    REVOKED = "revoked"  # Manually revoked
 
 
 class InviteChannel(str, Enum):
     """How the invite was sent."""
+
     EMAIL = "email"
     INSTAGRAM_DM = "instagram_dm"
     SMS = "sms"
@@ -34,6 +36,7 @@ class InviteChannel(str, Enum):
 
 class InviteRole(str, Enum):
     """Role the invitee will assume upon redemption."""
+
     ARTIST = "artist"
     WRITER = "writer"
     DIRECTOR = "director"
@@ -82,8 +85,12 @@ class Invite(Base):
 
     # Referral tracking
     referring_agent_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
-    referring_manager_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
-    campaign: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)  # e.g., "vip_kickoff", "festival_2026"
+    referring_manager_id: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True, index=True
+    )
+    campaign: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True
+    )  # e.g., "vip_kickoff", "festival_2026"
 
     # Premium features
     is_vip: Mapped[bool] = mapped_column(default=False, index=True)
@@ -94,13 +101,19 @@ class Invite(Base):
     sent_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     opened_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     redeemed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    redeemed_by_artist_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True, index=True)
+    redeemed_by_artist_id: Mapped[Optional[str]] = mapped_column(
+        String(36), nullable=True, index=True
+    )
 
     # Security: track redemption
     is_single_use_consumed: Mapped[bool] = mapped_column(default=False)
-    redemption_ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)  # IPv4 or IPv6
+    redemption_ip_address: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True
+    )  # IPv4 or IPv6
 
-    custom_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)  # Custom tracking data
+    custom_metadata: Mapped[Optional[dict[str, Any]]] = mapped_column(
+        JSON, nullable=True
+    )  # Custom tracking data
 
     __table_args__ = (
         Index("ix_invites_token_status", "invite_token", "status"),
@@ -129,7 +142,9 @@ class InviteEvent(Base):
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     invite_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
 
-    event_type: Mapped[str] = mapped_column(String(50), nullable=False, index=True)  # "created", "sent", "opened", "redeemed", etc.
+    event_type: Mapped[str] = mapped_column(
+        String(50), nullable=False, index=True
+    )  # "created", "sent", "opened", "redeemed", etc.
     event_data: Mapped[Optional[dict[str, Any]]] = mapped_column(JSON, nullable=True)
 
     ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
@@ -137,9 +152,7 @@ class InviteEvent(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), index=True)
 
-    __table_args__ = (
-        Index("ix_invite_events_invite_id_created", "invite_id", "created_at"),
-    )
+    __table_args__ = (Index("ix_invite_events_invite_id_created", "invite_id", "created_at"),)
 
 
 class InviteAnalytics(Base):
@@ -167,9 +180,7 @@ class InviteAnalytics(Base):
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
-    __table_args__ = (
-        Index("ix_invite_analytics_campaign_date", "campaign", "date"),
-    )
+    __table_args__ = (Index("ix_invite_analytics_campaign_date", "campaign", "date"),)
 
 
 # Pydantic Schemas for API

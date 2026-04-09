@@ -20,26 +20,152 @@ class BlackBoxRule:
 # Centralized rule table for music + TV/film black-box expiration windows.
 _RULES: dict[str, BlackBoxRule] = {
     # Music collection societies
-    "ASCAP": BlackBoxRule("ASCAP", "music_performance", 365 * 2, 365 * 3, "redistributed", "ASCAP redistributes unmatched royalties after 2-3 years."),
-    "BMI": BlackBoxRule("BMI", "music_performance", 365 * 2, 365 * 3, "redistributed", "BMI redistributes unmatched royalties after 2-3 years."),
-    "SESAC": BlackBoxRule("SESAC", "music_performance", 365 * 2, 365 * 3, "redistributed", "SESAC redistributes unmatched royalties after 2-3 years."),
-    "MLC": BlackBoxRule("MLC", "digital_mechanicals", 365 * 3, 365 * 3, "redistributed", "MLC redistributes unmatched digital mechanical royalties after 3 years."),
-    "PRS": BlackBoxRule("PRS", "foreign_society", 365 * 3, 365 * 3, "redistributed", "PRS redistributes unmatched royalties after 3 years."),
-    "GEMA": BlackBoxRule("GEMA", "foreign_society", 365 * 3, 365 * 3, "redistributed", "GEMA redistributes unmatched royalties after 3 years."),
-    "SACEM": BlackBoxRule("SACEM", "foreign_society", 365 * 3, 365 * 3, "redistributed", "SACEM redistributes unmatched royalties after 3 years."),
-    "JASRAC": BlackBoxRule("JASRAC", "foreign_society", 30 * 6, 30 * 18, "redistributed", "JASRAC often redistributes unmatched royalties after 6-18 months."),
-    "SOCAN": BlackBoxRule("SOCAN", "foreign_society", 365 * 3, 365 * 3, "redistributed", "SOCAN redistributes unmatched royalties after 3 years."),
-    "APRA": BlackBoxRule("APRA", "foreign_society", 365 * 2, 365 * 3, "redistributed", "APRA redistributes unmatched royalties after 2-3 years."),
+    "ASCAP": BlackBoxRule(
+        "ASCAP",
+        "music_performance",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "ASCAP redistributes unmatched royalties after 2-3 years.",
+    ),
+    "BMI": BlackBoxRule(
+        "BMI",
+        "music_performance",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "BMI redistributes unmatched royalties after 2-3 years.",
+    ),
+    "SESAC": BlackBoxRule(
+        "SESAC",
+        "music_performance",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "SESAC redistributes unmatched royalties after 2-3 years.",
+    ),
+    "MLC": BlackBoxRule(
+        "MLC",
+        "digital_mechanicals",
+        365 * 3,
+        365 * 3,
+        "redistributed",
+        "MLC redistributes unmatched digital mechanical royalties after 3 years.",
+    ),
+    "PRS": BlackBoxRule(
+        "PRS",
+        "foreign_society",
+        365 * 3,
+        365 * 3,
+        "redistributed",
+        "PRS redistributes unmatched royalties after 3 years.",
+    ),
+    "GEMA": BlackBoxRule(
+        "GEMA",
+        "foreign_society",
+        365 * 3,
+        365 * 3,
+        "redistributed",
+        "GEMA redistributes unmatched royalties after 3 years.",
+    ),
+    "SACEM": BlackBoxRule(
+        "SACEM",
+        "foreign_society",
+        365 * 3,
+        365 * 3,
+        "redistributed",
+        "SACEM redistributes unmatched royalties after 3 years.",
+    ),
+    "JASRAC": BlackBoxRule(
+        "JASRAC",
+        "foreign_society",
+        30 * 6,
+        30 * 18,
+        "redistributed",
+        "JASRAC often redistributes unmatched royalties after 6-18 months.",
+    ),
+    "SOCAN": BlackBoxRule(
+        "SOCAN",
+        "foreign_society",
+        365 * 3,
+        365 * 3,
+        "redistributed",
+        "SOCAN redistributes unmatched royalties after 3 years.",
+    ),
+    "APRA": BlackBoxRule(
+        "APRA",
+        "foreign_society",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "APRA redistributes unmatched royalties after 2-3 years.",
+    ),
     # TV/Film unions and residual societies
-    "SAG-AFTRA": BlackBoxRule("SAG-AFTRA", "tvfilm_residuals", 365 * 2, 365 * 3, "redistributed", "SAG-AFTRA unmatched residuals are typically redistributed after 2-3 years."),
-    "WGA": BlackBoxRule("WGA", "tvfilm_residuals", 365 * 2, 365 * 3, "redistributed", "WGA unmatched residuals are typically redistributed after 2-3 years."),
-    "DGA": BlackBoxRule("DGA", "tvfilm_residuals", 365 * 2, 365 * 3, "redistributed", "DGA unmatched residuals are typically redistributed after 2-3 years."),
-    "IATSE": BlackBoxRule("IATSE", "tvfilm_residuals", 365 * 2, 365 * 3, "redistributed", "IATSE unmatched residuals are typically redistributed after 2-3 years."),
-    "FOREIGN_TVFILM": BlackBoxRule("FOREIGN_TVFILM", "tvfilm_foreign_residuals", 30 * 6, 30 * 18, "redistributed", "Foreign residual societies often redistribute unmatched residuals after 6-18 months."),
+    "SAG-AFTRA": BlackBoxRule(
+        "SAG-AFTRA",
+        "tvfilm_residuals",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "SAG-AFTRA unmatched residuals are typically redistributed after 2-3 years.",
+    ),
+    "WGA": BlackBoxRule(
+        "WGA",
+        "tvfilm_residuals",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "WGA unmatched residuals are typically redistributed after 2-3 years.",
+    ),
+    "DGA": BlackBoxRule(
+        "DGA",
+        "tvfilm_residuals",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "DGA unmatched residuals are typically redistributed after 2-3 years.",
+    ),
+    "IATSE": BlackBoxRule(
+        "IATSE",
+        "tvfilm_residuals",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "IATSE unmatched residuals are typically redistributed after 2-3 years.",
+    ),
+    "FOREIGN_TVFILM": BlackBoxRule(
+        "FOREIGN_TVFILM",
+        "tvfilm_foreign_residuals",
+        30 * 6,
+        30 * 18,
+        "redistributed",
+        "Foreign residual societies often redistribute unmatched residuals after 6-18 months.",
+    ),
     # Contract-governed categories
-    "STUDIO_BACKEND": BlackBoxRule("STUDIO_BACKEND", "contract_backend_participation", None, None, "contract_governed", "Studio backend participation is governed by contract terms, not black-box redistribution."),
-    "STREAMING_REUSE": BlackBoxRule("STREAMING_REUSE", "contract_streaming_reuse", None, None, "contract_governed", "Streaming reuse recovery is governed by contract terms, not black-box redistribution."),
-    "GENERIC": BlackBoxRule("GENERIC", "general_unmatched", 365 * 2, 365 * 3, "redistributed", "Generic unmatched royalty funds are often redistributed after 2-3 years."),
+    "STUDIO_BACKEND": BlackBoxRule(
+        "STUDIO_BACKEND",
+        "contract_backend_participation",
+        None,
+        None,
+        "contract_governed",
+        "Studio backend participation is governed by contract terms, not black-box redistribution.",
+    ),
+    "STREAMING_REUSE": BlackBoxRule(
+        "STREAMING_REUSE",
+        "contract_streaming_reuse",
+        None,
+        None,
+        "contract_governed",
+        "Streaming reuse recovery is governed by contract terms, not black-box redistribution.",
+    ),
+    "GENERIC": BlackBoxRule(
+        "GENERIC",
+        "general_unmatched",
+        365 * 2,
+        365 * 3,
+        "redistributed",
+        "Generic unmatched royalty funds are often redistributed after 2-3 years.",
+    ),
 }
 
 
@@ -125,11 +251,35 @@ def infer_payer_and_royalty_type(anomaly_like: dict[str, Any]) -> tuple[str, str
         except Exception:  # noqa: BLE001
             snapshot = {}
 
-    explicit_payer = str(anomaly_like.get("payer") or anomaly_like.get("society") or snapshot.get("union") or snapshot.get("society") or "").strip()
+    explicit_payer = str(
+        anomaly_like.get("payer")
+        or anomaly_like.get("society")
+        or snapshot.get("union")
+        or snapshot.get("society")
+        or ""
+    ).strip()
     if explicit_payer:
         payer = explicit_payer
-    elif any(x in subtype for x in ("ASCAP", "BMI", "SESAC", "MLC", "PRS", "GEMA", "SACEM", "JASRAC", "SOCAN", "APRA")):
-        payer = next(x for x in ("ASCAP", "BMI", "SESAC", "MLC", "PRS", "GEMA", "SACEM", "JASRAC", "SOCAN", "APRA") if x in subtype)
+    elif any(
+        x in subtype
+        for x in ("ASCAP", "BMI", "SESAC", "MLC", "PRS", "GEMA", "SACEM", "JASRAC", "SOCAN", "APRA")
+    ):
+        payer = next(
+            x
+            for x in (
+                "ASCAP",
+                "BMI",
+                "SESAC",
+                "MLC",
+                "PRS",
+                "GEMA",
+                "SACEM",
+                "JASRAC",
+                "SOCAN",
+                "APRA",
+            )
+            if x in subtype
+        )
     elif any(x in subtype for x in ("SAG", "WGA", "DGA", "IATSE")):
         if "SAG" in subtype:
             payer = "SAG-AFTRA"
@@ -140,7 +290,11 @@ def infer_payer_and_royalty_type(anomaly_like: dict[str, Any]) -> tuple[str, str
         else:
             payer = "IATSE"
     elif "FOREIGN" in subtype or "FOREIGN" in description:
-        payer = "FOREIGN_TVFILM" if "RESIDUAL" in subtype or "TV" in description or "FILM" in description else "JASRAC"
+        payer = (
+            "FOREIGN_TVFILM"
+            if "RESIDUAL" in subtype or "TV" in description or "FILM" in description
+            else "JASRAC"
+        )
     elif "BACKEND" in subtype:
         payer = "STUDIO_BACKEND"
     elif "STREAMING_REUSE" in subtype or ("STREAMING" in subtype and "REUSE" in subtype):
@@ -246,7 +400,11 @@ class BlackBoxExpirationProbabilityModel:
     def ingest_rows(self, rows: list[dict[str, Any]]) -> int:
         count = 0
         for row in rows:
-            payer = str(row.get("payer_or_society") or row.get("society") or row.get("payer") or "").strip().upper()
+            payer = (
+                str(row.get("payer_or_society") or row.get("society") or row.get("payer") or "")
+                .strip()
+                .upper()
+            )
             royalty_type = str(row.get("royalty_type") or "unmatched_royalties").strip().lower()
             event_dt = _to_utc_datetime(row.get("event_date"))
             redist_dt = _to_utc_datetime(row.get("redistributed_at"))
@@ -437,7 +595,13 @@ class SocietyBehaviorCalibrationJob:
 
     def recalibrate(self, confirmed_events: list[dict[str, Any]]) -> dict[str, Any]:
         ingested = self.model.ingest_rows(confirmed_events)
-        societies = len({str((e.get("payer_or_society") or e.get("society") or "")).upper() for e in confirmed_events if e.get("payer_or_society") or e.get("society")})
+        societies = len(
+            {
+                str((e.get("payer_or_society") or e.get("society") or "")).upper()
+                for e in confirmed_events
+                if e.get("payer_or_society") or e.get("society")
+            }
+        )
         return {
             "job": "society_behavior_calibration",
             "ingested_events": ingested,
@@ -450,7 +614,9 @@ class SocietyBehaviorCalibrationJob:
 _DEFAULT_PROB_MODEL = BlackBoxExpirationProbabilityModel()
 
 
-def evaluate_black_box_expiration_for_anomaly(anomaly_like: dict[str, Any], as_of: datetime | None = None) -> dict[str, Any]:
+def evaluate_black_box_expiration_for_anomaly(
+    anomaly_like: dict[str, Any], as_of: datetime | None = None
+) -> dict[str, Any]:
     payer, royalty_type = infer_payer_and_royalty_type(anomaly_like)
     event_date = (
         anomaly_like.get("event_date")

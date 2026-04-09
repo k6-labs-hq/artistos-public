@@ -24,6 +24,7 @@ from XR7.ml.forecaster import EarningsForecaster, forecast_earnings
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 def _make_payments(amounts: list[float]) -> list[dict]:
     base = datetime(2024, 1, 1, tzinfo=timezone.utc)
     return [
@@ -56,6 +57,7 @@ def _make_earnings_records(nets: list[float], event_type: str = "STREAM") -> lis
 # ===========================================================================
 # MLAnomalyDetector — IsolationForest outlier detection
 # ===========================================================================
+
 
 class TestDetectPaymentOutliers:
     def test_returns_empty_when_too_few_samples(self):
@@ -92,6 +94,7 @@ class TestDetectPaymentOutliers:
 # MLAnomalyDetector — rate drift detection
 # ===========================================================================
 
+
 class TestDetectRateDrift:
     def test_returns_empty_when_too_few_events(self):
         events = _make_events([0.004, 0.0041, 0.0039], "STREAM")
@@ -125,6 +128,7 @@ class TestDetectRateDrift:
 # ===========================================================================
 # MLAnomalyDetector — periodic missingness
 # ===========================================================================
+
 
 class TestDetectMissingPeriodicPayments:
     def test_returns_empty_for_single_payment(self):
@@ -168,6 +172,7 @@ class TestDetectMissingPeriodicPayments:
 # MLAnomalyDetector — combined wrapper
 # ===========================================================================
 
+
 class TestMLAnomalyDetector:
     def test_detect_returns_list(self):
         detector = MLAnomalyDetector()
@@ -187,6 +192,7 @@ class TestMLAnomalyDetector:
 # ===========================================================================
 # EarningsForecaster
 # ===========================================================================
+
 
 class TestEarningsForecaster:
     def test_returns_insufficient_data_for_empty_input(self):
@@ -257,6 +263,7 @@ class TestEarningsForecaster:
 # CatalogScorer
 # ===========================================================================
 
+
 class TestCatalogScorer:
     def _scorer(self):
         return CatalogScorer()
@@ -264,16 +271,28 @@ class TestCatalogScorer:
     def test_perfect_catalog_scores_high(self):
         scorer = self._scorer()
         works = [{"isrc": f"US1234{i:06d}", "iswc": f"T-{i:09d}.0"} for i in range(10)]
-        payments = [{"amount": 100.0, "currency": "USD", "received_at": "2024-01-01T00:00:00"} for _ in range(12)]
+        payments = [
+            {"amount": 100.0, "currency": "USD", "received_at": "2024-01-01T00:00:00"}
+            for _ in range(12)
+        ]
         earnings_summary = {"total_expected": 1000.0, "total_received": 980.0}
-        report = scorer.score("artist-1", works=works, payments=payments, earnings_summary=earnings_summary)
+        report = scorer.score(
+            "artist-1", works=works, payments=payments, earnings_summary=earnings_summary
+        )
         assert report.health_score >= 60
         assert report.grade in ("A", "B", "C")
 
     def test_empty_catalog_scores_low(self):
         scorer = self._scorer()
         earnings_summary = {"total_expected": 10000.0, "total_received": 0.0}
-        report = scorer.score("artist-1", works=[], payments=[], anomalies=[], claims=[], earnings_summary=earnings_summary)
+        report = scorer.score(
+            "artist-1",
+            works=[],
+            payments=[],
+            anomalies=[],
+            claims=[],
+            earnings_summary=earnings_summary,
+        )
         assert report.health_score < 60
 
     def test_grade_function(self):
@@ -324,6 +343,7 @@ class TestCatalogScorer:
 # ===========================================================================
 # ConfidenceUpdater
 # ===========================================================================
+
 
 class TestConfidenceUpdater:
     def test_initial_refined_confidence_close_to_raw(self):
@@ -382,9 +402,24 @@ class TestConfidenceUpdater:
     def test_bulk_record_from_claims(self):
         updater = ConfidenceUpdater()
         claims = [
-            {"status": "PAID", "category": "ROYALTY", "subtype": "MISSING_PAYMENT", "recovered_amount": 500.0},
-            {"status": "CLOSED", "category": "ROYALTY", "subtype": "MISSING_PAYMENT", "recovered_amount": 0.0},
-            {"status": "IDENTIFIED", "category": "ROYALTY", "subtype": "MISSING_PAYMENT", "recovered_amount": 0.0},
+            {
+                "status": "PAID",
+                "category": "ROYALTY",
+                "subtype": "MISSING_PAYMENT",
+                "recovered_amount": 500.0,
+            },
+            {
+                "status": "CLOSED",
+                "category": "ROYALTY",
+                "subtype": "MISSING_PAYMENT",
+                "recovered_amount": 0.0,
+            },
+            {
+                "status": "IDENTIFIED",
+                "category": "ROYALTY",
+                "subtype": "MISSING_PAYMENT",
+                "recovered_amount": 0.0,
+            },
         ]
         updater.bulk_record_from_claims(claims)
         stats = updater.precision_stats("ROYALTY", "MISSING_PAYMENT")

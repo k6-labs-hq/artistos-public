@@ -58,7 +58,7 @@ class FileIngestionPipeline:
             with socket.create_connection((host, port), timeout=2.0) as sock:
                 sock.sendall(b"zINSTREAM\0")
                 for i in range(0, len(content), 65536):
-                    chunk = content[i:i + 65536]
+                    chunk = content[i : i + 65536]
                     sock.sendall(struct.pack(">I", len(chunk)))
                     sock.sendall(chunk)
                 sock.sendall(struct.pack(">I", 0))
@@ -101,13 +101,18 @@ class FileIngestionPipeline:
             return "zip"
         return "unknown"
 
-    def _validate_extension_magic(self, extension_type: str, magic_type: str) -> tuple[bool, str | None]:
+    def _validate_extension_magic(
+        self, extension_type: str, magic_type: str
+    ) -> tuple[bool, str | None]:
         if extension_type == "unknown":
             return False, "File extension is not supported"
         if magic_type == "unknown":
             return False, "File signature could not be validated"
         if extension_type != magic_type:
-            return False, f"Extension/magic mismatch: extension={extension_type}, magic={magic_type}"
+            return (
+                False,
+                f"Extension/magic mismatch: extension={extension_type}, magic={magic_type}",
+            )
         return True, None
 
     def split_pdf_pages(self, content: bytes) -> int:
@@ -189,7 +194,9 @@ class FileIngestionPipeline:
 
         return doc
 
-    def process(self, uploads: list[tuple[str, bytes]], *, strict_validation: bool = True) -> IngestionReport:
+    def process(
+        self, uploads: list[tuple[str, bytes]], *, strict_validation: bool = True
+    ) -> IngestionReport:
         documents: list[IngestedDocument] = []
         overall_passed = True
         scanner_name = "signature_scan:basic"

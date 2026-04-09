@@ -14,8 +14,16 @@ class FinancingMarketplace:
     def match_to_financiers(self, catalog_value: dict[str, Any]) -> list[dict[str, Any]]:
         value = float(catalog_value.get("catalog_value_total") or 0.0)
         return [
-            {"name": "Apex Music Capital", "estimated_advance": round(value * 0.2, 2), "api_mode": "placeholder"},
-            {"name": "Bluebird Royalty Finance", "estimated_advance": round(value * 0.15, 2), "api_mode": "placeholder"},
+            {
+                "name": "Apex Music Capital",
+                "estimated_advance": round(value * 0.2, 2),
+                "api_mode": "placeholder",
+            },
+            {
+                "name": "Bluebird Royalty Finance",
+                "estimated_advance": round(value * 0.15, 2),
+                "api_mode": "placeholder",
+            },
         ]
 
     def generate_financing_terms(self, catalog_value: dict[str, Any]) -> str:
@@ -42,7 +50,11 @@ class CatalogValuationEngine:
         forecast = self.forecaster.forecast([], horizon_days=90)
         projected = float(forecast.get("predicted_total") or 0.0)
         multiple = 4.2
-        total = round((trailing + projected) * multiple + sum(float(c.recovered_amount or 0.0) for c in claims), 2)
+        total = round(
+            (trailing + projected) * multiple
+            + sum(float(c.recovered_amount or 0.0) for c in claims),
+            2,
+        )
         return {
             "artist_id": artist_id,
             "catalog_value_total": total,

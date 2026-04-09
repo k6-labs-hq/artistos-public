@@ -1,4 +1,5 @@
 """Pillar 1 — Real-time Trust & Transparency trace feed."""
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends
@@ -28,11 +29,14 @@ def get_trust_trace(
     and a plain-English explanation of what XR7 is doing right now.
     """
     events = get_latest_trace(db, artist_id)
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "trace": events,
-        "latest_stage": events[-1]["stage"] if events else None,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "trace": events,
+            "latest_stage": events[-1]["stage"] if events else None,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/trust/defensibility")

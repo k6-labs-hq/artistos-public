@@ -223,7 +223,9 @@ class OAuthProviderService:
                 )
             response.raise_for_status()
         except Exception as exc:  # noqa: BLE001
-            raise OAuthProviderError(f"Token request failed for provider '{self.provider}': {exc}") from exc
+            raise OAuthProviderError(
+                f"Token request failed for provider '{self.provider}': {exc}"
+            ) from exc
 
         data = response.json()
         if not isinstance(data, dict):

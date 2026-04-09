@@ -1,4 +1,5 @@
 """Pillar 2 — Referral program service (track, credit, query)."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -77,15 +78,9 @@ def credit_referral_on_recovery(
 
 def get_referral_tree(db: Session, artist_id: str) -> dict[str, Any]:
     """Return referral tree summary for dashboard."""
-    outbound = (
-        db.query(ArtistReferral)
-        .filter(ArtistReferral.referrer_artist_id == artist_id)
-        .all()
-    )
+    outbound = db.query(ArtistReferral).filter(ArtistReferral.referrer_artist_id == artist_id).all()
     inbound = (
-        db.query(ArtistReferral)
-        .filter(ArtistReferral.referred_artist_id == artist_id)
-        .first()
+        db.query(ArtistReferral).filter(ArtistReferral.referred_artist_id == artist_id).first()
     )
     return {
         "artist_id": artist_id,

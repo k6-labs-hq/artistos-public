@@ -42,7 +42,9 @@ class PROConnector(BaseConnector):
         api_key = self.config.get("api_key") or os.environ.get(self._env_key(), "")
         return bool(api_key)
 
-    def fetch_historical(self, artist_id: str, start_date: datetime, end_date: datetime) -> list[dict]:
+    def fetch_historical(
+        self, artist_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict]:
         rows = load_statement_rows(
             config=self.config,
             source_name=self.pro_name,
@@ -59,16 +61,18 @@ class PROConnector(BaseConnector):
     def normalize(self, raw_data: list[dict]) -> list[dict]:
         normalized = []
         for record in raw_data:
-            normalized.append({
-                "source": self.pro_name,
-                "event_type": "STREAM",
-                "artist_id": record.get("artist_id"),
-                "work_id": record.get("work_id"),
-                "quantity": record.get("quantity", 0),
-                "unit_value": record.get("unit_value", 0.0),
-                "currency": record.get("currency", "USD"),
-                "territory": record.get("territory"),
-                "timestamp": record.get("timestamp"),
-                "platform": self.pro_name,
-            })
+            normalized.append(
+                {
+                    "source": self.pro_name,
+                    "event_type": "STREAM",
+                    "artist_id": record.get("artist_id"),
+                    "work_id": record.get("work_id"),
+                    "quantity": record.get("quantity", 0),
+                    "unit_value": record.get("unit_value", 0.0),
+                    "currency": record.get("currency", "USD"),
+                    "territory": record.get("territory"),
+                    "timestamp": record.get("timestamp"),
+                    "platform": self.pro_name,
+                }
+            )
         return normalized

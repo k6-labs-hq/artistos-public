@@ -47,6 +47,7 @@ def _ts(offset_seconds: int = 0) -> datetime:
 # Fixtures
 # ---------------------------------------------------------------------------
 
+
 @pytest.fixture()
 def db():
     session = _TestSession()
@@ -78,9 +79,17 @@ def _next_ts() -> datetime:
     return _ts(_counter * 10)
 
 
-def _add_anomaly(db, artist_id, *, estimated_recoverable=500.0, status=AnomalyStatus.OPEN,
-                 category=AnomalyCategory.ROYALTY, severity=AnomalySeverity.HIGH,
-                 subtype="MISSING_PAYMENT", description=None):
+def _add_anomaly(
+    db,
+    artist_id,
+    *,
+    estimated_recoverable=500.0,
+    status=AnomalyStatus.OPEN,
+    category=AnomalyCategory.ROYALTY,
+    severity=AnomalySeverity.HIGH,
+    subtype="MISSING_PAYMENT",
+    description=None,
+):
     a = Anomaly(
         id=str(uuid.uuid4()),
         artist_id=artist_id,
@@ -99,8 +108,16 @@ def _add_anomaly(db, artist_id, *, estimated_recoverable=500.0, status=AnomalySt
     return a
 
 
-def _add_claim(db, artist_id, anomaly_id, *, status=ClaimStatus.IDENTIFIED,
-               recovered_amount=None, contingency_fee=None, currency="USD"):
+def _add_claim(
+    db,
+    artist_id,
+    anomaly_id,
+    *,
+    status=ClaimStatus.IDENTIFIED,
+    recovered_amount=None,
+    contingency_fee=None,
+    currency="USD",
+):
     ts = _next_ts()
     c = Claim(
         id=str(uuid.uuid4()),
@@ -120,8 +137,16 @@ def _add_claim(db, artist_id, anomaly_id, *, status=ClaimStatus.IDENTIFIED,
     return c
 
 
-def _add_disbursement(db, artist_id, *, amount=450.0, status=TrolleyTxnStatus.PAID,
-                      claim_id=None, trolley_payment_id=None, currency="USD"):
+def _add_disbursement(
+    db,
+    artist_id,
+    *,
+    amount=450.0,
+    status=TrolleyTxnStatus.PAID,
+    claim_id=None,
+    trolley_payment_id=None,
+    currency="USD",
+):
     ts = _next_ts()
     t = TrolleyTransaction(
         id=str(uuid.uuid4()),
@@ -144,6 +169,7 @@ def _add_disbursement(db, artist_id, *, amount=450.0, status=TrolleyTxnStatus.PA
 # ---------------------------------------------------------------------------
 # DashboardEngine unit tests
 # ---------------------------------------------------------------------------
+
 
 class TestDashboardEngineLeakage:
     def test_empty_returns_zero_leakage(self, db, artist):
@@ -224,10 +250,22 @@ class TestDashboardEngineInPursuit:
 
     def test_closed_claims_not_in_active(self, db, artist):
         anom = _add_anomaly(db, artist.id)
-        _add_claim(db, artist.id, anom.id, status=ClaimStatus.PAID, recovered_amount=1000.0,
-                   contingency_fee=100.0)
-        _add_claim(db, artist.id, anom.id, status=ClaimStatus.CLOSED, recovered_amount=500.0,
-                   contingency_fee=50.0)
+        _add_claim(
+            db,
+            artist.id,
+            anom.id,
+            status=ClaimStatus.PAID,
+            recovered_amount=1000.0,
+            contingency_fee=100.0,
+        )
+        _add_claim(
+            db,
+            artist.id,
+            anom.id,
+            status=ClaimStatus.CLOSED,
+            recovered_amount=500.0,
+            contingency_fee=50.0,
+        )
         ip = DashboardEngine(db).compute(artist.id)["in_pursuit"]
         assert ip["active_claim_count"] == 0
         assert ip["closed_claim_count"] == 2
@@ -237,8 +275,13 @@ class TestDashboardEngineInPursuit:
 
     def test_all_active_statuses_included(self, db, artist):
         anom = _add_anomaly(db, artist.id)
-        for status in (ClaimStatus.IDENTIFIED, ClaimStatus.PREPARED, ClaimStatus.SUBMITTED,
-                       ClaimStatus.IN_REVIEW, ClaimStatus.ACCEPTED):
+        for status in (
+            ClaimStatus.IDENTIFIED,
+            ClaimStatus.PREPARED,
+            ClaimStatus.SUBMITTED,
+            ClaimStatus.IN_REVIEW,
+            ClaimStatus.ACCEPTED,
+        ):
             _add_claim(db, artist.id, anom.id, status=status, recovered_amount=100.0)
         ip = DashboardEngine(db).compute(artist.id)["in_pursuit"]
         assert ip["active_claim_count"] == 5
@@ -273,8 +316,13 @@ class TestDashboardEngineDeposited:
         assert dep["total_deposited"] == pytest.approx(0.0)
 
     def test_deposits_list_has_expected_fields(self, db, artist):
-        _add_disbursement(db, artist.id, amount=750.0, status=TrolleyTxnStatus.PAID,
-                          trolley_payment_id="PAY-DEPOSIT-1")
+        _add_disbursement(
+            db,
+            artist.id,
+            amount=750.0,
+            status=TrolleyTxnStatus.PAID,
+            trolley_payment_id="PAY-DEPOSIT-1",
+        )
         dep = DashboardEngine(db).compute(artist.id)["recovered_and_deposited"]
         assert len(dep["deposits"]) == 1
         d = dep["deposits"][0]
@@ -355,8 +403,13 @@ class TestDashboardActivityFeed:
         assert claim_events[0]["amount"] == pytest.approx(800.0)
 
     def test_payment_deposited_event_in_feed(self, db, artist):
-        _add_disbursement(db, artist.id, amount=720.0, status=TrolleyTxnStatus.PAID,
-                          trolley_payment_id="PAY-FEED-1")
+        _add_disbursement(
+            db,
+            artist.id,
+            amount=720.0,
+            status=TrolleyTxnStatus.PAID,
+            trolley_payment_id="PAY-FEED-1",
+        )
         feed = DashboardEngine(db).compute(artist.id)["activity_feed"]
         deposit_events = [e for e in feed if e["type"] == "PAYMENT_DEPOSITED"]
         assert len(deposit_events) == 1
@@ -391,6 +444,7 @@ class TestDashboardActivityFeed:
 # ---------------------------------------------------------------------------
 # API endpoint tests
 # ---------------------------------------------------------------------------
+
 
 class TestDashboardAPIEndpoint:
     def test_dashboard_unknown_artist_404(self):
@@ -480,12 +534,18 @@ class TestDashboardAPIEndpoint:
         assert "overall" in data["calibration_health"]
         assert data["calibration_health"]["overall"]["sample_count"] == 0
         assert data["catalog_health"]["health_score"] is not None  # scorer always returns a value
-        assert data["earnings_trend"]["trend"] in ("INSUFFICIENT_DATA", "GROWING", "FLAT", "DECLINING")
+        assert data["earnings_trend"]["trend"] in (
+            "INSUFFICIENT_DATA",
+            "GROWING",
+            "FLAT",
+            "DECLINING",
+        )
 
 
 # ---------------------------------------------------------------------------
 # New section tests — deadlines
 # ---------------------------------------------------------------------------
+
 
 class TestDashboardDeadlines:
     def test_empty_artist_all_zero_counts(self, db, artist):
@@ -529,6 +589,7 @@ class TestDashboardDeadlines:
     def test_urgent_items_have_required_fields(self, db, artist):
         # Create an anomaly old enough to be URGENT or EXPIRED by back-dating it.
         from datetime import timedelta
+
         ts = _BASE_TS - timedelta(days=1080)  # near end of 3-year ROYALTY window
         a = Anomaly(
             id=str(uuid.uuid4()),
@@ -558,6 +619,7 @@ class TestDashboardDeadlines:
 # New section tests — priority_actions
 # ---------------------------------------------------------------------------
 
+
 class TestDashboardPriorityActions:
     def test_empty_artist_no_actions(self, db, artist):
         pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
@@ -586,9 +648,7 @@ class TestDashboardPriorityActions:
         _add_claim(db, artist.id, anom.id, status=ClaimStatus.PAID, recovered_amount=500.0)
         pa = DashboardEngine(db).compute(artist.id)["priority_actions"]
         # PAID claim should not appear (anomaly is still OPEN though)
-        claim_items = [
-            i for i in pa["top_10_actions"] if i.get("action_type") == "ADVANCE_CLAIM"
-        ]
+        claim_items = [i for i in pa["top_10_actions"] if i.get("action_type") == "ADVANCE_CLAIM"]
         assert len(claim_items) == 0
 
     def test_top_10_capped(self, db, artist):
@@ -615,6 +675,7 @@ class TestDashboardPriorityActions:
 # ---------------------------------------------------------------------------
 # New section tests — catalog_health
 # ---------------------------------------------------------------------------
+
 
 class TestDashboardCatalogHealth:
     def test_health_score_present(self, db, artist):
@@ -645,6 +706,7 @@ class TestDashboardCatalogHealth:
 # ---------------------------------------------------------------------------
 # New section tests — earnings_trend
 # ---------------------------------------------------------------------------
+
 
 class TestDashboardEarningsTrend:
     def test_earnings_trend_present(self, db, artist):
@@ -680,6 +742,7 @@ class TestDashboardEarningsTrend:
 # ---------------------------------------------------------------------------
 # New section API contract tests
 # ---------------------------------------------------------------------------
+
 
 class TestDashboardNewSectionsAPIContract:
     def test_deadlines_fields_via_api(self):

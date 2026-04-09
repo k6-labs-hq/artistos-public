@@ -42,13 +42,12 @@ if abs(sum(_WEIGHTS.values()) - 1.0) >= 1e-9:
 # Individual signal scorers (return value in [0, 1], higher = healthier)
 # ---------------------------------------------------------------------------
 
+
 def _score_metadata_completeness(works: list[dict]) -> float:
     """Fraction of works that have both ISRC and ISWC."""
     if not works:
         return 0.0
-    with_both = sum(
-        1 for w in works if w.get("isrc") and w.get("iswc")
-    )
+    with_both = sum(1 for w in works if w.get("isrc") and w.get("iswc"))
     return with_both / len(works)
 
 
@@ -117,14 +116,15 @@ def _score_metadata_consistency(metadata_health: dict | None) -> float:
 # Public data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class CatalogHealthReport:
     """Structured output of ``CatalogScorer.score()``."""
 
     artist_id: str
-    health_score: int                     # 0–100
-    grade: str                            # A/B/C/D/F
-    signals: dict[str, float] = field(default_factory=dict)    # raw [0,1] values
+    health_score: int  # 0–100
+    grade: str  # A/B/C/D/F
+    signals: dict[str, float] = field(default_factory=dict)  # raw [0,1] values
     risk_flags: list[str] = field(default_factory=list)
     recommendations: list[str] = field(default_factory=list)
 
@@ -154,6 +154,7 @@ def _grade(score: int) -> str:
 # ---------------------------------------------------------------------------
 # Main scorer class
 # ---------------------------------------------------------------------------
+
 
 class CatalogScorer:
     """

@@ -54,11 +54,14 @@ def _split_name(name: str) -> tuple[str, str]:
 def create_trolley_recipient(artist_id: str, db: Session = Depends(get_db)):
     artist = get_artist_or_404(artist_id, db)
     if artist.trolley_recipient_id:
-        return inject_branding_metadata(db, {
-            "artist_id": artist_id,
-            "trolley_recipient_id": artist.trolley_recipient_id,
-            "status": artist.payout_account_status,
-        })
+        return inject_branding_metadata(
+            db,
+            {
+                "artist_id": artist_id,
+                "trolley_recipient_id": artist.trolley_recipient_id,
+                "status": artist.payout_account_status,
+            },
+        )
 
     first_name = artist.first_name
     last_name = artist.last_name
@@ -83,16 +86,21 @@ def create_trolley_recipient(artist_id: str, db: Session = Depends(get_db)):
     recipient = response.get("recipient") if isinstance(response, dict) else {}
     recipient_id = recipient.get("id") or response.get("id")
     if not recipient_id:
-        raise HTTPException(status_code=502, detail="Trolley recipient creation did not return an ID")
+        raise HTTPException(
+            status_code=502, detail="Trolley recipient creation did not return an ID"
+        )
 
     artist.trolley_recipient_id = recipient_id
     artist.payout_account_status = "pending"
     db.commit()
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "trolley_recipient_id": recipient_id,
-        "status": artist.payout_account_status,
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "trolley_recipient_id": recipient_id,
+            "status": artist.payout_account_status,
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/trolley/widget-url")
@@ -106,11 +114,14 @@ def get_trolley_widget_url(artist_id: str, db: Session = Depends(get_db)):
     except TrolleyException as exc:
         raise HTTPException(status_code=503, detail=str(exc))
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist_id,
-        "trolley_recipient_id": artist.trolley_recipient_id,
-        "url": response.get("url"),
-    })
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "trolley_recipient_id": artist.trolley_recipient_id,
+            "url": response.get("url"),
+        },
+    )
 
 
 @router.get("/artists/{artist_id}/trolley/status")
@@ -118,13 +129,16 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
     artist = get_artist_or_404(artist_id, db)
 
     if not artist.trolley_recipient_id:
-        return inject_branding_metadata(db, {
-            "artist_id": artist.id,
-            "status": "not_started",
-            "recipient_id": None,
-            "payout_method": None,
-            "tax_form_status": artist.tax_form_status,
-        })
+        return inject_branding_metadata(
+            db,
+            {
+                "artist_id": artist.id,
+                "status": "not_started",
+                "recipient_id": None,
+                "payout_method": None,
+                "tax_form_status": artist.tax_form_status,
+            },
+        )
 
     try:
         response = TrolleyClient.from_env().get_recipient(artist.trolley_recipient_id)
@@ -140,24 +154,31 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
     if isinstance(payout_method, dict):
         artist.payout_method_type = payout_method.get("type")
         artist.payout_last4 = payout_method.get("last4")
-    artist.tax_form_status = "verified" if (compliance or {}).get("status") == "verified" else "pending"
+    artist.tax_form_status = (
+        "verified" if (compliance or {}).get("status") == "verified" else "pending"
+    )
     db.commit()
 
-    return inject_branding_metadata(db, {
-        "artist_id": artist.id,
-        "status": artist.payout_account_status,
-        "recipient_id": artist.trolley_recipient_id,
-        "payout_method": {
-            "type": artist.payout_method_type,
-            "last4": artist.payout_last4,
-            "country": artist.country_code,
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist.id,
+            "status": artist.payout_account_status,
+            "recipient_id": artist.trolley_recipient_id,
+            "payout_method": {
+                "type": artist.payout_method_type,
+                "last4": artist.payout_last4,
+                "country": artist.country_code,
+            },
+            "tax_form_status": artist.tax_form_status,
         },
-        "tax_form_status": artist.tax_form_status,
-    })
+    )
 
 
 @router.post("/artists/{artist_id}/claims/{claim_id}/manual-remittance")
-def manual_remittance(artist_id: str, claim_id: str, body: ManualRemittanceRequest, db: Session = Depends(get_db)):
+def manual_remittance(
+    artist_id: str, claim_id: str, body: ManualRemittanceRequest, db: Session = Depends(get_db)
+):
     get_artist_or_404(artist_id, db)
 
     claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
@@ -234,11 +255,20 @@ async def trolley_webhook(request: Request, db: Session = Depends(get_db)):
                     },
                 )
                 try:
-                    hubspot_sync_recovery_update.delay(claim.artist_id, event="recovery_disbursement_paid")
+                    hubspot_sync_recovery_update.delay(
+                        claim.artist_id, event="recovery_disbursement_paid"
+                    )
                 except Exception:  # noqa: BLE001
-                    logger.exception("Failed to enqueue HubSpot disbursement paid sync", extra={"claim_id": claim.id})
+                    logger.exception(
+                        "Failed to enqueue HubSpot disbursement paid sync",
+                        extra={"claim_id": claim.id},
+                    )
 
-                pref = db.query(NotificationPreference).filter(NotificationPreference.artist_id == claim.artist_id).first()
+                pref = (
+                    db.query(NotificationPreference)
+                    .filter(NotificationPreference.artist_id == claim.artist_id)
+                    .first()
+                )
                 method = payment.get("method") or "payout"
                 eta = payment.get("estimatedDelivery") or "pending"
                 send_event_notification(
@@ -287,11 +317,20 @@ async def trolley_webhook(request: Request, db: Session = Depends(get_db)):
                 artist.payout_account_status = "verified" if verified else "pending"
                 artist.payout_method_type = payout_method.get("type")
                 artist.payout_last4 = payout_method.get("last4")
-                artist.tax_form_status = "verified" if compliance.get("status") == "verified" else "pending"
+                artist.tax_form_status = (
+                    "verified" if compliance.get("status") == "verified" else "pending"
+                )
                 db.commit()
 
     if claim_id:
-        txn = db.query(TrolleyTransaction).filter(TrolleyTransaction.claim_id == claim_id, TrolleyTransaction.type == TrolleyTxnType.DISBURSEMENT).first()
+        txn = (
+            db.query(TrolleyTransaction)
+            .filter(
+                TrolleyTransaction.claim_id == claim_id,
+                TrolleyTransaction.type == TrolleyTxnType.DISBURSEMENT,
+            )
+            .first()
+        )
         if txn:
             if event_type == "payment.paid":
                 txn.status = TrolleyTxnStatus.PAID

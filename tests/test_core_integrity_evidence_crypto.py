@@ -24,6 +24,7 @@ Recommended future tests:
   - Property-based: arbitrary dict → seal → verify always returns valid=True.
   - Concurrent seal_packet() calls (thread-safety of temp-file handling).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -44,6 +45,7 @@ from XR7.core.integrity.evidence_crypto import (
 # Domain-boundary guard
 # ---------------------------------------------------------------------------
 
+
 def test_no_db_imports_in_evidence_crypto():
     import XR7.core.integrity.evidence_crypto as mod
 
@@ -58,6 +60,7 @@ def test_no_db_imports_in_evidence_crypto():
 # ---------------------------------------------------------------------------
 # canonicalize
 # ---------------------------------------------------------------------------
+
 
 class TestCanonicalize:
     def test_returns_bytes(self):
@@ -90,6 +93,7 @@ class TestCanonicalize:
 # sha256_hex
 # ---------------------------------------------------------------------------
 
+
 class TestSha256Hex:
     def test_known_digest(self):
         # echo -n "hello" | sha256sum
@@ -109,6 +113,7 @@ class TestSha256Hex:
 # ---------------------------------------------------------------------------
 # compute_packet_hash
 # ---------------------------------------------------------------------------
+
 
 class TestComputePacketHash:
     def test_stable_for_same_input(self):
@@ -141,6 +146,7 @@ class TestComputePacketHash:
 # compute_chain_hash
 # ---------------------------------------------------------------------------
 
+
 class TestComputeChainHash:
     def test_genesis_sentinel_used_when_no_prior(self):
         h = compute_chain_hash(None, "abc123")
@@ -167,6 +173,7 @@ class TestComputeChainHash:
 # ---------------------------------------------------------------------------
 # hmac_sign / hmac_verify
 # ---------------------------------------------------------------------------
+
 
 class TestHmacSignVerify:
     def test_sign_returns_tuple_of_str(self):
@@ -212,6 +219,7 @@ class TestHmacSignVerify:
 # seal_packet
 # ---------------------------------------------------------------------------
 
+
 class TestSealPacket:
     def _make_base_packet(self):
         return {
@@ -224,9 +232,15 @@ class TestSealPacket:
     def test_seal_returns_dict_with_all_required_keys(self):
         integrity = seal_packet(self._make_base_packet(), prior_packet_hash=None)
         required_keys = {
-            "packet_hash", "prior_packet_hash", "chain_hash",
-            "signature", "signature_algorithm", "hash_algorithm",
-            "signed_at", "line_hashes", "key_source",
+            "packet_hash",
+            "prior_packet_hash",
+            "chain_hash",
+            "signature",
+            "signature_algorithm",
+            "hash_algorithm",
+            "signed_at",
+            "line_hashes",
+            "key_source",
         }
         assert required_keys.issubset(integrity.keys())
 
@@ -245,6 +259,7 @@ class TestSealPacket:
     def test_signed_at_is_iso_string(self):
         integrity = seal_packet(self._make_base_packet(), None)
         from datetime import datetime
+
         # Must be parseable as ISO datetime
         dt = datetime.fromisoformat(integrity["signed_at"])
         assert dt is not None
@@ -277,6 +292,7 @@ class TestSealPacket:
 # ---------------------------------------------------------------------------
 # verify_packet_integrity
 # ---------------------------------------------------------------------------
+
 
 class TestVerifyPacketIntegrity:
     def _sealed(self, payload=None, prior=None):
@@ -335,10 +351,12 @@ class TestVerifyPacketIntegrity:
         assert result["checks"]["signature_valid"] is False
 
     def test_tampered_line_hashes_detected(self):
-        packet = self._sealed({
-            "amount": 100.0,
-            "proof": {"ledger_evidence": [{"line": 1}]},
-        })
+        packet = self._sealed(
+            {
+                "amount": 100.0,
+                "proof": {"ledger_evidence": [{"line": 1}]},
+            }
+        )
         packet["integrity"]["line_hashes"] = ["forged_hash"]
         result = verify_packet_integrity(packet)
         assert result["valid"] is False
@@ -411,25 +429,30 @@ class TestRsaSignVerify:
 
     def test_rsa_sign_returns_base64_string(self):
         from XR7.core.integrity.evidence_crypto import openssl_rsa_sign
+
         sig = openssl_rsa_sign("test_message", _TEST_RSA_PRIVATE_KEY)
         import base64
+
         # Must be valid base64
         decoded = base64.b64decode(sig.encode("ascii"), validate=True)
         assert len(decoded) > 0
 
     def test_rsa_verify_accepts_valid_signature(self):
         from XR7.core.integrity.evidence_crypto import openssl_rsa_sign, openssl_rsa_verify
+
         message = "chain_hash_for_rsa_test"
         sig = openssl_rsa_sign(message, _TEST_RSA_PRIVATE_KEY)
         assert openssl_rsa_verify(message, sig, _TEST_RSA_PUBLIC_KEY) is True
 
     def test_rsa_verify_rejects_wrong_message(self):
         from XR7.core.integrity.evidence_crypto import openssl_rsa_sign, openssl_rsa_verify
+
         sig = openssl_rsa_sign("original_message", _TEST_RSA_PRIVATE_KEY)
         assert openssl_rsa_verify("tampered_message", sig, _TEST_RSA_PUBLIC_KEY) is False
 
     def test_rsa_verify_rejects_invalid_base64(self):
         from XR7.core.integrity.evidence_crypto import openssl_rsa_verify
+
         # Non-base64 signature should return False, not raise
         assert openssl_rsa_verify("message", "not!valid!base64!!!", _TEST_RSA_PUBLIC_KEY) is False
 
@@ -470,4 +493,3 @@ class TestRsaSignVerify:
         result = verify_packet_integrity(packet)
         # No public key → signature_valid is False
         assert result["checks"]["signature_valid"] is False
-

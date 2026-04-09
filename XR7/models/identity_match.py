@@ -30,8 +30,12 @@ class ArtistIdentityMatch(Base):
     __tablename__ = "artist_identity_matches"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False, index=True)
-    statement_id: Mapped[str | None] = mapped_column(String, ForeignKey("statements.id"), nullable=True, index=True)
+    artist_id: Mapped[str] = mapped_column(
+        String, ForeignKey("artists.id"), nullable=False, index=True
+    )
+    statement_id: Mapped[str | None] = mapped_column(
+        String, ForeignKey("statements.id"), nullable=True, index=True
+    )
     confidence_score: Mapped[float] = mapped_column(Float, nullable=False)
     confidence_band: Mapped[str] = mapped_column(Enum(IdentityConfidenceBand), nullable=False)
     decision_status: Mapped[str] = mapped_column(Enum(IdentityDecisionStatus), nullable=False)
@@ -41,19 +45,25 @@ class ArtistIdentityMatch(Base):
     matched_profile: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     score_breakdown: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     chain_hash: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class ArtistIdentityMatchAudit(Base):
     __tablename__ = "artist_identity_match_audits"
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    match_id: Mapped[str] = mapped_column(String, ForeignKey("artist_identity_matches.id"), nullable=False, index=True)
+    match_id: Mapped[str] = mapped_column(
+        String, ForeignKey("artist_identity_matches.id"), nullable=False, index=True
+    )
     action: Mapped[str] = mapped_column(String, nullable=False)
     actor: Mapped[str] = mapped_column(String, nullable=False)
     payload: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=False, default=dict)
     chain_hash: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc), index=True
+    )
 
 
 class ArtistIdentityMatchSchema(BaseModel):

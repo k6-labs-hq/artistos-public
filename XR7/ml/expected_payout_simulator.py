@@ -36,7 +36,9 @@ class ExpectedPayoutSimulator:
             if contract_withholding is not None:
                 withholding_rate = float(contract_withholding)
             else:
-                withholding_rate = float(row.get("withholding_rate", default_withholding_rate) or 0.0)
+                withholding_rate = float(
+                    row.get("withholding_rate", default_withholding_rate) or 0.0
+                )
             fx_rate = float(row.get("fx_rate", default_fx_rate) or 1.0)
 
             gross_native = quantity * rate

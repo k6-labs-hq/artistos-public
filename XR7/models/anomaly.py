@@ -58,7 +58,9 @@ class Anomaly(Base):
     redistribution_risk_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     trust_score: Mapped[float | None] = mapped_column(Float, nullable=True)
     urgent_flag: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
 
 
 class AnomalySchema(BaseModel):

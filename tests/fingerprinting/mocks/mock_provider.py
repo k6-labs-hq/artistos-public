@@ -58,9 +58,7 @@ class MockFingerprintingProvider(IFingerprintingProvider):
     ) -> None:
         self._provider_name = provider_name
         self._healthy = healthy
-        self._results: list[NormalizedMatchResult] = results or [
-            _default_result(provider_name)
-        ]
+        self._results: list[NormalizedMatchResult] = results or [_default_result(provider_name)]
         self.call_log: list[dict[str, Any]] = []
 
     @property
@@ -130,7 +128,5 @@ class MockFingerprintingProvider(IFingerprintingProvider):
             checked_at=datetime.now(timezone.utc),
         )
 
-    def normalize_provider_response(
-        self, raw: dict[str, Any]
-    ) -> list[NormalizedMatchResult]:
+    def normalize_provider_response(self, raw: dict[str, Any]) -> list[NormalizedMatchResult]:
         return list(self._results)

@@ -5,6 +5,7 @@ Endpoints:
   GET  /admin/orgs/{org_id}/data-residency    – get current policy
   POST /admin/orgs/{org_id}/data-residency/check – test if a region is permitted
 """
+
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -42,11 +43,7 @@ def upsert_policy(
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     db: Session = Depends(get_db),
 ) -> DataResidencyPolicy:
-    policy = (
-        db.query(DataResidencyPolicy)
-        .filter(DataResidencyPolicy.org_id == org_id)
-        .first()
-    )
+    policy = db.query(DataResidencyPolicy).filter(DataResidencyPolicy.org_id == org_id).first()
     if not policy:
         policy = DataResidencyPolicy(org_id=org_id, created_by=x_actor_email)
         db.add(policy)
