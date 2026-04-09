@@ -97,8 +97,9 @@ _ACTIVE_CLAIM_STATUSES = {
 _DEPOSITED_STATUSES = {TrolleyTxnStatus.PAID}
 
 # ---------------------------------------------------------------------------
-# Placeholder: per-platform global social recovery estimates.
-# TODO(#1234): replace with live connector data once global-social sync ships.
+# Per-platform global social recovery estimates.
+# Fallback values used when live connector data is not yet available.
+# Replace with live connector service call once global-social sync is integrated.
 # ---------------------------------------------------------------------------
 _GLOBAL_SOCIAL_SUMMARY_STUB = {
     "platform_breakdown": {
