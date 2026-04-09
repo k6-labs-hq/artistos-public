@@ -37,9 +37,9 @@ def _index_exists(table_name: str, index_name: str) -> bool:
 
 
 def upgrade() -> None:
-    # Create invite status enum
+    # Create invite status enum — values must match SQLAlchemy enum .name (uppercase)
     invite_status = postgresql.ENUM(
-        "pending", "sent", "opened", "redeemed", "expired", "revoked",
+        "PENDING", "SENT", "OPENED", "REDEEMED", "EXPIRED", "REVOKED",
         name="invitestatus",
         create_type=True
     )
@@ -47,7 +47,7 @@ def upgrade() -> None:
 
     # Create invite channel enum
     invite_channel = postgresql.ENUM(
-        "email", "instagram_dm", "sms", "manual",
+        "EMAIL", "INSTAGRAM_DM", "SMS", "MANUAL",
         name="invitechannel",
         create_type=True
     )
@@ -55,7 +55,7 @@ def upgrade() -> None:
 
     # Create invite role enum
     invite_role = postgresql.ENUM(
-        "artist", "writer", "director", "actor", "studio", "distributor", "manager", "agent", "analyst",
+        "ARTIST", "WRITER", "DIRECTOR", "ACTOR", "STUDIO", "DISTRIBUTOR", "MANAGER", "AGENT", "ANALYST",
         name="inviterole",
         create_type=True
     )
