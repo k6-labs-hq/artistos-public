@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.tax_optimizer_request import TaxOptimizerRequest
 
+
 class TestTaxOptimizerRequest(unittest.TestCase):
     """TaxOptimizerRequest unit test stubs"""
 

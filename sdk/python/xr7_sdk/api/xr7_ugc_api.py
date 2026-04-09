@@ -10,17 +10,14 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictFloat, StrictInt, StrictStr
-from typing import Any, Optional, Union
-from xr7_sdk.models.ugc_signal_ingest_request import UGCSignalIngestRequest
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.ugc_signal_ingest_request import UGCSignalIngestRequest
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -602,21 +599,21 @@ class Xr7UgcApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if tenant_id is not None:
-            
+
             _query_params.append(('tenant_id', tenant_id))
-            
+
         if min_confidence is not None:
-            
+
             _query_params.append(('min_confidence', min_confidence))
-            
+
         if min_estimated_value is not None:
-            
+
             _query_params.append(('min_estimated_value', min_estimated_value))
-            
+
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

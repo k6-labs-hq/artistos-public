@@ -79,6 +79,7 @@ def test_signing_mode_env_var_drives_orchestrator(monkeypatch):
 def test_readiness_endpoint_exposes_security_gates():
     """GET /health/readiness must return a security_gates block with required keys."""
     from fastapi.testclient import TestClient
+
     from XR7.api.app import app
 
     client = TestClient(app)
@@ -103,6 +104,7 @@ def test_readiness_endpoint_exposes_security_gates():
 def test_readiness_endpoint_reports_trolley_webhook_status():
     """Readiness webhooks section must expose trolley_webhook_secret_configured."""
     from fastapi.testclient import TestClient
+
     from XR7.api.app import app
 
     client = TestClient(app)

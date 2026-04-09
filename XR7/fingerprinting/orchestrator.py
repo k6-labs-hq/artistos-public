@@ -15,17 +15,15 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
-from datetime import datetime, timezone
-from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.fingerprinting.config import FingerprintingConfig, fingerprinting_config
 from XR7.fingerprinting._resilience import (
+    CircuitBreakerRegistry,
     ProviderCircuitOpenError,
     get_circuit_registry,
-    CircuitBreakerRegistry,
 )
+from XR7.fingerprinting.config import FingerprintingConfig, fingerprinting_config
 from XR7.fingerprinting.interface import IFingerprintingProvider
 from XR7.fingerprinting.schema import (
     FingerprintSubmitRequest,
@@ -399,7 +397,11 @@ class FingerprintingOrchestrator:
         if self._db is None:
             return
         try:
-            from XR7.models.fingerprint_job import FingerprintJob, FingerprintJobMode, FingerprintJobStatus
+            from XR7.models.fingerprint_job import (
+                FingerprintJob,
+                FingerprintJobMode,
+                FingerprintJobStatus,
+            )
 
             job = FingerprintJob(
                 id=job_id,

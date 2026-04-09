@@ -5,14 +5,13 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession
 from XR7.api.app import app
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.sync_job import SyncJob
-from tests.conftest import TestSession
-
 
 client = TestClient(app)
 

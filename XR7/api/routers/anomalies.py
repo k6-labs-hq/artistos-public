@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.ai_music.influence_detector import InfluenceDetector
-from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.anomaly.engine import AnomalyEngine
+from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
+from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.models.anomaly import (
@@ -14,19 +15,21 @@ from XR7.models.anomaly import (
     AnomalyWithRecoverabilitySchema,
     DetectAnomaliesResponseSchema,
 )
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.review_queue import ReviewSourceType
+from XR7.models.xr7_royalty import XR7AIDecisionAuditLog
+from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
+from XR7.recovery.gap_explainer import GapExplainerService
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
-from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.trust_defensibility import TrustDefensibilityService
-from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
+from XR7.services.branding import (
+    branding_metadata,
+    get_branding_for_artist,
+    inject_branding_metadata,
+)
 from XR7.services.review_queue import enqueue_review_item
-from XR7.recovery.gap_explainer import GapExplainerService
-from XR7.models.xr7_royalty import XR7AIDecisionAuditLog
-from XR7.api.deps import get_artist_or_404
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -133,7 +136,7 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
 
 @router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
 def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     rg = RightsGraph()
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
@@ -176,7 +179,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ai-music/scan-influence")
 async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     detector = InfluenceDetector(db)
     matches = await detector.scan_new_ai_releases(artist_id)
@@ -198,7 +201,7 @@ async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/anomalies/fraud-scan")
 def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     result = FraudInflationDetector().flag_anomalies_for_report(artist_id)
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})

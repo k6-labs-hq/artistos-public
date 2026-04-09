@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.utility_rank_request import UtilityRankRequest
 
+
 class TestUtilityRankRequest(unittest.TestCase):
     """UtilityRankRequest unit test stubs"""
 

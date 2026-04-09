@@ -84,9 +84,9 @@ import csv
 import hashlib
 import io
 import logging
-from pathlib import Path
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from openpyxl import load_workbook
@@ -675,8 +675,8 @@ _parse_landr = lambda row, artist_id: _parse_distributor_row(_DISTRIBUTOR_COLS["
 
 def _parse_ditto(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
     raw_date = _col(row, "month", "period", "date")
-    dt = _parse_date(raw_date) or datetime.now(timezone.utc)
-    quantity = _parse_int(_col(row, "streams", "plays", "quantity"))
+    _parse_date(raw_date) or datetime.now(timezone.utc)
+    _parse_int(_col(row, "streams", "plays", "quantity"))
     amount_str = _col(row, "net revenue", "revenue", "amount")
     amount = _parse_amount(amount_str)
     if amount is None:

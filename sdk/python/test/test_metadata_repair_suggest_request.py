@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.metadata_repair_suggest_request import MetadataRepairSuggestRequest
 
+
 class TestMetadataRepairSuggestRequest(unittest.TestCase):
     """MetadataRepairSuggestRequest unit test stubs"""
 

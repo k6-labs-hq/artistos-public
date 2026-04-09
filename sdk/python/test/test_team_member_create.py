@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.team_member_create import TeamMemberCreate
 
+
 class TestTeamMemberCreate(unittest.TestCase):
     """TeamMemberCreate unit test stubs"""
 

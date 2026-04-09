@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.artist_schema import ArtistSchema
 
+
 class TestArtistSchema(unittest.TestCase):
     """ArtistSchema unit test stubs"""
 

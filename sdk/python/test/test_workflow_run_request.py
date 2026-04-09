@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.workflow_run_request import WorkflowRunRequest
 
+
 class TestWorkflowRunRequest(unittest.TestCase):
     """WorkflowRunRequest unit test stubs"""
 

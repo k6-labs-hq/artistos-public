@@ -7,8 +7,8 @@ POST /admin/society-rules/freeze
 """
 from __future__ import annotations
 
-import os
 import hmac
+import os
 from datetime import datetime, timezone
 from typing import Any
 
@@ -16,10 +16,9 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import get_optional_auth_payload
-from XR7.models.artist import Artist
-from XR7.models.base import get_db
 from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.auth import get_optional_auth_payload
+from XR7.models.base import get_db
 from XR7.modules.black_box_countdown import BlackBoxCountdown, apply_freeze
 from XR7.services.branding import inject_branding_metadata
 
@@ -41,7 +40,7 @@ def get_all_countdowns(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """All anomalies with countdown metadata, sorted by urgency."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     engine = BlackBoxCountdown(db)
     result = engine.compute_all(artist_id)
     return inject_branding_metadata(db, result)
@@ -55,7 +54,7 @@ def get_single_countdown(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Single anomaly countdown detail."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     engine = BlackBoxCountdown(db)
     result = engine.compute_single(artist_id, anomaly_id)
     if result is None:

@@ -12,7 +12,6 @@ from XR7.models.notification_preference import NotificationPreference
 from XR7.models.platform_config import PlatformConfig
 from xr7_common.logging import get_logger
 
-
 logger = get_logger(__name__)
 
 

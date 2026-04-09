@@ -8,14 +8,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import get_optional_auth_payload, require_artist_access
-from XR7.models.artist import Artist
-from XR7.models.base import get_db
 from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.auth import get_optional_auth_payload
+from XR7.models.base import get_db
 from XR7.modules.earnings_time_machine import EarningsTimeMachine
 from XR7.services.branding import inject_branding_metadata
 
@@ -38,7 +37,7 @@ def trigger_time_machine(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Trigger Earnings Time Machine analysis for this artist."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     engine = EarningsTimeMachine(db)
     result = engine.run(
         artist_id=artist_id,
@@ -59,7 +58,7 @@ def get_time_machine_result(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Retrieve the latest Earnings Time Machine result."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     engine = EarningsTimeMachine(db)
     result = engine.run(artist_id=artist_id, granularity=granularity)
     return inject_branding_metadata(db, result)

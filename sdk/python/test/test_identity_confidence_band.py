@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.identity_confidence_band import IdentityConfidenceBand
 
 class TestIdentityConfidenceBand(unittest.TestCase):
     """IdentityConfidenceBand unit test stubs"""

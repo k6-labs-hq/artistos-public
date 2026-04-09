@@ -24,7 +24,6 @@ GET  /fingerprints/providers/circuit-breakers
 
 from __future__ import annotations
 
-import asyncio
 from typing import Any
 
 from fastapi import APIRouter, Body, Depends, File, Form, HTTPException, Query, UploadFile

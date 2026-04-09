@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import run_tvfilm_vertical_orchestra_sync
+from XR7.api.deps import get_artist_or_404
 from XR7.models.anomaly import (
     Anomaly,
     AnomalyStatus,
@@ -21,7 +22,6 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.statement import Statement
 from XR7.models.tvfilm_portfolio_job import TVFilmPortfolioJob, TVFilmPortfolioJobStatus
-from XR7.api.deps import get_artist_or_404
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.tvfilm_compensation_engine import calculate_expected_compensation
@@ -37,7 +37,6 @@ from XR7.services.tvfilm_vertical import (
     ANOMALY_TO_CATEGORY,
     EVIDENCE_PACKET_TEMPLATES,
     TVFILM_ROLE_OPTIONS,
-    detect_statement_type,
     forecast_from_amounts,
     infer_anomaly_subtype,
     list_all_anomaly_rules,

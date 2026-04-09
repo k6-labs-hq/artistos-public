@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.tv_film_portfolio_analysis_request import TVFilmPortfolioAnalysisRequest
 
+
 class TestTVFilmPortfolioAnalysisRequest(unittest.TestCase):
     """TVFilmPortfolioAnalysisRequest unit test stubs"""
 

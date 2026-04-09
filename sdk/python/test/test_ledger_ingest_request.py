@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.ledger_ingest_request import LedgerIngestRequest
 
+
 class TestLedgerIngestRequest(unittest.TestCase):
     """LedgerIngestRequest unit test stubs"""
 
@@ -37,21 +38,21 @@ class TestLedgerIngestRequest(unittest.TestCase):
             return LedgerIngestRequest(
                 entries = [
                     xr7_sdk.models.royalty_ledger_entry_create.RoyaltyLedgerEntryCreate(
-                        source = '', 
-                        record_type = 'EVENT', 
-                        source_file = '', 
-                        source_row = 56, 
-                        contract_version = '', 
-                        work_id = '', 
-                        event_type = '', 
-                        period_start = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(), 
-                        period_end = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(), 
-                        quantity = 1.337, 
-                        rate = 1.337, 
-                        expected_amount = 1.337, 
-                        received_amount = 1.337, 
-                        currency = 'USD', 
-                        fx_rate_used = 1.337, 
+                        source = '',
+                        record_type = 'EVENT',
+                        source_file = '',
+                        source_row = 56,
+                        contract_version = '',
+                        work_id = '',
+                        event_type = '',
+                        period_start = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                        period_end = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                        quantity = 1.337,
+                        rate = 1.337,
+                        expected_amount = 1.337,
+                        received_amount = 1.337,
+                        currency = 'USD',
+                        fx_rate_used = 1.337,
                         territory = '', )
                     ]
             )
@@ -59,21 +60,21 @@ class TestLedgerIngestRequest(unittest.TestCase):
             return LedgerIngestRequest(
                 entries = [
                     xr7_sdk.models.royalty_ledger_entry_create.RoyaltyLedgerEntryCreate(
-                        source = '', 
-                        record_type = 'EVENT', 
-                        source_file = '', 
-                        source_row = 56, 
-                        contract_version = '', 
-                        work_id = '', 
-                        event_type = '', 
-                        period_start = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(), 
-                        period_end = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(), 
-                        quantity = 1.337, 
-                        rate = 1.337, 
-                        expected_amount = 1.337, 
-                        received_amount = 1.337, 
-                        currency = 'USD', 
-                        fx_rate_used = 1.337, 
+                        source = '',
+                        record_type = 'EVENT',
+                        source_file = '',
+                        source_row = 56,
+                        contract_version = '',
+                        work_id = '',
+                        event_type = '',
+                        period_start = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                        period_end = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
+                        quantity = 1.337,
+                        rate = 1.337,
+                        expected_amount = 1.337,
+                        received_amount = 1.337,
+                        currency = 'USD',
+                        fx_rate_used = 1.337,
                         territory = '', )
                     ],
         )

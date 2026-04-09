@@ -5,7 +5,6 @@ from typing import Any
 from shared.utils.numbers import safe_float as _safe_float
 from XR7.recovery.black_box_expiration import evaluate_black_box_expiration_for_anomaly
 
-
 RECOVERABLE = "Recoverable"
 POTENTIALLY_CONTRACT = "Potentially Recoverable (Contract-Based)"
 EXPIRED_REDIS = "Expired (Black-Box Redistributed)"

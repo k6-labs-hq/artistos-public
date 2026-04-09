@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.identity_decision_request import IdentityDecisionRequest
 
+
 class TestIdentityDecisionRequest(unittest.TestCase):
     """IdentityDecisionRequest unit test stubs"""
 

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.support_history_response import SupportHistoryResponse
 
+
 class TestSupportHistoryResponse(unittest.TestCase):
     """SupportHistoryResponse unit test stubs"""
 
@@ -41,12 +42,12 @@ class TestSupportHistoryResponse(unittest.TestCase):
                 next_cursor = '',
                 items = [
                     xr7_sdk.models.support_message_view.SupportMessageView(
-                        id = '', 
-                        thread_id = '', 
-                        role = '', 
-                        message = '', 
-                        confidence = 1.337, 
-                        metadata = { }, 
+                        id = '',
+                        thread_id = '',
+                        role = '',
+                        message = '',
+                        confidence = 1.337,
+                        metadata = { },
                         created_at = '', )
                     ]
             )
@@ -57,12 +58,12 @@ class TestSupportHistoryResponse(unittest.TestCase):
                 page_size = 56,
                 items = [
                     xr7_sdk.models.support_message_view.SupportMessageView(
-                        id = '', 
-                        thread_id = '', 
-                        role = '', 
-                        message = '', 
-                        confidence = 1.337, 
-                        metadata = { }, 
+                        id = '',
+                        thread_id = '',
+                        role = '',
+                        message = '',
+                        confidence = 1.337,
+                        metadata = { },
                         created_at = '', )
                     ],
         )

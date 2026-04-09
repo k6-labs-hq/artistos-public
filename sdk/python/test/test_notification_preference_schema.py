@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.notification_preference_schema import NotificationPreferenceSchema
 
+
 class TestNotificationPreferenceSchema(unittest.TestCase):
     """NotificationPreferenceSchema unit test stubs"""
 

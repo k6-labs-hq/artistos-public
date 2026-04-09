@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
@@ -12,12 +12,18 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.variance_detection_engine import run_variance_scan
+from XR7.api.deps import get_artist_or_404
 from XR7.graph.catalog_graph_builder import build_catalog_graph
 from XR7.ingestion.fetchers import get_fetcher
 from XR7.ingestion.file_ingestion_pipeline import FileIngestionPipeline
 from XR7.ingestion.missing_data_detector import detect_missing_data
 from XR7.ingestion.parser_engine import get_statement_parser
-from XR7.ingestion.sync_jobs import enqueue_sync_job, run_due_sync_jobs, run_sync_job, run_sync_job_with_session
+from XR7.ingestion.sync_jobs import (
+    enqueue_sync_job,
+    run_due_sync_jobs,
+    run_sync_job,
+    run_sync_job_with_session,
+)
 from XR7.ml.auto_inference_engine import infer_catalog_relationships
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
@@ -28,19 +34,22 @@ from XR7.models.event import Event
 from XR7.models.immutable_ledger_entry import ImmutableLedgerEntrySchema
 from XR7.models.oauth_connector import ConnectorAccountLink
 from XR7.models.parser_plugin import ParserPlugin, ParserPluginSchema
-from XR7.models.payment import Payment
 from XR7.models.statement import Statement
 from XR7.models.sync_job import SyncJob, SyncJobSchema
 from XR7.models.terms_acceptance import TermsAcceptance
 from XR7.models.work import Work
-from XR7.api.deps import get_artist_or_404
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.recovery.recovery_automation_engine import automate_recovery
+from XR7.services.branding import (
+    apply_brand_placeholders,
+    branding_metadata,
+    get_branding_for_artist,
+    inject_branding_metadata,
+)
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
-from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
+from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.workflow_orchestrator import XR7WorkflowService
-from XR7.services.branding import apply_brand_placeholders, branding_metadata, get_branding_for_artist, inject_branding_metadata
 
 router = APIRouter(tags=["onboarding"])
 

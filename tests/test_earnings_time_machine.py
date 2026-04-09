@@ -1,11 +1,11 @@
+from datetime import datetime, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
 from XR7.models.artist import Artist
-from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
+from XR7.models.base import Base
 from XR7.models.payment import Payment
 from XR7.modules.earnings_time_machine import EarningsTimeMachine
 

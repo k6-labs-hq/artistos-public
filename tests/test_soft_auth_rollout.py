@@ -5,10 +5,10 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.api.routers import auth as auth_router
 from XR7.models.artist import Artist
-from tests.conftest import TestSession as _TestSession
 
 client = TestClient(app)
 

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.forecast_request import ForecastRequest
 
+
 class TestForecastRequest(unittest.TestCase):
     """ForecastRequest unit test stubs"""
 

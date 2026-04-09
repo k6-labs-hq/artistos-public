@@ -4,7 +4,10 @@ import argparse
 import csv
 import json
 
-from XR7.recovery.black_box_expiration import BlackBoxExpirationProbabilityModel, SocietyBehaviorCalibrationJob
+from XR7.recovery.black_box_expiration import (
+    BlackBoxExpirationProbabilityModel,
+    SocietyBehaviorCalibrationJob,
+)
 
 
 def main() -> None:

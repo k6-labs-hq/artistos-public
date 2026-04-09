@@ -5,7 +5,6 @@ import httpx
 
 from XR7.ingestion.connectors.base import BaseConnector
 
-
 _INTERNATIONAL_PROS: dict[str, dict[str, str]] = {
     "APRA AMCOS": {
         "env_key": "APRA_AMCOS_API_KEY",

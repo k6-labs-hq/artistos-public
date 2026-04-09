@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.weekly_story_request import WeeklyStoryRequest
 
+
 class TestWeeklyStoryRequest(unittest.TestCase):
     """WeeklyStoryRequest unit test stubs"""
 

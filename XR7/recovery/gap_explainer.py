@@ -18,10 +18,9 @@ from datetime import datetime, timezone
 from threading import Lock
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import AnomalySchema
 from xr7_common.logging import get_logger
 
 try:

@@ -5,23 +5,27 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from XR7.models.artist import Artist, ArtistCreate, ArtistSchema
+from XR7.api.deps import get_artist_or_404
+from XR7.earnings.engine import EarningsEngine
+from XR7.graph.rights_graph import RightsGraph
+from XR7.ingestion.connectors.partner_ecosystem import normalize_provider, provider_status
+from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.models.anomaly import Anomaly
+from XR7.models.artist import Artist, ArtistCreate, ArtistSchema
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
-from XR7.models.payment import Payment
+from XR7.models.contract import Contract
 from XR7.models.event import Event
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.oauth_connector import ConnectorAccountLink, ConnectorAccountStatus
+from XR7.models.payment import Payment
 from XR7.models.work import Work
-from XR7.models.contract import Contract
-from XR7.api.deps import get_artist_or_404
-from XR7.graph.rights_graph import RightsGraph
-from XR7.earnings.engine import EarningsEngine
-from XR7.ingestion.connectors.partner_ecosystem import normalize_provider, provider_status
-from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.recovery.weekly_digest import build_weekly_digest, deliver_weekly_digest
-from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
+from XR7.services.branding import (
+    branding_metadata,
+    get_branding_for_artist,
+    inject_branding_metadata,
+)
 from XR7.tasks.hubspot import hubspot_sync_artist, hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -130,19 +134,19 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
     For connectors that are not yet configured, use the statement file upload
     workflow: POST /artists/{artist_id}/statements/upload
     """
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
-    from XR7.ingestion.connectors.pro import PROConnector
     from XR7.ingestion.connectors.dsp import DSPConnector
-    from XR7.ingestion.connectors.platform import PlatformConnector
-    from XR7.ingestion.connectors.ticketing import TicketingConnector
-    from XR7.ingestion.connectors.mlc import MLCConnector
     from XR7.ingestion.connectors.international_pro import (
         APRAAMCOSConnector,
         JASRACConnector,
         KOMCAConnector,
         SACEMConnector,
     )
+    from XR7.ingestion.connectors.mlc import MLCConnector
+    from XR7.ingestion.connectors.platform import PlatformConnector
+    from XR7.ingestion.connectors.pro import PROConnector
+    from XR7.ingestion.connectors.ticketing import TicketingConnector
 
     def _check(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -184,7 +188,7 @@ def connect_artist(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/{artist_id}/summary")
 def artist_summary(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     rg = RightsGraph()
     engine = EarningsEngine(rg)
     summary = engine.get_earnings_summary(artist_id, db)
@@ -221,7 +225,7 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
     Combines metadata completeness, payment regularity, anomaly density,
     recovery rate, and earnings accuracy into a single composite score.
     """
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     works = [
         {"id": w.id, "isrc": w.isrc, "iswc": w.iswc}
@@ -309,7 +313,7 @@ def weekly_digest(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/{artist_id}/connect/{provider}")
 def connect_provider(artist_id: str, provider: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     provider_key = normalize_provider(provider)
     status = provider_status(provider_key)
@@ -357,7 +361,7 @@ def connect_provider(artist_id: str, provider: str, db: Session = Depends(get_db
 
 @router.get("/{artist_id}/connect/{provider}/status")
 def provider_connection_status(artist_id: str, provider: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     provider_key = normalize_provider(provider)
     links = (

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.artist_login_request import ArtistLoginRequest
 
+
 class TestArtistLoginRequest(unittest.TestCase):
     """ArtistLoginRequest unit test stubs"""
 

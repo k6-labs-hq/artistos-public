@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 REQUIRED_PLATFORM_SET = {"spotify", "apple music", "youtube", "tiktok"}
 REQUIRED_USAGE_SOURCES = {"distributor", "pro", "mlc", "platform"}
 

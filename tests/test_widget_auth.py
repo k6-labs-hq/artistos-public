@@ -14,34 +14,30 @@ Covers:
 
 from __future__ import annotations
 
-import os
 from datetime import datetime, timedelta, timezone
 
 import pytest
 from fastapi.testclient import TestClient
 
-import XR7.auth.otp_service as otp_svc
+# Use the shared test DB defined in conftest.py
+from tests.conftest import TestSession as _TestSession
+from XR7.api.app import app
+from XR7.auth.notification_service import MockNotificationService
 from XR7.auth.otp_service import (
     MAX_ATTEMPTS,
-    OTP_EXPIRY_SECONDS,
     MAX_SENDS_PER_PHONE_PER_HOUR,
+    OTP_EXPIRY_SECONDS,
+    InvalidOTPError,
     RateLimitError,
     SessionLockedError,
     SessionNotFoundError,
-    InvalidOTPError,
     TokenError,
-    create_session,
-    verify_session,
-    validate_token,
     clear_all,
+    create_session,
+    validate_token,
+    verify_session,
 )
-from XR7.auth.notification_service import MockNotificationService
-from XR7.models.base import Base, get_db
 from XR7.models.widget_lead import WidgetLead
-from XR7.api.app import app
-
-# Use the shared test DB defined in conftest.py
-from tests.conftest import TestSession as _TestSession
 
 client = TestClient(app)
 
@@ -81,12 +77,12 @@ class TestCreateSession:
         assert s.email_otp.isdigit()
 
     def test_otps_are_different(self):
-        s = _make_session()
+        _make_session()
         # They COULD theoretically be equal, but the probability is 1/10^6
         # Running 1000 sessions confirms they are independently generated:
         sessions = [_make_session(phone=f"+1555000{i:04d}") for i in range(20)]
         phone_otps = [s.phone_otp for s in sessions]
-        email_otps = [s.email_otp for s in sessions]
+        [s.email_otp for s in sessions]
         # They should not all be the same
         assert len(set(phone_otps)) > 1
 

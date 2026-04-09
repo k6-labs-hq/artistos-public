@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema
 
+
 class TestTermsAcceptanceSchema(unittest.TestCase):
     """TermsAcceptanceSchema unit test stubs"""
 

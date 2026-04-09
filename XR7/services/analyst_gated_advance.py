@@ -5,7 +5,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.advance_approval import ApprovalDecision, ApprovalStage, AdvanceApproval
+from XR7.models.advance_approval import AdvanceApproval, ApprovalDecision, ApprovalStage
 from XR7.models.advance_offer import AdvanceOffer, AdvanceOfferStatus
 from XR7.models.advance_opportunity import AdvanceOpportunity, AdvanceOpportunityStatus
 from XR7.models.advance_recovery_packet import AdvanceRecoveryPacket

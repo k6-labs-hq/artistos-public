@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema
 
+
 class TestTrolleyTransactionSchema(unittest.TestCase):
     """TrolleyTransactionSchema unit test stubs"""
 

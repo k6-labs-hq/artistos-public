@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from XR7.models.base import get_db
 from XR7.models.connector_sync_cursor import ConnectorSyncCursor, ConnectorSyncCursorSchema
-from XR7.models.webhook_event import WebhookEvent, WebhookEventSchema
+from XR7.models.webhook_event import WebhookEventSchema
 from XR7.services.connector_replay_service import (
     get_failed_events,
     ingest_webhook,

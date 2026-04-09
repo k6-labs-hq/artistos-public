@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.optimization_simulation_request import OptimizationSimulationRequest
 
+
 class TestOptimizationSimulationRequest(unittest.TestCase):
     """OptimizationSimulationRequest unit test stubs"""
 

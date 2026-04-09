@@ -10,23 +10,19 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr, field_validator
-from typing import Any, Optional
-from typing_extensions import Annotated
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.tv_film_bulk_claim_draft_request import TVFilmBulkClaimDraftRequest
 from xr7_sdk.models.tv_film_bulk_export_request import TVFilmBulkExportRequest
 from xr7_sdk.models.tv_film_claim_draft_request import TVFilmClaimDraftRequest
 from xr7_sdk.models.tv_film_forecast_request import TVFilmForecastRequest
 from xr7_sdk.models.tv_film_portfolio_analysis_request import TVFilmPortfolioAnalysisRequest
 from xr7_sdk.models.tv_film_trust_explain_request import TVFilmTrustExplainRequest
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -2942,9 +2938,9 @@ class TvfilmApi:
             _path_params['claim_id'] = claim_id
         # process the query parameters
         if format is not None:
-            
+
             _query_params.append(('format', format))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

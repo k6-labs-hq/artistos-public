@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
-from XR7.recovery.black_box_expiration import evaluate_black_box_expiration, evaluate_black_box_expiration_for_anomaly
+from XR7.recovery.black_box_expiration import (
+    evaluate_black_box_expiration,
+    evaluate_black_box_expiration_for_anomaly,
+)
 
 
 def test_mlc_three_year_rule_expires_old_event():

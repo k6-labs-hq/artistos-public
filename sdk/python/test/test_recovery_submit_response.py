@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse
 
+
 class TestRecoverySubmitResponse(unittest.TestCase):
     """RecoverySubmitResponse unit test stubs"""
 

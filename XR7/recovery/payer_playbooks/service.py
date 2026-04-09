@@ -4,7 +4,11 @@ from typing import Any
 
 from XR7.models.anomaly import Anomaly
 from XR7.models.claim import Claim
-from XR7.recovery.payer_playbooks.templates import DEFAULT_TEMPLATE, TEMPLATES_BY_PAYER, PayerPlaybookTemplate
+from XR7.recovery.payer_playbooks.templates import (
+    DEFAULT_TEMPLATE,
+    TEMPLATES_BY_PAYER,
+    PayerPlaybookTemplate,
+)
 
 
 def _detect_payer(claim: Claim, anomaly: Anomaly | None) -> str:

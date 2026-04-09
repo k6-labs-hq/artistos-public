@@ -16,18 +16,16 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
-from XR7.models.anomaly import Anomaly, AnomalyStatus
-from XR7.models.artist import Artist
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
-from XR7.models.benchmark_aggregate import BenchmarkAggregate, _DEFAULT_AGGREGATES
+from XR7.models.benchmark_aggregate import _DEFAULT_AGGREGATES, BenchmarkAggregate
 from XR7.models.claim import Claim
-from XR7.services.branding import inject_branding_metadata
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

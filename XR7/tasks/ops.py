@@ -26,8 +26,8 @@ from typing import Any
 
 from XR7.celery_app import celery_app
 from XR7.models.admin_audit_log import AdminAuditLog
-from XR7.models.base import SessionLocal
 from XR7.models.artist import Artist
+from XR7.models.base import SessionLocal
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

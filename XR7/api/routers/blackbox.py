@@ -6,22 +6,18 @@ POST /artists/{artist_id}/blackbox/scan   (on-demand trigger)
 """
 from __future__ import annotations
 
-from datetime import datetime, timezone
-
-from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.blackbox_match import (
     BlackboxMatch,
     BlackboxMatchSchema,
     BlackboxMatchStatus,
 )
-from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["blackbox"])
 
@@ -62,7 +58,7 @@ def list_blackbox_matches(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> BlackboxMatchListResponse:
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     q = db.query(BlackboxMatch).filter(BlackboxMatch.artist_id == artist_id)
     if status is not None:
@@ -93,7 +89,7 @@ def trigger_blackbox_scan(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> BlackboxScanTriggerResponse:
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     try:
         from XR7.tasks.blackbox import scan_artist_blackbox

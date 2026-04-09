@@ -28,10 +28,8 @@ import hashlib
 import hmac
 import secrets
 import string
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-from typing import Any
-
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -150,7 +148,7 @@ def _check_rate_limit(phone: str, now: datetime | None = None) -> None:
     recent = [ts for ts in history if ts >= window_start]
     if len(recent) >= MAX_SENDS_PER_PHONE_PER_HOUR:
         raise RateLimitError(
-            f"Too many verification requests.  Please wait before trying again."
+            "Too many verification requests.  Please wait before trying again."
         )
     recent.append(ref)
     _send_log[key] = recent

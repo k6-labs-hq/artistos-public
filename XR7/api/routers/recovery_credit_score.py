@@ -16,10 +16,9 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import get_optional_auth_payload
-from XR7.models.artist import Artist
-from XR7.models.base import get_db
 from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.auth import get_optional_auth_payload
+from XR7.models.base import get_db
 from XR7.modules.recovery_credit_score import RecoveryCreditScore
 from XR7.services.branding import inject_branding_metadata
 
@@ -41,7 +40,7 @@ def get_recovery_score(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Current recovery credit score, tier, delta, and component breakdown."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     scorer = RecoveryCreditScore(db)
     result = scorer.calculate(artist_id)
     return inject_branding_metadata(db, result)
@@ -54,7 +53,7 @@ def get_recovery_score_history(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Historical recovery credit score timeline."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     from XR7.recovery.immutable_ledger import ImmutableLedgerService
     ledger = ImmutableLedgerService(db)
     entries = ledger.list_entries(artist_id)
@@ -81,7 +80,7 @@ def get_recovery_score_actions(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ) -> dict[str, Any]:
     """Ranked list of improvement actions with estimated score impact."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     scorer = RecoveryCreditScore(db)
     result = scorer.calculate(artist_id)
     return inject_branding_metadata(db, {
@@ -105,7 +104,7 @@ def advance_qualification(
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Internal endpoint: qualify and size a recovery advance using the score."""
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     scorer = RecoveryCreditScore(db)
     result = scorer.calculate(artist_id)
     score = result["score"]

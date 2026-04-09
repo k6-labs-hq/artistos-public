@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
+
 import pytest
 
 from tests.fingerprinting.mocks.mock_provider import MockFingerprintingProvider
@@ -12,7 +14,6 @@ from XR7.fingerprinting.schema import (
     NormalizedMatchResult,
     RoyaltyStatus,
 )
-from datetime import datetime, timezone
 
 
 @pytest.fixture

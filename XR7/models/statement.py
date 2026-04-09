@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Boolean, DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.tv_film_claim_draft_request import TVFilmClaimDraftRequest
 
+
 class TestTVFilmClaimDraftRequest(unittest.TestCase):
     """TVFilmClaimDraftRequest unit test stubs"""
 

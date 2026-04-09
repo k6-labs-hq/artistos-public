@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.parser_plugin_upsert_request import ParserPluginUpsertRequest
 
+
 class TestParserPluginUpsertRequest(unittest.TestCase):
     """ParserPluginUpsertRequest unit test stubs"""
 

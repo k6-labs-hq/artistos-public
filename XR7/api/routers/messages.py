@@ -1,15 +1,14 @@
 """Pillar 6 — Natural-language business manager: chat, message feed, weekly story."""
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.api.routers.auth import require_artist_access
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
-from XR7.services.weekly_story import get_message_feed, generate_weekly_story
-from XR7.models.artist_message import MessageCategory
+from XR7.services.weekly_story import generate_weekly_story, get_message_feed
 
 router = APIRouter(tags=["messages"])
 

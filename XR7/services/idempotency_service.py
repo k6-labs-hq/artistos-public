@@ -5,7 +5,7 @@ from __future__ import annotations
 import functools
 from typing import Any, Callable
 
-from fastapi import Header, HTTPException
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from XR7.models.xr7_idempotency import IdempotencyService
@@ -73,7 +73,7 @@ def with_idempotency_key(
 
         if is_duplicate:
             logger.info(
-                f"Idempotency key reuse detected",
+                "Idempotency key reuse detected",
                 extra={"idempotency_key": idempotency_key, "tenant_id": tenant_id, "artist_id": artist_id},
             )
             # Return cached response

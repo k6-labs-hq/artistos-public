@@ -4,9 +4,9 @@ from fastapi import HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.models.artist import Artist
 from XR7.models.team_access import TeamMember, TeamRole
-from XR7.api.deps import get_artist_or_404
 
 
 def artist_or_404(artist_id: str, db: Session) -> Artist:

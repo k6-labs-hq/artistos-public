@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.o_auth_session_create_request import OAuthSessionCreateRequest
 
+
 class TestOAuthSessionCreateRequest(unittest.TestCase):
     """OAuthSessionCreateRequest unit test stubs"""
 

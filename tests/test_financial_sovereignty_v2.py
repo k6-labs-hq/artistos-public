@@ -5,12 +5,11 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession
 from XR7.api.app import app
 from XR7.auth.jwt_service import jwt_service
 from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.artist import Artist
-from tests.conftest import TestSession
-
 
 client = TestClient(app)
 

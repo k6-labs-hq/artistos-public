@@ -10,19 +10,18 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
-from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
-
 from datetime import date
-from pydantic import StrictStr
-from typing import Any, Optional
-from xr7_sdk.models.simulation_request import SimulationRequest
-from xr7_sdk.models.xr7_api_routers_xr7_valuation_forecast_request import XR7ApiRoutersXr7ValuationForecastRequest
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.simulation_request import SimulationRequest
+from xr7_sdk.models.xr7_api_routers_xr7_valuation_forecast_request import (
+    XR7ApiRoutersXr7ValuationForecastRequest,
+)
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -277,9 +276,9 @@ class Xr7ValuationApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if tenant_id is not None:
-            
+
             _query_params.append(('tenant_id', tenant_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -1143,9 +1142,9 @@ class Xr7ValuationApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if tenant_id is not None:
-            
+
             _query_params.append(('tenant_id', tenant_id))
-            
+
         if as_of is not None:
             if isinstance(as_of, date):
                 _query_params.append(
@@ -1158,7 +1157,7 @@ class Xr7ValuationApi:
                 )
             else:
                 _query_params.append(('as_of', as_of))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

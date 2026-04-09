@@ -1,13 +1,12 @@
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 from datetime import datetime, timezone
-import math
 
 from sqlalchemy.orm import Session
 
 from XR7.models.ml_feedback import CalibrationSnapshot, MLFeedbackEvent, MLFeedbackType
-
 
 _ALPHA_PRIOR = 2.0
 _BETA_PRIOR = 2.0

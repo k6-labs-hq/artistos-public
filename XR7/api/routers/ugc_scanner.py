@@ -17,14 +17,19 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.oauth_connector import ConnectorAccountLink
-from XR7.models.ugc_opportunity import UGCOpportunity, UGCOpportunitySchema, UGCOpportunityStatus, UGCPlatform
+from XR7.models.ugc_opportunity import (
+    UGCOpportunity,
+    UGCOpportunitySchema,
+    UGCOpportunityStatus,
+    UGCPlatform,
+)
 from XR7.models.work import Work
-from XR7.api.deps import get_artist_or_404
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
 
@@ -460,7 +465,7 @@ def list_ugc_opportunities(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> UGCOpportunityListResponse:
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     q = db.query(UGCOpportunity).filter(UGCOpportunity.artist_id == artist_id)
     if platform:

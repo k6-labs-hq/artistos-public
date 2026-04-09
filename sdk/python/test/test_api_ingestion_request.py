@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.api_ingestion_request import APIIngestionRequest
 
+
 class TestAPIIngestionRequest(unittest.TestCase):
     """APIIngestionRequest unit test stubs"""
 

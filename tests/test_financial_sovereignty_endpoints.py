@@ -5,7 +5,6 @@ from fastapi.testclient import TestClient
 from XR7.api.app import app
 from XR7.auth.jwt_service import jwt_service
 
-
 client = TestClient(app)
 
 

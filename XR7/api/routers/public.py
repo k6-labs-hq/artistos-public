@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from fastapi.responses import Response
-from sqlalchemy.orm import Session
 
-from XR7.models.base import get_db
 from XR7.transparency.public_aggregates import PublicTransparencyAPI
 
 router = APIRouter(tags=["public"])

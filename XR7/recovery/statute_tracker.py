@@ -23,10 +23,8 @@ All windows are configurable — pass a custom ``sol_windows`` dict to override.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Any
 
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
-
 
 # ---------------------------------------------------------------------------
 # Default SOL windows (in days) per category × territory

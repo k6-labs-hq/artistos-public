@@ -2,11 +2,10 @@ import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
 from XR7.models.artist import Artist, ArtistSchema
-from XR7.models.work import Work, WorkType
+from XR7.models.base import Base
 from XR7.models.event import Event, EventType
-from XR7.models.contract import Contract, ContractType
+from XR7.models.work import Work, WorkType
 
 
 @pytest.fixture

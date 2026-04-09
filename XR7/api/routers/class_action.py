@@ -4,7 +4,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import get_auth_payload, require_admin
+from XR7.api.routers.auth import require_admin
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.class_action_aggregator import aggregate_class_action_signals, get_active_signals

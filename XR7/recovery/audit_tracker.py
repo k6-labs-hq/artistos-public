@@ -19,12 +19,10 @@ If absent, the contract is treated as never audited — maximum urgency.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from datetime import date, datetime, timedelta, timezone
-from typing import Any
+from dataclasses import dataclass
+from datetime import date, timedelta
 
 from XR7.utils.datetime_utils import parse_date as _parse_date
-
 
 # ---------------------------------------------------------------------------
 # Default audit eligibility windows (years) and estimated recovery rates

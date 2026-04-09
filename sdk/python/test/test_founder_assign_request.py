@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.founder_assign_request import FounderAssignRequest
 
+
 class TestFounderAssignRequest(unittest.TestCase):
     """FounderAssignRequest unit test stubs"""
 

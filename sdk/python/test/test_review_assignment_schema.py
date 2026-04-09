@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.review_assignment_schema import ReviewAssignmentSchema
 
+
 class TestReviewAssignmentSchema(unittest.TestCase):
     """ReviewAssignmentSchema unit test stubs"""
 

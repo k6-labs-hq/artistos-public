@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.feedback_outcome import FeedbackOutcome
 
 class TestFeedbackOutcome(unittest.TestCase):
     """FeedbackOutcome unit test stubs"""

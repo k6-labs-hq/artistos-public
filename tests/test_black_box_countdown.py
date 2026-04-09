@@ -1,12 +1,18 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
-from datetime import datetime, timezone, timedelta
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
-from XR7.models.artist import Artist
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
-from XR7.modules.black_box_countdown import BlackBoxCountdown, _REDISTRIBUTION_RULES, apply_freeze, is_frozen
+from XR7.models.artist import Artist
+from XR7.models.base import Base
+from XR7.modules.black_box_countdown import (
+    _REDISTRIBUTION_RULES,
+    BlackBoxCountdown,
+    apply_freeze,
+    is_frozen,
+)
 
 
 @pytest.fixture

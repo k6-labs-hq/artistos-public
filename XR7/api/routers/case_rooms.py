@@ -214,7 +214,7 @@ def add_member(
     x_actor_role: Optional[str] = Header(default=None, alias="X-Actor-Role"),
     db: Session = Depends(get_db),
 ) -> CaseRoomMember:
-    room = _get_room_or_404(room_id, db)
+    _get_room_or_404(room_id, db)
     _require_min_role(room_id, x_actor_email, CaseRoomMemberRole.OWNER, db, actor_role_claim=x_actor_role)
     existing = (
         db.query(CaseRoomMember)

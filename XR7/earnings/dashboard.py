@@ -45,42 +45,41 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import Anomaly, AnomalyStatus
-from XR7.models.claim import Claim, ClaimStatus
-from XR7.models.metadata_issue import MetadataIssue
-from XR7.models.payment import Payment
-from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
-from XR7.models.work import Work
+from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.ml.catalog_segmenter import CatalogSegmenter
 from XR7.ml.catalog_valuation import CatalogValuationEngine
 from XR7.ml.forecaster import EarningsForecaster
-from XR7.ml.royalty_optimizer import RoyaltyOptimizer
+from XR7.ml.future_leakage_predictor import FutureLeakagePredictor
 from XR7.ml.recovery_potential import RecoveryPotentialModel
+from XR7.ml.royalty_optimizer import RoyaltyOptimizer
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
-from XR7.models.contract import Contract
+from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.artist import Artist
+from XR7.models.claim import Claim, ClaimStatus
+from XR7.models.contract import Contract
+from XR7.models.metadata_issue import MetadataIssue
+from XR7.models.payment import Payment
 from XR7.models.society_signal_log import SocietySignalLog
-from XR7.recovery.priority_ranker import build_action_queue
-from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
-from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
-from XR7.recovery.recoverability_classifier import build_recoverability_payload
-from XR7.recovery.leakage_benchmark_engine import LeakageBenchmarkEngine
-from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
-from XR7.ugc.usage_monitor import UGCUsageMonitor
-from XR7.ugc.global_scanner import GlobalUGCScanner
-from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
+from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
+from XR7.models.work import Work
 from XR7.prevention.agent import PreventiveAgent
-from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
+from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
+from XR7.recovery.leakage_benchmark_engine import LeakageBenchmarkEngine
+from XR7.recovery.priority_ranker import build_action_queue
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
+from XR7.recovery.recovery_value_model import portfolio_expected_recovery_value
+from XR7.recovery.statute_tracker import classify_anomalies, sol_summary
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.post_repair_forecast_pipeline import (
     FORECAST_DISCLAIMER,
     PostRepairForecastPipeline,
 )
-from XR7.ml.future_leakage_predictor import FutureLeakagePredictor
-
+from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
+from XR7.ugc.global_scanner import GlobalUGCScanner
+from XR7.ugc.usage_monitor import UGCUsageMonitor
 
 # Claim statuses that are still "in pursuit" (open / active)
 _ACTIVE_CLAIM_STATUSES = {
@@ -1120,7 +1119,8 @@ class DashboardEngine:
         Returns a compact summary suitable for a dashboard KPI card — artists
         can drill into the full forecast via GET /artists/{id}/ml/forecast.
         """
-        from datetime import datetime as _dt, timezone as _tz
+        from datetime import datetime as _dt
+        from datetime import timezone as _tz
 
         rg = RightsGraph()
         engine = EarningsEngine(rg)

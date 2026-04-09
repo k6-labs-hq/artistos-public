@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 from XR7.models.event import Event
 from XR7.models.work import Work
 
-
 _FOREIGN_SOCIETIES = ["PRS", "GEMA", "SACEM", "SOCAN", "APRA", "JASRAC"]
 
 

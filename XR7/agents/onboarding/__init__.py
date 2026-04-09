@@ -1,14 +1,4 @@
 """Onboarding agents sub-package. Re-exports all agent callables."""
-from XR7.agents.onboarding.core import (
-    SYSTEM_PROMPT,
-    ReflectionNode,
-    _evidence_hash,
-    _finalize,
-    _ledger,
-    _llm_reflect,
-    _now,
-    _safe_score,
-)
 from XR7.agents.onboarding.catalog_agents import (
     ArtistExplainerAgent,
     ArtistIntentInterpreterAgent,
@@ -23,6 +13,16 @@ from XR7.agents.onboarding.catalog_agents import (
     PortalAutoNavigatorAgent,
     PROPortalGuideAgent,
     SmartUploadFixerAgent,
+)
+from XR7.agents.onboarding.core import (
+    SYSTEM_PROMPT,
+    ReflectionNode,
+    _evidence_hash,
+    _finalize,
+    _ledger,
+    _llm_reflect,
+    _now,
+    _safe_score,
 )
 from XR7.agents.onboarding.enrichment_agents import (
     ArtistComfortAgent,
@@ -46,8 +46,8 @@ from XR7.agents.onboarding.legal_agents import (
     ClaimDrafterAgent,
     ClaimEscalationAgent,
     ClaimOutcomeForecasterAgent,
-    DisbursementAgent,
     DetectionAgent,
+    DisbursementAgent,
     EscalationAgent,
     EvidenceNarrativeAgent,
     EvidenceVerifierAgent,

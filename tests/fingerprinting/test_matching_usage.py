@@ -5,8 +5,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-import pytest
-
 from XR7.fingerprinting.matching.usage import (
     UsageMatchingModule,
     _infer_match_type,

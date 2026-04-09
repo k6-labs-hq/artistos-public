@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.recovery_outcome_feedback_schema import RecoveryOutcomeFeedbackSchema
 
+
 class TestRecoveryOutcomeFeedbackSchema(unittest.TestCase):
     """RecoveryOutcomeFeedbackSchema unit test stubs"""
 

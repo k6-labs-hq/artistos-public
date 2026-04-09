@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.register_response import RegisterResponse
 
+
 class TestRegisterResponse(unittest.TestCase):
     """RegisterResponse unit test stubs"""
 

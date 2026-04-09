@@ -19,8 +19,8 @@ from sqlalchemy.orm import Session
 
 from XR7.models.base import get_db
 from XR7.models.vip import (
-    ConciergeMessageSender,
     ConciergeMessageSchema,
+    ConciergeMessageSender,
     EnrichPersonaRequest,
     PersonaProfileSchema,
     SendConciergeMessageRequest,

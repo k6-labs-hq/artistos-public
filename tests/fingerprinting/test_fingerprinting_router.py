@@ -6,13 +6,10 @@ provider HTTP calls are made.
 
 from __future__ import annotations
 
-import io
 import uuid
 from datetime import datetime, timezone
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 from XR7.api.app import app
@@ -24,7 +21,6 @@ from XR7.fingerprinting.schema import (
     ProviderStatus,
     RoyaltyStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -249,7 +245,11 @@ class TestListJobs:
 
         db = TestSession()
         from XR7.models.artist import Artist
-        from XR7.models.fingerprint_job import FingerprintJob, FingerprintJobStatus, FingerprintJobMode
+        from XR7.models.fingerprint_job import (
+            FingerprintJob,
+            FingerprintJobMode,
+            FingerprintJobStatus,
+        )
 
         artist_id = f"fp-list-{uuid.uuid4()}"
         artist = Artist(id=artist_id, name="FP List Artist")
@@ -304,7 +304,11 @@ class TestGetJob:
 
         db = TestSession()
         from XR7.models.artist import Artist
-        from XR7.models.fingerprint_job import FingerprintJob, FingerprintJobStatus, FingerprintJobMode
+        from XR7.models.fingerprint_job import (
+            FingerprintJob,
+            FingerprintJobMode,
+            FingerprintJobStatus,
+        )
         from XR7.models.fingerprint_match import FingerprintMatch
 
         artist_id = f"fp-detail-{uuid.uuid4()}"

@@ -30,14 +30,12 @@ from XR7.core.claims.state_machine import (
 )
 from XR7.models.claim import ClaimStatus
 
-
 # ---------------------------------------------------------------------------
 # Domain-boundary guard — no DB / ORM imports allowed in pure core module
 # ---------------------------------------------------------------------------
 
 def test_no_db_imports_in_state_machine():
     """The state_machine module must remain free of SQLAlchemy and FastAPI."""
-    import XR7.core.claims.state_machine as sm_module
 
     src = importlib.import_module("XR7.core.claims.state_machine").__file__
     with open(src) as f:

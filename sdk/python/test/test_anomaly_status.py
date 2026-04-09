@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.anomaly_status import AnomalyStatus
 
 class TestAnomalyStatus(unittest.TestCase):
     """AnomalyStatus unit test stubs"""

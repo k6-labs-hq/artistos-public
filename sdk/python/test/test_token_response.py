@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.token_response import TokenResponse
 
+
 class TestTokenResponse(unittest.TestCase):
     """TokenResponse unit test stubs"""
 

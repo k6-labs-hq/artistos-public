@@ -140,7 +140,7 @@ def scan_file(
 
         for line_no, line in enumerate(lines, start=1):
             # Skip pure comments — but still flag them (they indicate confusion)
-            stripped = line.lstrip()
+            line.lstrip()
             if rule_pattern.search(line):
                 context = line.strip()[:80]
                 violations.append(

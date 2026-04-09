@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.structured_feedback_request import StructuredFeedbackRequest
 
+
 class TestStructuredFeedbackRequest(unittest.TestCase):
     """StructuredFeedbackRequest unit test stubs"""
 

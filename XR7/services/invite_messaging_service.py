@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Optional
 from enum import Enum
+from typing import Optional
 
-from XR7.models.invite import InviteChannel, InviteRole
+from XR7.models.invite import InviteChannel
 
 
 class MessageTemplate(Enum):

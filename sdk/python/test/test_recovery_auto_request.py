@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.recovery_auto_request import RecoveryAutoRequest
 
+
 class TestRecoveryAutoRequest(unittest.TestCase):
     """RecoveryAutoRequest unit test stubs"""
 

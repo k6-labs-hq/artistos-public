@@ -1,7 +1,6 @@
 """Pillar 6 — Weekly Earnings Story generator + message feed writer."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session

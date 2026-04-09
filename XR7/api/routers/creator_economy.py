@@ -7,11 +7,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.anomaly.rules.creator_economy import detect_creator_anomalies
 from XR7.api.routers.auth import require_artist_access
+from XR7.ingestion.creator_parsers import CREATOR_PARSERS, parse_creator_platform
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
-from XR7.ingestion.creator_parsers import parse_creator_platform, CREATOR_PARSERS
-from XR7.anomaly.rules.creator_economy import detect_creator_anomalies
 
 router = APIRouter(tags=["creator_economy"])
 

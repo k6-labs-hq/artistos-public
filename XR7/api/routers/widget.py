@@ -53,7 +53,7 @@ from sqlalchemy.orm import Session
 
 from XR7.auth import otp_service
 from XR7.auth.notification_service import get_notification_service
-from XR7.ml.royalty_estimator import VALID_CAREER_STAGES, VALID_GENRES, estimate_royalties
+from XR7.ml.royalty_estimator import VALID_CAREER_STAGES, estimate_royalties
 from XR7.models.base import get_db
 from XR7.models.widget_lead import WidgetLead, WidgetLeadSchema, hash_phone
 from XR7.tasks.hubspot import hubspot_sync_widget_lead, hubspot_sync_widget_registration
@@ -271,8 +271,8 @@ def register(body: RegisterRequest):
     return RegisterResponse(
         session_id=session.session_id,
         message=(
-            f"Verification codes have been sent to your phone and email. "
-            f"Enter both codes within 5 minutes to continue."
+            "Verification codes have been sent to your phone and email. "
+            "Enter both codes within 5 minutes to continue."
         ),
         expires_in_seconds=otp_service.OTP_EXPIRY_SECONDS,
         dev_phone_otp=session.phone_otp if is_dev else None,

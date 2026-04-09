@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -53,11 +52,14 @@ class XR7WorkflowService:
         registrations: list[dict[str, Any]],
         statements: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        graph = build_catalog_graph(artist_id, works=works, registrations=registrations, statements=statements)
+        graph = build_catalog_graph(works=works, registrations=registrations, statements=statements)
         snapshot = CatalogGraphSnapshot(
             artist_id=artist_id,
-            version=str(uuid.uuid4()),
-            graph_json=json.dumps(graph, default=str),
+            nodes_json=json.dumps(graph.get("nodes", []), default=str),
+            edges_json=json.dumps(graph.get("edges", []), default=str),
+            duplicates_json=json.dumps(graph.get("duplicates", []), default=str),
+            missing_metadata_json=json.dumps(graph.get("missing_metadata", []), default=str),
+            ownership_conflicts_json=json.dumps(graph.get("ownership_conflicts", []), default=str),
         )
         self.db.add(snapshot)
         self.db.commit()

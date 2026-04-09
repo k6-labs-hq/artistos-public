@@ -10,6 +10,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.models.base import get_db
+from XR7.models.ml_feedback import MLFeedbackType
 from XR7.models.review_queue import (
     ReviewAssignment,
     ReviewAssignmentSchema,
@@ -21,9 +22,8 @@ from XR7.models.review_queue import (
     ReviewItemStatus,
     ReviewSourceType,
 )
-from XR7.services.review_queue import enqueue_review_item, queue_metrics
 from XR7.services.ml_feedback import ingest_feedback_event
-from XR7.models.ml_feedback import MLFeedbackType
+from XR7.services.review_queue import enqueue_review_item, queue_metrics
 
 router = APIRouter(prefix="/review-queue", tags=["review_queue"])
 

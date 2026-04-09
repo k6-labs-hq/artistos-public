@@ -10,21 +10,19 @@ Covers:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession
 from XR7.api.app import app
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
-from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.xr7_idempotency import IdempotencyService, XR7IdempotencyRecord
 from XR7.models.xr7_royalty import XR7AIDecisionAuditLog
 from XR7.recovery.confidence_band_router import ConfidenceBandRouter
 from XR7.recovery.gap_explainer import GapExplainerService
-from tests.conftest import TestSession
-
 
 client = TestClient(app)
 
@@ -170,7 +168,7 @@ def test_explain_artist_anomaly_endpoint() -> None:
 
 def test_explain_endpoint_not_found() -> None:
     """Test explain endpoint with non-existent anomaly."""
-    response = client.get(f"/anomalies/nonexistent-id-12345/explain")
+    response = client.get("/anomalies/nonexistent-id-12345/explain")
     assert response.status_code == 404
 
 
@@ -179,7 +177,6 @@ def test_explain_endpoint_artist_boundary() -> None:
     db = TestSession()
     try:
         artist1 = _create_artist(db)
-        artist1_id = artist1.id
         artist2 = _create_artist(db)
         artist2_id = artist2.id
         anomaly = _create_anomaly(db, artist1.id)

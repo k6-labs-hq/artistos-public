@@ -26,18 +26,9 @@ from fastapi.testclient import TestClient
 from tests.conftest import TestSession  # shared DB session factory
 from XR7.api.app import app
 from XR7.models.vip import (
-    FoundersCircleMember,
-    VipInviteCode,
-    PersonaProfile,
-    ConciergeMessage,
-    VipReferral,
-    WeeklyBrief,
+    ConciergeMessageSender,
     CopilotQuery,
     VipTierLevel,
-    EnrichmentStatus,
-    ReferralStatus,
-    BriefStatus,
-    ConciergeMessageSender,
 )
 from XR7.services.vip_service import VipService
 

@@ -5,12 +5,11 @@ import uuid
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession
 from XR7.agents import orchestrator
 from XR7.agents.two_agent_orchestrator_graph import get_run_trace
 from XR7.api.app import app
-from XR7.models.agent_handoff import AgentHandoffRecord
 from XR7.models.artist import Artist
-from tests.conftest import TestSession
 
 
 def _create_artist(status: str = "NEW") -> str:

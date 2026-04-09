@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.support_message_view import SupportMessageView
 
+
 class TestSupportMessageView(unittest.TestCase):
     """SupportMessageView unit test stubs"""
 

@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.artist_lifecycle_status import ArtistLifecycleStatus
 
 class TestArtistLifecycleStatus(unittest.TestCase):
     """ArtistLifecycleStatus unit test stubs"""

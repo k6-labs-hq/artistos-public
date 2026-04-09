@@ -13,13 +13,12 @@ import json
 
 import pytest
 
-from XR7.agents.onboarding.core import _evidence_hash, _now, _safe_score
 from XR7.agents.onboarding.catalog_agents import (
     ArtistIntentInterpreterAgent,
     AutoTermsAcceptorAgent,
-    MissingStatementHunterAgent,
     _intent_from_text,
 )
+from XR7.agents.onboarding.core import _evidence_hash, _now, _safe_score
 from XR7.agents.onboarding.enrichment_agents import (
     ArtistComfortAgent,
     ArtistReadinessScoreAgent,
@@ -33,11 +32,10 @@ from XR7.agents.onboarding.legal_agents import (
 )
 from XR7.agents.onboarding.recovery_agents import (
     BlackBoxExpirationAgent,
-    RecoverabilityClassificationAgent,
     DiscoveryRuleAgent,
+    RecoverabilityClassificationAgent,
 )
 from XR7.agents.state import initial_state
-
 
 # ---------------------------------------------------------------------------
 # Pure helpers — core.py

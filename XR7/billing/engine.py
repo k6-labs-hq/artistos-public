@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
-from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.models.metadata_issue import MetadataIssue
+from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.founder_program import get_or_create_platform_config, resolve_standard_fee_percent
 from XR7.trolley.client import TrolleyClient, TrolleyException

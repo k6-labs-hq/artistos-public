@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.evidence_anchor_schema import EvidenceAnchorSchema
 
+
 class TestEvidenceAnchorSchema(unittest.TestCase):
     """EvidenceAnchorSchema unit test stubs"""
 

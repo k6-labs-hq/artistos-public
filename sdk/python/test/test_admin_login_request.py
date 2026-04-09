@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.admin_login_request import AdminLoginRequest
 
+
 class TestAdminLoginRequest(unittest.TestCase):
     """AdminLoginRequest unit test stubs"""
 

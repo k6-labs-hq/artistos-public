@@ -1,5 +1,6 @@
 import enum
 import uuid
+
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column

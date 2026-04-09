@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.black_box_request import BlackBoxRequest
 
+
 class TestBlackBoxRequest(unittest.TestCase):
     """BlackBoxRequest unit test stubs"""
 

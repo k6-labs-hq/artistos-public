@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
 from typing import Any
 
 from XR7.celery_app import celery_app
-from XR7.models.base import SessionLocal
-from XR7.models.artist import Artist
-from XR7.models.statement import Statement
 from XR7.models.anomaly import Anomaly
+from XR7.models.artist import Artist
+from XR7.models.base import SessionLocal
 from XR7.models.claim import Claim
-from XR7.models.widget_lead import WidgetLead
+from XR7.models.event import Event
 from XR7.models.oauth_connector import ConnectorAccountLink
 from XR7.models.payment import Payment
-from XR7.models.event import Event
+from XR7.models.statement import Statement
+from XR7.models.widget_lead import WidgetLead
 from XR7.services.hubspot_client import HubSpotClient
 from xr7_common.logging import get_logger
 

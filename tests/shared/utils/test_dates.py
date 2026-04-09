@@ -6,12 +6,11 @@ No module code is changed here.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from shared.utils.dates import ensure_utc, period_key
-
 
 # ---------------------------------------------------------------------------
 # ensure_utc

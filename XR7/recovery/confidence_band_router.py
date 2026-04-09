@@ -16,7 +16,6 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from XR7.core.scoring.confidence_band import HIGH, MEDIUM, classify_band
-from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.review_queue import ReviewSourceType
 from XR7.services.review_queue import enqueue_review_item
@@ -150,7 +149,7 @@ class ConfidenceBandRouter:
             )
         except Exception as e:
             logger.exception(
-                f"Failed to enqueue anomaly for analyst review",
+                "Failed to enqueue anomaly for analyst review",
                 extra={"anomaly_id": anomaly_id, "error": str(e)},
             )
 
@@ -187,7 +186,7 @@ class ConfidenceBandRouter:
             )
         except Exception as e:
             logger.exception(
-                f"Failed to enqueue anomaly to watchlist",
+                "Failed to enqueue anomaly to watchlist",
                 extra={"anomaly_id": anomaly_id, "error": str(e)},
             )
 

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.estimate_request import EstimateRequest
 
+
 class TestEstimateRequest(unittest.TestCase):
     """EstimateRequest unit test stubs"""
 

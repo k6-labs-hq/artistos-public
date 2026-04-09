@@ -1,11 +1,12 @@
+from datetime import datetime, timezone
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
 from XR7.models.artist import Artist
+from XR7.models.base import Base
 from XR7.models.payment import Payment
-from datetime import datetime, timezone
 from XR7.modules.royalty_dna_profile import RoyaltyDNAProfile
 
 

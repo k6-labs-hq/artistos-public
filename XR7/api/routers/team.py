@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.network.coop_recovery import CoopRecoveryNetwork
 from XR7.models.base import get_db
+from XR7.network.coop_recovery import CoopRecoveryNetwork
 from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["team"])

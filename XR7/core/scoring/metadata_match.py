@@ -10,7 +10,6 @@ from __future__ import annotations
 import math
 from difflib import SequenceMatcher
 
-
 # ---------------------------------------------------------------------------
 # Text helpers
 # ---------------------------------------------------------------------------

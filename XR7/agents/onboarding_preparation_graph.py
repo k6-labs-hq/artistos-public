@@ -7,28 +7,27 @@ from uuid import uuid4
 from XR7.agents.onboarding_agents import (
     ArtistIntentInterpreterAgent,
     ArtistPersonaAdapterAgent,
-    OnboardingWizardAgent,
-    FileClassifierAgent,
-    SmartUploadFixerAgent,
-    CatalogAutoBuilderAgent,
     ArtistProfileEnricherAgent,
-    AutoMetadataRegistrarAgent,
-    RightsConflictDetectorAgent,
-    SocialUGCCollectorAgent,
-    AutoContractExtractorAgent,
-    ReleaseTimelineAgent,
     ArtistReadinessScoreAgent,
+    AutoContractExtractorAgent,
+    AutoMetadataRegistrarAgent,
+    CatalogAutoBuilderAgent,
+    FileClassifierAgent,
     FirstClaimFastTrackAgent,
-    WelcomeSummaryAgent,
+    OnboardingWizardAgent,
     ReflectionNode,
+    ReleaseTimelineAgent,
+    RightsConflictDetectorAgent,
+    SmartUploadFixerAgent,
+    SocialUGCCollectorAgent,
+    WelcomeSummaryAgent,
 )
 from XR7.agents.tvfilm_agents import (
-    RoleInterpreterAgent,
-    ProductionMetadataBuilderAgent,
     EpisodeSeasonRepairAgent,
+    ProductionMetadataBuilderAgent,
+    RoleInterpreterAgent,
 )
 from XR7.agents.two_agent_state import TwoAgentState, add_trace_event, update_onboarding_progress
-
 
 AgentFn = Callable[[TwoAgentState], Awaitable[dict[str, Any]]]
 

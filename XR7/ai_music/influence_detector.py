@@ -19,7 +19,6 @@ from XR7.models.base import SessionLocal
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.universal_royalty_event import UniversalRoyaltyEvent
-from XR7.recovery.orchestrator import ClaimsOrchestrator
 from xr7_common.logging import get_logger
 
 try:

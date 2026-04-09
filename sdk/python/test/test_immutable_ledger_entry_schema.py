@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
 
+
 class TestImmutableLedgerEntrySchema(unittest.TestCase):
     """ImmutableLedgerEntrySchema unit test stubs"""
 

@@ -14,7 +14,6 @@ Covers:
 from __future__ import annotations
 
 import io
-import os
 import uuid
 from datetime import datetime, timezone
 
@@ -23,27 +22,27 @@ import pytest
 from fastapi.testclient import TestClient
 from openpyxl import Workbook
 
-from XR7.ingestion.statement_parser import detect_format, parse_csv, parse_statement_file, SUPPORTED_FORMATS
-from XR7.ingestion.connectors.pro import PROConnector
+# Use the shared test DB defined in conftest.py
+from tests.conftest import TestSession as _TestSession
+from XR7.api.app import app
 from XR7.ingestion.connectors.dsp import DSPConnector
-from XR7.ingestion.connectors.platform import PlatformConnector
-from XR7.ingestion.connectors.ticketing import TicketingConnector
-from XR7.ingestion.connectors.mlc import MLCConnector
 from XR7.ingestion.connectors.international_pro import (
     APRAAMCOSConnector,
     JASRACConnector,
     KOMCAConnector,
     SACEMConnector,
 )
-from XR7.models.base import Base, get_db
+from XR7.ingestion.connectors.mlc import MLCConnector
+from XR7.ingestion.connectors.platform import PlatformConnector
+from XR7.ingestion.connectors.pro import PROConnector
+from XR7.ingestion.connectors.ticketing import TicketingConnector
+from XR7.ingestion.statement_parser import (
+    SUPPORTED_FORMATS,
+    detect_format,
+    parse_csv,
+    parse_statement_file,
+)
 from XR7.models.artist import Artist
-from XR7.models.event import Event
-from XR7.models.payment import Payment
-from XR7.models.statement import Statement
-from XR7.api.app import app
-
-# Use the shared test DB defined in conftest.py
-from tests.conftest import TestSession as _TestSession
 
 client = TestClient(app)
 

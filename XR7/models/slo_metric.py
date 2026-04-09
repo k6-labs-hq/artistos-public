@@ -10,7 +10,6 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
 
-
 # ---------------------------------------------------------------------------
 # SloMetric
 # ---------------------------------------------------------------------------

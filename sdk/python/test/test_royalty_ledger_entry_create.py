@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate
 
+
 class TestRoyaltyLedgerEntryCreate(unittest.TestCase):
     """RoyaltyLedgerEntryCreate unit test stubs"""
 

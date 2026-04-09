@@ -10,18 +10,15 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any
-from xr7_sdk.models.manual_remittance_request import ManualRemittanceRequest
-from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.manual_remittance_request import ManualRemittanceRequest
+from xr7_sdk.models.trolley_transaction_schema import TrolleyTransactionSchema
 from xr7_sdk.rest import RESTResponseType
 
 

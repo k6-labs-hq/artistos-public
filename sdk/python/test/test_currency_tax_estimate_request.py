@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.currency_tax_estimate_request import CurrencyTaxEstimateRequest
 
+
 class TestCurrencyTaxEstimateRequest(unittest.TestCase):
     """CurrencyTaxEstimateRequest unit test stubs"""
 

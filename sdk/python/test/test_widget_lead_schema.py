@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.widget_lead_schema import WidgetLeadSchema
 
+
 class TestWidgetLeadSchema(unittest.TestCase):
     """WidgetLeadSchema unit test stubs"""
 

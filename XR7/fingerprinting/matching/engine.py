@@ -157,9 +157,9 @@ class MatchingEngine:
         try:
             from datetime import timedelta
 
-            from XR7.models.fingerprint_match import FingerprintMatch
-            from XR7.models.fingerprint_job import FingerprintJob
             from XR7.fingerprinting.schema import AnomalyType, MatchType, RoyaltyStatus
+            from XR7.models.fingerprint_job import FingerprintJob
+            from XR7.models.fingerprint_match import FingerprintMatch
 
             cutoff = datetime.now(timezone.utc) - timedelta(days=30)
             jobs = (

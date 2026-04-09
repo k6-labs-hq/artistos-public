@@ -1,43 +1,42 @@
 import uuid
 from datetime import date
-from fastapi import BackgroundTasks
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
+from XR7.intelligence.withholding_estimate import tax_optimizer
+from XR7.ml.catalog_auditor import AutomatedRegistrationFixer, CatalogAuditor
+from XR7.ml.catalog_valuation import CatalogValuationEngine
 from XR7.ml.contract_document_ingestion import ContractDocumentIngestion
 from XR7.ml.contract_term_extractor import ContractTermExtractor
-from XR7.ml.catalog_auditor import CatalogAuditor
-from XR7.ml.catalog_auditor import AutomatedRegistrationFixer
-from XR7.ml.catalog_valuation import CatalogValuationEngine
 from XR7.ml.expected_payout_simulator import ExpectedPayoutSimulator
-from XR7.ml.royalty_optimizer import RoyaltyOptimizer
 from XR7.ml.recovery_utility_ranker import RecoveryUtilityRanker
+from XR7.ml.royalty_optimizer import RoyaltyOptimizer
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
-from XR7.models.artist import Artist
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
-from XR7.models.anomaly import Anomaly
 from XR7.models.ml_feedback import MLFeedbackEvent, MLFeedbackEventSchema, MLFeedbackType
 from XR7.models.recovery_intelligence import (
     ContractTermSnapshot,
     RecoveryOutcomeFeedback,
-    RecoveryOutcomeFeedbackCreate,
     RecoveryOutcomeFeedbackSchema,
     RoyaltyLedgerEntry,
     RoyaltyLedgerEntryCreate,
     RoyaltyLedgerEntrySchema,
 )
 from XR7.models.review_queue import ReviewSourceType
-from XR7.api.deps import get_artist_or_404
-from XR7.services.review_queue import enqueue_review_item
-from XR7.services.ml_feedback import ingest_feedback_event
-from XR7.tasks.pipeline import aggregate_feedback_calibration
-from XR7.tasks.pipeline import run_catalog_audit
-from XR7.intelligence.withholding_estimate import tax_optimizer
 from XR7.registration.auto_fix_agent import AutoFixRegistrationAgent
-from XR7.services.branding import branding_metadata, get_branding_for_artist, inject_branding_metadata
+from XR7.services.branding import (
+    branding_metadata,
+    get_branding_for_artist,
+    inject_branding_metadata,
+)
+from XR7.services.ml_feedback import ingest_feedback_event
+from XR7.services.review_queue import enqueue_review_item
+from XR7.tasks.pipeline import aggregate_feedback_calibration, run_catalog_audit
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["intelligence"])
@@ -123,7 +122,7 @@ def get_calibration_health(
     artist_id: str,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     calibrator = SuccessProbabilityCalibrator()
     summary = calibrator.calibration_summary(artist_id, db)
@@ -140,7 +139,7 @@ def ingest_royalty_ledger(
     payload: LedgerIngestRequest,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     created: list[RoyaltyLedgerEntry] = []
     for entry in payload.entries:
@@ -184,7 +183,7 @@ def extract_contract_terms(
     payload: ContractExtractRequest,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     extractor = ContractTermExtractor()
     terms, highlights = extractor.extract_with_highlights(
@@ -259,7 +258,7 @@ async def extract_contract_terms_upload(
     extracted_from: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     if not file.filename:
         raise HTTPException(status_code=400, detail="No contract file provided")
@@ -358,7 +357,7 @@ def simulate_expected_payout(
     payload: SimulatePayoutRequest,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     simulator = ExpectedPayoutSimulator()
     result = simulator.simulate(
@@ -396,7 +395,7 @@ def create_outcome_feedback(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     outcome_value = payload.outcome or "DISMISSED"
     feedback = RecoveryOutcomeFeedback(
@@ -454,7 +453,7 @@ def list_feedback_events(
     artist_id: str,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     return (
         db.query(MLFeedbackEvent)
         .filter(MLFeedbackEvent.artist_id == artist_id)
@@ -470,7 +469,7 @@ def rank_by_expected_utility(
     payload: UtilityRankRequest,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     ranker = RecoveryUtilityRanker()
     calibrator = SuccessProbabilityCalibrator()
@@ -498,7 +497,7 @@ def pre_signature_contract_review(
     payload: PreSignatureContractReviewRequest,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     extractor = ContractTermExtractor()
     review = extractor.pre_signature_review(payload.contract_text)
@@ -514,7 +513,7 @@ async def run_catalog_audit_on_demand(
     artist_id: str,
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     audit = await CatalogAuditor(db).run(artist_id)
     db.add(
@@ -547,7 +546,7 @@ async def run_catalog_audit_on_demand(
 
 @router.post("/artists/{artist_id}/intelligence/tax-optimizer")
 def run_tax_optimizer(artist_id: str, payload: TaxOptimizerRequest, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     result = tax_optimizer(
         artist_id,
         gross_amount=payload.gross_amount,
@@ -564,7 +563,7 @@ def run_tax_optimizer(artist_id: str, payload: TaxOptimizerRequest, db: Session 
 
 @router.post("/artists/{artist_id}/registration/auto-fix")
 def registration_auto_fix(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     agent = AutoFixRegistrationAgent(db)
     issues = agent.scan_registration_gaps(artist_id)
     payload = agent.auto_register_or_prepare_submission(artist_id, issues)
@@ -573,7 +572,7 @@ def registration_auto_fix(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/artists/{artist_id}/registration/status")
 def registration_status(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     issues = AutomatedRegistrationFixer(db).detect_missing_metadata(artist_id)
     return inject_branding_metadata(
         db,
@@ -587,7 +586,7 @@ def registration_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ml/catalog-valuation")
 async def catalog_valuation(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     engine = CatalogValuationEngine(db)
     value = engine.calculate_catalog_value(artist_id)
     report = await engine.export_valuation_report_with_anchor(artist_id)
@@ -603,7 +602,7 @@ async def catalog_valuation(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ml/financing-matches")
 def financing_matches(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     engine = CatalogValuationEngine(db)
     value = engine.calculate_catalog_value(artist_id)
     matches = engine.generate_financing_matches(value)
@@ -619,7 +618,7 @@ def financing_matches(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ml/simulate-optimization")
 def simulate_optimization(artist_id: str, payload: OptimizationSimulationRequest, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     opt = RoyaltyOptimizer()
     simulation = opt.simulate_scenario(artist_id, payload.changes)
     return inject_branding_metadata(

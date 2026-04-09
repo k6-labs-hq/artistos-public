@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 import os
-import time
 import urllib.parse
 import urllib.request
 from datetime import date, datetime, timezone
@@ -30,7 +29,7 @@ logger = get_logger(__name__)
 
 def _fetch_json(url: str, timeout: int = 8) -> Optional[dict]:
     """Simple HTTP GET returning parsed JSON or None on error.
-    
+
     NOTE: Only hits public, read-only APIs. No authentication credentials
     are sent; URLs are constructed from validated identifiers only.
     """
@@ -127,7 +126,7 @@ def enrich_artist_persona(self, artist_id: str, force: bool = False) -> dict:  #
         logger.info("Persona enrichment complete", extra={"artist_id": artist_id})
         return {"status": "complete", "artist_id": artist_id, "fields_enriched": list(enrichment.keys())}
 
-    except Exception as exc:
+    except Exception:
         db_ = SessionLocal()
         try:
             from XR7.models.vip import PersonaProfile
@@ -159,9 +158,9 @@ def generate_weekly_brief_task(self, artist_id: str, brief_week: str) -> dict:  
     """Generate the AI weekly brief for one VIP artist."""
     db = SessionLocal()
     try:
-        from XR7.services.vip_service import VipService
         from XR7.api.routers.copilot import _build_copilot_context
         from XR7.models.vip import WeeklyBrief
+        from XR7.services.vip_service import VipService
 
         svc = VipService(db)
         brief = svc.get_or_create_brief(artist_id, brief_week)
@@ -218,7 +217,7 @@ def generate_weekly_brief_task(self, artist_id: str, brief_week: str) -> dict:  
             "brief_id": brief.id,
         }
 
-    except Exception as exc:
+    except Exception:
         db2 = SessionLocal()
         try:
             from XR7.models.vip import WeeklyBrief
@@ -243,7 +242,7 @@ def generate_weekly_brief_task(self, artist_id: str, brief_week: str) -> dict:  
 
 def _try_generate_tts(text: str, artist_id: str, brief_week: str) -> Optional[str]:
     """Attempt to generate a TTS audio URL from the brief text.
-    
+
     Uses ElevenLabs if configured; silently returns None otherwise.
     The audio URL is a signed link to the generated audio file.
     """

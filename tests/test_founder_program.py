@@ -6,11 +6,11 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.legal.terms import TERMS_VERSION
 from XR7.models.artist import Artist
 from XR7.models.platform_config import PlatformConfig
-from tests.conftest import TestSession as _TestSession
 
 client = TestClient(app)
 

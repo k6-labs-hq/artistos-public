@@ -25,7 +25,6 @@ Recommended future tests:
 """
 from __future__ import annotations
 
-from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -35,7 +34,6 @@ from XR7.models.identity_match import (
     IdentityConfidenceBand,
     IdentityDecisionStatus,
 )
-
 
 # ---------------------------------------------------------------------------
 # Fixtures

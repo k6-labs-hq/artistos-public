@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.tv_film_forecast_request import TVFilmForecastRequest
 
+
 class TestTVFilmForecastRequest(unittest.TestCase):
     """TVFilmForecastRequest unit test stubs"""
 

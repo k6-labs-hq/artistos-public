@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.anomaly_category import AnomalyCategory
 
 class TestAnomalyCategory(unittest.TestCase):
     """AnomalyCategory unit test stubs"""

@@ -13,16 +13,18 @@
 
 
 from __future__ import annotations
+
+import json
 import pprint
 import re  # noqa: F401
-import json
+from typing import Any, ClassVar, Dict, List, Optional, Set
 
 from pydantic import BaseModel, ConfigDict
-from typing import Any, ClassVar, Dict, List
-from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate
-from typing import Optional, Set
-from typing_extensions import Self
 from pydantic_core import to_jsonable_python
+from typing_extensions import Self
+
+from xr7_sdk.models.royalty_ledger_entry_create import RoyaltyLedgerEntryCreate
+
 
 class LedgerIngestRequest(BaseModel):
     """

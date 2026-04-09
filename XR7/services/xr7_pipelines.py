@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
-from difflib import SequenceMatcher
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -11,10 +10,14 @@ from sqlalchemy.orm import Session
 from XR7.core.scoring.metadata_match import (
     confidence_score,
     metadata_triangulation_score,
-    normalize_text as _norm,
+)
+from XR7.core.scoring.metadata_match import (
     text_similarity as _similarity,
 )
-from XR7.ingestion.connectors.xr7_platform_clients import XR7PlatformAPIClient, XR7RateLimitScheduler
+from XR7.ingestion.connectors.xr7_platform_clients import (
+    XR7PlatformAPIClient,
+    XR7RateLimitScheduler,
+)
 from XR7.ingestion.file_ingestion_pipeline import FileIngestionPipeline
 from XR7.models.sync_job import SyncJob
 from XR7.models.xr7_royalty import (

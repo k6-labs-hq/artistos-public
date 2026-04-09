@@ -10,19 +10,17 @@ from __future__ import annotations
 
 import hashlib
 import json
-import uuid
 from collections import defaultdict
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import Anomaly, AnomalyStatus
+from shared.utils.dates import period_key as _period_key
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import SessionLocal
 from XR7.models.payment import Payment
-from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
-from shared.utils.dates import period_key as _period_key
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

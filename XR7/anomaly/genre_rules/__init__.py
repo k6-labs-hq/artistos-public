@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Callable
 
-
 _GENRE_RULES: dict[str, Callable[[dict], dict]] = {}
 
 

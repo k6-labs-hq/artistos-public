@@ -4,14 +4,13 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import get_run_trace, query_handoffs
-from XR7.models.artist import Artist
-from XR7.models.base import get_db
 from XR7.api.deps import get_artist_or_404
+from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
 from XR7.tasks.celery_tasks import run_artist_workflow
 
@@ -51,7 +50,7 @@ class AgentHandoffListResponse(BaseModel):
 
 @router.post("/artists/{artist_id}/workflow/run-full-autonomous", response_model=WorkflowRunResponse)
 def run_full_autonomous_workflow(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     run_id = str(uuid4())
     run_artist_workflow.delay(artist_id, run_id)
@@ -100,7 +99,7 @@ def workflow_handoffs(
     until: datetime | None = Query(default=None),
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     handoff_result = query_handoffs(
         artist_id=artist_id,

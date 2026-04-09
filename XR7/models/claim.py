@@ -2,6 +2,7 @@ import enum
 import uuid
 from datetime import datetime, timezone
 from typing import Any
+
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, Boolean, DateTime, Enum, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column

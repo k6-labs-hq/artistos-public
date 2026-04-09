@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.advance_accept_request import AdvanceAcceptRequest
 
+
 class TestAdvanceAcceptRequest(unittest.TestCase):
     """AdvanceAcceptRequest unit test stubs"""
 

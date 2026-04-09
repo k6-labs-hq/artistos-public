@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.parser_plugin_schema import ParserPluginSchema
 
+
 class TestParserPluginSchema(unittest.TestCase):
     """ParserPluginSchema unit test stubs"""
 

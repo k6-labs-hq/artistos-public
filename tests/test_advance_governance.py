@@ -4,12 +4,11 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.auth.jwt_service import jwt_service
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.services.analyst_gated_advance import run_nightly_advance_opportunity_scan
-from tests.conftest import TestSession as _TestSession
-
 
 client = TestClient(app)
 

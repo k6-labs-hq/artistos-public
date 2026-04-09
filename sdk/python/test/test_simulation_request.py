@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.simulation_request import SimulationRequest
 
+
 class TestSimulationRequest(unittest.TestCase):
     """SimulationRequest unit test stubs"""
 

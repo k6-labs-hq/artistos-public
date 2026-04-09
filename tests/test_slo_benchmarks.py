@@ -16,9 +16,9 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession  # reuse the shared in-memory DB
 from XR7.api.app import app
 from XR7.models.artist import Artist
-from tests.conftest import TestSession  # reuse the shared in-memory DB
 
 client = TestClient(app)
 

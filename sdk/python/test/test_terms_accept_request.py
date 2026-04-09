@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.terms_accept_request import TermsAcceptRequest
 
+
 class TestTermsAcceptRequest(unittest.TestCase):
     """TermsAcceptRequest unit test stubs"""
 

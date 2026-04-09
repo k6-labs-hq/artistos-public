@@ -14,19 +14,18 @@ Key requirements:
 
 from __future__ import annotations
 
-import asyncio
 import importlib
 import json
 import os
-from datetime import datetime, timezone
 from typing import Any, Callable
 
 from sqlalchemy.orm import Session
 
+from XR7.agents import onboarding_agents as onboarding
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.claim_drafter import claim_drafter
 from XR7.ml.catalog_auditor import CatalogAuditor
-from XR7.models.anomaly import Anomaly, AnomalyStatus
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import SessionLocal
 from XR7.models.claim import Claim
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
@@ -35,7 +34,6 @@ from XR7.recovery.payer_playbooks import build_claim_playbook
 from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
 from XR7.services.ml_feedback import aggregate_feedback_and_update_calibration
 from XR7.ugc.global_scanner import GlobalUGCScanner
-from XR7.agents import onboarding_agents as onboarding
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

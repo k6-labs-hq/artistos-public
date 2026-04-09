@@ -15,7 +15,8 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalyStatus, AnomalySeverity
+from shared.utils.dates import ensure_utc as _ensure_utc
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.base import SessionLocal
 from XR7.models.payment import Payment
 from XR7.models.work import Work
@@ -34,7 +35,6 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
 SUSPECTED_CAUSES = [
     "metadata_mismatch",
     "registration_gap",

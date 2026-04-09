@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.identity_decision_status import IdentityDecisionStatus
 
 class TestIdentityDecisionStatus(unittest.TestCase):
     """IdentityDecisionStatus unit test stubs"""

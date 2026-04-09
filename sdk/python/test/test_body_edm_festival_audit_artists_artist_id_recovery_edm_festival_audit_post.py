@@ -14,7 +14,10 @@
 
 import unittest
 
-from xr7_sdk.models.body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post import BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost
+from xr7_sdk.models.body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post import (
+    BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost,
+)
+
 
 class TestBodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost(unittest.TestCase):
     """BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost unit test stubs"""

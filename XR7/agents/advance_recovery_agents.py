@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
-
 from XR7.agents.state import XR7State
 
 

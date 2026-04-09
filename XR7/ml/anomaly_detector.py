@@ -12,12 +12,10 @@ Uses:
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Any
 
 import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.preprocessing import StandardScaler
-
 
 # ---------------------------------------------------------------------------
 # Constants

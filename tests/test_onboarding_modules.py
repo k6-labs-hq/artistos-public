@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-import io
-import hmac
 import hashlib
+import hmac
+import io
 import uuid
 from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.legal.terms import TERMS_VERSION
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.oauth_connector import ConnectorAccountLink, ConnectorAccountStatus
 from XR7.models.work import Work, WorkType
-from tests.conftest import TestSession as _TestSession
 from xr7_common.settings import settings
 
 client = TestClient(app)

@@ -7,7 +7,6 @@ from typing import Any
 
 from XR7.utils.datetime_utils import as_utc as _as_utc
 
-
 SOL_DISCLAIMER = "Statute windows are informational only and may vary by forum, tolling rules, and contract terms. Consult qualified counsel before filing."
 
 

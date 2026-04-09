@@ -10,20 +10,16 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr, field_validator
-from typing import Any, List, Optional
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
-from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema
-from xr7_sdk.models.founder_assign_request import FounderAssignRequest
-from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema
+from xr7_sdk.models.founder_assign_request import FounderAssignRequest
+from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -1170,13 +1166,13 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -1518,25 +1514,25 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if severity is not None:
-            
+
             _query_params.append(('severity', severity))
-            
+
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -1878,25 +1874,25 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if q is not None:
-            
+
             _query_params.append(('q', q))
-            
+
         if sort is not None:
-            
+
             _query_params.append(('sort', sort))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -2225,21 +2221,21 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if actor_filter is not None:
-            
+
             _query_params.append(('actor_filter', actor_filter))
-            
+
         if action is not None:
-            
+
             _query_params.append(('action', action))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -2594,29 +2590,29 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         if jurisdiction is not None:
-            
+
             _query_params.append(('jurisdiction', jurisdiction))
-            
+
         if sort is not None:
-            
+
             _query_params.append(('sort', sort))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -2958,25 +2954,25 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         if source_type is not None:
-            
+
             _query_params.append(('source_type', source_type))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -3318,25 +3314,25 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if tx_type is not None:
-            
+
             _query_params.append(('tx_type', tx_type))
-            
+
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key
@@ -3626,9 +3622,9 @@ class AdminApi:
         # process the path parameters
         # process the query parameters
         if jurisdiction is not None:
-            
+
             _query_params.append(('jurisdiction', jurisdiction))
-            
+
         # process the header parameters
         if x_admin_key is not None:
             _header_params['X-Admin-Key'] = x_admin_key

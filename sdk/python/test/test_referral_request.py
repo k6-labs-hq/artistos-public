@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.referral_request import ReferralRequest
 
+
 class TestReferralRequest(unittest.TestCase):
     """ReferralRequest unit test stubs"""
 

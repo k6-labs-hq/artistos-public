@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import hashlib
 from datetime import datetime, timezone
-from typing import Any
 
 from XR7.agents.state import XR7State, add_trace_event, set_confidence
 

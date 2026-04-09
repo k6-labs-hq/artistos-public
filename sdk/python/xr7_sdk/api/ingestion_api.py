@@ -10,17 +10,14 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictInt, StrictStr
-from typing import Any, Dict, List, Optional
-from xr7_sdk.models.statement_schema import StatementSchema
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.statement_schema import StatementSchema
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -288,13 +285,13 @@ class IngestionApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if genre is not None:
-            
+
             _query_params.append(('genre', genre))
-            
+
         if territory is not None:
-            
+
             _query_params.append(('territory', territory))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -569,9 +566,9 @@ class IngestionApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if years_back is not None:
-            
+
             _query_params.append(('years_back', years_back))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

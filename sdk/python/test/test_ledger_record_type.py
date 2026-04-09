@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.ledger_record_type import LedgerRecordType
 
 class TestLedgerRecordType(unittest.TestCase):
     """LedgerRecordType unit test stubs"""

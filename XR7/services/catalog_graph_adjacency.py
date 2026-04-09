@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 
 from XR7.models.catalog_graph_adj import CatalogGraphEdge, CatalogGraphNode
 
-
 XR7_CATALOG_NODE_TYPES: tuple[str, ...] = (
     "Work",
     "Recording",

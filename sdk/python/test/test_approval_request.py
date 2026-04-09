@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.approval_request import ApprovalRequest
 
+
 class TestApprovalRequest(unittest.TestCase):
     """ApprovalRequest unit test stubs"""
 

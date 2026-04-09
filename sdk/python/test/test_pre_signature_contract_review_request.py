@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.pre_signature_contract_review_request import PreSignatureContractReviewRequest
 
+
 class TestPreSignatureContractReviewRequest(unittest.TestCase):
     """PreSignatureContractReviewRequest unit test stubs"""
 

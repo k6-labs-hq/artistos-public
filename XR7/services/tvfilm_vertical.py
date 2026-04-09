@@ -12,7 +12,6 @@ from shared.utils.numbers import safe_float as _safe_float
 from XR7.models.anomaly import AnomalyCategory, AnomalySeverity
 from XR7.services.tvfilm_compensation_engine import calculate_expected_compensation
 
-
 TVFILM_ROLE_OPTIONS = [
     "Writer (TV/Film)",
     "Screenwriter",

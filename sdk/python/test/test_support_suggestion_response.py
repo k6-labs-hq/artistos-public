@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.support_suggestion_response import SupportSuggestionResponse
 
+
 class TestSupportSuggestionResponse(unittest.TestCase):
     """SupportSuggestionResponse unit test stubs"""
 

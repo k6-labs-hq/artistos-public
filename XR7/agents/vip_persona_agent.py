@@ -87,9 +87,8 @@ async def VipPersonaEnrichmentNode(state: TwoAgentState) -> dict[str, Any]:
 
         # Determine adaptive UI mode from profile
         adaptive_mode = "music"
-        detected_roles: list[str] = []
         if profile:
-            detected_roles = list(profile.detected_roles or [])
+            list(profile.detected_roles or [])
             if profile.primary_vertical in ("tv_film", "both"):
                 adaptive_mode = "tv_film"
         elif artist and artist.primary_vertical:

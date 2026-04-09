@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.catalog_confirmation_schema import CatalogConfirmationSchema
 
+
 class TestCatalogConfirmationSchema(unittest.TestCase):
     """CatalogConfirmationSchema unit test stubs"""
 

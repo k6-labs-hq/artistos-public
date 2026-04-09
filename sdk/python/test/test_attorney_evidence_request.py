@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.attorney_evidence_request import AttorneyEvidenceRequest
 
+
 class TestAttorneyEvidenceRequest(unittest.TestCase):
     """AttorneyEvidenceRequest unit test stubs"""
 

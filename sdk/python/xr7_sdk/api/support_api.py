@@ -10,23 +10,19 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr
-from typing import Optional
-from typing_extensions import Annotated
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.support_action_request import SupportActionRequest
 from xr7_sdk.models.support_action_response import SupportActionResponse
 from xr7_sdk.models.support_chat_request import SupportChatRequest
 from xr7_sdk.models.support_chat_response import SupportChatResponse
 from xr7_sdk.models.support_history_response import SupportHistoryResponse
 from xr7_sdk.models.support_suggestion_response import SupportSuggestionResponse
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -982,21 +978,21 @@ class SupportApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if page is not None:
-            
+
             _query_params.append(('page', page))
-            
+
         if page_size is not None:
-            
+
             _query_params.append(('page_size', page_size))
-            
+
         if cursor is not None:
-            
+
             _query_params.append(('cursor', cursor))
-            
+
         if thread_id is not None:
-            
+
             _query_params.append(('thread_id', thread_id))
-            
+
         # process the header parameters
         if x_actor_email is not None:
             _header_params['X-Actor-Email'] = x_actor_email

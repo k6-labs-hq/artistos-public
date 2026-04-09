@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.review_item_schema import ReviewItemSchema
 
+
 class TestReviewItemSchema(unittest.TestCase):
     """ReviewItemSchema unit test stubs"""
 

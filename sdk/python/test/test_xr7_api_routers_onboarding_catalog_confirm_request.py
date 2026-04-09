@@ -14,7 +14,10 @@
 
 import unittest
 
-from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import XR7ApiRoutersOnboardingCatalogConfirmRequest
+from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import (
+    XR7ApiRoutersOnboardingCatalogConfirmRequest,
+)
+
 
 class TestXR7ApiRoutersOnboardingCatalogConfirmRequest(unittest.TestCase):
     """XR7ApiRoutersOnboardingCatalogConfirmRequest unit test stubs"""

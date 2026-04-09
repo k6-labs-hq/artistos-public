@@ -8,7 +8,6 @@ from tests.conftest import TestSession
 from XR7.api.app import app
 from XR7.models.xr7_royalty import XR7AIDecisionAuditLog, XR7Track
 
-
 client = TestClient(app)
 
 

@@ -4,20 +4,21 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.contract import Contract, ContractType
+from XR7.models.event import Event, EventType
 from XR7.models.evidence_anchor import EvidenceAnchor
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
-from XR7.models.oauth_connector import ConnectorAccountLink  # noqa: F401 - ensure table registration
+from XR7.models.oauth_connector import (
+    ConnectorAccountLink,  # noqa: F401 - ensure table registration
+)
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.work import Work, WorkType
-from XR7.models.event import Event, EventType
-from tests.conftest import TestSession as _TestSession
-
 
 client = TestClient(app)
 

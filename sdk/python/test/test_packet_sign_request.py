@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.packet_sign_request import PacketSignRequest
 
+
 class TestPacketSignRequest(unittest.TestCase):
     """PacketSignRequest unit test stubs"""
 

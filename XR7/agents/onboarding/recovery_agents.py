@@ -6,10 +6,10 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.agents.onboarding.core import _finalize, _now, _safe_score
+from XR7.agents.onboarding.core import _finalize, _now
 from XR7.agents.state import XR7State
-from XR7.models.base import SessionLocal
 from XR7.models.anomaly import Anomaly
+from XR7.models.base import SessionLocal
 from XR7.models.claim import Claim
 from XR7.models.statement import Statement
 from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder

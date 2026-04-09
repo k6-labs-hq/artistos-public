@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.simulate_payout_request import SimulatePayoutRequest
 
+
 class TestSimulatePayoutRequest(unittest.TestCase):
     """SimulatePayoutRequest unit test stubs"""
 

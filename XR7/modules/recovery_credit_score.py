@@ -14,6 +14,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from shared.utils.dates import ensure_utc as _ensure_utc
 from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.base import SessionLocal
 from XR7.models.contract import Contract
@@ -61,7 +62,7 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
+
 class RecoveryCreditScore:
     def __init__(self, db: Session):
         self.db = db
@@ -242,7 +243,6 @@ class RecoveryCreditScore:
 
     def _sol_safety_component(self, anomalies: list[Anomaly]) -> dict[str, Any]:
         max_score = 120
-        from datetime import timedelta
         now = datetime.now(timezone.utc)
         critical_count = 0
         safe_count = 0

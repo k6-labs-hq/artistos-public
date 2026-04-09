@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.manual_remittance_request import ManualRemittanceRequest
 
+
 class TestManualRemittanceRequest(unittest.TestCase):
     """ManualRemittanceRequest unit test stubs"""
 

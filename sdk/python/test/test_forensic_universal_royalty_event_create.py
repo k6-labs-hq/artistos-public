@@ -14,7 +14,10 @@
 
 import unittest
 
-from xr7_sdk.models.forensic_universal_royalty_event_create import ForensicUniversalRoyaltyEventCreate
+from xr7_sdk.models.forensic_universal_royalty_event_create import (
+    ForensicUniversalRoyaltyEventCreate,
+)
+
 
 class TestForensicUniversalRoyaltyEventCreate(unittest.TestCase):
     """ForensicUniversalRoyaltyEventCreate unit test stubs"""

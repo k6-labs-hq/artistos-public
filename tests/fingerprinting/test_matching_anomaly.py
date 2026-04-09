@@ -5,8 +5,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
-import pytest
-
 from XR7.fingerprinting.matching.anomaly import FingerprintAnomalyDetectionEngine
 from XR7.fingerprinting.schema import (
     AnomalyType,
@@ -15,7 +13,6 @@ from XR7.fingerprinting.schema import (
     NormalizedMatchResult,
     RoyaltyGapResult,
     RoyaltyStatus,
-    UsageMatchResult,
 )
 
 

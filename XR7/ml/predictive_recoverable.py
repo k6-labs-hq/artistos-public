@@ -17,10 +17,10 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import Anomaly, AnomalyStatus
-from XR7.models.claim import Claim, ClaimStatus
 from XR7.ml.forecaster import forecast_earnings
 from XR7.ml.success_probability_calibrator import SuccessProbabilityCalibrator
+from XR7.models.anomaly import Anomaly
+from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.xr7_royalty import XR7RoyaltyStatement
 from xr7_common.logging import get_logger
 

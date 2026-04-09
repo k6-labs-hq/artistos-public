@@ -23,7 +23,6 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 
-
 # ---------------------------------------------------------------------------
 # Low-level primitives
 # ---------------------------------------------------------------------------

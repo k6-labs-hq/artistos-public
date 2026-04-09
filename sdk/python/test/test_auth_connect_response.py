@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.auth_connect_response import AuthConnectResponse
 
+
 class TestAuthConnectResponse(unittest.TestCase):
     """AuthConnectResponse unit test stubs"""
 

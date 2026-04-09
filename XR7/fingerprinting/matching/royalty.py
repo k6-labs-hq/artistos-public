@@ -10,8 +10,6 @@ Compares detected usage events against received royalty statements to identify:
 
 from __future__ import annotations
 
-from typing import Any
-
 from sqlalchemy.orm import Session
 
 from XR7.fingerprinting.schema import (
@@ -19,7 +17,6 @@ from XR7.fingerprinting.schema import (
     MatchType,
     NormalizedMatchResult,
     RoyaltyGapResult,
-    RoyaltyStatus,
     UsageMatchResult,
 )
 from xr7_common.logging import get_logger

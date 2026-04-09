@@ -10,14 +10,13 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictBool, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictBool, StrictStr, field_validator
-from typing import Any, List, Optional
-from typing_extensions import Annotated
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.claim_template_request import ClaimTemplateRequest
 from xr7_sdk.models.currency_tax_estimate_request import CurrencyTaxEstimateRequest
 from xr7_sdk.models.evidence_anchor_schema import EvidenceAnchorSchema
@@ -29,9 +28,6 @@ from xr7_sdk.models.o_auth_token_refresh_request import OAuthTokenRefreshRequest
 from xr7_sdk.models.predict_recoverable_request import PredictRecoverableRequest
 from xr7_sdk.models.team_member_create import TeamMemberCreate
 from xr7_sdk.models.team_member_schema import TeamMemberSchema
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -1498,9 +1494,9 @@ class ExpansionApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if days is not None:
-            
+
             _query_params.append(('days', days))
-            
+
         # process the header parameters
         if x_actor_email is not None:
             _header_params['X-Actor-Email'] = x_actor_email
@@ -3263,9 +3259,9 @@ class ExpansionApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if format is not None:
-            
+
             _query_params.append(('format', format))
-            
+
         # process the header parameters
         if x_actor_email is not None:
             _header_params['X-Actor-Email'] = x_actor_email
@@ -4784,17 +4780,17 @@ class ExpansionApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if provider is not None:
-            
+
             _query_params.append(('provider', provider))
-            
+
         if tenant_id is not None:
-            
+
             _query_params.append(('tenant_id', tenant_id))
-            
+
         if include_inactive is not None:
-            
+
             _query_params.append(('include_inactive', include_inactive))
-            
+
         # process the header parameters
         if x_actor_email is not None:
             _header_params['X-Actor-Email'] = x_actor_email

@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.trolley_txn_type import TrolleyTxnType
 
 class TestTrolleyTxnType(unittest.TestCase):
     """TrolleyTxnType unit test stubs"""

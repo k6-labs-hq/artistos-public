@@ -2,24 +2,23 @@ from __future__ import annotations
 
 from logging.config import fileConfig
 
-from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from XR7.models.base import Base
-from xr7_common.settings import settings
+import XR7.models.agent_handoff  # noqa: F401
 
 # Import model modules so metadata is complete for autogenerate/use.
 import XR7.models.anomaly  # noqa: F401
 import XR7.models.artist  # noqa: F401
-import XR7.models.agent_handoff  # noqa: F401
 import XR7.models.catalog_confirmation  # noqa: F401
 import XR7.models.catalog_graph  # noqa: F401
+import XR7.models.catalog_graph_adj  # noqa: F401
 import XR7.models.claim  # noqa: F401
 import XR7.models.contract  # noqa: F401
-import XR7.models.evidence_anchor  # noqa: F401
 import XR7.models.event  # noqa: F401
-import XR7.models.metadata_issue  # noqa: F401
+import XR7.models.evidence_anchor  # noqa: F401
+import XR7.models.forensic_universal_event  # noqa: F401
 import XR7.models.immutable_ledger_entry  # noqa: F401
+import XR7.models.metadata_issue  # noqa: F401
 import XR7.models.notification_preference  # noqa: F401
 import XR7.models.oauth_connector  # noqa: F401
 import XR7.models.parser_plugin  # noqa: F401
@@ -27,13 +26,14 @@ import XR7.models.payment  # noqa: F401
 import XR7.models.recovery_intelligence  # noqa: F401
 import XR7.models.statement  # noqa: F401
 import XR7.models.sync_job  # noqa: F401
-import XR7.models.forensic_universal_event  # noqa: F401
-import XR7.models.catalog_graph_adj  # noqa: F401
 import XR7.models.team_access  # noqa: F401
 import XR7.models.terms_acceptance  # noqa: F401
 import XR7.models.universal_royalty_event  # noqa: F401
 import XR7.models.work  # noqa: F401
 import XR7.models.xr7_royalty  # noqa: F401
+from alembic import context
+from XR7.models.base import Base
+from xr7_common.settings import settings
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)

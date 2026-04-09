@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from XR7.anomaly.rules import royalties, touring, platforms
+from XR7.anomaly.rules import platforms, royalties, touring
 from XR7.anomaly.rules.transparent_rules import run_transparent_rules
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.fingerprinting_request import FingerprintingRequest
 
+
 class TestFingerprintingRequest(unittest.TestCase):
     """FingerprintingRequest unit test stubs"""
 

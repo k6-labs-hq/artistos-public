@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import asyncio
 
+from tests.conftest import TestSession
 from XR7.agents.onboarding_preparation_graph import run_onboarding_preparation_agent
 from XR7.agents.recovery_execution_graph import run_recovery_execution_agent
-from XR7.agents.two_agent_orchestrator_graph import list_handoffs_for_artist, run_two_agent_orchestrator
+from XR7.agents.two_agent_orchestrator_graph import (
+    list_handoffs_for_artist,
+    run_two_agent_orchestrator,
+)
 from XR7.agents.two_agent_state import bootstrap_state
 from XR7.models.agent_handoff import AgentHandoffRecord
-from tests.conftest import TestSession
 
 
 def test_onboarding_agent_emits_handoff_when_readiness_threshold_met(monkeypatch):

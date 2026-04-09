@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.tv_film_bulk_export_request import TVFilmBulkExportRequest
 
+
 class TestTVFilmBulkExportRequest(unittest.TestCase):
     """TVFilmBulkExportRequest unit test stubs"""
 

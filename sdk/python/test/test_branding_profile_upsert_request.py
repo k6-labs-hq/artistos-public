@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest
 
+
 class TestBrandingProfileUpsertRequest(unittest.TestCase):
     """BrandingProfileUpsertRequest unit test stubs"""
 

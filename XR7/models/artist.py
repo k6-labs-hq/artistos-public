@@ -1,7 +1,6 @@
+import enum
 import uuid
 from datetime import datetime, timezone
-import enum
-from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, Boolean, CheckConstraint, DateTime, Float, Integer, String

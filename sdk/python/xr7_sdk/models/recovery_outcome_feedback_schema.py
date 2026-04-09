@@ -13,17 +13,19 @@
 
 
 from __future__ import annotations
+
+import json
 import pprint
 import re  # noqa: F401
-import json
-
 from datetime import datetime
+from typing import Any, ClassVar, Dict, List, Optional, Set, Union
+
 from pydantic import BaseModel, ConfigDict, StrictFloat, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from xr7_sdk.models.feedback_outcome import FeedbackOutcome
-from typing import Optional, Set
-from typing_extensions import Self
 from pydantic_core import to_jsonable_python
+from typing_extensions import Self
+
+from xr7_sdk.models.feedback_outcome import FeedbackOutcome
+
 
 class RecoveryOutcomeFeedbackSchema(BaseModel):
     """

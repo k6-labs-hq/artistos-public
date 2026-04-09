@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.advice_request import AdviceRequest
 
+
 class TestAdviceRequest(unittest.TestCase):
     """AdviceRequest unit test stubs"""
 

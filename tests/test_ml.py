@@ -8,21 +8,17 @@ Tests for the XR7.ml module:
 
 from __future__ import annotations
 
-import math
 from datetime import datetime, timedelta, timezone
-
-import pytest
 
 from XR7.ml.anomaly_detector import (
     MLAnomalyDetector,
+    detect_missing_periodic_payments,
     detect_payment_outliers,
     detect_rate_drift,
-    detect_missing_periodic_payments,
 )
-from XR7.ml.forecaster import EarningsForecaster, forecast_earnings
 from XR7.ml.catalog_scorer import CatalogScorer, _grade
-from XR7.ml.confidence import ConfidenceUpdater, AnomalyOutcome
-
+from XR7.ml.confidence import AnomalyOutcome, ConfidenceUpdater
+from XR7.ml.forecaster import EarningsForecaster, forecast_earnings
 
 # ---------------------------------------------------------------------------
 # Fixtures

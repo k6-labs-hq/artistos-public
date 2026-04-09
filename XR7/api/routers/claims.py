@@ -1,51 +1,48 @@
+import asyncio
 import csv
 import io
 import json
-import asyncio
-from pathlib import Path
 import zipfile
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.auth.event_notifications import send_event_notification
+from XR7.agents.orchestrator import run_export_prep_pipeline_sync
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import (
     enforce_claim_access,
     get_auth_payload,
     get_optional_auth_payload,
     require_artist_access,
 )
-from XR7.agents.orchestrator import run_export_prep_pipeline_sync
+from XR7.auth.event_notifications import send_event_notification
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
-from XR7.models.base import get_db
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
+from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorModel
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.review_queue import ReviewSourceType
-from XR7.api.deps import get_artist_or_404
+from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
 from XR7.recovery.cash_recovery_forecast import build_claim_forecast
-from XR7.recovery.recoverability_classifier import build_recoverability_payload
+from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder
+from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.evidence_strength import score_evidence_strength
 from XR7.recovery.negotiation_intelligence import build_negotiation_intel
 from XR7.recovery.orchestrator import ClaimsOrchestrator
-from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
-from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder
-from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.payer_playbooks import build_claim_playbook
+from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.recovery_automation import build_automation_plan
 from XR7.recovery.sla_predictor import predict_claim_sla_dates
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 from XR7.recovery.trust_defensibility import TrustDefensibilityService
-from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
-from XR7.services.pdf_builder import safe_pdf_text as _safe_pdf_text
-from XR7.services.review_queue import enqueue_review_item
 from XR7.services.branding import (
     apply_brand_placeholders,
     branding_metadata,
@@ -53,6 +50,9 @@ from XR7.services.branding import (
     inject_branding_metadata,
     org_id_for_artist,
 )
+from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
+from XR7.services.pdf_builder import safe_pdf_text as _safe_pdf_text
+from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
@@ -378,7 +378,7 @@ def create_claim_for_artist(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     anomaly = (
         db.query(Anomaly)

@@ -3,7 +3,14 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from tests.conftest import TestSession
-from XR7.models.xr7_royalty import XR7RoyaltyStatement, XR7RoyaltyStatementLine, XR7UsageEvent, XR7Work, XR7SourceCategory, XR7MatchMethod
+from XR7.models.xr7_royalty import (
+    XR7MatchMethod,
+    XR7RoyaltyStatement,
+    XR7RoyaltyStatementLine,
+    XR7SourceCategory,
+    XR7UsageEvent,
+    XR7Work,
+)
 from XR7.services.xr7_crypto_vault import open_sealed, seal
 from XR7.services.xr7_pipelines import build_royalty_gap_report, run_reconciliation_pipeline
 

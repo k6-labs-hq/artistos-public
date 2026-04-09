@@ -45,7 +45,6 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
 def _payer_from_payment(p: Payment) -> str:
     return str(getattr(p, "source", None) or "Unknown")
 
@@ -135,7 +134,7 @@ class PayerHealthScorer:
         claims: list[Claim],
         all_payments: list[Payment],
     ) -> dict[str, Any]:
-        total_all = len(all_payments) or 1
+        len(all_payments) or 1
 
         # 1. Payment accuracy (0–25): anomaly rate
         open_anomalies = [a for a in anomalies if a.status != AnomalyStatus.CLOSED]

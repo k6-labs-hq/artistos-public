@@ -25,26 +25,24 @@ complete picture of their recovery status:
   received so the artist can see exactly what happened and when.
 """
 
-from pathlib import Path
-import json
 import io
+import json
 import zipfile
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
 
-from XR7.earnings.dashboard import DashboardEngine
-from XR7.api.routers.auth import require_artist_access
 from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace, list_handoffs_for_artist
+from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.auth import require_artist_access
+from XR7.earnings.dashboard import DashboardEngine
 from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
-from XR7.models.support_message import SupportMessage, SupportMessageRole
 from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus
-from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
-from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
-from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
+from XR7.models.support_message import SupportMessage, SupportMessageRole
 from XR7.services.branding import (
   apply_brand_placeholders,
   branding_metadata,
@@ -52,7 +50,9 @@ from XR7.services.branding import (
   get_branding_profile,
   inject_branding_metadata,
 )
-from XR7.api.deps import get_artist_or_404
+from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
+from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
+from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
 
 router = APIRouter(tags=["dashboard"])
 
@@ -79,7 +79,6 @@ def _support_proactive_tip(dashboard: dict) -> str:
 
 def _catalog_health_card(artist_id: str, db: Session) -> dict:
   """Build the lightweight catalog_health dashboard card (no heavy ML recompute)."""
-  from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus, FixPriority
   # Pull existing pending/requested fix issues
   issues = (
     db.query(CatalogFixIssue)
@@ -448,7 +447,7 @@ def export_guidance(artist_id: str, platform: str = "youtube", db: Session = Dep
 
 @router.post("/artists/{artist_id}/chat/royalties")
 async def chat_royalties(artist_id: str, question: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     dashboard = DashboardEngine(db).compute(artist_id)
     result = await royalty_chat_agent.handle_query(artist_id, question, context=dashboard)
     if isinstance(result, dict):
@@ -458,7 +457,7 @@ async def chat_royalties(artist_id: str, question: str, db: Session = Depends(ge
 
 @router.get("/artists/{artist_id}/export/full-transparency")
 async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     dashboard = DashboardEngine(db).compute(artist_id)
     brand = get_branding_for_artist(db, artist_id)

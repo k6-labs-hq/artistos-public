@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest
 
+
 class TestAssignReviewItemRequest(unittest.TestCase):
     """AssignReviewItemRequest unit test stubs"""
 

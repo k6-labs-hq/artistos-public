@@ -8,8 +8,8 @@ from typing import Any
 
 from XR7.agents.state import XR7State, add_trace_event, set_confidence
 from XR7.llm.claim_drafter import claim_drafter
-from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.models.base import SessionLocal
+from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

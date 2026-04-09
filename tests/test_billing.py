@@ -1,14 +1,15 @@
+from datetime import datetime, timezone
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
-from XR7.models.artist import Artist
+from XR7.billing.engine import BillingEngine
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
+from XR7.models.artist import Artist
+from XR7.models.base import Base
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.metadata_issue import MetadataIssue
-from XR7.billing.engine import BillingEngine
-from datetime import datetime, timezone
 
 
 @pytest.fixture

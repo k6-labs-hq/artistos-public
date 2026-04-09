@@ -15,7 +15,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import DateTime, Float, ForeignKey, JSON, String
+from sqlalchemy import JSON, DateTime, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base

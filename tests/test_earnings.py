@@ -1,16 +1,14 @@
-import pytest
-from datetime import datetime
 from unittest.mock import MagicMock
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
-from XR7.models.artist import Artist
-from XR7.models.contract import Contract, ContractType
-from XR7.models.event import Event, EventType
-from XR7.models.payment import Payment, PaymentType
-from XR7.graph.rights_graph import RightsGraph
 from XR7.earnings.engine import EarningsEngine
+from XR7.graph.rights_graph import RightsGraph
+from XR7.models.artist import Artist
+from XR7.models.base import Base
+from XR7.models.contract import ContractType
 
 
 @pytest.fixture

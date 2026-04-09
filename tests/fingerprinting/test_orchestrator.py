@@ -89,7 +89,6 @@ class TestOrchestratorIdentifyWithMock:
 
     @pytest.mark.asyncio
     async def test_identify_filters_low_confidence(self):
-        from XR7.fingerprinting.config import FingerprintingOrchestratorConfig
 
         low_conf_result = _make_result("USAT001", "mock", confidence=0.1)
         mock = MockFingerprintingProvider()

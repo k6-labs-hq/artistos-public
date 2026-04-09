@@ -29,15 +29,24 @@ from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.orm import Session
 
 from XR7.anomaly.engine import AnomalyEngine
+from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.terms import require_terms_accepted
 from XR7.auth.event_notifications import send_event_notification
 from XR7.earnings.engine import EarningsEngine
+from XR7.fingerprinting.matching.identity_matching import persist_identity_match
 from XR7.graph.rights_graph import RightsGraph
-from XR7.ingestion.statement_parser import parse_csv, parse_statement_file, SUPPORTED_FORMATS
-from XR7.models.artist import Artist
+from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
+from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
+from XR7.ingestion.statement_parser import SUPPORTED_FORMATS, parse_csv, parse_statement_file
+from XR7.ingestion.statement_signal_extractor import (
+    extract_statement_signals,
+    merge_statement_signals,
+    to_json,
+)
 from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
@@ -45,21 +54,13 @@ from XR7.models.event import Event, EventType
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement, StatementSchema
-from XR7.api.routers.terms import require_terms_accepted
-from XR7.api.deps import get_artist_or_404
-from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.recovery.orchestrator import ClaimsOrchestrator
+from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
+from XR7.services.branding import inject_branding_metadata
 from XR7.services.founder_program import handle_founder_notifications
-from XR7.fingerprinting.matching.identity_matching import persist_identity_match
-from XR7.ingestion.statement_signal_extractor import extract_statement_signals, merge_statement_signals, to_json
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
-from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
-from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
-from XR7.ingestion.connectors.global_social_regional import GlobalSocialRegionalConnector
-from XR7.recovery.ugc_claim_generator import UGCClaimGenerator
-from XR7.services.branding import inject_branding_metadata
 from XR7.trolley.client import TrolleyClient, TrolleyException
 from xr7_common.logging import get_logger
 
@@ -624,7 +625,7 @@ async def upload_statement_batch(
 
 @router.post("/artists/{artist_id}/connect/soundexchange-mlc")
 async def connect_soundexchange_mlc(artist_id: str, years_back: int = 10, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     connector = SoundExchangeMLCConnector()
     rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
     anomalies = await connector.detect_unreported_uses(["USRC17607839", "USRC17607840"])
@@ -649,7 +650,7 @@ def soundexchange_mlc_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/connect/regional-global")
 async def connect_regional_global(artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
     connector = RegionalGlobalConnector()
     rows = await connector.fetch_statements(artist_id, genre, territory)
     anomalies = await connector.auto_detect_genre_specific_anomalies(artist_id, genre, territory)
@@ -687,7 +688,7 @@ def list_statements(artist_id: str, db: Session = Depends(get_db)):
     """
     Return all statement uploads for an artist, newest first.
     """
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     return (
         db.query(Statement)

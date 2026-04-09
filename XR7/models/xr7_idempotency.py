@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped, mapped_column, Session
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from XR7.models.base import Base
 

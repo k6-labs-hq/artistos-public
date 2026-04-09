@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.claim_status import ClaimStatus
 
 class TestClaimStatus(unittest.TestCase):
     """ClaimStatus unit test stubs"""

@@ -13,46 +13,47 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from XR7.models.base import Base, get_db
-from XR7.api.app import app
-# Ensure all model tables are registered before create_all
-import XR7.models.terms_acceptance  # noqa: F401
-import XR7.models.forensic_universal_event  # noqa: F401
-import XR7.models.catalog_graph_adj  # noqa: F401
-import XR7.models.review_queue  # noqa: F401
 import XR7.models.admin_audit_log  # noqa: F401
-import XR7.models.ml_feedback  # noqa: F401
-import XR7.models.model_registry  # noqa: F401
-import XR7.models.catalog_segment  # noqa: F401
-import XR7.models.metadata_issue  # noqa: F401
-import XR7.models.trolley_transaction  # noqa: F401
-import XR7.models.platform_config  # noqa: F401
-import XR7.models.xr7_royalty  # noqa: F401
-import XR7.models.identity_match  # noqa: F401
-import XR7.models.trust_trace  # noqa: F401
-import XR7.models.artist_referral  # noqa: F401
-import XR7.models.liquidity_advance  # noqa: F401
-import XR7.models.rights_scan  # noqa: F401
-import XR7.models.artist_message  # noqa: F401
-import XR7.models.class_action_signal  # noqa: F401
-import XR7.models.advance_opportunity  # noqa: F401
 import XR7.models.advance_approval  # noqa: F401
 import XR7.models.advance_offer  # noqa: F401
+import XR7.models.advance_opportunity  # noqa: F401
 import XR7.models.advance_recovery_packet  # noqa: F401
-import XR7.models.tvfilm_portfolio_job  # noqa: F401
+import XR7.models.agent_handoff  # noqa: F401
+import XR7.models.artist_message  # noqa: F401
+import XR7.models.artist_referral  # noqa: F401
+import XR7.models.batch_ingestion_job  # noqa: F401
+import XR7.models.case_room  # noqa: F401
+import XR7.models.catalog_graph_adj  # noqa: F401
+import XR7.models.catalog_segment  # noqa: F401
+import XR7.models.class_action_signal  # noqa: F401
+import XR7.models.connector_sync_cursor  # noqa: F401
+import XR7.models.data_residency  # noqa: F401
+import XR7.models.forensic_universal_event  # noqa: F401
+import XR7.models.identity_match  # noqa: F401
 import XR7.models.invite  # noqa: F401
 import XR7.models.legal_defensibility_event  # noqa: F401
-import XR7.models.society_signal_log  # noqa: F401
-import XR7.models.agent_handoff  # noqa: F401
-import XR7.models.vip  # noqa: F401
+import XR7.models.liquidity_advance  # noqa: F401
+import XR7.models.metadata_issue  # noqa: F401
+import XR7.models.ml_feedback  # noqa: F401
+import XR7.models.model_registry  # noqa: F401
 import XR7.models.notification_delivery_log  # noqa: F401
-import XR7.models.case_room  # noqa: F401
-import XR7.models.data_residency  # noqa: F401
-import XR7.models.connector_sync_cursor  # noqa: F401
-import XR7.models.webhook_event  # noqa: F401
+import XR7.models.platform_config  # noqa: F401
+import XR7.models.review_queue  # noqa: F401
+import XR7.models.rights_scan  # noqa: F401
 import XR7.models.slo_metric  # noqa: F401
-import XR7.models.batch_ingestion_job  # noqa: F401
+import XR7.models.society_signal_log  # noqa: F401
+
+# Ensure all model tables are registered before create_all
+import XR7.models.terms_acceptance  # noqa: F401
+import XR7.models.trolley_transaction  # noqa: F401
+import XR7.models.trust_trace  # noqa: F401
+import XR7.models.tvfilm_portfolio_job  # noqa: F401
+import XR7.models.vip  # noqa: F401
+import XR7.models.webhook_event  # noqa: F401
 import XR7.models.xr7_idempotency  # noqa: F401
+import XR7.models.xr7_royalty  # noqa: F401
+from XR7.api.app import app
+from XR7.models.base import Base, get_db
 
 # Single shared in-memory SQLite engine for the entire test suite
 TEST_DB_URL = "sqlite://"
@@ -82,11 +83,13 @@ app.dependency_overrides[get_db] = override_get_db
 # Patch the module-level SessionLocal used by two_agent_orchestrator_graph
 # so that query_handoffs() (and other direct-session callers) use the test DB.
 import XR7.agents.two_agent_orchestrator_graph as _two_agent_graph  # noqa: E402
+
 _two_agent_graph.SessionLocal = TestSession
 
 # Configure Celery to run tasks synchronously in-process so tests don't
 # attempt real Redis/broker connections (which cause ~20-second retry loops).
 from XR7.celery_app import celery_app as _celery_app  # noqa: E402
+
 _celery_app.conf.update(
     task_always_eager=True,
     task_eager_propagates=False,

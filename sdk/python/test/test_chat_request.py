@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.chat_request import ChatRequest
 
+
 class TestChatRequest(unittest.TestCase):
     """ChatRequest unit test stubs"""
 

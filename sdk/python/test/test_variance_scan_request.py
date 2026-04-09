@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.variance_scan_request import VarianceScanRequest
 
+
 class TestVarianceScanRequest(unittest.TestCase):
     """VarianceScanRequest unit test stubs"""
 

@@ -5,6 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
@@ -13,10 +14,11 @@ from XR7.recovery.black_box_expiration import evaluate_black_box_expiration_for_
 from XR7.recovery.claims_evidence_package_builder import ClaimsEvidencePackageBuilder
 from XR7.recovery.discovery_rule_engine import DiscoveryRuleEngine
 from XR7.recovery.leakage_benchmark_engine import LeakageBenchmarkEngine
-from XR7.recovery.recoverability_classifier import ContractRecoverabilityScorer, build_recoverability_payload
+from XR7.recovery.recoverability_classifier import (
+    ContractRecoverabilityScorer,
+    build_recoverability_payload,
+)
 from XR7.recovery.society_signal_feed import SocietySignalFeed
-from tests.conftest import TestSession as _TestSession
-
 
 client = TestClient(app)
 

@@ -1,7 +1,6 @@
 """Batch ingestion router."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query

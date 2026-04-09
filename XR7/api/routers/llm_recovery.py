@@ -16,7 +16,6 @@ from XR7.api.authz import artist_or_404 as _artist_or_404
 from XR7.api.authz import authorize_team_access as _authorize_team_access
 from XR7.llm.claim_drafter import claim_drafter
 from XR7.models.anomaly import Anomaly, AnomalySchema
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.ml_feedback import MLFeedbackEvent, MLFeedbackType

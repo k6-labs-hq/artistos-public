@@ -22,7 +22,7 @@ class RightsGraph:
     def get_rights_for_work(self, work_id: str) -> list[dict]:
         if work_id not in self.graph:
             return []
-        work_data = self.graph.nodes[work_id]
+        self.graph.nodes[work_id]
         artist_id = None
         for pred in self.graph.predecessors(work_id):
             if self.graph.nodes[pred].get("type") == "artist":

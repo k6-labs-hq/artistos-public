@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.claim_request import ClaimRequest
 
+
 class TestClaimRequest(unittest.TestCase):
     """ClaimRequest unit test stubs"""
 

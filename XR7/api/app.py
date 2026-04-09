@@ -4,136 +4,144 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from XR7.models.base import Base, engine
-from XR7.api.routers import artists, earnings, anomalies, claims, billing, recovery, widget
-from XR7.api.routers import ingestion
-from XR7.api.routers import trolley as trolley_router
-from XR7.api.routers import dashboard as dashboard_router
-from XR7.api.routers import terms as terms_router
-from XR7.api.routers import intelligence as intelligence_router
-from XR7.api.routers import expansion as expansion_router
-from XR7.api.routers import onboarding as onboarding_router
-from XR7.api.routers import forensic as forensic_router
-from XR7.api.routers import review_queue as review_queue_router
 from XR7.api.routers import admin_console as admin_console_router
-from XR7.api.routers import payers as payers_router
-from XR7.api.routers import workspace as workspace_router
-from XR7.api.routers import llm_recovery as llm_recovery_router
-from XR7.api.routers import notifications as notifications_router
-from XR7.api.routers import public as public_router
-from XR7.api.routers import transparency as transparency_router
+from XR7.api.routers import advance_governance as advance_governance_router
+from XR7.api.routers import (
+    anomalies,
+    artists,
+    billing,
+    claims,
+    earnings,
+    ingestion,
+    recovery,
+    widget,
+)
+from XR7.api.routers import auth as auth_router
 from XR7.api.routers import b2b as b2b_router
-from XR7.api.routers import team as team_router
-from XR7.api.routers import connect as connect_router
-from XR7.api.routers import fetchers as fetchers_router
-from XR7.api.routers import workflow as workflow_router
-from XR7.api.routers import support as support_router
+from XR7.api.routers import batch_ingestion as batch_ingestion_router
+from XR7.api.routers import benchmarks as benchmarks_router
+from XR7.api.routers import black_box_countdown as black_box_countdown_router
+from XR7.api.routers import blackbox as blackbox_router
 from XR7.api.routers import branding as branding_router
+from XR7.api.routers import case_rooms as case_rooms_router
+from XR7.api.routers import catalog_health as catalog_health_router
+from XR7.api.routers import catalog_value as catalog_value_router
+from XR7.api.routers import class_action as class_action_router
+from XR7.api.routers import collaborator_share as collaborator_share_router
+from XR7.api.routers import concierge as concierge_router
 from XR7.api.routers import config as config_router
+from XR7.api.routers import connect as connect_router
+from XR7.api.routers import connector_reliability as connector_reliability_router
+from XR7.api.routers import contract_drift as contract_drift_router
+from XR7.api.routers import copilot as copilot_router
+from XR7.api.routers import creator_economy as creator_economy_router
+from XR7.api.routers import dashboard as dashboard_router
+from XR7.api.routers import data_residency as data_residency_router
+from XR7.api.routers import earnings_time_machine as earnings_time_machine_router
+from XR7.api.routers import enterprise_analysis as enterprise_analysis_router
+from XR7.api.routers import expansion as expansion_router
+from XR7.api.routers import fetchers as fetchers_router
+from XR7.api.routers import fingerprinting as fingerprinting_router
+from XR7.api.routers import forensic as forensic_router
+from XR7.api.routers import ghost_catalog as ghost_catalog_router
+from XR7.api.routers import governance as governance_router
+from XR7.api.routers import identity as identity_router
+from XR7.api.routers import intelligence as intelligence_router
+from XR7.api.routers import invites as invites_router
+from XR7.api.routers import llm_recovery as llm_recovery_router
+from XR7.api.routers import messages as messages_router
+from XR7.api.routers import ml_suite as ml_suite_router
+from XR7.api.routers import notifications as notifications_router
+from XR7.api.routers import onboarding as onboarding_router
+from XR7.api.routers import payer_health as payer_health_router
+from XR7.api.routers import payers as payers_router
+from XR7.api.routers import public as public_router
+from XR7.api.routers import recovery_credit_score as recovery_credit_score_router
+from XR7.api.routers import referrals as referrals_router
+from XR7.api.routers import review_queue as review_queue_router
+from XR7.api.routers import royalty_dna as royalty_dna_router
+from XR7.api.routers import slo as slo_router
+from XR7.api.routers import sovereignty as sovereignty_router
+from XR7.api.routers import support as support_router
+from XR7.api.routers import team as team_router
+from XR7.api.routers import terms as terms_router
+from XR7.api.routers import transparency as transparency_router
+from XR7.api.routers import trolley as trolley_router
+from XR7.api.routers import trust as trust_router
+from XR7.api.routers import tvfilm as tvfilm_router
+from XR7.api.routers import ugc_scanner as ugc_scanner_router
+from XR7.api.routers import vip as vip_router
+from XR7.api.routers import vip_referrals as vip_referrals_router
+from XR7.api.routers import workflow as workflow_router
+from XR7.api.routers import workspace as workspace_router
 from XR7.api.routers import xr7_forensics as xr7_forensics_router
 from XR7.api.routers import xr7_metadata as xr7_metadata_router
 from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
-from XR7.api.routers import auth as auth_router
-from XR7.api.routers import identity as identity_router
-from XR7.api.routers import trust as trust_router
-from XR7.api.routers import referrals as referrals_router
-from XR7.api.routers import creator_economy as creator_economy_router
-from XR7.api.routers import sovereignty as sovereignty_router
-from XR7.api.routers import messages as messages_router
-from XR7.api.routers import class_action as class_action_router
-from XR7.api.routers import ml_suite as ml_suite_router
-from XR7.api.routers import governance as governance_router
-from XR7.api.routers import advance_governance as advance_governance_router
-from XR7.api.routers import tvfilm as tvfilm_router
-from XR7.api.routers import invites as invites_router
-from XR7.api.routers import vip as vip_router
-from XR7.api.routers import concierge as concierge_router
-from XR7.api.routers import copilot as copilot_router
-from XR7.api.routers import vip_referrals as vip_referrals_router
-from XR7.api.routers import case_rooms as case_rooms_router
-from XR7.api.routers import data_residency as data_residency_router
-from XR7.api.routers import connector_reliability as connector_reliability_router
-from XR7.api.routers import slo as slo_router
-from XR7.api.routers import batch_ingestion as batch_ingestion_router
-from XR7.api.routers import enterprise_analysis as enterprise_analysis_router
-from XR7.api.routers import fingerprinting as fingerprinting_router
-from XR7.api.routers import catalog_health as catalog_health_router
-from XR7.api.routers import benchmarks as benchmarks_router
-from XR7.api.routers import blackbox as blackbox_router
-from XR7.api.routers import ugc_scanner as ugc_scanner_router
-from XR7.api.routers import earnings_time_machine as earnings_time_machine_router
-from XR7.api.routers import ghost_catalog as ghost_catalog_router
-from XR7.api.routers import black_box_countdown as black_box_countdown_router
-from XR7.api.routers import royalty_dna as royalty_dna_router
-from XR7.api.routers import payer_health as payer_health_router
-from XR7.api.routers import contract_drift as contract_drift_router
-from XR7.api.routers import catalog_value as catalog_value_router
-from XR7.api.routers import recovery_credit_score as recovery_credit_score_router
-from XR7.api.routers import collaborator_share as collaborator_share_router
-from xr7_common.settings import settings
+from XR7.models.base import Base, engine
 from XR7.services.hubspot_client import HubSpotClient
+from xr7_common.settings import settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Import models to ensure all tables are registered before create_all
-    import XR7.models.terms_acceptance  # noqa: F401
-    import XR7.models.recovery_intelligence  # noqa: F401
-    import XR7.models.notification_preference  # noqa: F401
-    import XR7.models.team_access  # noqa: F401
-    import XR7.models.evidence_anchor  # noqa: F401
-    import XR7.models.oauth_connector  # noqa: F401
-    import XR7.models.catalog_confirmation  # noqa: F401
-    import XR7.models.immutable_ledger_entry  # noqa: F401
-    import XR7.models.parser_plugin  # noqa: F401
-    import XR7.models.sync_job  # noqa: F401
-    import XR7.models.universal_royalty_event  # noqa: F401
-    import XR7.models.catalog_graph  # noqa: F401
-    import XR7.models.forensic_universal_event  # noqa: F401
-    import XR7.models.catalog_graph_adj  # noqa: F401
-    import XR7.models.review_queue  # noqa: F401
     import XR7.models.admin_audit_log  # noqa: F401
-    import XR7.models.ml_feedback  # noqa: F401
-    import XR7.models.model_registry  # noqa: F401
-    import XR7.models.catalog_segment  # noqa: F401
-    import XR7.models.support_message  # noqa: F401
-    import XR7.models.metadata_issue  # noqa: F401
-    import XR7.models.branding_profile  # noqa: F401
-    import XR7.models.trolley_transaction  # noqa: F401
-    import XR7.models.platform_config  # noqa: F401
-    import XR7.models.xr7_royalty  # noqa: F401
-    import XR7.models.identity_match  # noqa: F401
-    import XR7.models.trust_trace  # noqa: F401
-    import XR7.models.artist_referral  # noqa: F401
-    import XR7.models.liquidity_advance  # noqa: F401
-    import XR7.models.rights_scan  # noqa: F401
-    import XR7.models.artist_message  # noqa: F401
-    import XR7.models.class_action_signal  # noqa: F401
-    import XR7.models.advance_opportunity  # noqa: F401
     import XR7.models.advance_approval  # noqa: F401
     import XR7.models.advance_offer  # noqa: F401
+    import XR7.models.advance_opportunity  # noqa: F401
     import XR7.models.advance_recovery_packet  # noqa: F401
-    import XR7.models.tvfilm_portfolio_job  # noqa: F401
-    import XR7.models.invite  # noqa: F401
-    import XR7.models.legal_defensibility_event  # noqa: F401
-    import XR7.models.society_signal_log  # noqa: F401
-    import XR7.models.vip  # noqa: F401
-    import XR7.models.notification_delivery_log  # noqa: F401
-    import XR7.models.case_room  # noqa: F401
-    import XR7.models.data_residency  # noqa: F401
-    import XR7.models.connector_sync_cursor  # noqa: F401
-    import XR7.models.webhook_event  # noqa: F401
-    import XR7.models.slo_metric  # noqa: F401
+    import XR7.models.artist_message  # noqa: F401
+    import XR7.models.artist_referral  # noqa: F401
     import XR7.models.batch_ingestion_job  # noqa: F401
-    import XR7.models.xr7_idempotency  # noqa: F401
-    import XR7.models.fingerprint_job  # noqa: F401
-    import XR7.models.fingerprint_match  # noqa: F401
-    import XR7.models.catalog_fix_issue  # noqa: F401
     import XR7.models.benchmark_aggregate  # noqa: F401
     import XR7.models.blackbox_match  # noqa: F401
-    import XR7.models.ugc_opportunity  # noqa: F401
+    import XR7.models.branding_profile  # noqa: F401
+    import XR7.models.case_room  # noqa: F401
+    import XR7.models.catalog_confirmation  # noqa: F401
+    import XR7.models.catalog_fix_issue  # noqa: F401
+    import XR7.models.catalog_graph  # noqa: F401
+    import XR7.models.catalog_graph_adj  # noqa: F401
+    import XR7.models.catalog_segment  # noqa: F401
+    import XR7.models.class_action_signal  # noqa: F401
     import XR7.models.collaborator_share_lead  # noqa: F401
+    import XR7.models.connector_sync_cursor  # noqa: F401
+    import XR7.models.data_residency  # noqa: F401
+    import XR7.models.evidence_anchor  # noqa: F401
+    import XR7.models.fingerprint_job  # noqa: F401
+    import XR7.models.fingerprint_match  # noqa: F401
+    import XR7.models.forensic_universal_event  # noqa: F401
+    import XR7.models.identity_match  # noqa: F401
+    import XR7.models.immutable_ledger_entry  # noqa: F401
+    import XR7.models.invite  # noqa: F401
+    import XR7.models.legal_defensibility_event  # noqa: F401
+    import XR7.models.liquidity_advance  # noqa: F401
+    import XR7.models.metadata_issue  # noqa: F401
+    import XR7.models.ml_feedback  # noqa: F401
+    import XR7.models.model_registry  # noqa: F401
+    import XR7.models.notification_delivery_log  # noqa: F401
+    import XR7.models.notification_preference  # noqa: F401
+    import XR7.models.oauth_connector  # noqa: F401
+    import XR7.models.parser_plugin  # noqa: F401
+    import XR7.models.platform_config  # noqa: F401
+    import XR7.models.recovery_intelligence  # noqa: F401
+    import XR7.models.review_queue  # noqa: F401
+    import XR7.models.rights_scan  # noqa: F401
+    import XR7.models.slo_metric  # noqa: F401
+    import XR7.models.society_signal_log  # noqa: F401
+    import XR7.models.support_message  # noqa: F401
+    import XR7.models.sync_job  # noqa: F401
+    import XR7.models.team_access  # noqa: F401
+    import XR7.models.terms_acceptance  # noqa: F401
+    import XR7.models.trolley_transaction  # noqa: F401
+    import XR7.models.trust_trace  # noqa: F401
+    import XR7.models.tvfilm_portfolio_job  # noqa: F401
+    import XR7.models.ugc_opportunity  # noqa: F401
+    import XR7.models.universal_royalty_event  # noqa: F401
+    import XR7.models.vip  # noqa: F401
+    import XR7.models.webhook_event  # noqa: F401
+    import XR7.models.xr7_idempotency  # noqa: F401
+    import XR7.models.xr7_royalty  # noqa: F401
     Base.metadata.create_all(bind=engine)
     yield
 
@@ -318,19 +326,19 @@ def readiness():
     environment variables are set — it does NOT make real network connections.
     """
     from XR7.celery_app import celery_app
-    from XR7.ingestion.connectors.pro import PROConnector
-    from XR7.ingestion.connectors.dsp import DSPConnector
-    from XR7.ingestion.connectors.platform import PlatformConnector
-    from XR7.ingestion.connectors.ticketing import TicketingConnector
     from XR7.ingestion.connectors.distributor import DistributorConnector
-    from XR7.ingestion.connectors.mlc import MLCConnector
-    from XR7.ingestion.statement_parser import SUPPORTED_FORMATS
+    from XR7.ingestion.connectors.dsp import DSPConnector
     from XR7.ingestion.connectors.international_pro import (
         APRAAMCOSConnector,
         JASRACConnector,
         KOMCAConnector,
         SACEMConnector,
     )
+    from XR7.ingestion.connectors.mlc import MLCConnector
+    from XR7.ingestion.connectors.platform import PlatformConnector
+    from XR7.ingestion.connectors.pro import PROConnector
+    from XR7.ingestion.connectors.ticketing import TicketingConnector
+    from XR7.ingestion.statement_parser import SUPPORTED_FORMATS
     from XR7.services.market_readiness_architecture import evaluate_architecture_readiness
 
     def _connector_status(connector_cls, name: str, **kwargs) -> dict:

@@ -10,9 +10,10 @@ from XR7.recovery.recovery_automation import (
 )
 from XR7.recovery.recovery_automation_engine import (
     automate_recovery as automate_recovery_shim,
+)
+from XR7.recovery.recovery_automation_engine import (
     build_correction_packet as build_correction_packet_shim,
 )
-
 
 # ---------------------------------------------------------------------------
 # build_correction_packet

@@ -14,12 +14,11 @@ from datetime import datetime, timezone
 import pytest
 from fastapi import HTTPException
 
-from XR7.api.routers.claims import _anomaly_to_payload, _compute_anomaly_trust
+from tests.conftest import TestSession
 from XR7.api.deps import get_artist_or_404
+from XR7.api.routers.claims import _anomaly_to_payload, _compute_anomaly_trust
 from XR7.models.anomaly import AnomalyCategory, AnomalySeverity
 from XR7.models.artist import Artist
-from tests.conftest import TestSession
-
 
 # ---------------------------------------------------------------------------
 # Helpers

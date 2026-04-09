@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.http_validation_error import HTTPValidationError
 
+
 class TestHTTPValidationError(unittest.TestCase):
     """HTTPValidationError unit test stubs"""
 
@@ -39,10 +40,10 @@ class TestHTTPValidationError(unittest.TestCase):
                     xr7_sdk.models.validation_error.ValidationError(
                         loc = [
                             null
-                            ], 
-                        msg = '', 
-                        type = '', 
-                        input = null, 
+                            ],
+                        msg = '',
+                        type = '',
+                        input = null,
                         ctx = xr7_sdk.models.context.Context(), )
                     ]
             )

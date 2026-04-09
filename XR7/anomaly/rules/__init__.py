@@ -1,3 +1,3 @@
-from XR7.anomaly.rules import royalties, touring, merch, sync, platforms
+from XR7.anomaly.rules import merch, platforms, royalties, sync, touring
 
 __all__ = ["royalties", "touring", "merch", "sync", "platforms"]

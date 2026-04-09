@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.bulk_onboard_request import BulkOnboardRequest
 
+
 class TestBulkOnboardRequest(unittest.TestCase):
     """BulkOnboardRequest unit test stubs"""
 

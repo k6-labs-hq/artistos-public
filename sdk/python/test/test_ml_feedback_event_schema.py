@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.ml_feedback_event_schema import MLFeedbackEventSchema
 
+
 class TestMLFeedbackEventSchema(unittest.TestCase):
     """MLFeedbackEventSchema unit test stubs"""
 

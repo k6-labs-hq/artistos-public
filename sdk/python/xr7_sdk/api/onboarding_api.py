@@ -10,13 +10,13 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictBool, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import StrictBool, StrictStr
-from typing import Any, List, Optional
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.catalog_confirmation_schema import CatalogConfirmationSchema
 from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
 from xr7_sdk.models.onboarding_auto_request import OnboardingAutoRequest
@@ -27,10 +27,9 @@ from xr7_sdk.models.sync_job_create_request import SyncJobCreateRequest
 from xr7_sdk.models.sync_job_schema import SyncJobSchema
 from xr7_sdk.models.variance_scan_request import VarianceScanRequest
 from xr7_sdk.models.workflow_run_request import WorkflowRunRequest
-from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import XR7ApiRoutersOnboardingCatalogConfirmRequest
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.xr7_api_routers_onboarding_catalog_confirm_request import (
+    XR7ApiRoutersOnboardingCatalogConfirmRequest,
+)
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -6738,9 +6737,9 @@ class OnboardingApi:
             _path_params['job_id'] = job_id
         # process the query parameters
         if async_run is not None:
-            
+
             _query_params.append(('async_run', async_run))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -7029,9 +7028,9 @@ class OnboardingApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if strict_validation is not None:
-            
+
             _query_params.append(('strict_validation', strict_validation))
-            
+
         # process the header parameters
         # process the form parameters
         if files is not None:

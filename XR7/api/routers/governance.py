@@ -2,16 +2,15 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_admin, require_artist_access
 from XR7.models.admin_audit_log import AdminAuditLog
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
 from XR7.models.work import Work
-from XR7.api.deps import get_artist_or_404
 from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["governance"])

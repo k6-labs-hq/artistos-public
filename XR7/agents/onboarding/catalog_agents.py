@@ -7,8 +7,8 @@ from XR7.agents.onboarding.core import _finalize, _now, _safe_score
 from XR7.agents.state import XR7State, update_onboarding_progress
 from XR7.models.base import SessionLocal
 from XR7.models.statement import Statement
-from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.models.work import Work
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.post_repair_forecast_pipeline import FORECAST_DISCLAIMER
 
 

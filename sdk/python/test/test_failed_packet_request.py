@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.failed_packet_request import FailedPacketRequest
 
+
 class TestFailedPacketRequest(unittest.TestCase):
     """FailedPacketRequest unit test stubs"""
 

@@ -10,18 +10,15 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Dict
-from xr7_sdk.models.terms_accept_request import TermsAcceptRequest
-from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.terms_accept_request import TermsAcceptRequest
+from xr7_sdk.models.terms_acceptance_schema import TermsAcceptanceSchema
 from xr7_sdk.rest import RESTResponseType
 
 

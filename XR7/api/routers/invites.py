@@ -8,9 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.models import (
-    Invite,
     InviteChannel,
     InviteGenerateRequest,
     InviteRole,

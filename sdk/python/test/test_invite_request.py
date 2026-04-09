@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.invite_request import InviteRequest
 
+
 class TestInviteRequest(unittest.TestCase):
     """InviteRequest unit test stubs"""
 

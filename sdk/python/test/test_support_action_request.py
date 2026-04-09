@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.support_action_request import SupportActionRequest
 
+
 class TestSupportActionRequest(unittest.TestCase):
     """SupportActionRequest unit test stubs"""
 

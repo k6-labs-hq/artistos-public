@@ -10,22 +10,19 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Optional
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.advice_request import AdviceRequest
 from xr7_sdk.models.advice_response import AdviceResponse
 from xr7_sdk.models.demand_letter_request import DemandLetterRequest
 from xr7_sdk.models.demand_letter_response import DemandLetterResponse
 from xr7_sdk.models.negotiation_script_request import NegotiationScriptRequest
 from xr7_sdk.models.negotiation_script_response import NegotiationScriptResponse
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 

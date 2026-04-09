@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.xr7_connector_credential_upsert import XR7ConnectorCredentialUpsert
 
+
 class TestXR7ConnectorCredentialUpsert(unittest.TestCase):
     """XR7ConnectorCredentialUpsert unit test stubs"""
 

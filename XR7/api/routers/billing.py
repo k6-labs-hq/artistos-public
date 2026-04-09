@@ -1,12 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.billing.engine import BillingEngine
 from XR7.models.base import get_db
-from XR7.models.artist import Artist
-from XR7.models.claim import Claim, ClaimStatus
-from XR7.api.deps import get_artist_or_404
-from XR7.services.branding import inject_branding_metadata, branding_metadata, get_branding_for_artist
+from XR7.models.claim import Claim
+from XR7.services.branding import (
+    branding_metadata,
+    get_branding_for_artist,
+    inject_branding_metadata,
+)
 
 router = APIRouter(tags=["billing"])
 

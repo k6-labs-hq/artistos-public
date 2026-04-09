@@ -9,12 +9,11 @@ from datetime import datetime, timezone
 import pytest
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
-from tests.conftest import TestSession as _TestSession
-
 
 client = TestClient(app)
 

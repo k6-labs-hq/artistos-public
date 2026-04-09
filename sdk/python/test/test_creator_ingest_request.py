@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.creator_ingest_request import CreatorIngestRequest
 
+
 class TestCreatorIngestRequest(unittest.TestCase):
     """CreatorIngestRequest unit test stubs"""
 

@@ -3,23 +3,29 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from XR7.billing.engine import BillingEngine
 from XR7.core.claims.state_machine import contract_type_for_category, next_status
 from XR7.core.integrity.evidence_crypto import seal_packet
 from XR7.core.integrity.evidence_crypto import verify_packet_integrity as _core_verify_integrity
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
-from XR7.recovery.sol_calculator import calculate_sol
 from XR7.models.contract import Contract
 from XR7.models.event import Event
-from XR7.billing.engine import BillingEngine
 from XR7.models.payment import Payment
 from XR7.models.recovery_intelligence import RoyaltyLedgerEntry
+from XR7.recovery.sol_calculator import calculate_sol
+from XR7.services.metadata_repair_engine import MetadataRepairEngine
 
 
 class ClaimsOrchestrator:
     def __init__(self, db_session: Session):
         self.db_session = db_session
+
+    @staticmethod
+    def _signing_mode() -> str:
+        import os
+        return os.environ.get("XR7_EVIDENCE_SIGNING_MODE", "hmac")
 
     @staticmethod
     def _money(value: float | None) -> float:
@@ -146,7 +152,7 @@ class ClaimsOrchestrator:
 
         ledger_rows = self._ledger_rows_for_anomaly(anomaly, artist_id)
         proof_lines, proof_totals = self._build_ledger_proof(ledger_rows)
-        metadata_logs: list[dict] = []  # Fetch via GET /artists/{id}/metadata-health if needed
+        metadata_logs: list[dict] = MetadataRepairEngine(self.db_session).recent_repair_logs(artist_id)
 
         anomaly_expected = self._money(anomaly.expected_amount if anomaly else 0.0)
         anomaly_actual = self._money(anomaly.actual_amount if anomaly else 0.0)

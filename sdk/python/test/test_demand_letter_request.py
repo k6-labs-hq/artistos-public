@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.demand_letter_request import DemandLetterRequest
 
+
 class TestDemandLetterRequest(unittest.TestCase):
     """DemandLetterRequest unit test stubs"""
 

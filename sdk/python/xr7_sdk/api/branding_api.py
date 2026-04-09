@@ -10,19 +10,16 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Optional
-from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRequest
-from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest
-from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRequest
+from xr7_sdk.models.branding_profile_upsert_request import BrandingProfileUpsertRequest
+from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -1906,9 +1903,9 @@ class BrandingApi:
         # process the path parameters
         # process the query parameters
         if org_id is not None:
-            
+
             _query_params.append(('org_id', org_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -1918,7 +1915,7 @@ class BrandingApi:
         if 'Accept' not in _header_params:
             _header_params['Accept'] = self.api_client.select_header_accept(
                 [
-                    'text/html', 
+                    'text/html',
                     'application/json'
                 ]
             )

@@ -10,18 +10,14 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr
-from typing import Any, Optional
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
-from xr7_sdk.models.bulk_onboard_request import BulkOnboardRequest
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.bulk_onboard_request import BulkOnboardRequest
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -992,21 +988,21 @@ class B2bApi:
             _path_params['org_id'] = org_id
         # process the query parameters
         if severity is not None:
-            
+
             _query_params.append(('severity', severity))
-            
+
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if category is not None:
-            
+
             _query_params.append(('category', category))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         # process the header parameters
         if x_org_key is not None:
             _header_params['X-Org-Key'] = x_org_key
@@ -1977,17 +1973,17 @@ class B2bApi:
             _path_params['org_id'] = org_id
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if sol_window_days is not None:
-            
+
             _query_params.append(('sol_window_days', sol_window_days))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         # process the header parameters
         if x_org_key is not None:
             _header_params['X-Org-Key'] = x_org_key
@@ -3512,9 +3508,9 @@ class B2bApi:
         # process the path parameters
         # process the query parameters
         if org_id is not None:
-            
+
             _query_params.append(('org_id', org_id))
-            
+
         # process the header parameters
         if x_org_key is not None:
             _header_params['X-Org-Key'] = x_org_key

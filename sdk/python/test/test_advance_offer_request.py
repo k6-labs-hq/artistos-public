@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.advance_offer_request import AdvanceOfferRequest
 
+
 class TestAdvanceOfferRequest(unittest.TestCase):
     """AdvanceOfferRequest unit test stubs"""
 

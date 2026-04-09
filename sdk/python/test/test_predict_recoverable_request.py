@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.predict_recoverable_request import PredictRecoverableRequest
 
+
 class TestPredictRecoverableRequest(unittest.TestCase):
     """PredictRecoverableRequest unit test stubs"""
 

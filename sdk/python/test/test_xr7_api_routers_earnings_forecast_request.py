@@ -14,7 +14,10 @@
 
 import unittest
 
-from xr7_sdk.models.xr7_api_routers_earnings_forecast_request import XR7ApiRoutersEarningsForecastRequest
+from xr7_sdk.models.xr7_api_routers_earnings_forecast_request import (
+    XR7ApiRoutersEarningsForecastRequest,
+)
+
 
 class TestXR7ApiRoutersEarningsForecastRequest(unittest.TestCase):
     """XR7ApiRoutersEarningsForecastRequest unit test stubs"""

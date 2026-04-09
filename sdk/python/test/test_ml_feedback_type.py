@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.ml_feedback_type import MLFeedbackType
 
 class TestMLFeedbackType(unittest.TestCase):
     """MLFeedbackType unit test stubs"""

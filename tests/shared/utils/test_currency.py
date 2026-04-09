@@ -6,10 +6,7 @@ No module code is changed here.
 
 from __future__ import annotations
 
-import pytest
-
 from shared.utils.currency import coerce_currency
-
 
 # ---------------------------------------------------------------------------
 # coerce_currency – typical inputs

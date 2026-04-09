@@ -1,6 +1,5 @@
-import pytest
-from XR7.anomaly.rules.royalties import check_missing_royalty_payments, check_incorrect_rates
 from XR7.anomaly.rules.platforms import check_low_stream_rates
+from XR7.anomaly.rules.royalties import check_incorrect_rates, check_missing_royalty_payments
 
 
 def test_check_missing_royalty_payments_detects_missing():

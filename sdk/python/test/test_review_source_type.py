@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.review_source_type import ReviewSourceType
 
 class TestReviewSourceType(unittest.TestCase):
     """ReviewSourceType unit test stubs"""

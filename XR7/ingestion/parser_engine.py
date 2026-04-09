@@ -46,7 +46,7 @@ class DistributorStatementParser(BaseStatementParser):
                 for e in parsed.events
             ]
             return ParserOutput(self.parser_type, len(events), events, parsed.errors)
-        return ParserOutput(self.parser_type, 0, [], ["Unsupported distributor file type"]) 
+        return ParserOutput(self.parser_type, 0, [], ["Unsupported distributor file type"])
 
 
 class PROStatementParser(BaseStatementParser):

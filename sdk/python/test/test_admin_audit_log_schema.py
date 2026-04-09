@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.admin_audit_log_schema import AdminAuditLogSchema
 
+
 class TestAdminAuditLogSchema(unittest.TestCase):
     """AdminAuditLogSchema unit test stubs"""
 

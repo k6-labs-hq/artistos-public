@@ -2,18 +2,16 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 from uuid import uuid4
 
 import jwt
-from sqlalchemy import and_, func
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.models.invite import (
     Invite,
-    InviteAnalytics,
     InviteChannel,
     InviteEvent,
     InviteRole,

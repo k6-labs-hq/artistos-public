@@ -3,15 +3,12 @@ OPS-401 — Tests for the backup/restore validation task and its admin endpoints
 """
 from __future__ import annotations
 
-import os
-
-import pytest
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession
 from XR7.api.app import app
 from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.tasks.ops import run_backup_restore_validation
-from tests.conftest import TestSession
 
 client = TestClient(app)
 

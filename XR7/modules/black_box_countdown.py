@@ -14,6 +14,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from shared.utils.dates import ensure_utc as _ensure_utc
 from XR7.models.anomaly import Anomaly, AnomalyStatus
 from XR7.models.base import SessionLocal
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
@@ -65,7 +66,7 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
+
 def _society_from_anomaly(anomaly: Anomaly) -> str:
     """Infer society from anomaly territory/description or default."""
     description = (anomaly.description or "").upper()

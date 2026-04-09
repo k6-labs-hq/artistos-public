@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.decide_review_item_request import DecideReviewItemRequest
 
+
 class TestDecideReviewItemRequest(unittest.TestCase):
     """DecideReviewItemRequest unit test stubs"""
 

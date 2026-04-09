@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.create_review_item_request import CreateReviewItemRequest
 
+
 class TestCreateReviewItemRequest(unittest.TestCase):
     """CreateReviewItemRequest unit test stubs"""
 

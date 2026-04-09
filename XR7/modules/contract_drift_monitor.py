@@ -14,7 +14,8 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalyStatus, AnomalySeverity
+from shared.utils.dates import ensure_utc as _ensure_utc
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.base import SessionLocal
 from XR7.models.contract import Contract
 from XR7.models.payment import Payment
@@ -32,7 +33,7 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
+
 def _classify_drift(drift_pct: float) -> str:
     """Classify drift instance."""
     abs_pct = abs(drift_pct)
@@ -168,7 +169,7 @@ class ContractDriftMonitor:
             total_paid = sum(amounts)
             # Estimate what should have been paid at contracted rate
             gross_estimate = total_paid / max(contracted_rate, 0.01)
-            expected = gross_estimate * contracted_rate
+            gross_estimate * contracted_rate
             drift_delta = contracted_rate - (total_paid / max(gross_estimate, 0.01))
             drift_pct = round(drift_delta / max(contracted_rate, 0.01) * 100, 2)
             period_drift_cost = round(gross_estimate * abs(drift_delta), 2)

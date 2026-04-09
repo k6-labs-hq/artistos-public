@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.negotiation_script_request import NegotiationScriptRequest
 
+
 class TestNegotiationScriptRequest(unittest.TestCase):
     """NegotiationScriptRequest unit test stubs"""
 

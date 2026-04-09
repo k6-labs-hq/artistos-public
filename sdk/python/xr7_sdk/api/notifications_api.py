@@ -10,18 +10,15 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Optional
-from xr7_sdk.models.notification_preference_request import NotificationPreferenceRequest
-from xr7_sdk.models.notification_preference_schema import NotificationPreferenceSchema
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.notification_preference_request import NotificationPreferenceRequest
+from xr7_sdk.models.notification_preference_schema import NotificationPreferenceSchema
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -549,13 +546,13 @@ class NotificationsApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if token is not None:
-            
+
             _query_params.append(('token', token))
-            
+
         if platform is not None:
-            
+
             _query_params.append(('platform', platform))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -1118,9 +1115,9 @@ class NotificationsApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if question is not None:
-            
+
             _query_params.append(('question', question))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

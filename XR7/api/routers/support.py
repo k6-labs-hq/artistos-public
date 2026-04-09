@@ -9,12 +9,12 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from XR7.agents.onboarding_agents import ArtistReadinessScoreAgent
 from XR7.agents.orchestrator import run_support_agent_turn_sync
 from XR7.api.authz import artist_or_404 as _artist_or_404
 from XR7.api.authz import authorize_team_access as _authorize_team_access
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.models.anomaly import Anomaly
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
 from XR7.models.contract import Contract
@@ -23,8 +23,6 @@ from XR7.models.support_message import SupportMessage, SupportMessageRole
 from XR7.models.team_access import TeamRole
 from XR7.models.work import Work
 from XR7.recovery.weekly_digest import build_weekly_digest
-from XR7.agents.onboarding_agents import ArtistReadinessScoreAgent
-
 
 router = APIRouter(tags=["support"])
 

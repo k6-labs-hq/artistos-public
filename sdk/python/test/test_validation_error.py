@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.validation_error import ValidationError
 
+
 class TestValidationError(unittest.TestCase):
     """ValidationError unit test stubs"""
 

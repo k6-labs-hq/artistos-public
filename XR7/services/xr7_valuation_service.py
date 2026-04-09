@@ -5,7 +5,12 @@ from datetime import date, datetime, timezone
 
 from sqlalchemy.orm import Session
 
-from XR7.models.xr7_royalty import XR7CatalogValuationSnapshot, XR7RecoveryForecast, XR7Track, XR7UsageEvent
+from XR7.models.xr7_royalty import (
+    XR7CatalogValuationSnapshot,
+    XR7RecoveryForecast,
+    XR7Track,
+    XR7UsageEvent,
+)
 
 
 def _now() -> datetime:

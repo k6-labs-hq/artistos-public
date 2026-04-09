@@ -10,21 +10,18 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Optional
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.api_ingestion_request import APIIngestionRequest
 from xr7_sdk.models.black_box_request import BlackBoxRequest
 from xr7_sdk.models.fingerprinting_request import FingerprintingRequest
 from xr7_sdk.models.reconciliation_request import ReconciliationRequest
 from xr7_sdk.models.xr7_connector_credential_upsert import XR7ConnectorCredentialUpsert
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -279,9 +276,9 @@ class Xr7ForensicsApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if tenant_id is not None:
-            
+
             _query_params.append(('tenant_id', tenant_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

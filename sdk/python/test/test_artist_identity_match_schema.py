@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.artist_identity_match_schema import ArtistIdentityMatchSchema
 
+
 class TestArtistIdentityMatchSchema(unittest.TestCase):
     """ArtistIdentityMatchSchema unit test stubs"""
 

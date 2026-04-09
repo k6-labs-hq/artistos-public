@@ -10,13 +10,13 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, List, Optional
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.claim_request import ClaimRequest
 from xr7_sdk.models.estimate_request import EstimateRequest
 from xr7_sdk.models.register_request import RegisterRequest
@@ -24,9 +24,6 @@ from xr7_sdk.models.register_response import RegisterResponse
 from xr7_sdk.models.verify_request import VerifyRequest
 from xr7_sdk.models.verify_response import VerifyResponse
 from xr7_sdk.models.widget_lead_schema import WidgetLeadSchema
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 

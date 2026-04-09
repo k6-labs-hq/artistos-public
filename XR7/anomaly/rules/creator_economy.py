@@ -7,7 +7,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 _PLATFORM_CPM_BENCHMARKS: dict[str, float] = {
     "youtube_studio": 1.50,   # USD RPM floor
     "tiktok_creator_fund": 0.02,  # USD per 1k views floor

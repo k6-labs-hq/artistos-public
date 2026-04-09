@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import json
 import hashlib
 import io
+import json
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -12,9 +12,9 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from XR7.auth.event_notifications import send_event_notification
 from XR7.api.authz import artist_or_404 as _artist_or_404
 from XR7.api.authz import authorize_team_access as _authorize_team_access
+from XR7.auth.event_notifications import send_event_notification
 from XR7.ingestion.connectors.oauth_providers import (
     OAuthProviderError,
     OAuthProviderService,
@@ -24,8 +24,8 @@ from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
-from XR7.models.evidence_anchor import EvidenceAnchor, EvidenceAnchorSchema
 from XR7.models.event import Event
+from XR7.models.evidence_anchor import EvidenceAnchor, EvidenceAnchorSchema
 from XR7.models.notification_preference import (
     NotificationPreference,
     NotificationPreferenceSchema,
@@ -45,8 +45,13 @@ from XR7.models.payment import Payment
 from XR7.models.team_access import TeamMember, TeamMemberCreate, TeamMemberSchema, TeamRole
 from XR7.recovery.audit_tracker import analyze_audit_eligibility
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
+from XR7.services.branding import (
+    branding_metadata,
+    get_branding_for_artist,
+    get_branding_profile,
+    inject_branding_metadata,
+)
 from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
-from XR7.services.branding import branding_metadata, get_branding_for_artist, get_branding_profile, inject_branding_metadata
 from XR7.utils.datetime_utils import as_utc as _as_utc
 
 router = APIRouter(tags=["expansion"])

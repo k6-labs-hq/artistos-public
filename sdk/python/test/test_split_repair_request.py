@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.split_repair_request import SplitRepairRequest
 
+
 class TestSplitRepairRequest(unittest.TestCase):
     """SplitRepairRequest unit test stubs"""
 

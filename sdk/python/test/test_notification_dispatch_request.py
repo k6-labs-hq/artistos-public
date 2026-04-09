@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.notification_dispatch_request import NotificationDispatchRequest
 
+
 class TestNotificationDispatchRequest(unittest.TestCase):
     """NotificationDispatchRequest unit test stubs"""
 

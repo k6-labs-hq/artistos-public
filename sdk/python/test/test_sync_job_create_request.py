@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.sync_job_create_request import SyncJobCreateRequest
 
+
 class TestSyncJobCreateRequest(unittest.TestCase):
     """SyncJobCreateRequest unit test stubs"""
 

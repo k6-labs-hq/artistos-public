@@ -7,18 +7,23 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
+from XR7.auth.event_notifications import send_event_notification
 from XR7.billing.engine import BillingEngine
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.notification_preference import NotificationPreference
-from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema, TrolleyTxnStatus, TrolleyTxnType
-from XR7.api.deps import get_artist_or_404
+from XR7.models.trolley_transaction import (
+    TrolleyTransaction,
+    TrolleyTransactionSchema,
+    TrolleyTxnStatus,
+    TrolleyTxnType,
+)
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.branding import inject_branding_metadata
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from XR7.trolley.client import TrolleyClient, TrolleyException, verify_trolley_signature
-from XR7.auth.event_notifications import send_event_notification
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["trolley"])
@@ -153,7 +158,7 @@ def get_trolley_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/claims/{claim_id}/manual-remittance")
 def manual_remittance(artist_id: str, claim_id: str, body: ManualRemittanceRequest, db: Session = Depends(get_db)):
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     claim = db.query(Claim).filter(Claim.id == claim_id, Claim.artist_id == artist_id).first()
     if not claim:

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.ugc_signal_ingest_request import UGCSignalIngestRequest
 
+
 class TestUGCSignalIngestRequest(unittest.TestCase):
     """UGCSignalIngestRequest unit test stubs"""
 

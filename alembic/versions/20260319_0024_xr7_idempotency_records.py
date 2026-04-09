@@ -5,9 +5,11 @@ Adding:
 - Indexes on idempotency_key, tenant_id, artist_id for fast lookups
 """
 
-from alembic import op
-import sqlalchemy as sa
 from datetime import datetime, timezone
+
+import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "20260319_0024"

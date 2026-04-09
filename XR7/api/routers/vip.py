@@ -13,7 +13,7 @@ from __future__ import annotations
 import os
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -67,7 +67,7 @@ def claim_vip_invite(body: ClaimVipInviteRequest, db: Session = Depends(get_db))
 def get_vip_status(artist_id: str, db: Session = Depends(get_db)) -> VipStatusResponse:
     svc = VipService(db)
     membership = svc.get_membership(artist_id)
-    persona = svc.get_persona(artist_id)
+    svc.get_persona(artist_id)
     return VipStatusResponse(
         artist_id=artist_id,
         is_vip=membership is not None,

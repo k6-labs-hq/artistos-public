@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.team_role import TeamRole
 
 class TestTeamRole(unittest.TestCase):
     """TeamRole unit test stubs"""

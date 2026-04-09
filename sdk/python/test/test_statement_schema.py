@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.statement_schema import StatementSchema
 
+
 class TestStatementSchema(unittest.TestCase):
     """StatementSchema unit test stubs"""
 

@@ -10,7 +10,6 @@ import pytest
 
 from shared.utils.numbers import money_round, safe_float
 
-
 # ---------------------------------------------------------------------------
 # safe_float – typical inputs
 # ---------------------------------------------------------------------------

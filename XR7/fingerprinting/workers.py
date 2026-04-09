@@ -57,9 +57,9 @@ def realtime_fingerprint_audio(
     Downloads audio from S3 or URL, runs it through the orchestrator, and
     persists results.
     """
+    from XR7.fingerprinting.observability import increment
     from XR7.fingerprinting.orchestrator import FingerprintingOrchestrator
     from XR7.fingerprinting.schema import FingerprintSubmitRequest
-    from XR7.fingerprinting.observability import increment
 
     increment("fp.tasks.realtime", {"artist_id": artist_id})
 
@@ -168,8 +168,8 @@ def batch_fingerprint_audio(
 @celery_app.task(name="fp.provider_health_check_all", bind=True)
 def provider_health_check_all(self) -> dict[str, Any]:  # noqa: ANN001
     """Run health checks against all configured fingerprinting providers."""
-    from XR7.fingerprinting.orchestrator import FingerprintingOrchestrator
     from XR7.fingerprinting.observability import alert_provider_outage
+    from XR7.fingerprinting.orchestrator import FingerprintingOrchestrator
     from XR7.fingerprinting.schema import ProviderStatus
 
     orchestrator = FingerprintingOrchestrator()
@@ -248,6 +248,7 @@ def reprocess_failed_jobs(self) -> dict[str, Any]:  # noqa: ANN001
 def matching_engine_reconcile(self, artist_id: str) -> dict[str, Any]:  # noqa: ANN001
     """Run the full Matching Engine reconciliation for one artist."""
     import time as _time
+
     from XR7.fingerprinting.matching.engine import MatchingEngine
     from XR7.fingerprinting.observability import audit_matching_run
 
@@ -343,6 +344,7 @@ def _fetch_audio(
 def _fetch_from_s3(s3_key: str) -> bytes | None:
     try:
         import boto3
+
         from xr7_common.settings import settings
 
         s3 = boto3.client(

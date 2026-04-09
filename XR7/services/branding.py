@@ -9,7 +9,6 @@ from XR7.models.artist import Artist
 from XR7.models.branding_profile import BrandingHelpArticle, BrandingProfile
 from xr7_common.logging import get_logger
 
-
 logger = get_logger(__name__)
 
 _SESSION_ORG_CACHE_KEY = "branding_by_org"

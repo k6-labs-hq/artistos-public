@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.anomaly_schema import AnomalySchema
 
+
 class TestAnomalySchema(unittest.TestCase):
     """AnomalySchema unit test stubs"""
 

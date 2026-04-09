@@ -1,11 +1,11 @@
-import pytest
-import json
 from datetime import datetime, timezone
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from XR7.models.base import Base
 from XR7.models.artist import Artist
+from XR7.models.base import Base
 from XR7.models.contract import Contract
 from XR7.models.payment import Payment
 from XR7.modules.contract_drift_monitor import ContractDriftMonitor

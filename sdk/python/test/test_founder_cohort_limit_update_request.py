@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.founder_cohort_limit_update_request import FounderCohortLimitUpdateRequest
 
+
 class TestFounderCohortLimitUpdateRequest(unittest.TestCase):
     """FounderCohortLimitUpdateRequest unit test stubs"""
 

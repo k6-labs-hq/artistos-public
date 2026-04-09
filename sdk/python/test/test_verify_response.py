@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.verify_response import VerifyResponse
 
+
 class TestVerifyResponse(unittest.TestCase):
     """VerifyResponse unit test stubs"""
 

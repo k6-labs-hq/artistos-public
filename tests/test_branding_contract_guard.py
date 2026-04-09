@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
-
 ROUTER_ROOT = Path(__file__).resolve().parents[1] / "XR7" / "api" / "routers"
 HTTP_DECORATORS = {"get", "post", "put", "patch", "delete"}
 SKIP_FILES = {"admin_console.py"}

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from fastapi.testclient import TestClient
 
+from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
 from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.artist import Artist
@@ -13,8 +14,6 @@ from XR7.models.event import Event, EventType
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement
 from XR7.models.work import Work, WorkType
-from tests.conftest import TestSession as _TestSession
-
 
 client = TestClient(app)
 

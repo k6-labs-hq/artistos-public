@@ -24,13 +24,12 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.legal.terms import TERMS_TEXT, TERMS_VERSION, terms_text_sha256
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.terms_acceptance import TermsAcceptance, TermsAcceptanceSchema
-from XR7.api.deps import get_artist_or_404
-from XR7.services.branding import inject_branding_metadata
 from XR7.services.artist_lifecycle import promote_to_onboarded
+from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["terms"])
 
@@ -168,7 +167,7 @@ def terms_status(artist_id: str, db: Session = Depends(get_db)) -> dict:
     agreed, ``accepted`` will be ``False`` and ``pending_version`` will
     indicate the version the artist needs to accept.
     """
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     record = (
         db.query(TermsAcceptance)

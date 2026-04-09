@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.anomaly_severity import AnomalySeverity
 
 class TestAnomalySeverity(unittest.TestCase):
     """AnomalySeverity unit test stubs"""

@@ -14,7 +14,6 @@
 
 import unittest
 
-from xr7_sdk.models.review_item_status import ReviewItemStatus
 
 class TestReviewItemStatus(unittest.TestCase):
     """ReviewItemStatus unit test stubs"""

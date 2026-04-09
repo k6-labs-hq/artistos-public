@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.tv_film_trust_explain_request import TVFilmTrustExplainRequest
 
+
 class TestTVFilmTrustExplainRequest(unittest.TestCase):
     """TVFilmTrustExplainRequest unit test stubs"""
 

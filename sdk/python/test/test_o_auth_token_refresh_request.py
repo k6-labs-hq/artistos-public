@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.o_auth_token_refresh_request import OAuthTokenRefreshRequest
 
+
 class TestOAuthTokenRefreshRequest(unittest.TestCase):
     """OAuthTokenRefreshRequest unit test stubs"""
 

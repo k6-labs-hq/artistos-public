@@ -8,9 +8,10 @@ import os
 from datetime import datetime, timezone
 from typing import Any
 
+from sqlalchemy.orm import Session
+
 from XR7.celery_app import celery_app
 from XR7.models.base import SessionLocal
-from sqlalchemy.orm import Session
 from XR7.models.claim import Claim
 from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorRow
 from xr7_common.logging import get_logger

@@ -13,17 +13,17 @@
 
 
 from __future__ import annotations
+
+import json
 import pprint
 import re  # noqa: F401
-import json
-
 from datetime import date
+from typing import Any, ClassVar, Dict, List, Optional, Set, Union
+
 from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from typing_extensions import Annotated
-from typing import Optional, Set
-from typing_extensions import Self
 from pydantic_core import to_jsonable_python
+from typing_extensions import Annotated, Self
+
 
 class ForensicUniversalRoyaltyEventCreate(BaseModel):
     """

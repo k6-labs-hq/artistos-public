@@ -6,6 +6,8 @@ Endpoints:
 """
 from __future__ import annotations
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -16,8 +18,6 @@ from XR7.models.vip import (
     VipReferralSchema,
 )
 from XR7.services.vip_service import VipService
-
-import os
 
 router = APIRouter(tags=["vip"])
 

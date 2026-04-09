@@ -43,7 +43,6 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
 class CatalogValueAppraiser:
     def __init__(self, db: Session):
         self.db = db

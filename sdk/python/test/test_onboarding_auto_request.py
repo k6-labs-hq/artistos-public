@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.onboarding_auto_request import OnboardingAutoRequest
 
+
 class TestOnboardingAutoRequest(unittest.TestCase):
     """OnboardingAutoRequest unit test stubs"""
 

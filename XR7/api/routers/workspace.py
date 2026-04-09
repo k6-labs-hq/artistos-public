@@ -6,13 +6,13 @@ import os
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
+from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
-from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
-from XR7.models.anomaly import Anomaly
 from XR7.models.contract import Contract
 from XR7.models.payment import Payment
+from XR7.recovery.deadline_risk_engine import evaluate_deadline_risk
 from XR7.services.branding import branding_metadata, get_branding_profile
 
 router = APIRouter(prefix="/workspace", tags=["workspace"])

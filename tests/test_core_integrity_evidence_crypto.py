@@ -27,11 +27,7 @@ Recommended future tests:
 from __future__ import annotations
 
 import hashlib
-import hmac as stdlib_hmac
 import json
-import os
-
-import pytest
 
 from XR7.core.integrity.evidence_crypto import (
     canonicalize,
@@ -43,7 +39,6 @@ from XR7.core.integrity.evidence_crypto import (
     sha256_hex,
     verify_packet_integrity,
 )
-
 
 # ---------------------------------------------------------------------------
 # Domain-boundary guard

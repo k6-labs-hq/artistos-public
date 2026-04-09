@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.team_member_schema import TeamMemberSchema
 
+
 class TestTeamMemberSchema(unittest.TestCase):
     """TeamMemberSchema unit test stubs"""
 

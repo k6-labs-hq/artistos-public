@@ -60,8 +60,8 @@ class ContractDocumentIngestion:
             # OCR fallback for scanned PDFs when optional deps are available.
             try:
                 import pytesseract  # type: ignore
-                from PIL import Image  # type: ignore
                 from pdf2image import convert_from_bytes  # type: ignore
+                from PIL import Image  # type: ignore
 
                 pages = convert_from_bytes(content, dpi=200)
                 ocr_parts = []

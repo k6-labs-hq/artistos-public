@@ -10,23 +10,25 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr
-from typing import Any, Dict, List
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
-from xr7_sdk.models.auth_connect_response import AuthConnectResponse
-from xr7_sdk.models.forensic_universal_royalty_event_create import ForensicUniversalRoyaltyEventCreate
-from xr7_sdk.models.forensic_universal_royalty_event_schema import ForensicUniversalRoyaltyEventSchema
-from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
-from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse
-from xr7_sdk.models.xr7_api_routers_forensic_catalog_confirm_request import XR7ApiRoutersForensicCatalogConfirmRequest
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.auth_connect_response import AuthConnectResponse
+from xr7_sdk.models.forensic_universal_royalty_event_create import (
+    ForensicUniversalRoyaltyEventCreate,
+)
+from xr7_sdk.models.forensic_universal_royalty_event_schema import (
+    ForensicUniversalRoyaltyEventSchema,
+)
+from xr7_sdk.models.immutable_ledger_entry_schema import ImmutableLedgerEntrySchema
+from xr7_sdk.models.recovery_submit_response import RecoverySubmitResponse
+from xr7_sdk.models.xr7_api_routers_forensic_catalog_confirm_request import (
+    XR7ApiRoutersForensicCatalogConfirmRequest,
+)
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -281,9 +283,9 @@ class ForensicApiApi:
             _path_params['provider'] = provider
         # process the query parameters
         if redirect_uri is not None:
-            
+
             _query_params.append(('redirect_uri', redirect_uri))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -1058,9 +1060,9 @@ class ForensicApiApi:
         # process the path parameters
         # process the query parameters
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -1580,9 +1582,9 @@ class ForensicApiApi:
         # process the path parameters
         # process the query parameters
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -1842,9 +1844,9 @@ class ForensicApiApi:
         # process the path parameters
         # process the query parameters
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.reconstruct_request import ReconstructRequest
 
+
 class TestReconstructRequest(unittest.TestCase):
     """ReconstructRequest unit test stubs"""
 

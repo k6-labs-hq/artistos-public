@@ -33,8 +33,8 @@ if str(ROOT) not in sys.path:
 from fastapi.testclient import TestClient
 
 from XR7.api.app import app
-from XR7.models.base import SessionLocal
 from XR7.models.artist import Artist
+from XR7.models.base import SessionLocal
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

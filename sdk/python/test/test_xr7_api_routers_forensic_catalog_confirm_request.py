@@ -14,7 +14,10 @@
 
 import unittest
 
-from xr7_sdk.models.xr7_api_routers_forensic_catalog_confirm_request import XR7ApiRoutersForensicCatalogConfirmRequest
+from xr7_sdk.models.xr7_api_routers_forensic_catalog_confirm_request import (
+    XR7ApiRoutersForensicCatalogConfirmRequest,
+)
+
 
 class TestXR7ApiRoutersForensicCatalogConfirmRequest(unittest.TestCase):
     """XR7ApiRoutersForensicCatalogConfirmRequest unit test stubs"""

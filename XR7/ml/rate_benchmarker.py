@@ -17,10 +17,8 @@ Default benchmark rates are based on publicly available industry data as of
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
 
 import numpy as np
-
 
 # ---------------------------------------------------------------------------
 # Benchmark data

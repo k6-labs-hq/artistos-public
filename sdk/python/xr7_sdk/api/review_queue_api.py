@@ -10,23 +10,19 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictStr
-from typing import Any, List, Optional
-from typing_extensions import Annotated
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.assign_review_item_request import AssignReviewItemRequest
 from xr7_sdk.models.create_review_item_request import CreateReviewItemRequest
 from xr7_sdk.models.decide_review_item_request import DecideReviewItemRequest
 from xr7_sdk.models.review_assignment_schema import ReviewAssignmentSchema
 from xr7_sdk.models.review_decision_schema import ReviewDecisionSchema
 from xr7_sdk.models.review_item_schema import ReviewItemSchema
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -1532,17 +1528,17 @@ class ReviewQueueApi:
         # process the path parameters
         # process the query parameters
         if item_id is not None:
-            
+
             _query_params.append(('item_id', item_id))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_analyst_key is not None:
             _header_params['X-Analyst-Key'] = x_analyst_key
@@ -1884,25 +1880,25 @@ class ReviewQueueApi:
         # process the path parameters
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if artist_id is not None:
-            
+
             _query_params.append(('artist_id', artist_id))
-            
+
         if assigned_analyst_email is not None:
-            
+
             _query_params.append(('assigned_analyst_email', assigned_analyst_email))
-            
+
         if limit is not None:
-            
+
             _query_params.append(('limit', limit))
-            
+
         if offset is not None:
-            
+
             _query_params.append(('offset', offset))
-            
+
         # process the header parameters
         if x_analyst_key is not None:
             _header_params['X-Analyst-Key'] = x_analyst_key

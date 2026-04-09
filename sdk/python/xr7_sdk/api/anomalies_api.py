@@ -10,17 +10,14 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictBool, StrictStr
-from typing import Any, Optional
-from xr7_sdk.models.anomaly_schema import AnomalySchema
+from pydantic import Field, StrictBool, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.anomaly_schema import AnomalySchema
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -1328,13 +1325,13 @@ class AnomaliesApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if status is not None:
-            
+
             _query_params.append(('status', status))
-            
+
         if debug is not None:
-            
+
             _query_params.append(('debug', debug))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 
 from XR7.models.base import get_db
 from XR7.models.xr7_royalty import XR7ConnectorCredentialUpsert
+from XR7.services.branding import inject_branding_metadata
 from XR7.services.xr7_pipelines import (
     build_royalty_gap_report,
     create_sync_job,
@@ -28,7 +29,6 @@ from XR7.tasks.xr7_pipeline import (
     fingerprinting_task,
     reconciliation_task,
 )
-from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["xr7-forensics"])
 

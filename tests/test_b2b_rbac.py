@@ -4,7 +4,6 @@ from fastapi.testclient import TestClient
 
 from XR7.api.app import app
 
-
 client = TestClient(app)
 
 

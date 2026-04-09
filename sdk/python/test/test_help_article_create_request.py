@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.help_article_create_request import HelpArticleCreateRequest
 
+
 class TestHelpArticleCreateRequest(unittest.TestCase):
     """HelpArticleCreateRequest unit test stubs"""
 

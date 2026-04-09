@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
+from XR7.fingerprinting.matching.identity_matching import (
+    apply_identity_decision,
+    persist_identity_match,
+)
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.identity_match import (
@@ -15,9 +20,7 @@ from XR7.models.identity_match import (
     IdentityDecisionStatus,
 )
 from XR7.models.statement import Statement
-from XR7.api.deps import get_artist_or_404
 from XR7.services.branding import inject_branding_metadata
-from XR7.fingerprinting.matching.identity_matching import apply_identity_decision, persist_identity_match
 
 router = APIRouter(tags=["identity"])
 

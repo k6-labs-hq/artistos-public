@@ -15,7 +15,7 @@ Multi-match resolution returns the highest-confidence result unless
 from __future__ import annotations
 
 import difflib
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from sqlalchemy.orm import Session
 

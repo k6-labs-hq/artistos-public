@@ -9,19 +9,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+import uuid
 from collections import defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
 from sqlalchemy.orm import Session
 
-from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalyStatus, AnomalySeverity
+from shared.utils.dates import ensure_utc as _ensure_utc
+from XR7.models.anomaly import Anomaly, AnomalyCategory, AnomalySeverity, AnomalyStatus
 from XR7.models.base import SessionLocal
 from XR7.models.payment import Payment
 from XR7.models.work import Work
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
-import uuid
 
 logger = get_logger(__name__)
 
@@ -47,7 +48,7 @@ def _compute_hash(artist_id: str, payload: dict) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-from shared.utils.dates import ensure_utc as _ensure_utc
+
 def _herfindahl_index(shares: list[float]) -> float:
     """Return HHI (0–1). 1 = perfect monopoly."""
     total = sum(shares)
@@ -63,7 +64,7 @@ class RoyaltyDNAProfile:
 
     def generate(self, artist_id: str) -> dict[str, Any]:
         payments = self.db.query(Payment).filter(Payment.artist_id == artist_id).all()
-        works = self.db.query(Work).filter(Work.artist_id == artist_id).all()
+        self.db.query(Work).filter(Work.artist_id == artist_id).all()
 
         # -- Platform breakdown --------------------------------------------
         platform_totals: dict[str, float] = defaultdict(float)

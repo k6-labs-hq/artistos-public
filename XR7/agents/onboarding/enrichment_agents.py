@@ -6,17 +6,18 @@ from typing import Any
 
 from XR7.agents.onboarding.core import _finalize, _now, _safe_score
 from XR7.agents.state import XR7State
-from XR7.models.base import SessionLocal
-from XR7.models.anomaly import Anomaly, AnomalyStatus
-from XR7.models.claim import Claim
-from XR7.models.contract import Contract
-from XR7.models.work import Work
-from XR7.models.statement import Statement
-from XR7.models.artist import Artist
 from XR7.llm.claim_drafter import claim_drafter
 from XR7.ml.catalog_valuation import CatalogValuationEngine
+from XR7.models.anomaly import Anomaly, AnomalyStatus
+from XR7.models.artist import Artist
+from XR7.models.base import SessionLocal
+from XR7.models.claim import Claim
+from XR7.models.contract import Contract
+from XR7.models.statement import Statement
+from XR7.models.work import Work
 from XR7.recovery.split_verification import verify_splits
 from XR7.services.foreign_society_crosswalk_engine import ForeignSocietyCrosswalkEngine
+from XR7.services.hubspot_client import HubSpotClient
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.post_repair_forecast_pipeline import (
     FORECAST_DISCLAIMER,
@@ -24,7 +25,6 @@ from XR7.services.post_repair_forecast_pipeline import (
 )
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.ugc_repair_engine import UGCRepairEngine
-from XR7.services.hubspot_client import HubSpotClient
 from XR7.ugc.global_scanner import GlobalUGCScanner
 
 

@@ -10,7 +10,6 @@ Endpoints:
 from __future__ import annotations
 
 import time
-from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -19,8 +18,8 @@ from sqlalchemy.orm import Session
 
 from XR7.models.base import get_db
 from XR7.models.vip import (
-    CopilotQueryResponse,
     CopilotQueryRequest,
+    CopilotQueryResponse,
     CopilotQuerySchema,
     WeeklyBriefSchema,
 )
@@ -47,9 +46,8 @@ def _require_vip(artist_id: str, db: Session) -> None:
 
 def _build_copilot_context(artist_id: str, db: Session) -> dict:
     """Collects catalog, recovery, and persona context for prompt injection."""
-    from XR7.models.claim import Claim, ClaimStatus
-    from XR7.models.anomaly import Anomaly
     from XR7.models.artist import Artist
+    from XR7.models.claim import Claim, ClaimStatus
 
     ctx: dict = {}
     artist = db.query(Artist).filter(Artist.id == artist_id).first()
@@ -80,7 +78,7 @@ def _build_copilot_context(artist_id: str, db: Session) -> dict:
 def _call_copilot_llm(query: str, context: dict) -> tuple[str, float, list[str]]:
     """
     Calls the LLM layer to answer the user query given their context.
-    
+
     Returns (response_text, confidence, sources_cited).
     Uses the existing XR7 LLM infrastructure.
     """
@@ -89,7 +87,7 @@ def _call_copilot_llm(query: str, context: dict) -> tuple[str, float, list[str]]
         return ask_xr7_advisor(query, context)
     except Exception:
         # Graceful degradation: use a structured template response
-        artist_name = context.get("artist_name", "you")
+        context.get("artist_name", "you")
         open_claims = context.get("open_claims", 0)
         roles = context.get("detected_roles") or []
         response = (
@@ -250,8 +248,9 @@ def generate_weekly_brief(
     db: Session = Depends(get_db),
 ) -> GenerateBriefResponse:
     _require_vip(artist_id, db)
-    from XR7.tasks.vip_tasks import generate_weekly_brief_task
     from datetime import date
+
+    from XR7.tasks.vip_tasks import generate_weekly_brief_task
 
     brief_week = date.today().strftime("%G-W%V")  # ISO week
     task = generate_weekly_brief_task.delay(artist_id, brief_week)

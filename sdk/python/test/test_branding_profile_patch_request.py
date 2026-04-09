@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.branding_profile_patch_request import BrandingProfilePatchRequest
 
+
 class TestBrandingProfilePatchRequest(unittest.TestCase):
     """BrandingProfilePatchRequest unit test stubs"""
 

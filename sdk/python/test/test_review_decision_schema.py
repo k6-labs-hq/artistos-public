@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.review_decision_schema import ReviewDecisionSchema
 
+
 class TestReviewDecisionSchema(unittest.TestCase):
     """ReviewDecisionSchema unit test stubs"""
 

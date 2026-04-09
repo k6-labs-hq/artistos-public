@@ -21,8 +21,11 @@ from XR7.models.forensic_universal_event import (
 from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry, ImmutableLedgerEntrySchema
 from XR7.models.statement import Statement
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
-from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService, build_minimal_catalog_graph
 from XR7.services.branding import inject_branding_metadata
+from XR7.services.catalog_graph_adjacency import (
+    CatalogGraphAdjacencyService,
+    build_minimal_catalog_graph,
+)
 from XR7.tasks.pipeline import submit_recovery_action
 
 router = APIRouter(tags=["forensic-api"])

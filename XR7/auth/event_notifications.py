@@ -3,7 +3,11 @@ from __future__ import annotations
 from XR7.auth.notification_service import get_notification_service
 from XR7.models.notification_delivery_log import NotificationDeliveryLog
 from XR7.models.notification_preference import NotificationPreference
-from XR7.services.branding import apply_brand_placeholders, communication_templates, get_branding_profile
+from XR7.services.branding import (
+    apply_brand_placeholders,
+    communication_templates,
+    get_branding_profile,
+)
 
 
 def _is_within_quiet_hours(pref: NotificationPreference, hour_24: int) -> bool:

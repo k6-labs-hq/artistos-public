@@ -8,16 +8,17 @@ Endpoints:
 """
 from __future__ import annotations
 
-import json
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
+from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -33,10 +34,7 @@ from XR7.models.catalog_fix_issue import (
 from XR7.models.claim import Claim
 from XR7.models.payment import Payment
 from XR7.models.work import Work
-from XR7.api.deps import get_artist_or_404
-from XR7.ml.catalog_scorer import CatalogScorer
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
-from XR7.services.branding import inject_branding_metadata
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -521,7 +519,7 @@ def list_catalog_fixes(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> CatalogFixListResponse:
-    artist = get_artist_or_404(artist_id, db)
+    get_artist_or_404(artist_id, db)
 
     q = db.query(CatalogFixIssue).filter(CatalogFixIssue.artist_id == artist_id)
     if status is not None:

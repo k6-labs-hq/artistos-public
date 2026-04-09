@@ -4,6 +4,7 @@ import csv
 import io
 import os
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
@@ -12,8 +13,8 @@ from sqlalchemy.orm import Session
 from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
-from XR7.services.org_dashboard_service import OrgDashboardService
 from XR7.services.branding import branding_metadata, get_branding_profile, org_help_articles
+from XR7.services.org_dashboard_service import OrgDashboardService
 
 router = APIRouter(tags=["b2b"])
 

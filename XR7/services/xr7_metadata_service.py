@@ -111,7 +111,7 @@ def apply_metadata_repairs(
             skipped_count += 1
             continue
         entity, entity_id = parts
-        if entity != "recording":
+        if entity not in ("recording", "track"):
             skipped_count += 1
             continue
 

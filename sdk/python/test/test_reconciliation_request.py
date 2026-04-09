@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.reconciliation_request import ReconciliationRequest
 
+
 class TestReconciliationRequest(unittest.TestCase):
     """ReconciliationRequest unit test stubs"""
 

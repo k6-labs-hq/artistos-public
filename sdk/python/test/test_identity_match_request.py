@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.identity_match_request import IdentityMatchRequest
 
+
 class TestIdentityMatchRequest(unittest.TestCase):
     """IdentityMatchRequest unit test stubs"""
 

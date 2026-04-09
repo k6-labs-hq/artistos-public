@@ -15,12 +15,14 @@ from XR7.models.artist import Artist
 from XR7.models.catalog_graph import CatalogGraphSnapshot
 from XR7.models.event import Event
 from XR7.models.metadata_issue import MetadataIssue
+from XR7.models.review_queue import ReviewSourceType
 from XR7.models.statement import Statement
 from XR7.models.work import Work
-from XR7.services.catalog_graph_adjacency import CatalogGraphAdjacencyService, build_minimal_catalog_graph
+from XR7.services.catalog_graph_adjacency import (
+    CatalogGraphAdjacencyService,
+    build_minimal_catalog_graph,
+)
 from XR7.services.review_queue import enqueue_review_item
-from XR7.models.review_queue import ReviewSourceType
-
 
 _ISRC_RE = re.compile(r"^[A-Z]{2}[A-Z0-9]{3}[0-9]{7}$")
 _ISWC_RE = re.compile(r"^T-[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]$")

@@ -10,21 +10,17 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
+
+from pydantic import Field, StrictBool, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
 
-from pydantic import Field, StrictBool, StrictStr, field_validator
-from typing import Any, Optional
-from typing_extensions import Annotated
+from xr7_sdk.api_client import ApiClient, RequestSerialized
+from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.models.attorney_evidence_request import AttorneyEvidenceRequest
 from xr7_sdk.models.claim_create_request import ClaimCreateRequest
 from xr7_sdk.models.claim_schema import ClaimSchema
 from xr7_sdk.models.reconcile_request import ReconcileRequest
-
-from xr7_sdk.api_client import ApiClient, RequestSerialized
-from xr7_sdk.api_response import ApiResponse
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -3441,13 +3437,13 @@ class ClaimsApi:
             _path_params['claim_id'] = claim_id
         # process the query parameters
         if format is not None:
-            
+
             _query_params.append(('format', format))
-            
+
         if refresh is not None:
-            
+
             _query_params.append(('refresh', refresh))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -3725,9 +3721,9 @@ class ClaimsApi:
             _path_params['claim_id'] = claim_id
         # process the query parameters
         if mode is not None:
-            
+
             _query_params.append(('mode', mode))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -5908,9 +5904,9 @@ class ClaimsApi:
             _path_params['claim_id'] = claim_id
         # process the query parameters
         if expected_prior_packet_hash is not None:
-            
+
             _query_params.append(('expected_prior_packet_hash', expected_prior_packet_hash))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

@@ -11,11 +11,13 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
-import pytest
 from fastapi.testclient import TestClient
 
+from tests.conftest import (  # noqa: F401  (side-effect: overrides applied)
+    TestSession,
+    override_get_db,
+)
 from XR7.api.app import app
-from tests.conftest import TestSession, override_get_db  # noqa: F401  (side-effect: overrides applied)
 
 client = TestClient(app)
 

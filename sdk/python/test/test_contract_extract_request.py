@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.contract_extract_request import ContractExtractRequest
 
+
 class TestContractExtractRequest(unittest.TestCase):
     """ContractExtractRequest unit test stubs"""
 

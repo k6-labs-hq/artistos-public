@@ -15,14 +15,12 @@ from XR7.fingerprinting.schema import (
     AnomalyType,
     CatalogMatchResult,
     FingerprintSubmitRequest,
-    MatchType,
     MatchingEngineReport,
+    MatchType,
     NormalizedMatchResult,
     ProviderHealthStatus,
     ProviderStatus,
-    RoyaltyGapResult,
     RoyaltyStatus,
-    UsageMatchResult,
 )
 
 

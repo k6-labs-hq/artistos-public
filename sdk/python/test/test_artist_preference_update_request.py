@@ -16,6 +16,7 @@ import unittest
 
 from xr7_sdk.models.artist_preference_update_request import ArtistPreferenceUpdateRequest
 
+
 class TestArtistPreferenceUpdateRequest(unittest.TestCase):
     """ArtistPreferenceUpdateRequest unit test stubs"""
 

@@ -10,18 +10,17 @@
 """  # noqa: E501
 
 
-import warnings
-from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
 from typing import Any, Dict, List, Optional, Tuple, Union
-from typing_extensions import Annotated
 
-from pydantic import StrictStr
-from typing import Any, Dict, List, Optional
-from xr7_sdk.models.body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post import BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost
-from xr7_sdk.models.recovery_auto_request import RecoveryAutoRequest
+from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
+from typing_extensions import Annotated
 
 from xr7_sdk.api_client import ApiClient, RequestSerialized
 from xr7_sdk.api_response import ApiResponse
+from xr7_sdk.models.body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post import (
+    BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost,
+)
+from xr7_sdk.models.recovery_auto_request import RecoveryAutoRequest
 from xr7_sdk.rest import RESTResponseType
 
 
@@ -6893,13 +6892,13 @@ class RecoveryApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if settlement_csv is not None:
-            
+
             _query_params.append(('settlement_csv', settlement_csv))
-            
+
         if merch_csv is not None:
-            
+
             _query_params.append(('merch_csv', merch_csv))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -7187,13 +7186,13 @@ class RecoveryApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if platform is not None:
-            
+
             _query_params.append(('platform', platform))
-            
+
         if use_id is not None:
-            
+
             _query_params.append(('use_id', use_id))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter
@@ -7481,9 +7480,9 @@ class RecoveryApi:
             _path_params['artist_id'] = artist_id
         # process the query parameters
         if platform is not None:
-            
+
             _query_params.append(('platform', platform))
-            
+
         # process the header parameters
         # process the form parameters
         # process the body parameter

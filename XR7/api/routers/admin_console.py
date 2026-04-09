@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import io
 import csv
 import hmac
+import io
 import os
 from datetime import datetime, timezone
 
@@ -13,6 +13,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import query_handoffs
+from XR7.api.deps import get_artist_or_404
 from XR7.models.admin_audit_log import AdminAuditLog, AdminAuditLogSchema
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistSchema
@@ -20,7 +21,6 @@ from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
 from XR7.models.review_queue import ReviewItem, ReviewItemSchema
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema
-from XR7.api.deps import get_artist_or_404
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 from XR7.services.founder_program import founder_status_payload, get_or_create_platform_config
 
