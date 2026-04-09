@@ -56,7 +56,7 @@ def upgrade() -> None:
         sa.Column("organization_type", sa.String(), nullable=True),
         sa.Column("enterprise_mode_enabled", sa.Boolean(), nullable=False, server_default=sa.false()),
         sa.CheckConstraint(
-            "is_founder = 0 OR contingency_fee_percent <= 12",
+            "(NOT is_founder) OR contingency_fee_percent <= 12",
             name="ck_artists_founder_fee_max",
         ),
         sa.PrimaryKeyConstraint("id"),
