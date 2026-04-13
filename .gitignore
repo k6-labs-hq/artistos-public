@@ -32,6 +32,16 @@ Thumbs.db
 
 # Local SQLite dev database
 XR7.db
+test.db
+
+# Local env files (copy .env.example → .env)
+.env
+.env.local
+
+# Node
+frontend/node_modules/
+frontend/.vite/
+node_modules/
 
 # Infrastructure secrets/state inputs
 infrastructure/secrets/runtime.env
