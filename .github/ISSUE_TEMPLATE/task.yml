@@ -1,0 +1,20 @@
+name: Task
+description: Engineering task (chore, refactor, docs, infra)
+title: "[Task] "
+labels: ["type:task", "status:needs-triage"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Done when
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: true
