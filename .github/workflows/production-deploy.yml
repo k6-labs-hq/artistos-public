@@ -169,13 +169,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Check required secrets
+        id: secrets-check
+        run: |
+          if [[ -z "${{ secrets.STAGING_KUBECONFIG }}" ]]; then
+            echo "STAGING_KUBECONFIG is not configured — skipping deployment"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Configure kubectl
-        uses: azure/k8s-set-context@v4
+        if: steps.secrets-check.outputs.skip != 'true'
+        uses: azure/k8s-set-context@v5
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.STAGING_KUBECONFIG }}
 
       - name: Deploy to staging namespace
+        if: steps.secrets-check.outputs.skip != 'true'
         run: |
           kubectl set image deployment/xr7-api \
             xr7-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.docker-build.outputs.image_digest }} \
@@ -183,6 +195,7 @@ jobs:
           kubectl rollout status deployment/xr7-api -n staging --timeout=300s
 
       - name: Run Alembic migrations (staging DB)
+        if: steps.secrets-check.outputs.skip != 'true'
         run: |
           kubectl exec -n staging deployment/xr7-api -- \
             alembic upgrade head
@@ -232,13 +245,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Check required secrets
+        id: secrets-check
+        run: |
+          if [[ -z "${{ secrets.PROD_KUBECONFIG }}" ]]; then
+            echo "PROD_KUBECONFIG is not configured — skipping deployment"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Configure kubectl (production)
-        uses: azure/k8s-set-context@v4
+        if: steps.secrets-check.outputs.skip != 'true'
+        uses: azure/k8s-set-context@v5
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.PROD_KUBECONFIG }}
 
       - name: Deploy to production namespace
+        if: steps.secrets-check.outputs.skip != 'true'
         run: |
           kubectl set image deployment/xr7-api \
             xr7-api=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.docker-build.outputs.image_digest }} \
@@ -246,6 +271,7 @@ jobs:
           kubectl rollout status deployment/xr7-api -n production --timeout=600s
 
       - name: Run Alembic migrations (production DB)
+        if: steps.secrets-check.outputs.skip != 'true'
         run: |
           kubectl exec -n production deployment/xr7-api -- \
             alembic upgrade head
