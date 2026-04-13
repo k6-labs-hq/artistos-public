@@ -1,0 +1,19 @@
+# Anomaly: Co-Writer Under-Crediting
+# Triggers: co_write_under_crediting (royalties.py / coop_recovery rules)
+#
+# Electric Pulse has a 3-way split: Nova Zephyr 50%, Marcus Bell 35%, Sasha Klein 15%
+# Cross-reference: publishing_splits_sample.csv
+#
+# This anomaly file shows ASCAP and SESAC paying only to Nova Zephyr at 100%,
+# meaning Bell (35%) and Klein (15%) shares are missing — 50% of total composition royalties unpaid.
+# The AI should detect the writer share mismatch vs the registered split.
+
+period,collection_society,work_title,isrc,iswc,paid_to_writer,paid_share_pct,expected_share_pct,amount_paid,currency,missing_writer_1,missing_share_1,missing_writer_2,missing_share_2
+2025-Q1,ASCAP,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,142.80,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q2,ASCAP,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,173.16,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q3,ASCAP,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,209.88,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q4,ASCAP,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,254.52,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q1,BMI,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,116.40,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q2,BMI,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,141.12,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q3,BMI,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,171.00,USD,Marcus Bell,35.00,Sasha Klein,15.00
+2025-Q4,BMI,Electric Pulse,USXR72024001,T-923847561-0,Nova Zephyr,100.00,50.00,207.36,USD,Marcus Bell,35.00,Sasha Klein,15.00

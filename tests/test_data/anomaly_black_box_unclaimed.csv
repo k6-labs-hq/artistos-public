@@ -1,0 +1,24 @@
+# Anomaly: Black Box / Unclaimed Royalties
+# Triggers: check_unmatched_works, black_box_detection (royalties.py)
+#
+# Scenario: Three foreign collection societies (JASRAC, SACEM, SOCAN) are holding
+# royalties earned in 2024 that were never claimed because the works were not
+# registered in their territory-specific databases. The AI should cross-reference
+# these against known ISRCs/ISWCs and flag as recoverable.
+#
+# The "registered_in_territory" column shows the registration gap causing the hold.
+
+society,territory,period,work_title,isrc,iswc,streams_or_plays,estimated_royalty_local,local_currency,registered_in_territory,hold_reason,estimated_usd_value,years_held
+JASRAC,JP,2024-Q1,Electric Pulse,USXR72024001,T-923847561-0,82000,31000,JPY,no,Work not registered in JASRAC database,208.00,1
+JASRAC,JP,2024-Q2,Electric Pulse,USXR72024001,T-923847561-0,91000,34300,JPY,no,Work not registered in JASRAC database,230.00,1
+JASRAC,JP,2024-Q3,Electric Pulse,USXR72024001,T-923847561-0,104000,39200,JPY,no,Work not registered in JASRAC database,263.00,1
+JASRAC,JP,2024-Q4,Electric Pulse,USXR72024001,T-923847561-0,118000,44500,JPY,no,Work not registered in JASRAC database,299.00,1
+SACEM,FR,2024-Q1,Autumn Waves,USXR72024002,T-847293016-0,44000,0.0890,EUR,no,Work not registered; defaulting to SACEM general fund,96.00,1
+SACEM,FR,2024-Q2,Autumn Waves,USXR72024002,T-847293016-0,48000,0.0970,EUR,no,Work not registered; defaulting to SACEM general fund,105.00,1
+SACEM,FR,2024-Q3,Autumn Waves,USXR72024002,T-847293016-0,53000,0.1070,EUR,no,Work not registered; defaulting to SACEM general fund,116.00,1
+SOCAN,CA,2024-Q1,Midnight Run,USXR72023003,T-736182940-0,28000,0.0560,CAD,no,IPI number mismatch; claim pending,41.00,1
+SOCAN,CA,2024-Q2,Midnight Run,USXR72023003,T-736182940-0,31000,0.0620,CAD,no,IPI number mismatch; claim pending,45.00,1
+SOCAN,CA,2024-Q3,Midnight Run,USXR72023003,T-736182940-0,34000,0.0680,CAD,no,IPI number mismatch; claim pending,50.00,1
+SOCAN,CA,2024-Q4,Midnight Run,USXR72023003,T-736182940-0,38000,0.0760,CAD,no,IPI number mismatch; claim pending,56.00,1
+KOMCA,KR,2024-Q1,Electric Pulse,USXR72024001,T-923847561-0,62000,24800,KRW,no,Foreign work not filed before revenue threshold,18.00,1
+KOMCA,KR,2024-Q2,Electric Pulse,USXR72024001,T-923847561-0,74000,29600,KRW,no,Foreign work not filed before revenue threshold,22.00,1

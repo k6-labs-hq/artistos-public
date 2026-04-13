@@ -1,0 +1,17 @@
+# Anomaly: Duplicate Statement Submission
+# Triggers: duplicate_payment_detection (royalties.py transparent_rules)
+#
+# Scenario: Two distributors (DistroKid and TuneCore) both submit statements
+# for the same Spotify US streams of "Electric Pulse" in Q1 2025.
+# This causes apparent double-counting — $2,184 appears twice.
+# AI should detect matching ISRC + platform + period + stream count across statements.
+
+submission_id,period,distributor,platform,isrc,work_title,streams,earnings_usd,per_stream_rate,statement_file,duplicate_of
+DK-Q1-2025-EP-US,2025-Q1,DistroKid,Spotify US,USXR72024001,Electric Pulse,546000,2184.00,0.004000,distrokid_sample.csv,
+TC-Q1-2025-EP-US,2025-Q1,TuneCore,Spotify US,USXR72024001,Electric Pulse,546000,2184.00,0.004000,tunecore_sample.csv,DK-Q1-2025-EP-US
+DK-Q1-2025-AW-US,2025-Q1,DistroKid,Spotify US,USXR72024002,Autumn Waves,223200,892.80,0.004000,distrokid_sample.csv,
+TC-Q1-2025-AW-US,2025-Q1,TuneCore,Spotify US,USXR72024002,Autumn Waves,223200,892.80,0.004000,tunecore_sample.csv,DK-Q1-2025-AW-US
+DK-Q1-2025-MR-US,2025-Q1,DistroKid,Spotify US,USXR72023003,Midnight Run,164100,656.40,0.004000,distrokid_sample.csv,
+TC-Q1-2025-MR-US,2025-Q1,TuneCore,Spotify US,USXR72023003,Midnight Run,164100,656.40,0.004000,tunecore_sample.csv,DK-Q1-2025-MR-US
+DK-Q2-2025-EP-US,2025-Q2,DistroKid,Spotify US,USXR72024001,Electric Pulse,618000,2472.00,0.004000,distrokid_sample.csv,
+TC-Q2-2025-EP-US,2025-Q2,TuneCore,Spotify US,USXR72024001,Electric Pulse,618000,2472.00,0.004000,tunecore_sample.csv,DK-Q2-2025-EP-US

@@ -1,0 +1,14 @@
+# Anomaly: Touring Settlement Shortfall
+# Triggers: MISSING_GUARANTEE (HIGH), SETTLEMENT_DISCREPANCY (MEDIUM, threshold 95%)
+#
+# Shows where the settlement is below the contracted guarantee.
+# The AI should flag each show where settlement_amount < artist_guarantee * 0.95.
+# Cross-reference against ticketmaster_settlement_sample.csv for baseline settlement pattern.
+
+show_date,venue,city,state_country,artist_guarantee,settlement_amount,settlement_currency,pct_of_guarantee,discrepancy_amount,promoter,stated_reason,has_written_settlement
+2025-03-28,The Roxy,West Hollywood,CA US,8000.00,5240.00,USD,65.5,2760.00,Independent,"Promoter cited low walk-up ticket sales; no documentation provided",no
+2025-04-26,The Showbox,Seattle,WA US,10000.00,9200.00,USD,92.0,800.00,NW Presents,"Below 95% threshold; promoter claims unexpected venue damage fee deducted post-show",yes
+2025-05-31,Granada Theater,Dallas,TX US,7500.00,4100.00,USD,54.7,3400.00,Margin Productions,"Show reportedly cancelled mid-set; full guarantee still owed per contract clause 4.2",no
+2025-08-23,Stubb's Outdoor,Austin,TX US,18000.00,14200.00,USD,78.9,3800.00,C3 Presents,"Promoter withheld $3,800 citing weather cancellation of opener; not stipulated in contract",yes
+2025-09-27,The Observatory,Santa Ana,CA US,6000.00,5600.00,USD,93.3,400.00,Goldenvoice,"Slight shortfall; below 95% trigger; no explanation offered",yes
+2025-11-29,Ogden Theatre,Denver,CO US,12000.00,7800.00,USD,65.0,4200.00,Mammoth Live,"Settlement wire received 10 days late; missing $4,200 with no itemized deduction",no

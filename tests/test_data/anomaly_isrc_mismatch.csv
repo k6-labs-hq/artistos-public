@@ -1,0 +1,21 @@
+# Anomaly: ISRC Mismatch — Same track registered under two ISRCs
+# Triggers: check_unmatched_works (royalties.py), LOW_STREAM_RATE detection
+#
+# Scenario: "Electric Pulse" was accidentally registered with a second ISRC (USXR72024001A)
+# by a sub-distributor. This splits the stream/royalty data across two identifiers,
+# causing both to appear as low-volume works and suppressing the per-stream rate calculation.
+# The AI should detect the two ISRCs correspond to the same registered ISWC.
+
+period,distributor,isrc_reported,isrc_registered,iswc,work_title,streams,earnings_usd,per_stream_rate,anomaly_flag
+2025-01,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,18400,40.48,0.00220,ISRC_MISMATCH
+2025-02,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,19840,43.65,0.00220,ISRC_MISMATCH
+2025-03,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,21360,46.99,0.00220,ISRC_MISMATCH
+2025-04,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,22960,50.51,0.00220,ISRC_MISMATCH
+2025-05,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,24620,54.16,0.00220,ISRC_MISMATCH
+2025-06,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,26360,57.99,0.00220,ISRC_MISMATCH
+2025-07,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,28180,62.00,0.00220,ISRC_MISMATCH
+2025-08,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,30080,66.18,0.00220,ISRC_MISMATCH
+2025-09,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,32060,70.53,0.00220,ISRC_MISMATCH
+2025-10,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,34120,75.06,0.00220,ISRC_MISMATCH
+2025-11,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,36260,79.77,0.00220,ISRC_MISMATCH
+2025-12,ONErpm,USXR72024001A,USXR72024001,T-923847561-0,Electric Pulse,38480,84.66,0.00220,ISRC_MISMATCH

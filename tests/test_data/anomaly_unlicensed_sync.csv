@@ -1,0 +1,17 @@
+# Anomaly: Unlicensed Sync + Missing Brand Payment scenarios
+# Triggers: SYNC_USAGE (no contract), UNLICENSED_USAGE (CRITICAL), BRAND_IMPRESSION (no payment)
+#
+# Cross-reference against sync_placements_sample.csv — these events have NO matching contract_reference
+# The AI should flag these as CRITICAL unlicensed sync usage.
+
+event_date,event_type,show_title,network,isrc,iswc,detected_via,confirmed_airdate,estimated_streams,estimated_fee_owed,currency,contract_reference,payment_received
+2025-03-22,SYNC_USAGE,Tech Surge,CNBC,USXR72024001,T-923847561-0,BMI cue sheet,2025-03-22,0,4200.00,USD,,0.00
+2025-04-11,SYNC_USAGE,Urban Flow,Amazon Prime,USXR72024002,T-847293016-0,YouTube Content ID match,2025-04-11,0,2800.00,USD,,0.00
+2025-05-19,SYNC_USAGE,Champions League Highlights,ESPN,USXR72024001,T-923847561-0,ASCAP cue sheet,2025-05-19,0,6500.00,USD,,0.00
+2025-06-30,SYNC_USAGE,Sunday Night Showdown,NBC,USXR72023003,T-736182940-0,PRO logging report,2025-06-30,0,3200.00,USD,,0.00
+2025-07-14,SYNC_USAGE,Influencer Gala,YouTube Originals,USXR72024001,T-923847561-0,Content ID match,2025-07-14,0,1800.00,USD,,0.00
+2025-08-27,SYNC_USAGE,World Cup Promo,FOX Sports,USXR72024001,T-923847561-0,SESAC logging,2025-08-27,0,9500.00,USD,,0.00
+2025-10-05,BRAND_IMPRESSION,Nova Energy Drink Campaign,Brand Partnership,USXR72024001,T-923847561-0,Instagram usage log,2025-10-05,4200000,0.00,USD,,0.00
+2025-10-05,BRAND_IMPRESSION,Nova Energy Drink Campaign,Brand Partnership,USXR72024002,T-847293016-0,TikTok usage log,2025-10-05,2800000,0.00,USD,,0.00
+2025-11-12,SYNC_USAGE,Holiday Blitz Ad,Retail Chain National,USXR72024001,T-923847561-0,Shazam detection,2025-11-12,0,12000.00,USD,,0.00
+2025-12-20,BRAND_IMPRESSION,NewYear Countdown Sponsored,Times Square Live,USXR72024001,T-923847561-0,Live event report,2025-12-20,8600000,0.00,USD,,0.00

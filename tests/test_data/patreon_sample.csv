@@ -1,0 +1,13 @@
+Date,Type,Patron Count,Net Amount Paid Out,Currency
+2025-01-01,pledge_payout,312,1092.00,USD
+2025-02-01,pledge_payout,339,1186.50,USD
+2025-03-01,pledge_payout,368,1288.00,USD
+2025-04-01,pledge_payout,398,1393.00,USD
+2025-05-01,pledge_payout,429,1501.50,USD
+2025-06-01,pledge_payout,461,1613.50,USD
+2025-07-01,pledge_payout,494,1729.00,USD
+2025-08-01,pledge_payout,528,1848.00,USD
+2025-09-01,pledge_payout,563,1970.50,USD
+2025-10-01,pledge_payout,599,2096.50,USD
+2025-11-01,pledge_payout,637,2229.50,USD
+2025-12-01,pledge_payout,677,2369.50,USD
