@@ -60,7 +60,7 @@ export function TVFilmWorkspace(): JSX.Element {
   }, [selectedRole]);
 
   return (
-    <section className="tvfilm-workspace" data-reveal="true">
+    <section id="tv-film-workspace" className="tvfilm-workspace" data-reveal="true">
       <div className="section-head">
         <h2>TV/Film Onboarding and Enterprise Workspace</h2>
         <p>Role-specific onboarding, live trust messaging, and agency-scale portfolio operations in one surface.</p>

@@ -8,7 +8,13 @@ import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPa
 
 type ThemeMode = "dark" | "light";
 
-const navLinks = ["Platform", "How It Works", "Use Cases", "Security", "Docs"];
+const navLinks = [
+  { label: "Trust", href: "#trust" },
+  { label: "Capabilities", href: "#features" },
+  { label: "How It Works", href: "#how-it-works" },
+  { label: "TV/Film", href: "#tv-film-workspace" },
+  { label: "Console", href: "#recovery-console" },
+];
 
 const trustStats = [
   {
@@ -126,6 +132,7 @@ export function App() {
   const [theme, setTheme] = useState<ThemeMode>("dark");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
+  const [activeSectionId, setActiveSectionId] = useState<string>("trust");
 
   useEffect(() => {
     const saved = window.localStorage.getItem("xr7-theme");
@@ -175,6 +182,40 @@ export function App() {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    const sectionIds = navLinks.map((link) => link.href.replace("#", ""));
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter((section): section is HTMLElement => section !== null);
+
+    if (!sections.length) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (!visible.length) {
+          return;
+        }
+
+        const nextId = visible[0].target.id;
+        setActiveSectionId((current) => (current === nextId ? current : nextId));
+      },
+      {
+        root: null,
+        rootMargin: "-35% 0px -45% 0px",
+        threshold: [0.2, 0.45, 0.7],
+      },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
   const heroSubtitle = useMemo(
     () =>
       "Detect leakage across music, TV, and film revenue systems. Surface actionable recovery opportunities with AI-powered analysis, trust-layer explainability, and enterprise portfolio automation.",
@@ -207,8 +248,13 @@ export function App() {
 
           <nav className="desktop-nav" aria-label="Primary">
             {navLinks.map((item) => (
-              <a key={item} href="#features">
-                {item}
+              <a
+                key={item.label}
+                href={item.href}
+                className={activeSectionId === item.href.replace("#", "") ? "active" : ""}
+                aria-current={activeSectionId === item.href.replace("#", "") ? "page" : undefined}
+              >
+                {item.label}
               </a>
             ))}
           </nav>
@@ -237,8 +283,14 @@ export function App() {
 
         <div id="mobile-menu" className={`mobile-menu${mobileMenuOpen ? " open" : ""}`}>
           {navLinks.map((item) => (
-            <a key={item} href="#features" onClick={() => setMobileMenuOpen(false)}>
-              {item}
+            <a
+              key={item.label}
+              href={item.href}
+              className={activeSectionId === item.href.replace("#", "") ? "active" : ""}
+              aria-current={activeSectionId === item.href.replace("#", "") ? "page" : undefined}
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {item.label}
             </a>
           ))}
           <button type="button" className="cta" onClick={() => setMobileMenuOpen(false)}>
@@ -262,7 +314,7 @@ export function App() {
           </div>
         </section>
 
-        <section className="trust" data-reveal="true">
+        <section id="trust" className="trust" data-reveal="true">
           <div className="section-head">
             <h2>Trusted by Reality, Not Hype</h2>
             <p>Grounded in publicly discussed royalty recovery outcomes and unmatched-funds reporting across the industry.</p>
@@ -299,7 +351,7 @@ export function App() {
           </div>
         </section>
 
-        <section className="how-it-works" data-reveal="true">
+        <section id="how-it-works" className="how-it-works" data-reveal="true">
           <div className="section-head">
             <h2>How It Works</h2>
           </div>
@@ -322,7 +374,7 @@ export function App() {
 
         <TVFilmDashboardVisualizations />
 
-        <section className="dashboard-preview" data-reveal="true">
+        <section id="recovery-console" className="dashboard-preview" data-reveal="true">
           <div className="section-head">
             <h2>Inside the XR7 Recovery Console</h2>
             <p>A premium, data-dense workspace designed for real legal and royalty operations.</p>
