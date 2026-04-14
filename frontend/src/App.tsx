@@ -263,10 +263,10 @@ export function App() {
             <button
               type="button"
               className="theme-toggle"
-              aria-label="Toggle light and dark theme"
+              aria-label={`Current theme: ${theme === "dark" ? "Dark Mode" : "Light Mode"}. Toggle theme.`}
               onClick={() => setTheme((prev) => (prev === "dark" ? "light" : "dark"))}
             >
-              <span aria-hidden="true">{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
+              <span aria-hidden="true">{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
             </button>
             <button type="button" className="cta small">Get Started</button>
             <button
@@ -395,8 +395,12 @@ export function App() {
                 <input type="text" readOnly value="Search claims, ISRC, payers" aria-label="Search" />
                 <div className="mock-actions">
                   <span className="badge">4 alerts</span>
-                  <button type="button" className="theme-toggle compact" aria-label="Theme toggle preview">
-                    {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                  <button
+                    type="button"
+                    className="theme-toggle compact"
+                    aria-label={`Current theme: ${theme === "dark" ? "Dark Mode" : "Light Mode"}. Preview toggle.`}
+                  >
+                    {theme === "dark" ? "Dark Mode" : "Light Mode"}
                   </button>
                 </div>
               </div>
