@@ -21,6 +21,7 @@ from XR7.api.routers.auth import (
 from XR7.auth.event_notifications import send_event_notification
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
+from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -58,6 +59,26 @@ from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["claims"])
 logger = get_logger(__name__)
+
+
+def _audit(
+    db: Session,
+    *,
+    actor: str,
+    action: str,
+    resource_type: str,
+    resource_id: str | None,
+    details: dict | None = None,
+) -> None:
+    db.add(
+        AdminAuditLog(
+            actor=actor,
+            action=action,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details or {},
+        )
+    )
 
 
 def _export_agent_fields(state: dict | None) -> dict:
@@ -388,7 +409,7 @@ def create_claim_for_artist(
     artist_id: str,
     payload: ClaimCreateRequest,
     db: Session = Depends(get_db),
-    _: dict = Depends(require_artist_access),
+    auth_payload: dict = Depends(require_artist_access),
 ):
     get_artist_or_404(artist_id, db)
 
@@ -430,6 +451,20 @@ def create_claim_for_artist(
     claim.trust_score = float(trust.get("trust_score") or 0.0)
     claim.attorney_review_required = bool(trust.get("requires_attorney_review"))
     claim.claim_strength_rating = None
+    _audit(
+        db,
+        actor=str(auth_payload.get("sub") or f"artist:{artist_id}"),
+        action="claim_created",
+        resource_type="claim",
+        resource_id=claim.id,
+        details={
+            "artist_id": artist_id,
+            "anomaly_id": anomaly.id,
+            "claim_type": payload.claim_type,
+            "trust_score": claim.trust_score,
+            "attorney_review_required": claim.attorney_review_required,
+        },
+    )
     db.commit()
     db.refresh(claim)
     return claim
@@ -478,11 +513,24 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             )
 
         updated = orchestrator.advance_claim(claim_id)
-        pref = (
-            db.query(NotificationPreference)
-            .filter(NotificationPreference.artist_id == updated.artist_id)
-            .first()
+        _audit(
+            db,
+            actor=f"artist:{updated.artist_id}",
+            action="claim_advanced",
+            resource_type="claim",
+            resource_id=updated.id,
+            details={
+                "artist_id": updated.artist_id,
+                "status_before": status_value_before,
+                "status_after": (
+                    updated.status.value
+                    if hasattr(updated.status, "value")
+                    else str(updated.status)
+                ),
+            },
         )
+        db.commit()
+        pref = db.query(NotificationPreference).first()
         send_event_notification(
             pref,
             "claim_advanced",
@@ -596,6 +644,20 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
                 )
                 claim.claim_strength_rating = (
                     str(package.get("claim_strength_rating") or "") or None
+                )
+                _audit(
+                    db,
+                    actor=f"artist:{claim.artist_id}",
+                    action="evidence_packet_generated",
+                    resource_type="claim",
+                    resource_id=claim.id,
+                    details={
+                        "artist_id": claim.artist_id,
+                        "anomaly_id": claim.anomaly_id,
+                        "claim_strength_rating": claim.claim_strength_rating,
+                        "attorney_review_required": claim.attorney_review_required,
+                        "trust_score": claim.trust_score,
+                    },
                 )
                 db.commit()
         return packet

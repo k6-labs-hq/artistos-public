@@ -107,16 +107,16 @@ def erase_artist_data(
 
     artist.name = f"ERASED-{artist.id[:8]}"
     artist.email = None
-    db.commit()
-
-    _log_admin_action(
-        db,
-        actor=str(auth_payload.get("sub") or "artist"),
-        action="privacy_erasure_applied",
-        resource_type="artist",
-        resource_id=artist_id,
-        details={"mode": "anonymize_identity_fields"},
+    db.add(
+        AdminAuditLog(
+            actor=str(auth_payload.get("sub") or "artist"),
+            action="privacy_erasure_applied",
+            resource_type="artist",
+            resource_id=artist_id,
+            details={"mode": "anonymize_identity_fields"},
+        )
     )
+    db.commit()
 
     return inject_branding_metadata(
         db,

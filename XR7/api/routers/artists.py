@@ -10,6 +10,7 @@ from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ingestion.connectors.partner_ecosystem import normalize_provider, provider_status
 from XR7.ml.catalog_scorer import CatalogScorer
+from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistCreate, ArtistSchema
 from XR7.models.base import get_db
@@ -31,6 +32,26 @@ from xr7_common.logging import get_logger
 
 router = APIRouter(prefix="/artists", tags=["artists"])
 logger = get_logger(__name__)
+
+
+def _audit(
+    db: Session,
+    *,
+    actor: str,
+    action: str,
+    resource_type: str,
+    resource_id: str | None,
+    details: dict | None = None,
+) -> None:
+    db.add(
+        AdminAuditLog(
+            actor=actor,
+            action=action,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details or {},
+        )
+    )
 
 
 class ArtistPreferenceUpdateRequest(BaseModel):
@@ -94,6 +115,21 @@ def create_artist(artist_in: ArtistCreate, db: Session = Depends(get_db)):
     db.add(artist)
     db.commit()
     db.refresh(artist)
+    _audit(
+        db,
+        actor=f"artist:{artist.id}",
+        action="artist_created",
+        resource_type="artist",
+        resource_id=artist.id,
+        details={
+            "name": artist.name,
+            "email": artist.email,
+            "role": str(artist.role),
+            "primary_jurisdiction": artist.primary_jurisdiction,
+            "primary_vertical": artist.primary_vertical,
+        },
+    )
+    db.commit()
     try:
         hubspot_sync_artist.delay(artist.id, event="artist_created")
     except Exception:  # noqa: BLE001
@@ -121,6 +157,18 @@ def update_artist_preferences(
     artist.primary_jurisdiction = (payload.primary_jurisdiction or "USA").strip().upper()
     artist.preferred_contract_type = (
         (payload.preferred_contract_type or "recording").strip().lower()
+    )
+    _audit(
+        db,
+        actor=f"artist:{artist_id}",
+        action="artist_preferences_updated",
+        resource_type="artist",
+        resource_id=artist_id,
+        details={
+            "default_attorney_grace_period_days": artist.default_attorney_grace_period_days,
+            "primary_jurisdiction": artist.primary_jurisdiction,
+            "preferred_contract_type": artist.preferred_contract_type,
+        },
     )
     db.commit()
     db.refresh(artist)
@@ -249,7 +297,7 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
 
     works = [
         {"id": w.id, "isrc": w.isrc, "iswc": w.iswc}
-        for w in db.query(Work).filter(Work.artist_id == artist_id).all()
+        for w in db.query(Work).filter(Work.artist_id == artist_id).limit(2_000).all()
     ]
     payments = [
         {
@@ -258,15 +306,15 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
             "currency": p.currency,
             "received_at": p.received_at.isoformat(),
         }
-        for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+        for p in db.query(Payment).filter(Payment.artist_id == artist_id).limit(2_000).all()
     ]
     anomalies = [
         {"id": a.id, "status": a.status}
-        for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
+        for a in db.query(Anomaly).filter(Anomaly.artist_id == artist_id).limit(2_000).all()
     ]
     claims = [
         {"id": c.id, "status": c.status, "recovered_amount": c.recovered_amount}
-        for c in db.query(Claim).filter(Claim.artist_id == artist_id).all()
+        for c in db.query(Claim).filter(Claim.artist_id == artist_id).limit(2_000).all()
     ]
     rg = RightsGraph()
     engine = EarningsEngine(rg)
@@ -291,10 +339,10 @@ def catalog_health(artist_id: str, db: Session = Depends(get_db)):
 def weekly_digest(artist_id: str, db: Session = Depends(get_db)):
     artist = get_artist_or_404(artist_id, db)
 
-    anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
-    claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
-    contracts = db.query(Contract).filter(Contract.artist_id == artist_id).all()
-    payments = db.query(Payment).filter(Payment.artist_id == artist_id).all()
+    anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).limit(500).all()
+    claims = db.query(Claim).filter(Claim.artist_id == artist_id).limit(500).all()
+    contracts = db.query(Contract).filter(Contract.artist_id == artist_id).limit(500).all()
+    payments = db.query(Payment).filter(Payment.artist_id == artist_id).limit(500).all()
     preference = (
         db.query(NotificationPreference)
         .filter(NotificationPreference.artist_id == artist_id)
@@ -378,6 +426,14 @@ def connect_provider(artist_id: str, provider: str, db: Session = Depends(get_db
     else:
         link.status = ConnectorAccountStatus.ACTIVE
         link.is_active = True
+    _audit(
+        db,
+        actor=f"artist:{artist_id}",
+        action="provider_connected",
+        resource_type="connector_account_link",
+        resource_id=link.id if link.id else None,
+        details={"artist_id": artist_id, "provider": provider_key},
+    )
     db.commit()
     db.refresh(link)
     return inject_branding_metadata(
