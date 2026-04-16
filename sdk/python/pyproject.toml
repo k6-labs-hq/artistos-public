@@ -44,8 +44,8 @@ files = [
   #"test",  # auto-generated tests
   "tests", # hand-written tests
 ]
-# TODO: enable "strict" once all these individual checks are passing
-# strict = true
+# Strict mode is enabled incrementally via per-module overrides below.
+# Add new or touched modules to strict overrides as they become clean.
 
 # List from: https://mypy.readthedocs.io/en/stable/existing_code.html#introduce-stricter-options
 warn_unused_configs = true
@@ -79,6 +79,7 @@ disallow_any_generics = true
 [[tool.mypy.overrides]]
 module = [
   "xr7_sdk.configuration",
+  "xr7_sdk.api.vip_api",
 ]
 warn_unused_ignores = true
 strict_equality = true
