@@ -9,10 +9,18 @@
    git checkout main && git pull
    git checkout -b <type>/<short-description>   # e.g. fix/claims-state-bug
    ```
-4. **Commit** using conventional messages (`fix:`, `feat:`, `chore:`, `docs:`, `refactor:`, `test:`).
-5. **Open a PR** targeting `main`. The PR template requires a linked issue (`Closes #123`).
-6. **Wait for review** — a CODEOWNER review is required before merge.
-7. **Merge** once approved and CI is green. The merge closes the linked issue automatically.
+4. **Keep PRs scoped to one issue.** A PR should address a single issue or task. If you discover adjacent work while coding, open a separate issue and PR for it. This keeps reviews fast, reverts safe, and the audit trail clean.
+5. **Commit** using conventional messages (`fix:`, `feat:`, `chore:`, `docs:`, `refactor:`, `test:`). Write a short subject line that explains *what changed*, not just a number or WIP label.
+   ```
+   feat(dashboard): add payer health score card
+   fix(auth): validate JWT secret on startup
+   ```
+6. **Open a PR** targeting `main`. The PR template requires:
+   - A linked issue (`Closes #123`) — this auto-updates the project board
+   - A summary of what changed and why
+   - How you tested it
+7. **Wait for review** — a CODEOWNER review is required before merge.
+8. **Merge** once approved and CI is green. The merge closes the linked issue automatically.
 
 ## Branch naming
 
@@ -46,6 +54,12 @@ cd frontend && npm install && npm run dev
 - Run `make check` before pushing (naming + domain boundary checks)
 - Run `make test` — don't break existing passing tests
 
+### Frontend
+
+- Write components as `.tsx` files. **Do not commit compiled `.js` files** alongside `.tsx` source — they shadow the real code during dev and cause stale builds. If you see `.js` files next to `.tsx` in `frontend/src/`, those are legacy artifacts being cleaned up (see issue #5).
+- Tests go in `.test.tsx` files (not `.test.js`).
+- Use `npm run dev` on Node 22+ to verify your changes render correctly before pushing.
+
 ## Daily check-in
 
 Leave a comment on the issue you're working on each day:
@@ -63,3 +77,4 @@ Leave a comment on the issue you're working on each day:
 - Do not merge your own PRs
 - Do not force-push to `main`
 - Do not commit `.env` or any secret
+- Do not commit compiled `.js` alongside `.tsx` source files
