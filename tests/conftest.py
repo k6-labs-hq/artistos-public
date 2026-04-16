@@ -115,6 +115,7 @@ _celery_app.conf.update(
 #   pytest --run-integration
 #   INTEGRATION_CREDS_AVAILABLE=1 pytest
 
+
 def pytest_addoption(parser: pytest.Parser) -> None:
     parser.addoption(
         "--run-integration",
@@ -124,15 +125,15 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     )
 
 
-def pytest_collection_modifyitems(
-    config: pytest.Config, items: list[pytest.Item]
-) -> None:
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
     run_integration = config.getoption("--run-integration", default=False) or bool(
         os.environ.get("INTEGRATION_CREDS_AVAILABLE")
     )
     if run_integration:
         return  # let all tests run
-    skip_marker = pytest.mark.skip(reason="requires external credentials — pass --run-integration to include")
+    skip_marker = pytest.mark.skip(
+        reason="requires external credentials — pass --run-integration to include"
+    )
     for item in items:
         if item.get_closest_marker("integration"):
             item.add_marker(skip_marker)
