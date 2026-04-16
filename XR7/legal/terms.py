@@ -34,7 +34,8 @@ TERMS_VERSION: str = "2026-03-17.1"
 #  - Governing law: State of California / US federal copyright law.
 # ---------------------------------------------------------------------------
 
-TERMS_TEXT: str = """\
+TERMS_TEXT: str = (
+    """\
 ARTIST RECOVERY SERVICES AGREEMENT
 
 Last Updated: March 5, 2026  |  Version: {version}
@@ -344,7 +345,10 @@ BY CLICKING "I AGREE AND SUBMIT" YOU CONFIRM THAT:
 
 Version: {version}
 © 2026 XR7, Inc.  All rights reserved.
-""".format(version=TERMS_VERSION)
+""".format(
+        version=TERMS_VERSION
+    )
+)
 
 
 def terms_text_sha256() -> str:
