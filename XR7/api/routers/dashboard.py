@@ -36,6 +36,7 @@ from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace, list_handoffs_for_artist
 from XR7.api.deps import get_artist_or_404
+from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.api.routers.auth import require_artist_access
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.llm.claim_drafter import royalty_chat_agent
@@ -53,7 +54,7 @@ from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
 
-router = APIRouter(tags=["dashboard"])
+router = APIRouter(tags=["dashboard"], route_class=TimeoutRoute)
 
 _DASHBOARD_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "recovery_dashboard.html"
 _MOBILE_UI_PATH = Path(__file__).resolve().parents[2] / "dashboard" / "ui" / "mobile.html"
@@ -460,6 +461,7 @@ def export_guidance(artist_id: str, platform: str = "youtube", db: Session = Dep
 
 
 @router.post("/artists/{artist_id}/chat/royalties")
+@with_timeout(90)
 async def chat_royalties(artist_id: str, question: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
     dashboard = DashboardEngine(db).compute(artist_id)
@@ -470,6 +472,7 @@ async def chat_royalties(artist_id: str, question: str, db: Session = Depends(ge
 
 
 @router.get("/artists/{artist_id}/export/full-transparency")
+@with_timeout(120)
 async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)):
     get_artist_or_404(artist_id, db)
 

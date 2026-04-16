@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
+from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.intelligence.withholding_estimate import tax_optimizer
 from XR7.ml.catalog_auditor import AutomatedRegistrationFixer, CatalogAuditor
 from XR7.ml.catalog_valuation import CatalogValuationEngine
@@ -39,7 +40,7 @@ from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.pipeline import aggregate_feedback_calibration, run_catalog_audit
 from xr7_common.logging import get_logger
 
-router = APIRouter(tags=["intelligence"])
+router = APIRouter(tags=["intelligence"], route_class=TimeoutRoute)
 logger = get_logger(__name__)
 
 
@@ -178,6 +179,7 @@ def ingest_royalty_ledger(
 
 
 @router.post("/artists/{artist_id}/intelligence/contracts/extract")
+@with_timeout(90)
 def extract_contract_terms(
     artist_id: str,
     payload: ContractExtractRequest,
@@ -249,6 +251,7 @@ def extract_contract_terms(
 
 
 @router.post("/artists/{artist_id}/intelligence/contracts/extract-upload")
+@with_timeout(120)
 async def extract_contract_terms_upload(
     artist_id: str,
     file: UploadFile = File(...),
@@ -516,6 +519,7 @@ def pre_signature_contract_review(
 
 
 @router.post("/artists/{artist_id}/ml/catalog-audit")
+@with_timeout(120)
 async def run_catalog_audit_on_demand(
     artist_id: str,
     db: Session = Depends(get_db),

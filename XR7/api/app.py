@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.timeout import TimeoutMiddleware
 
 from XR7.api.routers import admin_console as admin_console_router
 from XR7.api.routers import advance_governance as advance_governance_router
@@ -234,6 +235,11 @@ app.add_middleware(
         "X-Trolley-Signature",
     ],
 )
+
+# Global request timeout: 30 s safety net for all routes.
+# Long-running endpoints (file uploads, LLM calls, sync jobs) override this
+# via @with_timeout(N) on the handler together with TimeoutRoute on their router.
+app.add_middleware(TimeoutMiddleware, timeout=30)
 
 app.include_router(earnings.router)
 app.include_router(anomalies.router)

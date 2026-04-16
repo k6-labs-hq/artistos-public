@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from XR7.anomaly.variance_detection_engine import run_variance_scan
 from XR7.api.deps import get_artist_or_404
+from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.graph.catalog_graph_builder import build_catalog_graph
 from XR7.ingestion.fetchers import get_fetcher
 from XR7.ingestion.file_ingestion_pipeline import FileIngestionPipeline
@@ -51,7 +52,7 @@ from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.workflow_orchestrator import XR7WorkflowService
 
-router = APIRouter(tags=["onboarding"])
+router = APIRouter(tags=["onboarding"], route_class=TimeoutRoute)
 
 _PERMISSIONS_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "permissions_dashboard.html"
 
@@ -300,6 +301,7 @@ def run_data_fetcher(
 
 
 @router.post("/artists/{artist_id}/ingestion/upload-any")
+@with_timeout(120)
 async def upload_any_statement(
     artist_id: str,
     files: list[UploadFile] = File(...),
@@ -365,6 +367,7 @@ async def upload_any_statement(
 
 
 @router.post("/artists/{artist_id}/parsers/{parser_type}")
+@with_timeout(120)
 async def parse_statement_with_engine(
     artist_id: str,
     parser_type: str,
@@ -530,6 +533,7 @@ def get_sync_job(artist_id: str, job_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/artists/{artist_id}/sync/jobs/{job_id}/run", response_model=SyncJobSchema)
+@with_timeout(90)
 def run_sync_job_now(
     artist_id: str,
     job_id: str,
@@ -749,6 +753,7 @@ def apply_split_repairs(
 
 
 @router.post("/artists/{artist_id}/variance/scan")
+@with_timeout(60)
 def variance_scan(
     artist_id: str,
     payload: VarianceScanRequest,
