@@ -531,36 +531,39 @@ def founder_roster(
 
 @router.get("/reports/founder-cohort")
 def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
-    founders = db.query(Artist).filter(Artist.is_founder.is_(True)).all()
-    standard = db.query(Artist).filter(Artist.is_founder.is_(False)).all()
-
-    founder_ids = [a.id for a in founders]
-    standard_ids = [a.id for a in standard]
-
-    founder_claims = (
-        db.query(Claim).filter(Claim.artist_id.in_(founder_ids)).all() if founder_ids else []
-    )
-    standard_claims = (
-        db.query(Claim).filter(Claim.artist_id.in_(standard_ids)).all() if standard_ids else []
+    total_founders: int = (
+        db.query(func.count(Artist.id)).filter(Artist.is_founder.is_(True)).scalar() or 0
     )
 
-    founder_recovered = [
-        float(c.recovered_amount or 0.0) for c in founder_claims if c.recovered_amount is not None
-    ]
-    standard_recovered = [
-        float(c.recovered_amount or 0.0) for c in standard_claims if c.recovered_amount is not None
-    ]
-    founder_fees = [float(c.contingency_fee or 0.0) for c in founder_claims]
+    # Single JOIN-aggregate for founder claims: avg recovered + total fees.
+    # func.avg excludes NULLs automatically, matching the original per-row filter.
+    founder_stats = (
+        db.query(
+            func.coalesce(func.avg(Claim.recovered_amount), 0.0),
+            func.coalesce(func.sum(func.coalesce(Claim.contingency_fee, 0.0)), 0.0),
+        )
+        .join(Artist, Claim.artist_id == Artist.id)
+        .filter(Artist.is_founder.is_(True))
+        .one()
+    )
+
+    standard_avg_recovery: float = float(
+        db.query(func.coalesce(func.avg(Claim.recovered_amount), 0.0))
+        .join(Artist, Claim.artist_id == Artist.id)
+        .filter(Artist.is_founder.is_(False))
+        .scalar()
+        or 0.0
+    )
 
     cohort = founder_status_payload(db)
     report = {
-        "total_founders_activated": len(founders),
+        "total_founders_activated": total_founders,
         "slots_remaining": cohort["slots_remaining"],
         "average_recovery_amount": {
-            "founder": round(sum(founder_recovered) / max(1, len(founder_recovered)), 2),
-            "standard": round(sum(standard_recovered) / max(1, len(standard_recovered)), 2),
+            "founder": round(float(founder_stats[0]), 2),
+            "standard": round(standard_avg_recovery, 2),
         },
-        "total_platform_fees_collected_from_founder_cohort": round(sum(founder_fees), 2),
+        "total_platform_fees_collected_from_founder_cohort": round(float(founder_stats[1]), 2),
     }
     _log(db, actor, "report", "founder_cohort", report)
     return report
