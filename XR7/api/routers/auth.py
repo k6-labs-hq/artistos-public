@@ -8,6 +8,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.auth.jwt_service import JWTValidationError, jwt_service
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -121,9 +122,7 @@ class TokenResponse(BaseModel):
 
 @router.post("/auth/login/artist", response_model=TokenResponse)
 def artist_login(payload: ArtistLoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
-    artist = db.query(Artist).filter(Artist.id == payload.artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(payload.artist_id, db)
 
     if (
         payload.email

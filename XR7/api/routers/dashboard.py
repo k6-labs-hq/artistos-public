@@ -369,9 +369,7 @@ def get_agents_status(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    artist = get_artist_or_404(artist_id, db)
 
     state = get_latest_artist_state(artist_id) or {}
     run_id = str(state.get("run_id") or "")

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session
 
+from XR7.api.deps import get_artist_or_404
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.metadata_issue import MetadataIssue
@@ -175,11 +176,7 @@ class BillingEngine:
         if claim.status != ClaimStatus.FUNDS_RECEIVED:
             raise ValueError("Claim must be in FUNDS_RECEIVED status before disbursement")
 
-        from XR7.models.artist import Artist
-
-        artist = self.db_session.query(Artist).filter(Artist.id == claim.artist_id).first()
-        if not artist:
-            raise ValueError("Artist not found")
+        artist = get_artist_or_404(claim.artist_id, self.db_session)
         if not artist.trolley_recipient_id:
             raise ValueError("Artist is not connected to Trolley payouts")
         if artist.payout_account_status != "verified":
