@@ -9,14 +9,13 @@ POST /admin/advances/recovery-score/{artist_id}
 
 from __future__ import annotations
 
-import hmac
-import os
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin
 from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.models.base import get_db
@@ -24,14 +23,6 @@ from XR7.modules.recovery_credit_score import RecoveryCreditScore
 from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["recovery_credit_score"])
-
-
-def _require_admin(x_admin_key: str = Header(default="", alias="X-Admin-Key")) -> None:
-    expected = os.environ.get("ADMIN_API_KEY") or os.environ.get("WIDGET_ADMIN_KEY", "")
-    if not expected:
-        raise HTTPException(status_code=503, detail="Admin API key not configured.")
-    if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
-        raise HTTPException(status_code=401, detail="Invalid or missing admin key.")
 
 
 @router.get("/artists/{artist_id}/recovery-score")
@@ -108,7 +99,7 @@ class AdvanceQualificationRequest(BaseModel):
 def advance_qualification(
     artist_id: str,
     body: AdvanceQualificationRequest,
-    _admin: None = Depends(_require_admin),
+    _admin: None = Depends(require_admin),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
     """Internal endpoint: qualify and size a recovery advance using the score."""

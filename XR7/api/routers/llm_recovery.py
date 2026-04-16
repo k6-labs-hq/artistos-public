@@ -154,6 +154,12 @@ async def llm_demand_letter(
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
+    # Check if LLM provider is available
+    if not claim_drafter.is_available:
+        raise HTTPException(
+            status_code=503, detail="LLM service unavailable - API key not configured"
+        )
+
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,
@@ -217,6 +223,12 @@ async def llm_negotiation_script(
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
+    # Check if LLM provider is available
+    if not claim_drafter.is_available:
+        raise HTTPException(
+            status_code=503, detail="LLM service unavailable - API key not configured"
+        )
+
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,
@@ -259,6 +271,12 @@ async def llm_personalized_advice(
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
+    # Check if LLM provider is available
+    if not claim_drafter.is_available:
+        raise HTTPException(
+            status_code=503, detail="LLM service unavailable - API key not configured"
+        )
+
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,

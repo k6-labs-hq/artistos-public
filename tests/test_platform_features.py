@@ -263,7 +263,7 @@ class TestDataResidency:
     def test_admin_required(self):
         org_id = self._org_id()
         resp = client.get(f"/admin/orgs/{org_id}/data-residency")
-        assert resp.status_code == 422  # missing header → validation error
+        assert resp.status_code == 401  # missing/empty admin key
 
 
 # ============================================================================
@@ -354,7 +354,7 @@ class TestConnectorReliability:
 
     def test_admin_key_required_for_dlq(self):
         resp = client.get("/admin/connectors/webhook/queue")
-        assert resp.status_code == 422  # missing header
+        assert resp.status_code == 401  # missing/empty admin key
 
 
 # ============================================================================

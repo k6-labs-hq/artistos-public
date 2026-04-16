@@ -110,6 +110,18 @@ class ClaimDrafter:
         self.model = model or os.environ.get("LLM_MODEL", "gpt-4o-mini")
         self.api_key = os.environ.get("LLM_API_KEY", "")
         self._rate_limiter = _SimpleRateLimiter(max_requests=40, window_seconds=60)
+        self._is_available = bool(self.api_key)
+
+        if not self._is_available:
+            logger.warning(
+                "ClaimDrafter: LLM API key not configured - will use fallback templates",
+                extra={"provider": self.provider, "model": self.model},
+            )
+
+    @property
+    def is_available(self) -> bool:
+        """Check if LLM provider is available and configured."""
+        return self._is_available
 
     async def _build_llm(self):
         if not self.api_key:

@@ -856,6 +856,9 @@ class TestAdminLeadsEndpoint:
 
     def test_no_admin_key_env_returns_503(self, monkeypatch):
         monkeypatch.delenv("WIDGET_ADMIN_KEY", raising=False)
+        monkeypatch.delenv("ADMIN_API_KEY", raising=False)
+        monkeypatch.delenv("ADMIN_SECRET_KEY", raising=False)
+        monkeypatch.setenv("XR7_ENV", "production")
         resp = client.get("/widget/leads", headers={"X-Admin-Key": "anything"})
         assert resp.status_code == 503
 

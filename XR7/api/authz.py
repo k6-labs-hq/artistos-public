@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from fastapi import HTTPException
+import hmac
+import os
+
+from fastapi import Header, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -57,3 +60,39 @@ def authorize_team_access(
 
     if actor_role and actor_role.strip().lower() != member_role.value:
         raise HTTPException(status_code=403, detail="X-Actor-Role does not match assigned role")
+
+
+def require_admin(x_admin_key: str = Header(default="", alias="X-Admin-Key")) -> None:
+    """Validate admin API key for protected admin endpoints.
+
+    CANONICAL VERSION: Do not duplicate this logic elsewhere in the codebase.
+    All admin-protected endpoints should use this function.
+
+    Checks ADMIN_API_KEY or WIDGET_ADMIN_KEY environment variables.
+    Uses constant-time comparison to prevent timing attacks.
+
+    Args:
+        x_admin_key: Admin key from X-Admin-Key header
+
+    Raises:
+        HTTPException: 503 if admin key not configured, 401 if invalid
+
+    Domain Boundary:
+        This is for API route protection only. Use separate authorization
+        logic for internal services or background jobs.
+    """
+    expected = (
+        os.environ.get("ADMIN_API_KEY")
+        or os.environ.get("WIDGET_ADMIN_KEY")
+        or os.environ.get("ADMIN_SECRET_KEY")
+    )
+    if not expected:
+        env = os.environ.get("XR7_ENV", "development").lower()
+        if env == "production":
+            raise HTTPException(
+                status_code=503,
+                detail="Admin API key not configured",
+            )
+        expected = "admin-secret"
+    if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
+        raise HTTPException(status_code=401, detail="Invalid or missing admin key")

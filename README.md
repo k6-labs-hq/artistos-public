@@ -242,7 +242,39 @@ make format        # Run ruff format
 make migrate       # Run alembic upgrade head
 make check         # Run naming + boundary checkers
 make coverage      # Run tests with HTML coverage report
+make check-sdk-todos  # Check SDK docs for TODO placeholders
 ```
+
+### SDK Generation
+
+Python and TypeScript SDKs are auto-generated from the OpenAPI specification:
+
+```bash
+# Update OpenAPI spec from FastAPI app
+make openapi
+
+# Add realistic examples to schemas (prevents TODO placeholders)
+python scripts/add_openapi_examples.py
+
+# Generate both SDKs (requires Java 8+ or Docker)
+make sdks
+
+# Or generate individually
+make sdk-python
+make sdk-typescript
+```
+
+**Windows PowerShell:**
+```powershell
+.\scripts\generate_sdks.ps1
+```
+
+**Requirements:**
+- Java JDK 8+ (or Docker as alternative)
+- Node.js (for TypeScript SDK)
+- Python 3.12+
+
+**Documentation:** See [SDK Generation Guide](docs/sdk_generation_guide.md) for detailed instructions.
 
 ---
 

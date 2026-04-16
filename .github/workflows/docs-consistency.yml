@@ -34,3 +34,20 @@ jobs:
       - name: Verify no drift
         run: |
           git diff --exit-code -- openapi/openapi.json docs/api/reference.md
+
+  sdk-docs-quality:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
+      - name: Check SDK documentation for TODO placeholders
+        run: |
+          python scripts/ci/check_sdk_todos.py

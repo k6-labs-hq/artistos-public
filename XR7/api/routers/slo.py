@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import os
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin
 from XR7.models.base import get_db
 from XR7.models.slo_metric import (
     SloMetric,
@@ -22,13 +22,6 @@ from XR7.models.slo_metric import (
 
 router = APIRouter(tags=["slo"])
 
-_ADMIN_SECRET = os.environ.get("ADMIN_SECRET_KEY", "admin-secret")
-
-
-def _require_admin(x_admin_key: str = Header(...)):
-    if x_admin_key != _ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Admin key required")
-
 
 # ---------------------------------------------------------------------------
 # SLO metrics
@@ -39,7 +32,7 @@ def _require_admin(x_admin_key: str = Header(...)):
     "/admin/orgs/{org_id}/slo",
     response_model=SloMetricSchema,
     status_code=201,
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def define_slo(org_id: str, body: SloMetricCreate, db: Session = Depends(get_db)):
     """Define a new SLO metric definition for an org."""
@@ -59,7 +52,7 @@ def define_slo(org_id: str, body: SloMetricCreate, db: Session = Depends(get_db)
 @router.get(
     "/admin/orgs/{org_id}/slo",
     response_model=List[SloMetricSchema],
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def list_slo_metrics(
     org_id: str,
@@ -76,7 +69,7 @@ def list_slo_metrics(
 @router.patch(
     "/admin/orgs/{org_id}/slo/{slo_id}",
     response_model=SloMetricSchema,
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def update_slo_measurement(
     org_id: str,
@@ -114,7 +107,7 @@ def update_slo_measurement(
     "/admin/orgs/{org_id}/cost-telemetry",
     response_model=TenantCostLedgerSchema,
     status_code=201,
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def record_period_costs(
     org_id: str,
@@ -148,7 +141,7 @@ def record_period_costs(
 @router.get(
     "/admin/orgs/{org_id}/cost-telemetry",
     response_model=List[TenantCostLedgerSchema],
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def get_cost_telemetry(
     org_id: str,
@@ -167,7 +160,7 @@ def get_cost_telemetry(
 
 @router.get(
     "/admin/orgs/{org_id}/cost-telemetry/alert-check",
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def cost_alert_check(org_id: str, db: Session = Depends(get_db)):
     """Return whether the most recent period has exceeded the budget alert threshold."""

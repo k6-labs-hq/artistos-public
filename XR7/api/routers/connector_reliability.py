@@ -5,10 +5,11 @@ from __future__ import annotations
 import os
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin
 from XR7.models.base import get_db
 from XR7.models.connector_sync_cursor import ConnectorSyncCursor, ConnectorSyncCursorSchema
 from XR7.models.webhook_event import WebhookEventSchema
@@ -20,13 +21,6 @@ from XR7.services.connector_replay_service import (
 )
 
 router = APIRouter(tags=["connector-reliability"])
-
-_ADMIN_SECRET = os.environ.get("ADMIN_SECRET_KEY", "admin-secret")
-
-
-def _require_admin(x_admin_key: str = Header(...)):
-    if x_admin_key != _ADMIN_SECRET:
-        raise HTTPException(status_code=403, detail="Admin key required")
 
 
 # ---------------------------------------------------------------------------
@@ -67,7 +61,7 @@ def ingest_webhook_event(
 @router.get(
     "/admin/connectors/webhook/queue",
     response_model=List[WebhookEventSchema],
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def get_dlq(
     source: Optional[str] = Query(None),
@@ -81,7 +75,7 @@ def get_dlq(
 @router.post(
     "/admin/connectors/webhook/{event_id}/replay",
     response_model=WebhookEventSchema,
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def replay_webhook_event(event_id: str, db: Session = Depends(get_db)):
     """Reset a FAILED event to REPLAYING for re-processing."""
