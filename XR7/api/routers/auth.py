@@ -10,7 +10,6 @@ from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
 from XR7.auth.jwt_service import JWTValidationError, jwt_service
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
 

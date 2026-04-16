@@ -23,20 +23,20 @@ from XR7.models.artist import Artist
 
 def get_artist_or_404(artist_id: str, db: Session) -> Artist:
     """Fetch an artist by primary key or raise HTTP 404.
-    
+
     CANONICAL VERSION: Do not duplicate this logic elsewhere in the codebase.
     All API routes and application services should use this function.
-    
+
     Args:
         artist_id: The artist's unique identifier (UUID string)
         db: SQLAlchemy database session
-        
+
     Returns:
         Artist: The artist record
-        
+
     Raises:
         HTTPException: 404 if artist not found
-        
+
     Domain Boundary:
         - For API routes: Use this directly
         - For background jobs/services: Use this or extract to a shared service layer
