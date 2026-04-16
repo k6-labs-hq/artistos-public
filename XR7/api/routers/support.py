@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import datetime, timezone
+from enum import Enum
 from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
@@ -59,8 +60,30 @@ class SupportHistoryResponse(BaseModel):
     items: list[SupportMessageView]
 
 
+class SupportAction(str, Enum):
+    """Valid actions that can be dispatched through the support action endpoint."""
+
+    show_top_payers = "show_top_payers"
+    """Return a ranked snapshot of the top payers with outstanding recoverable amounts."""
+
+    explain_anomaly = "explain_anomaly"
+    """Explain a specific anomaly by ID. Requires ``payload.anomaly_id``."""
+
+    generate_weekly_digest_now = "generate_weekly_digest_now"
+    """Generate an on-demand preview of the artist's weekly recovery digest."""
+
+    run_catalog_readiness_check = "run_catalog_readiness_check"
+    """Run a catalog readiness check and return the current readiness score."""
+
+
 class SupportActionRequest(BaseModel):
-    action: str = Field(description="one_of_safe_actions")
+    action: SupportAction = Field(
+        description=(
+            "One of the supported support actions: "
+            "'show_top_payers', 'explain_anomaly', 'generate_weekly_digest_now', "
+            "'run_catalog_readiness_check'."
+        )
+    )
     payload: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -290,6 +313,20 @@ def support_action(
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
+    """
+    Dispatch a structured support action for an artist.
+
+    **Valid actions** (`action` field):
+
+    | Action | Payload fields | Description |
+    |---|---|---|
+    | `show_top_payers` | *(none)* | Returns a ranked snapshot of the top 5 payers with outstanding recoverable amounts. |
+    | `explain_anomaly` | `anomaly_id` (str, required) | Returns a structured explanation of the specified anomaly. |
+    | `generate_weekly_digest_now` | *(none)* | Generates an on-demand preview of the weekly recovery digest. |
+    | `run_catalog_readiness_check` | *(none)* | Runs a catalog readiness check and returns the current readiness score. |
+
+    Callers with role `artist`, `manager`, or `attorney` may invoke this endpoint.
+    """
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,
@@ -299,12 +336,12 @@ def support_action(
         actor_role=x_actor_role,
     )
 
-    action = (payload.action or "").strip().lower()
+    action = payload.action
     dashboard = DashboardEngine(db).compute(artist_id)
 
     result: dict[str, Any]
     formatted_message: str
-    if action == "show_top_payers":
+    if action == SupportAction.show_top_payers:
         top = _build_top_payers_snapshot(dashboard, limit=5)
         result = {"top_payers": top}
         formatted_message = "Top payer insights are ready. " + (
@@ -312,7 +349,7 @@ def support_action(
             if top
             else "No payer data available yet."
         )
-    elif action == "explain_anomaly":
+    elif action == SupportAction.explain_anomaly:
         anomaly_id = str((payload.payload or {}).get("anomaly_id") or "").strip()
         if not anomaly_id:
             raise HTTPException(
@@ -338,7 +375,7 @@ def support_action(
             ),
         }
         formatted_message = f"Explained anomaly {anomaly.id} with severity {anomaly.severity}."
-    elif action == "generate_weekly_digest_now":
+    elif action == SupportAction.generate_weekly_digest_now:
         anomalies = db.query(Anomaly).filter(Anomaly.artist_id == artist_id).all()
         claims = db.query(Claim).filter(Claim.artist_id == artist_id).all()
         contracts = db.query(Contract).filter(Contract.artist_id == artist_id).all()
@@ -354,7 +391,7 @@ def support_action(
         )
         result = {"digest_preview": digest}
         formatted_message = "Weekly digest preview generated successfully."
-    elif action == "run_catalog_readiness_check":
+    elif action == SupportAction.run_catalog_readiness_check:
         works = db.query(Work).filter(Work.artist_id == artist_id).all()
         state = {
             "artist_id": artist_id,
@@ -385,14 +422,8 @@ def support_action(
             "dashboard_readiness_score": dashboard.get("readiness_score"),
         }
         formatted_message = "Catalog readiness check completed."
-    else:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Unsupported action. Allowed actions: "
-                "show_top_payers, explain_anomaly, generate_weekly_digest_now, run_catalog_readiness_check"
-            ),
-        )
+    else:  # pragma: no cover  # Pydantic enum validation prevents reaching here
+        raise HTTPException(status_code=400, detail=f"Unsupported action: {action}")
 
     row = SupportMessage(
         artist_id=artist_id,
