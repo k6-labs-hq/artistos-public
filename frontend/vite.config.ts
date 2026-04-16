@@ -25,6 +25,13 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/test/**", "src/main.tsx"],
+      thresholds: {
+        lines: 15,
+        functions: 15,
+        branches: 10,
+        statements: 15,
+      },
+      reporter: ["text", "html", "json-summary"],
     },
   },
 });
