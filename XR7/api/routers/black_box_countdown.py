@@ -8,15 +8,14 @@ POST /admin/society-rules/freeze
 
 from __future__ import annotations
 
-import hmac
-import os
 from datetime import datetime, timezone
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin
 from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.models.base import get_db
@@ -24,14 +23,6 @@ from XR7.modules.black_box_countdown import BlackBoxCountdown, apply_freeze
 from XR7.services.branding import inject_branding_metadata
 
 router = APIRouter(tags=["black_box_countdown"])
-
-
-def _require_admin(x_admin_key: str = Header(default="", alias="X-Admin-Key")) -> None:
-    expected = os.environ.get("ADMIN_API_KEY") or os.environ.get("WIDGET_ADMIN_KEY", "")
-    if not expected:
-        raise HTTPException(status_code=503, detail="Admin API key not configured.")
-    if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
-        raise HTTPException(status_code=401, detail="Invalid or missing admin key.")
 
 
 @router.get("/artists/{artist_id}/anomalies/countdown")
@@ -72,7 +63,7 @@ class FreezeRequest(BaseModel):
 @router.post("/admin/society-rules/freeze")
 def freeze_society_redistribution(
     body: FreezeRequest,
-    _admin: None = Depends(_require_admin),
+    _admin: None = Depends(require_admin),
 ) -> dict[str, Any]:
     """Apply a redistribution freeze event to a society (admin only)."""
     freeze_until = body.freeze_until

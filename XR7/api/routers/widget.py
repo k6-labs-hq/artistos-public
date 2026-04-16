@@ -41,16 +41,15 @@ Security layers
 
 from __future__ import annotations
 
-import hmac
-import os
 import re
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, field_validator
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin
 from XR7.auth import otp_service
 from XR7.auth.notification_service import get_notification_service
 from XR7.ml.royalty_estimator import VALID_CAREER_STAGES, estimate_royalties
@@ -61,29 +60,6 @@ from xr7_common.logging import get_logger
 
 router = APIRouter(prefix="/widget", tags=["widget"])
 logger = get_logger(__name__)
-
-# ---------------------------------------------------------------------------
-# Admin authentication
-# ---------------------------------------------------------------------------
-
-
-def _require_admin(x_admin_key: str = Header(default="")) -> None:
-    """
-    Dependency that validates the ``X-Admin-Key`` header against the
-    ``WIDGET_ADMIN_KEY`` environment variable.
-
-    Set ``WIDGET_ADMIN_KEY`` to a long random secret in production.
-    If the env var is not set, the admin endpoints are disabled.
-    """
-    expected = os.environ.get("WIDGET_ADMIN_KEY", "")
-    if not expected:
-        raise HTTPException(
-            status_code=503,
-            detail="Admin access is not configured on this server.",
-        )
-    if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
-        raise HTTPException(status_code=401, detail="Invalid or missing admin key.")
-
 
 # ---------------------------------------------------------------------------
 # Input validation helpers
@@ -428,7 +404,7 @@ def claim(body: ClaimRequest, db: Session = Depends(get_db)):
 @router.get("/leads", response_model=List[WidgetLeadSchema])
 def list_leads(
     db: Session = Depends(get_db),
-    _: None = Depends(_require_admin),
+    _: None = Depends(require_admin),
 ):
     """
     Return all widget leads in reverse-chronological order.

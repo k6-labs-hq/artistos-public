@@ -11,6 +11,8 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin
+
 from XR7.models.base import get_db
 from XR7.models.data_residency import (
     DataResidencyPolicy,
@@ -22,20 +24,12 @@ from XR7.services.data_residency_service import assert_region_allowed, get_polic
 
 router = APIRouter(prefix="/admin/orgs", tags=["data-residency"])
 
-_ADMIN_HEADER = "X-Admin-Key"
-_EXPECTED_KEY = "admin-secret"
-
-
-def _require_admin(x_admin_key: str = Header(alias=_ADMIN_HEADER)):
-    if x_admin_key != _EXPECTED_KEY:
-        raise HTTPException(status_code=403, detail="Admin key required")
-
 
 @router.put(
     "/{org_id}/data-residency",
     response_model=DataResidencyPolicySchema,
     summary="Upsert data residency policy for an org",
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def upsert_policy(
     org_id: str,
@@ -61,7 +55,7 @@ def upsert_policy(
     "/{org_id}/data-residency",
     response_model=DataResidencyPolicySchema,
     summary="Get data residency policy for an org",
-    dependencies=[Depends(_require_admin)],
+    dependencies=[Depends(require_admin)],
 )
 def get_org_policy(org_id: str, db: Session = Depends(get_db)) -> DataResidencyPolicy:
     policy = get_policy(org_id, db)
