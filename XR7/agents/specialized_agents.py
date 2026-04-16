@@ -61,7 +61,7 @@ class SharedOrchestraLLM:
                     "provider": self.provider,
                     "model": self.model,
                     "LLM_API_KEY_set": False,
-                }
+                },
             )
             self._is_available = False
         else:
@@ -71,7 +71,7 @@ class SharedOrchestraLLM:
                     "provider": self.provider,
                     "model": self.model,
                     "LLM_API_KEY_set": True,
-                }
+                },
             )
 
     @property
@@ -89,7 +89,7 @@ class SharedOrchestraLLM:
         if not self.is_available:
             logger.debug(
                 "LLM unavailable - using fallback path",
-                extra={"role": role, "reason": "API key not configured"}
+                extra={"role": role, "reason": "API key not configured"},
             )
             return {
                 "action_taken": f"{role}_fallback_path",

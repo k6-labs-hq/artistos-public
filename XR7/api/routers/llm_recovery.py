@@ -157,8 +157,7 @@ async def llm_demand_letter(
     # Check if LLM provider is available
     if not claim_drafter.is_available:
         raise HTTPException(
-            status_code=503,
-            detail="LLM service unavailable - API key not configured"
+            status_code=503, detail="LLM service unavailable - API key not configured"
         )
 
     _artist_or_404(artist_id, db)
@@ -227,8 +226,7 @@ async def llm_negotiation_script(
     # Check if LLM provider is available
     if not claim_drafter.is_available:
         raise HTTPException(
-            status_code=503,
-            detail="LLM service unavailable - API key not configured"
+            status_code=503, detail="LLM service unavailable - API key not configured"
         )
 
     _artist_or_404(artist_id, db)
@@ -276,8 +274,7 @@ async def llm_personalized_advice(
     # Check if LLM provider is available
     if not claim_drafter.is_available:
         raise HTTPException(
-            status_code=503,
-            detail="LLM service unavailable - API key not configured"
+            status_code=503, detail="LLM service unavailable - API key not configured"
         )
 
     _artist_or_404(artist_id, db)

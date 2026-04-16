@@ -95,7 +95,4 @@ def require_admin(x_admin_key: str = Header(default="", alias="X-Admin-Key")) ->
             )
         expected = "admin-secret"
     if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid or missing admin key"
-        )
+        raise HTTPException(status_code=401, detail="Invalid or missing admin key")

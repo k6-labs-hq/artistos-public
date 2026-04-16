@@ -76,7 +76,7 @@ class XR7Settings:
         if not self.jwt_secret or self.jwt_secret in dev_jwt_defaults:
             errors.append(
                 "XR7_JWT_SECRET must be set to a secure random value in production. "
-                "Generate with: python3 -c \"import secrets; print(secrets.token_urlsafe(48))\""
+                'Generate with: python3 -c "import secrets; print(secrets.token_urlsafe(48))"'
             )
 
         # S3 credentials required
@@ -125,7 +125,10 @@ class XR7Settings:
 
         if errors:
             print("\n❌ PRODUCTION SECRET VALIDATION FAILED\n", file=sys.stderr)
-            print("XR7_ENV is set to 'production' but required secrets are missing or unsafe:\n", file=sys.stderr)
+            print(
+                "XR7_ENV is set to 'production' but required secrets are missing or unsafe:\n",
+                file=sys.stderr,
+            )
             for i, error in enumerate(errors, 1):
                 print(f"  {i}. {error}", file=sys.stderr)
             print("\nRefer to .env.example for all required variables.", file=sys.stderr)

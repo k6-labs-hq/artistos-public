@@ -115,7 +115,7 @@ class ClaimDrafter:
         if not self._is_available:
             logger.warning(
                 "ClaimDrafter: LLM API key not configured - will use fallback templates",
-                extra={"provider": self.provider, "model": self.model}
+                extra={"provider": self.provider, "model": self.model},
             )
 
     @property
