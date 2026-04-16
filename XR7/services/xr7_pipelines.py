@@ -135,59 +135,61 @@ def run_api_ingestion_pipeline(
             continue
 
         token = open_sealed(cred.encrypted_access_token)
-        client = XR7PlatformAPIClient(provider, token)
-        payload = client.fetch_all(scheduler, since=since, until=until)
+        
+        # Use connection pooling via context manager
+        with XR7PlatformAPIClient(provider, token) as client:
+            payload = client.fetch_all(scheduler, since=since, until=until)
 
-        catalog_rows = payload.get("catalog") or []
-        usage_rows = payload.get("usage") or []
-        monetization_rows = payload.get("monetization") or []
+            catalog_rows = payload.get("catalog") or []
+            usage_rows = payload.get("usage") or []
+            monetization_rows = payload.get("monetization") or []
 
-        for item in catalog_rows:
-            track = XR7Track(
-                tenant_id=tenant_id,
-                artist_id=artist_id,
-                title=str(item.get("title") or item.get("name") or "Unknown Track"),
-                version=str(item.get("version") or "") or None,
-                duration_ms=int(item.get("duration_ms") or item.get("duration") or 0) or None,
-                primary_artist_name=str(item.get("artist") or item.get("artist_name") or "")
-                or None,
-                isrc=str(item.get("isrc") or "") or None,
-                upc=str(item.get("upc") or "") or None,
-                label_name=str(item.get("label") or "") or None,
-                distributor=str(item.get("distributor") or "") or None,
-                metadata_json=json.dumps(item, sort_keys=True),
-                source_priority=100,
-                canonical_confidence=0.8,
-            )
-            db.add(track)
-            processed += 1
+            for item in catalog_rows:
+                track = XR7Track(
+                    tenant_id=tenant_id,
+                    artist_id=artist_id,
+                    title=str(item.get("title") or item.get("name") or "Unknown Track"),
+                    version=str(item.get("version") or "") or None,
+                    duration_ms=int(item.get("duration_ms") or item.get("duration") or 0) or None,
+                    primary_artist_name=str(item.get("artist") or item.get("artist_name") or "")
+                    or None,
+                    isrc=str(item.get("isrc") or "") or None,
+                    upc=str(item.get("upc") or "") or None,
+                    label_name=str(item.get("label") or "") or None,
+                    distributor=str(item.get("distributor") or "") or None,
+                    metadata_json=json.dumps(item, sort_keys=True),
+                    source_priority=100,
+                    canonical_confidence=0.8,
+                )
+                db.add(track)
+                processed += 1
 
-        for item in usage_rows + monetization_rows:
-            event = XR7UsageEvent(
-                tenant_id=tenant_id,
-                artist_id=artist_id,
-                platform=provider,
-                event_type=str(item.get("event_type") or "usage"),
-                event_timestamp=since or _now(),
-                territory=str(item.get("territory") or "") or None,
-                channel=str(item.get("channel") or "api") or "api",
-                units=float(item.get("units") or item.get("plays") or 0.0),
-                asset_ref=str(item.get("asset_ref") or item.get("id") or "") or None,
-                match_method=XR7MatchMethod.API,
-                confidence_score=0.75,
-                monetization_estimate=float(item.get("amount") or item.get("revenue") or 0.0),
-                source_category=XR7SourceCategory.API,
-                raw_ref=str(item.get("id") or "") or None,
-            )
-            db.add(event)
-            processed += 1
+            for item in usage_rows + monetization_rows:
+                event = XR7UsageEvent(
+                    tenant_id=tenant_id,
+                    artist_id=artist_id,
+                    platform=provider,
+                    event_type=str(item.get("event_type") or "usage"),
+                    event_timestamp=since or _now(),
+                    territory=str(item.get("territory") or "") or None,
+                    channel=str(item.get("channel") or "api") or "api",
+                    units=float(item.get("units") or item.get("plays") or 0.0),
+                    asset_ref=str(item.get("asset_ref") or item.get("id") or "") or None,
+                    match_method=XR7MatchMethod.API,
+                    confidence_score=0.75,
+                    monetization_estimate=float(item.get("amount") or item.get("revenue") or 0.0),
+                    source_category=XR7SourceCategory.API,
+                    raw_ref=str(item.get("id") or "") or None,
+                )
+                db.add(event)
+                processed += 1
 
-        details[provider] = {
-            "status": "ingested",
-            "catalog_rows": len(catalog_rows),
-            "usage_rows": len(usage_rows),
-            "monetization_rows": len(monetization_rows),
-        }
+            details[provider] = {
+                "status": "ingested",
+                "catalog_rows": len(catalog_rows),
+                "usage_rows": len(usage_rows),
+                "monetization_rows": len(monetization_rows),
+            }
 
     db.commit()
     return XR7PipelineResult(
