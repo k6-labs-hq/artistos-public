@@ -10,7 +10,6 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
       "@xr7-sdk": path.resolve(__dirname, "../sdk/typescript/src"),
     },
-    extensions: [".mjs", ".mts", ".ts", ".tsx", ".jsx", ".js", ".json"],
   },
   server: {
     fs: {
@@ -26,6 +25,13 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/test/**", "src/main.tsx"],
+      thresholds: {
+        lines: 15,
+        functions: 15,
+        branches: 10,
+        statements: 15,
+      },
+      reporter: ["text", "html", "json-summary"],
     },
   },
 });

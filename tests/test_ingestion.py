@@ -582,6 +582,7 @@ class TestListStatements:
 # ---------------------------------------------------------------------------
 
 
+@pytest.mark.integration
 class TestConnectorCredentials:
     def test_pro_connect_returns_false_without_key(self, monkeypatch):
         monkeypatch.delenv("ASCAP_API_KEY", raising=False)

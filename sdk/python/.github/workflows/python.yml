@@ -29,6 +29,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -r test-requirements.txt
+      - name: Strict mypy guard (newly strict modules)
+        run: |
+          mypy --config-file pyproject.toml xr7_sdk/configuration.py xr7_sdk/api/vip_api.py
       - name: Test with pytest
         run: |
           pytest --cov=xr7_sdk

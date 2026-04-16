@@ -67,6 +67,7 @@ def _mk_claim(
     return claim
 
 
+@pytest.mark.integration
 def test_manual_remittance_endpoint_updates_claim_and_creates_transaction(db):
     artist = _mk_artist(db, verified=False)
     claim = _mk_claim(db, artist.id, status=ClaimStatus.ACCEPTED, net=0.0)
@@ -100,6 +101,7 @@ def test_manual_remittance_endpoint_updates_claim_and_creates_transaction(db):
     assert txn.gross_amount == pytest.approx(1200.0)
 
 
+@pytest.mark.integration
 def test_disburse_endpoint_rejects_existing_external_payment(db, monkeypatch):
     artist = _mk_artist(db)
     claim = _mk_claim(db, artist.id)
@@ -119,6 +121,7 @@ def test_disburse_endpoint_rejects_existing_external_payment(db, monkeypatch):
     assert "already exists" in resp.json()["detail"]
 
 
+@pytest.mark.integration
 def test_disburse_endpoint_success_creates_processing_transaction(db, monkeypatch):
     artist = _mk_artist(db)
     claim = _mk_claim(db, artist.id)
@@ -144,6 +147,7 @@ def test_disburse_endpoint_success_creates_processing_transaction(db, monkeypatc
     assert claim.trolley_payment_status == "PROCESSING"
 
 
+@pytest.mark.integration
 def test_trolley_webhook_marks_claim_paid_and_updates_transaction(db, monkeypatch):
     monkeypatch.setenv("TROLLEY_SECRET_KEY", "wh_secret")
 

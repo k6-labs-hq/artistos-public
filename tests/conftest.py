@@ -9,6 +9,9 @@ and `test_ingestion.py`) import from here to avoid stomping on each other's
 
 from __future__ import annotations
 
+import os
+
+import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -98,3 +101,39 @@ _celery_app.conf.update(
     broker_url="memory://",
     result_backend="cache+memory://",
 )
+
+
+# ---------------------------------------------------------------------------
+# Integration-test marker auto-skip
+# ---------------------------------------------------------------------------
+# Tests marked with @pytest.mark.integration require live external credentials
+# (PRO connectors, Trolley sandbox, etc.).  They are skipped by default in
+# every CI run unless the caller passes --run-integration or sets the
+# INTEGRATION_CREDS_AVAILABLE environment variable to a truthy value.
+#
+# To run integration tests locally:
+#   pytest --run-integration
+#   INTEGRATION_CREDS_AVAILABLE=1 pytest
+
+
+def pytest_addoption(parser: pytest.Parser) -> None:
+    parser.addoption(
+        "--run-integration",
+        action="store_true",
+        default=False,
+        help="Include tests marked @pytest.mark.integration (requires external credentials).",
+    )
+
+
+def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
+    run_integration = config.getoption("--run-integration", default=False) or bool(
+        os.environ.get("INTEGRATION_CREDS_AVAILABLE")
+    )
+    if run_integration:
+        return  # let all tests run
+    skip_marker = pytest.mark.skip(
+        reason="requires external credentials — pass --run-integration to include"
+    )
+    for item in items:
+        if item.get_closest_marker("integration"):
+            item.add_marker(skip_marker)

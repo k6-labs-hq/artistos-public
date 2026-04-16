@@ -84,3 +84,6 @@ confidence = "high"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
+markers = [
+    "integration: marks tests that require external credentials (deselected by default; use --run-integration to include)",
+]

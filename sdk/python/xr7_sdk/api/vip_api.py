@@ -10,7 +10,7 @@
 """  # noqa: E501
 
 
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 
 from pydantic import Field, StrictFloat, StrictInt, StrictStr, validate_call
 from typing_extensions import Annotated
@@ -25,9 +25,9 @@ class VipApi:
     Do not edit the class manually.
     """
 
-    def __init__(self, api_client=None) -> None:
+    def __init__(self, api_client: Optional[ApiClient] = None) -> None:
         if api_client is None:
-            api_client = ApiClient.get_default()
+            api_client = ApiClient()
         self.api_client = api_client
 
     @validate_call
@@ -81,11 +81,11 @@ class VipApi:
             *_param,
             _request_timeout=_request_timeout
         )
-        response_data.read()
-        return self.api_client.response_deserialize(
+        response_data.read()  # type: ignore[no-untyped-call]
+        return cast(Dict[str, Any], self.api_client.response_deserialize(
             response_data=response_data,
             response_types_map=_response_types_map,
-        ).data
+        ).data)
 
     @validate_call
     def claim_invite(
@@ -138,11 +138,11 @@ class VipApi:
             *_param,
             _request_timeout=_request_timeout
         )
-        response_data.read()
-        return self.api_client.response_deserialize(
+        response_data.read()  # type: ignore[no-untyped-call]
+        return cast(Dict[str, Any], self.api_client.response_deserialize(
             response_data=response_data,
             response_types_map=_response_types_map,
-        ).data
+        ).data)
 
     @validate_call
     def grant_vip(
@@ -199,11 +199,11 @@ class VipApi:
             *_param,
             _request_timeout=_request_timeout
         )
-        response_data.read()
-        return self.api_client.response_deserialize(
+        response_data.read()  # type: ignore[no-untyped-call]
+        return cast(Dict[str, Any], self.api_client.response_deserialize(
             response_data=response_data,
             response_types_map=_response_types_map,
-        ).data
+        ).data)
 
     @validate_call
     def revoke_vip(
@@ -256,11 +256,11 @@ class VipApi:
             *_param,
             _request_timeout=_request_timeout
         )
-        response_data.read()
-        return self.api_client.response_deserialize(
+        response_data.read()  # type: ignore[no-untyped-call]
+        return cast(Dict[str, Any], self.api_client.response_deserialize(
             response_data=response_data,
             response_types_map=_response_types_map,
-        ).data
+        ).data)
 
     @validate_call
     def get_vip_status(
@@ -313,11 +313,11 @@ class VipApi:
             *_param,
             _request_timeout=_request_timeout
         )
-        response_data.read()
-        return self.api_client.response_deserialize(
+        response_data.read()  # type: ignore[no-untyped-call]
+        return cast(Dict[str, Any], self.api_client.response_deserialize(
             response_data=response_data,
             response_types_map=_response_types_map,
-        ).data
+        ).data)
 
     @validate_call
     def get_vip_drops(
@@ -370,249 +370,368 @@ class VipApi:
             *_param,
             _request_timeout=_request_timeout
         )
-        response_data.read()
-        return self.api_client.response_deserialize(
+        response_data.read()  # type: ignore[no-untyped-call]
+        return cast(List[Dict[str, Any]], self.api_client.response_deserialize(
             response_data=response_data,
             response_types_map=_response_types_map,
-        ).data
+        ).data)
 
     def _create_invite_code_serialize(
         self,
-        _request_auth=None,
-        _content_type=None,
-        _headers=None,
-        _host_index=None,
-    ):
-        _host = self.api_client.configuration.get_host_settings()[_host_index]
-        _url_path = '/admin/vip/invite-codes'
-        _path_params: Dict[str, str] = {}
-        _query_params: List[List[str]] = []
-        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _request_auth: Optional[Dict[str, Any]] = None,
+        _content_type: Optional[str] = None,
+        _headers: Optional[Dict[str, Any]] = None,
+        _host_index: Optional[int] = None,
+    ) -> RequestSerialized:
 
-        _headers_to_set = {
-            'Accept': [
-                'application/json'
+        _host = None
 
-            ],
+        _collection_formats: Dict[str, str] = {
         }
 
-        _headers_to_set.update(_header_params)
-        _headers_to_set = dict(
-            (k, v) for k, v in _headers_to_set.items() if v is not None
-        )
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[Any] = None
 
-        return RequestSerialized(
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
             method='POST',
-            resource_path=_url_path,
+            resource_path='/admin/vip/invite-codes',
             path_params=_path_params,
             query_params=_query_params,
-            header_params=_headers_to_set,
-            body=None,
-            auth_settings=_request_auth,
-            response_types_map=_response_types_map,
-            api_key=_request_auth,
-            client=self.api_client.client,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
             _host=_host,
+            _request_auth=_request_auth
         )
 
     def _claim_invite_serialize(
         self,
-        claim_vip_invite_request,
-        _request_auth=None,
-        _content_type=None,
-        _headers=None,
-        _host_index=None,
-    ):
-        _host = self.api_client.configuration.get_host_settings()[_host_index]
-        _url_path = '/invite/vip/claim'
-        _path_params: Dict[str, str] = {}
-        _query_params: List[List[str]] = []
-        _header_params: Dict[str, Optional[str]] = _headers or {}
+        claim_vip_invite_request: Dict[str, Any],
+        _request_auth: Optional[Dict[str, Any]] = None,
+        _content_type: Optional[str] = None,
+        _headers: Optional[Dict[str, Any]] = None,
+        _host_index: Optional[int] = None,
+    ) -> RequestSerialized:
 
-        _headers_to_set = {
-            'Content-Type': _content_type or 'application/json',
-            'Accept': [
-                'application/json'
-            ],
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
         }
 
-        _headers_to_set.update(_header_params)
-        _headers_to_set = dict(
-            (k, v) for k, v in _headers_to_set.items() if v is not None
-        )
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[Any] = None
 
-        _body_params = claim_vip_invite_request
+        # process the path parameters
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if claim_vip_invite_request is not None:
+            _body_params = claim_vip_invite_request
 
-        return RequestSerialized(
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
+
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _header_params['Content-Type'] = 'application/json'
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
             method='POST',
-            resource_path=_url_path,
+            resource_path='/invite/vip/claim',
             path_params=_path_params,
             query_params=_query_params,
-            header_params=_headers_to_set,
+            header_params=_header_params,
             body=_body_params,
-            auth_settings=_request_auth,
-            response_types_map=_response_types_map,
-            api_key=_request_auth,
-            client=self.api_client.client,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
             _host=_host,
+            _request_auth=_request_auth
         )
 
     def _grant_vip_serialize(
         self,
-        artist_id,
-        admin_grant_vip_request,
-        _request_auth=None,
-        _content_type=None,
-        _headers=None,
-        _host_index=None,
-    ):
-        _host = self.api_client.configuration.get_host_settings()[_host_index]
-        _url_path = '/admin/artists/{artist_id}/vip/grant'
-        _path_params: Dict[str, str] = {
-            'artist_id': str(artist_id),
+        artist_id: str,
+        admin_grant_vip_request: Dict[str, Any],
+        _request_auth: Optional[Dict[str, Any]] = None,
+        _content_type: Optional[str] = None,
+        _headers: Optional[Dict[str, Any]] = None,
+        _host_index: Optional[int] = None,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
         }
-        _query_params: List[List[str]] = []
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[Any] = None
 
-        _headers_to_set = {
-            'Content-Type': _content_type or 'application/json',
-            'Accept': ['application/json'],
-        }
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+        if admin_grant_vip_request is not None:
+            _body_params = admin_grant_vip_request
 
-        _headers_to_set.update(_header_params)
-        _headers_to_set = dict(
-            (k, v) for k, v in _headers_to_set.items() if v is not None
-        )
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
-        _body_params = admin_grant_vip_request
+        # set the HTTP header `Content-Type`
+        if _content_type:
+            _header_params['Content-Type'] = _content_type
+        else:
+            _header_params['Content-Type'] = 'application/json'
 
-        return RequestSerialized(
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
             method='POST',
-            resource_path=_url_path,
+            resource_path='/admin/artists/{artist_id}/vip/grant',
             path_params=_path_params,
             query_params=_query_params,
-            header_params=_headers_to_set,
+            header_params=_header_params,
             body=_body_params,
-            auth_settings=_request_auth,
-            response_types_map=_response_types_map,
-            api_key=_request_auth,
-            client=self.api_client.client,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
             _host=_host,
+            _request_auth=_request_auth
         )
 
     def _revoke_vip_serialize(
         self,
-        artist_id,
-        _request_auth=None,
-        _content_type=None,
-        _headers=None,
-        _host_index=None,
-    ):
-        _host = self.api_client.configuration.get_host_settings()[_host_index]
-        _url_path = '/admin/artists/{artist_id}/vip'
-        _path_params: Dict[str, str] = {
-            'artist_id': str(artist_id),
+        artist_id: str,
+        _request_auth: Optional[Dict[str, Any]] = None,
+        _content_type: Optional[str] = None,
+        _headers: Optional[Dict[str, Any]] = None,
+        _host_index: Optional[int] = None,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
         }
-        _query_params: List[List[str]] = []
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
 
-        _headers_to_set = {
-            'Accept': ['application/json'],
-        }
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
 
-        _headers_to_set.update(_header_params)
-        _headers_to_set = dict(
-            (k, v) for k, v in _headers_to_set.items() if v is not None
-        )
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
-        return RequestSerialized(
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
             method='DELETE',
-            resource_path=_url_path,
+            resource_path='/admin/artists/{artist_id}/vip',
             path_params=_path_params,
             query_params=_query_params,
-            header_params=_headers_to_set,
-            body=None,
-            auth_settings=_request_auth,
-            response_types_map=_response_types_map,
-            api_key=_request_auth,
-            client=self.api_client.client,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
             _host=_host,
+            _request_auth=_request_auth
         )
 
     def _get_vip_status_serialize(
         self,
-        artist_id,
-        _request_auth=None,
-        _content_type=None,
-        _headers=None,
-        _host_index=None,
-    ):
-        _host = self.api_client.configuration.get_host_settings()[_host_index]
-        _url_path = '/artists/{artist_id}/vip/status'
-        _path_params: Dict[str, str] = {
-            'artist_id': str(artist_id),
+        artist_id: str,
+        _request_auth: Optional[Dict[str, Any]] = None,
+        _content_type: Optional[str] = None,
+        _headers: Optional[Dict[str, Any]] = None,
+        _host_index: Optional[int] = None,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
         }
-        _query_params: List[List[str]] = []
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
 
-        _headers_to_set = {
-            'Accept': ['application/json'],
-        }
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
 
-        _headers_to_set.update(_header_params)
-        _headers_to_set = dict(
-            (k, v) for k, v in _headers_to_set.items() if v is not None
-        )
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
-        return RequestSerialized(
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
             method='GET',
-            resource_path=_url_path,
+            resource_path='/artists/{artist_id}/vip/status',
             path_params=_path_params,
             query_params=_query_params,
-            header_params=_headers_to_set,
-            body=None,
-            auth_settings=_request_auth,
-            response_types_map=_response_types_map,
-            api_key=_request_auth,
-            client=self.api_client.client,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
             _host=_host,
+            _request_auth=_request_auth
         )
 
     def _get_vip_drops_serialize(
         self,
-        artist_id,
-        _request_auth=None,
-        _content_type=None,
-        _headers=None,
-        _host_index=None,
-    ):
-        _host = self.api_client.configuration.get_host_settings()[_host_index]
-        _url_path = '/artists/{artist_id}/vip/drops'
-        _path_params: Dict[str, str] = {
-            'artist_id': str(artist_id),
+        artist_id: str,
+        _request_auth: Optional[Dict[str, Any]] = None,
+        _content_type: Optional[str] = None,
+        _headers: Optional[Dict[str, Any]] = None,
+        _host_index: Optional[int] = None,
+    ) -> RequestSerialized:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
         }
-        _query_params: List[List[str]] = []
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
+        _body_params: Optional[bytes] = None
 
-        _headers_to_set = {
-            'Accept': ['application/json'],
-        }
+        # process the path parameters
+        if artist_id is not None:
+            _path_params['artist_id'] = artist_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
 
-        _headers_to_set.update(_header_params)
-        _headers_to_set = dict(
-            (k, v) for k, v in _headers_to_set.items() if v is not None
-        )
+        # set the HTTP header `Accept`
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
-        return RequestSerialized(
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
             method='GET',
-            resource_path=_url_path,
+            resource_path='/artists/{artist_id}/vip/drops',
             path_params=_path_params,
             query_params=_query_params,
-            header_params=_headers_to_set,
-            body=None,
-            auth_settings=_request_auth,
-            response_types_map=_response_types_map,
-            api_key=_request_auth,
-            client=self.api_client.client,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
             _host=_host,
+            _request_auth=_request_auth
         )

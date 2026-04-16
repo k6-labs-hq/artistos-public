@@ -43,6 +43,11 @@ frontend/node_modules/
 frontend/.vite/
 node_modules/
 
+# Compiled JS files in frontend/src (preserve test files)
+frontend/src/**/*.js
+!frontend/src/**/*.test.js
+!frontend/src/test/
+
 # Infrastructure secrets/state inputs
 infrastructure/secrets/runtime.env
 infrastructure/terraform/environments/*/terraform.tfvars
