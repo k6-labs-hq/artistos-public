@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -9,7 +10,6 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.api.authz import require_admin
-
 from XR7.models.base import get_db
 from XR7.models.connector_sync_cursor import ConnectorSyncCursor, ConnectorSyncCursorSchema
 from XR7.models.webhook_event import WebhookEventSchema

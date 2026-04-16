@@ -160,7 +160,7 @@ async def llm_demand_letter(
             status_code=503,
             detail="LLM service unavailable - API key not configured"
         )
-    
+
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,
@@ -230,7 +230,7 @@ async def llm_negotiation_script(
             status_code=503,
             detail="LLM service unavailable - API key not configured"
         )
-    
+
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,
@@ -279,7 +279,7 @@ async def llm_personalized_advice(
             status_code=503,
             detail="LLM service unavailable - API key not configured"
         )
-    
+
     _artist_or_404(artist_id, db)
     _authorize_team_access(
         artist_id,

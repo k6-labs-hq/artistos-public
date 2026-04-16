@@ -41,7 +41,7 @@ def _require_admin(
     x_admin_actor: str | None = Header(default=None, alias="X-Admin-Actor"),
 ) -> str:
     """Validate admin API key and return actor name for audit logging.
-    
+
     NOTE: This is a local variant that returns the actor name for audit trails.
     For simple admin validation without return value, use XR7.api.authz.require_admin instead.
     """

@@ -52,7 +52,7 @@ class SharedOrchestraLLM:
         self.model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
         self.api_key = os.environ.get("LLM_API_KEY", "")
         self._is_available = True
-        
+
         # Startup validation: warn if LLM provider configured but API key missing
         if not self.api_key:
             logger.warning(
@@ -73,7 +73,7 @@ class SharedOrchestraLLM:
                     "LLM_API_KEY_set": True,
                 }
             )
-    
+
     @property
     def is_available(self) -> bool:
         """Check if LLM provider is available and configured."""
@@ -99,7 +99,7 @@ class SharedOrchestraLLM:
                 "next_action": "proceed",
                 "reflection_suggestions": [],
             }
-        
+
         try:
             messages_mod = importlib.import_module("langchain_core.messages")
             human_cls = getattr(messages_mod, "HumanMessage")

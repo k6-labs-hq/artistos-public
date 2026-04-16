@@ -12,7 +12,6 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
 from XR7.api.authz import require_admin
-
 from XR7.models.base import get_db
 from XR7.models.data_residency import (
     DataResidencyPolicy,

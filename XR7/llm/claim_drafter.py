@@ -111,13 +111,13 @@ class ClaimDrafter:
         self.api_key = os.environ.get("LLM_API_KEY", "")
         self._rate_limiter = _SimpleRateLimiter(max_requests=40, window_seconds=60)
         self._is_available = bool(self.api_key)
-        
+
         if not self._is_available:
             logger.warning(
                 "ClaimDrafter: LLM API key not configured - will use fallback templates",
                 extra={"provider": self.provider, "model": self.model}
             )
-    
+
     @property
     def is_available(self) -> bool:
         """Check if LLM provider is available and configured."""

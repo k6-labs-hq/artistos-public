@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from XR7.api.authz import require_admin
-
 from XR7.models.base import get_db
 from XR7.models.slo_metric import (
     SloMetric,
