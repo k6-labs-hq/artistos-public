@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: xr7
 resources:
   - ../../base
+  - flower.yaml
 patches:
   - path: patch-observability.yaml
   - target:
