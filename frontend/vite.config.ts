@@ -10,6 +10,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
       "@xr7-sdk": path.resolve(__dirname, "../sdk/typescript/src"),
     },
+    extensions: [".mjs", ".mts", ".ts", ".tsx", ".jsx", ".js", ".json"],
   },
   server: {
     fs: {

@@ -39,7 +39,6 @@ from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_artist_access
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.llm.claim_drafter import royalty_chat_agent
-from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus
 from XR7.models.support_message import SupportMessage, SupportMessageRole
@@ -369,9 +368,7 @@ def get_agents_status(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ):
-    artist = db.query(Artist).filter(Artist.id == artist_id).first()
-    if not artist:
-        raise HTTPException(status_code=404, detail="Artist not found")
+    get_artist_or_404(artist_id, db)
 
     state = get_latest_artist_state(artist_id) or {}
     run_id = str(state.get("run_id") or "")

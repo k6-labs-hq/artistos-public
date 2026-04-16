@@ -46,6 +46,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
+from XR7.api.deps import get_artist_or_404
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.catalog_scorer import CatalogScorer
@@ -388,7 +389,7 @@ class DashboardEngine:
             if rc == "Expired (Black-Box Redistributed)":
                 expired += float(a.estimated_recoverable or 0.0)
 
-        artist = self.db.query(Artist).filter(Artist.id == artist_id).first()
+        artist = get_artist_or_404(artist_id, self.db)
         client_profile = {
             "estimated_leaked": leaked,
             "recovered": recovered,
