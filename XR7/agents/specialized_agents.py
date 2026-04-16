@@ -51,6 +51,33 @@ class SharedOrchestraLLM:
         self.provider = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
         self.model = os.environ.get("LLM_MODEL", "gpt-4o-mini")
         self.api_key = os.environ.get("LLM_API_KEY", "")
+        self._is_available = True
+        
+        # Startup validation: warn if LLM provider configured but API key missing
+        if not self.api_key:
+            logger.warning(
+                "LLM API key not configured - LLM features will be disabled",
+                extra={
+                    "provider": self.provider,
+                    "model": self.model,
+                    "LLM_API_KEY_set": False,
+                }
+            )
+            self._is_available = False
+        else:
+            logger.info(
+                "LLM provider initialized",
+                extra={
+                    "provider": self.provider,
+                    "model": self.model,
+                    "LLM_API_KEY_set": True,
+                }
+            )
+    
+    @property
+    def is_available(self) -> bool:
+        """Check if LLM provider is available and configured."""
+        return self._is_available
 
     async def structured_review(self, *, role: str, payload: dict[str, Any]) -> dict[str, Any]:
         """Return a structured JSON decision with confidence and reasoning.
@@ -58,10 +85,22 @@ class SharedOrchestraLLM:
         Falls back to deterministic local output when optional LLM dependencies
         are unavailable.
         """
+        # Early return if LLM is not available (API key not configured)
+        if not self.is_available:
+            logger.debug(
+                "LLM unavailable - using fallback path",
+                extra={"role": role, "reason": "API key not configured"}
+            )
+            return {
+                "action_taken": f"{role}_fallback_path",
+                "confidence_score": 0.9,
+                "reasoning": "Fallback execution path used (LLM not configured).",
+                "updated_state_fields": {},
+                "next_action": "proceed",
+                "reflection_suggestions": [],
+            }
+        
         try:
-            if not self.api_key:
-                raise RuntimeError("LLM_API_KEY not configured")
-
             messages_mod = importlib.import_module("langchain_core.messages")
             human_cls = getattr(messages_mod, "HumanMessage")
             system_cls = getattr(messages_mod, "SystemMessage")
