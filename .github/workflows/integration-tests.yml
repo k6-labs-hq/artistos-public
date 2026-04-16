@@ -66,12 +66,41 @@ jobs:
       # Tests that require a credential they don't have will still be skipped
       # individually via monkeypatch; the presence of INTEGRATION_CREDS_AVAILABLE
       # only lifts the blanket @pytest.mark.integration skip.
-      - name: Run integration tests
+      - name: Run integration tests (all)
+        if: ${{ !github.event.inputs.test_filter }}
         run: |
           pytest tests/ \
             -m integration \
             --run-integration \
-            ${{ github.event.inputs.test_filter && format('-k "{0}"', github.event.inputs.test_filter) || '' }} \
+            --tb=short \
+            -v
+        env:
+          # PRO connectors
+          ASCAP_API_KEY: ${{ secrets.ASCAP_API_KEY }}
+          BMI_API_KEY: ${{ secrets.BMI_API_KEY }}
+          SESAC_API_KEY: ${{ secrets.SESAC_API_KEY }}
+          APRA_AMCOS_API_KEY: ${{ secrets.APRA_AMCOS_API_KEY }}
+          JASRAC_API_KEY: ${{ secrets.JASRAC_API_KEY }}
+          KOMCA_API_KEY: ${{ secrets.KOMCA_API_KEY }}
+          SACEM_API_KEY: ${{ secrets.SACEM_API_KEY }}
+          MLC_API_KEY: ${{ secrets.MLC_API_KEY }}
+          # DSP connectors
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+          # Trolley sandbox
+          TROLLEY_API_KEY: ${{ secrets.TROLLEY_SANDBOX_API_KEY }}
+          TROLLEY_SECRET_KEY: ${{ secrets.TROLLEY_SANDBOX_SECRET_KEY }}
+          TROLLEY_ENVIRONMENT: "sandbox"
+
+      - name: Run integration tests (filtered)
+        if: ${{ github.event.inputs.test_filter }}
+        run: |
+          pytest tests/ \
+            -m integration \
+            --run-integration \
+            -k "${{ github.event.inputs.test_filter }}" \
             --tb=short \
             -v
         env:
