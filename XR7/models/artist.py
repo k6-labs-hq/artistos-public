@@ -62,6 +62,7 @@ class Artist(Base):
     tvfilm_role: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     organization_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     enterprise_mode_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
 
 class ArtistSchema(BaseModel):

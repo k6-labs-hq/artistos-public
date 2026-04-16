@@ -61,6 +61,7 @@ class Anomaly(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
 
 class AnomalySchema(BaseModel):
@@ -89,6 +90,7 @@ class AnomalySchema(BaseModel):
     trust_score: float | None = None
     urgent_flag: bool | None = False
     created_at: datetime
+    deleted_at: datetime | None = None
 
 
 class BlackBoxExpirationSchema(BaseModel):

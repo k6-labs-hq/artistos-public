@@ -3,7 +3,7 @@ import uuid
 from datetime import date, datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, String
+from sqlalchemy import Date, DateTime, Enum, Float, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -18,6 +18,12 @@ class PaymentType(str, enum.Enum):
 
 class Payment(Base):
     __tablename__ = "payments"
+    __table_args__ = (
+        # Prevents duplicate payments for the same artist + payer reference.
+        # Only enforced when reference_id is non-NULL (partial: composite IS NOT NULL
+        # is DB-specific; the application-level uniqueness check in onboarding handles NULLs).
+        UniqueConstraint("artist_id", "reference_id", name="uq_payments_artist_reference"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     payment_type: Mapped[str] = mapped_column(Enum(PaymentType), nullable=False)

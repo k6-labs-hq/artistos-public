@@ -1,8 +1,9 @@
 import enum
 import uuid
+from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Enum, ForeignKey, String
+from sqlalchemy import DateTime, Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -23,6 +24,7 @@ class Work(Base):
     iswc: Mapped[str | None] = mapped_column(String, nullable=True)
     work_type: Mapped[str] = mapped_column(Enum(WorkType), nullable=False)
     artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
 
 class WorkSchema(BaseModel):
@@ -34,3 +36,4 @@ class WorkSchema(BaseModel):
     iswc: str | None = None
     work_type: WorkType
     artist_id: str
+    deleted_at: datetime | None = None

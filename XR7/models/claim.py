@@ -78,6 +78,7 @@ class Claim(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
 
 class ClaimSchema(BaseModel):
@@ -128,3 +129,4 @@ class ClaimSchema(BaseModel):
     claim_strength_rating: str | None = None
     created_at: datetime
     updated_at: datetime
+    deleted_at: datetime | None = None

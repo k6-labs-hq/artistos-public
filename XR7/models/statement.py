@@ -14,7 +14,7 @@ import uuid
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import DateTime, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -24,6 +24,12 @@ class Statement(Base):
     """Audit record for an uploaded royalty statement file."""
 
     __tablename__ = "statements"
+    __table_args__ = (
+        # Prevents re-processing the same file for the same artist.  The duplicate
+        # check in the upload handler sets status=DUPLICATE; this index is the
+        # database-level safety net for concurrent uploads.
+        UniqueConstraint("artist_id", "file_hash", name="uq_statements_artist_hash"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
