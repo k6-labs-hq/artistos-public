@@ -1,7 +1,7 @@
 PYTHON ?= /usr/bin/python3
 UVICORN ?= uvicorn
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check sdk-python sdk-typescript sdks seed up down docker-build worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check check-sdk-todos sdk-python sdk-typescript sdks seed up down docker-build worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
 
 BASE_REF ?= origin/main
 
@@ -47,6 +47,9 @@ api-reference:
 
 docs-check: openapi api-reference
 	git diff --exit-code -- openapi/openapi.json docs/api/reference.md
+
+check-sdk-todos:
+	$(PYTHON) scripts/ci/check_sdk_todos.py
 
 update-completion:
 	$(PYTHON) scripts/update_completion.py
