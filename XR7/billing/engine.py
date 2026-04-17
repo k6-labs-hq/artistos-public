@@ -252,3 +252,131 @@ class BillingEngine:
         self.db_session.commit()
         self.db_session.refresh(tx)
         return tx
+
+    def process_refund(
+        self,
+        *,
+        claim_id: str,
+        refund_amount: float,
+        reason: str,
+        refund_type: str = "REFUND",
+        trolley_refund_id: str | None = None,
+        notes: str | None = None,
+    ) -> TrolleyTransaction:
+        """
+        Process a refund or chargeback for a previously paid claim.
+
+        Critical for production dispute handling. Creates:
+        - Negative TrolleyTransaction (REFUND or CHARGEBACK type)
+        - Immutable ledger audit trail entry
+        - Claim status update if fully refunded
+
+        Args:
+            claim_id: ID of the claim being refunded
+            refund_amount: Amount to refund (positive number, will be stored as negative)
+            reason: Reason for refund (e.g., "Payer dispute", "Duplicate payment")
+            refund_type: "REFUND" (voluntary) or "CHARGEBACK" (forced)
+            trolley_refund_id: External Trolley transaction ID if applicable
+            notes: Additional context for audit purposes
+
+        Returns:
+            TrolleyTransaction: The refund transaction record
+
+        Raises:
+            ValueError: If claim not found, amount invalid, or claim not in refundable status
+        """
+        claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
+        if not claim:
+            raise ValueError(f"Claim {claim_id} not found")
+
+        if refund_amount <= 0:
+            raise ValueError("refund_amount must be greater than 0")
+
+        if refund_type not in ["REFUND", "CHARGEBACK"]:
+            raise ValueError(f"refund_type must be 'REFUND' or 'CHARGEBACK', got {refund_type}")
+
+        # Verify claim is in a refundable state
+        refundable_statuses = {
+            ClaimStatus.FUNDS_RECEIVED,
+            ClaimStatus.PAID,
+            ClaimStatus.DISBURSEMENT_FAILED,
+        }
+        if claim.status not in refundable_statuses:
+            raise ValueError(
+                f"Claim {claim_id} is in status {claim.status}, "
+                f"not eligible for refund (must be in {refundable_statuses})"
+            )
+
+        # Validate refund amount doesn't exceed recovered amount
+        recovered = float(claim.recovered_amount or 0.0)
+        if refund_amount > recovered:
+            raise ValueError(f"Refund amount {refund_amount} exceeds recovered amount {recovered}")
+
+        # Calculate adjusted amounts after refund
+        remaining_recovered = recovered - refund_amount
+        fee_pct = float(claim.platform_fee_percent or self._artist_fee_percent(claim.artist_id))
+        adjusted_platform_fee = round(remaining_recovered * fee_pct / 100.0, 2)
+        adjusted_artist_net = round(remaining_recovered - adjusted_platform_fee, 2)
+
+        # Create refund transaction record (negative amount for accounting)
+        tx_type = (
+            TrolleyTxnType.CHARGEBACK if refund_type == "CHARGEBACK" else TrolleyTxnType.REFUND
+        )
+        tx = TrolleyTransaction(
+            id=str(uuid.uuid4()),
+            artist_id=claim.artist_id,
+            claim_id=claim.id,
+            type=tx_type,
+            status=TrolleyTxnStatus.PAID,  # Refund is completed when recorded
+            gross_amount=-refund_amount,  # Negative for refund
+            platform_fee_amount=-round(refund_amount * fee_pct / 100.0, 2),
+            net_amount=-round(refund_amount * (1 - fee_pct / 100.0), 2),
+            source_currency=claim.currency or "USD",
+            trolley_payment_id=trolley_refund_id,
+            external_id=claim.id,
+            description=f"{refund_type}: {reason}" + (f" - {notes}" if notes else ""),
+            failure_reason=reason if refund_type == "CHARGEBACK" else None,
+        )
+        self.db_session.add(tx)
+
+        # Update claim with adjusted amounts
+        claim.recovered_amount = remaining_recovered
+        claim.platform_fee_amount = adjusted_platform_fee
+        claim.contingency_fee = adjusted_platform_fee
+        claim.artist_net_amount = adjusted_artist_net
+        claim.updated_at = datetime.now(timezone.utc)
+
+        # If fully refunded, revert claim status
+        if remaining_recovered == 0:
+            # Reset to the status before payment was received
+            if claim.status == ClaimStatus.PAID:
+                claim.status = ClaimStatus.FUNDS_RECEIVED
+            elif claim.status == ClaimStatus.FUNDS_RECEIVED:
+                claim.status = ClaimStatus.SUBMITTED
+            claim.trolley_payment_id = None
+            claim.trolley_payment_status = None
+
+        # Create immutable audit trail entry
+        ledger = ImmutableLedgerService(self.db_session)
+        ledger.append(
+            claim.artist_id,
+            f"{refund_type.lower()}_processed",
+            {
+                "claim_id": claim.id,
+                "refund_amount": refund_amount,
+                "refund_type": refund_type,
+                "reason": reason,
+                "trolley_refund_id": trolley_refund_id,
+                "notes": notes,
+                "remaining_recovered_amount": remaining_recovered,
+                "adjusted_platform_fee": adjusted_platform_fee,
+                "adjusted_artist_net": adjusted_artist_net,
+                "claim_status_after_refund": claim.status.value,
+                "processed_at": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+
+        self.db_session.commit()
+        self.db_session.refresh(tx)
+        self.db_session.refresh(claim)
+        return tx
