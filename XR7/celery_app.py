@@ -17,6 +17,10 @@ celery_app.conf.update(
     timezone="UTC",
     task_track_started=True,
     broker_connection_retry_on_startup=True,
+    # ── Worker reliability: prevent task loss on pod restart ────────────
+    task_acks_late=True,  # Acknowledge tasks AFTER completion, not on receipt
+    task_reject_on_worker_lost=True,  # Return tasks to queue if worker dies
+    worker_prefetch_multiplier=4,  # Fetch 4 tasks at once for balanced throughput
     beat_schedule={
         "xr7-requeue-due-sync-jobs": {
             "task": "xr7.sync_jobs.requeue_due",
