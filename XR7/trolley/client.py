@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import os
+import threading
 import time
 from dataclasses import dataclass
 from typing import Any
@@ -17,11 +18,23 @@ class TrolleyException(Exception):
         self.code = code
 
 
+_CB_LOCK = threading.Lock()
+_CB_STATE: dict[str, dict[str, float | int | None]] = {}
+
+
+def _reset_trolley_circuit_breaker_state() -> None:
+    """Testing helper: clear in-memory circuit breaker state."""
+    with _CB_LOCK:
+        _CB_STATE.clear()
+
+
 @dataclass
 class TrolleyClient:
     access_key: str
     secret_key: str
     base_url: str = "https://api.trolley.com"
+    circuit_breaker_threshold: int = 5
+    circuit_breaker_recovery_seconds: int = 60
 
     @classmethod
     def from_env(cls) -> "TrolleyClient":
@@ -48,24 +61,82 @@ class TrolleyClient:
             "X-Signature": signature,
         }
 
+    def _cb_key(self) -> str:
+        return self.base_url.rstrip("/")
+
+    def _get_cb_state(self) -> dict[str, float | int | None]:
+        key = self._cb_key()
+        with _CB_LOCK:
+            return _CB_STATE.setdefault(
+                key,
+                {
+                    "consecutive_failures": 0,
+                    "opened_at": None,
+                },
+            )
+
+    def _fail_fast_if_open(self) -> None:
+        state = self._get_cb_state()
+        opened_at = state.get("opened_at")
+        if opened_at is None:
+            return
+
+        now = time.time()
+        elapsed = now - float(opened_at)
+        if elapsed < self.circuit_breaker_recovery_seconds:
+            retry_in = int(self.circuit_breaker_recovery_seconds - elapsed)
+            raise TrolleyException(
+                "CIRCUIT_OPEN",
+                (
+                    "Trolley circuit breaker is OPEN after repeated upstream failures. "
+                    f"Failing fast; retry in ~{retry_in}s."
+                ),
+            )
+
+    def _record_success(self) -> None:
+        state = self._get_cb_state()
+        with _CB_LOCK:
+            state["consecutive_failures"] = 0
+            state["opened_at"] = None
+
+    def _record_failure(self) -> None:
+        state = self._get_cb_state()
+        with _CB_LOCK:
+            failures = int(state.get("consecutive_failures") or 0) + 1
+            state["consecutive_failures"] = failures
+            if failures >= self.circuit_breaker_threshold:
+                state["opened_at"] = time.time()
+
     def _request(
         self, method: str, path: str, payload: dict[str, Any] | None = None
     ) -> dict[str, Any]:
+        self._fail_fast_if_open()
+
         body = json.dumps(payload or {}, separators=(",", ":")) if payload is not None else ""
         headers = self._headers(method, path, body)
-        response = requests.request(
-            method=method.upper(),
-            url=f"{self.base_url}{path}",
-            headers=headers,
-            data=body if payload is not None else None,
-            timeout=20,
-        )
+        try:
+            response = requests.request(
+                method=method.upper(),
+                url=f"{self.base_url}{path}",
+                headers=headers,
+                data=body if payload is not None else None,
+                timeout=20,
+            )
+        except requests.RequestException as exc:
+            self._record_failure()
+            raise TrolleyException("REQUEST_ERROR", f"Trolley request failed: {exc}") from exc
+
         if response.status_code >= 400:
             try:
                 err = response.json()
             except Exception:  # noqa: BLE001
                 err = {"message": response.text}
+
+            if response.status_code >= 500:
+                self._record_failure()
             raise TrolleyException(str(response.status_code), f"Trolley API error: {err}")
+
+        self._record_success()
         if not response.text:
             return {}
         return response.json()
