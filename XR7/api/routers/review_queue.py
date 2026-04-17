@@ -81,7 +81,7 @@ def create_review_item(
 
 @router.get("/items", response_model=list[ReviewItemSchema])
 def list_review_items(
-    status: str | None = Query(default=None),
+    status: ReviewItemStatus | None = Query(default=None),
     artist_id: str | None = Query(default=None),
     assigned_analyst_email: str | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=500),
@@ -91,7 +91,7 @@ def list_review_items(
 ):
     query = db.query(ReviewItem)
     if status:
-        query = query.filter(ReviewItem.status == status)
+        query = query.filter(ReviewItem.status == status.value)
     if artist_id:
         query = query.filter(ReviewItem.artist_id == artist_id)
     if assigned_analyst_email:
