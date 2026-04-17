@@ -60,6 +60,7 @@ from XR7.services.artist_lifecycle import promote_to_active
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.founder_program import handle_founder_notifications
 from XR7.services.live_updates import broadcast_live_update
+from XR7.services.rate_limiter import check_upload_rate_limit
 from XR7.services.webhook_delivery import OutboundWebhookService
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
@@ -259,6 +260,9 @@ async def upload_statement(
     returns HTTP 403 until the artist has agreed to the terms.
     """
     artist = get_artist_or_404(artist_id, db)
+
+    # CRITICAL SECURITY: Rate limit uploads to prevent resource exhaustion
+    check_upload_rate_limit(artist_id)
 
     # Gate: artist must have accepted the current T&C before submitting data.
     require_terms_accepted(artist_id, db)
@@ -534,6 +538,9 @@ async def upload_statement_batch(
 ):
     """Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing."""
     artist = get_artist_or_404(artist_id, db)
+
+    # CRITICAL SECURITY: Rate limit uploads to prevent resource exhaustion
+    check_upload_rate_limit(artist_id)
 
     require_terms_accepted(artist_id, db)
 
