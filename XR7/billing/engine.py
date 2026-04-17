@@ -127,6 +127,18 @@ class BillingEngine:
         platform_fee = round(gross_amount * fee_pct / 100.0, 2)
         artist_net = round(gross_amount - platform_fee, 2)
 
+        # CRITICAL VALIDATION: Prevent fee overcharges and negative payouts
+        if platform_fee >= gross_amount:
+            raise ValueError(
+                f"Platform fee (${platform_fee:.2f}) cannot be >= gross amount (${gross_amount:.2f}). "
+                f"Fee percentage ({fee_pct}%) is too high for this remittance."
+            )
+        if artist_net <= 0:
+            raise ValueError(
+                f"Artist net amount (${artist_net:.2f}) must be positive. "
+                f"Fee (${platform_fee:.2f}) exceeds or equals gross (${gross_amount:.2f})."
+            )
+
         claim.status = ClaimStatus.FUNDS_RECEIVED
         claim.recovered_amount = gross_amount
         claim.platform_fee_percent = fee_pct
