@@ -161,6 +161,12 @@ def test_claim_status_chain_integrity(test_claim):
 
         claim = db.query(Claim).filter(Claim.id == claim_id).first()
         for new_status in transitions:
+            if new_status == ClaimStatus.PAID:
+                claim.recovered_amount = 1000.0
+                claim.platform_fee_percent = 12.0
+                claim.contingency_fee = 120.0
+                claim.platform_fee_amount = 120.0
+                claim.artist_net_amount = 880.0
             claim.status = new_status
             db.commit()
             db.refresh(claim)
@@ -303,5 +309,102 @@ def test_multiple_claims_same_artist_separate_chains(test_claim):
         claim_ids = {payload1["claim_id"], payload2["claim_id"]}
         assert len(claim_ids) == 2, "Should track different claims"
 
+    finally:
+        db.close()
+
+
+def test_payment_status_change_requires_consistent_amounts(test_claim):
+    """Test that payment-state transitions succeed only when payout math is consistent."""
+    db = next(get_db())
+    try:
+        claim = db.query(Claim).filter(Claim.id == test_claim.id).first()
+        claim.status = ClaimStatus.ACCEPTED
+        db.commit()
+
+        claim.recovered_amount = 1000.0
+        claim.platform_fee_percent = 12.0
+        claim.contingency_fee = 120.0
+        claim.platform_fee_amount = 120.0
+        claim.artist_net_amount = 880.0
+        claim.status = ClaimStatus.FUNDS_RECEIVED
+        db.commit()
+
+        db.refresh(claim)
+        assert claim.status == ClaimStatus.FUNDS_RECEIVED
+    finally:
+        db.close()
+
+
+def test_payment_status_change_rejects_inconsistent_fee_amount(test_claim):
+    """Test that payout transitions reject mismatched fee math."""
+    db = next(get_db())
+    try:
+        claim = db.query(Claim).filter(Claim.id == test_claim.id).first()
+        claim.status = ClaimStatus.ACCEPTED
+        db.commit()
+
+        claim.recovered_amount = 1000.0
+        claim.platform_fee_percent = 12.0
+        claim.contingency_fee = 150.0
+        claim.platform_fee_amount = 150.0
+        claim.artist_net_amount = 850.0
+        claim.status = ClaimStatus.PAID
+
+        with pytest.raises(
+            ValueError,
+            match=r"platform_fee_amount must equal recovered_amount \* platform_fee_percent",
+        ):
+            db.commit()
+
+        db.rollback()
+    finally:
+        db.close()
+
+
+def test_payment_status_change_rejects_inconsistent_net_amount(test_claim):
+    """Test that payout transitions reject mismatched net math."""
+    db = next(get_db())
+    try:
+        claim = db.query(Claim).filter(Claim.id == test_claim.id).first()
+        claim.status = ClaimStatus.ACCEPTED
+        db.commit()
+
+        claim.recovered_amount = 1000.0
+        claim.platform_fee_percent = 12.0
+        claim.contingency_fee = 120.0
+        claim.platform_fee_amount = 120.0
+        claim.artist_net_amount = 870.0
+        claim.status = ClaimStatus.PAID
+
+        with pytest.raises(
+            ValueError,
+            match="artist_net_amount must equal recovered_amount - platform_fee_amount",
+        ):
+            db.commit()
+
+        db.rollback()
+    finally:
+        db.close()
+
+
+def test_payment_status_change_rejects_negative_amounts(test_claim):
+    """Test that payout transitions reject negative monetary values."""
+    db = next(get_db())
+    try:
+        claim = db.query(Claim).filter(Claim.id == test_claim.id).first()
+        claim.status = ClaimStatus.ACCEPTED
+        db.commit()
+
+        claim.recovered_amount = 1000.0
+        claim.platform_fee_percent = 12.0
+        claim.contingency_fee = -120.0
+        claim.platform_fee_amount = -120.0
+        claim.artist_net_amount = 1120.0
+        claim.status = ClaimStatus.FUNDS_RECEIVED
+
+        with pytest.raises(ValueError, match="must be non-negative"):
+            db.commit()
+
+        db.rollback()
     finally:
         db.close()

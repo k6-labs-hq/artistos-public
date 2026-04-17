@@ -16,13 +16,95 @@ ledger entry when status changes, with hash chaining for tamper detection.
 from __future__ import annotations
 
 import json
+import math
 from datetime import datetime, timezone
 
 from sqlalchemy import event
 from sqlalchemy.orm import Session
 
-from XR7.models.claim import Claim
+from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry, compute_entry_hash
+
+_PAYMENT_STATUSES = {
+    ClaimStatus.FUNDS_RECEIVED,
+    ClaimStatus.DISBURSEMENT_FAILED,
+    ClaimStatus.PAID,
+    ClaimStatus.CLOSED,
+}
+
+
+def _is_close(lhs: float, rhs: float, *, tolerance: float = 0.01) -> bool:
+    return math.isclose(lhs, rhs, abs_tol=tolerance)
+
+
+def _validate_claim_financial_invariants(target: Claim, new_status: ClaimStatus | str) -> None:
+    status = ClaimStatus(new_status)
+    recovered_amount = target.recovered_amount
+    contingency_fee = target.contingency_fee
+    platform_fee_amount = target.platform_fee_amount
+    artist_net_amount = target.artist_net_amount
+    platform_fee_percent = target.platform_fee_percent
+
+    amounts = {
+        "recovered_amount": recovered_amount,
+        "contingency_fee": contingency_fee,
+        "platform_fee_amount": platform_fee_amount,
+        "artist_net_amount": artist_net_amount,
+    }
+
+    for field_name, value in amounts.items():
+        if value is not None and float(value) < 0:
+            raise ValueError(
+                f"Claim {target.id} cannot transition to {status.value}: {field_name} must be non-negative"
+            )
+
+    if status not in _PAYMENT_STATUSES:
+        return
+
+    required_amounts = {
+        "recovered_amount": recovered_amount,
+        "contingency_fee": contingency_fee,
+        "platform_fee_amount": platform_fee_amount,
+        "artist_net_amount": artist_net_amount,
+    }
+    missing_fields = [name for name, value in required_amounts.items() if value is None]
+    if missing_fields:
+        raise ValueError(
+            f"Claim {target.id} cannot transition to {status.value}: missing required payout amounts: {', '.join(missing_fields)}"
+        )
+
+    if platform_fee_percent is None:
+        raise ValueError(
+            f"Claim {target.id} cannot transition to {status.value}: platform_fee_percent is required"
+        )
+
+    recovered_value = round(float(recovered_amount), 2)
+    contingency_fee_value = round(float(contingency_fee), 2)
+    platform_fee_value = round(float(platform_fee_amount), 2)
+    artist_net_value = round(float(artist_net_amount), 2)
+    platform_fee_percent_value = float(platform_fee_percent)
+    expected_fee = round(recovered_value * platform_fee_percent_value / 100.0, 2)
+    expected_net = round(recovered_value - platform_fee_value, 2)
+
+    if not _is_close(contingency_fee_value, platform_fee_value):
+        raise ValueError(
+            f"Claim {target.id} cannot transition to {status.value}: contingency_fee must equal platform_fee_amount"
+        )
+
+    if not _is_close(platform_fee_value, expected_fee):
+        raise ValueError(
+            f"Claim {target.id} cannot transition to {status.value}: platform_fee_amount must equal recovered_amount * platform_fee_percent"
+        )
+
+    if not _is_close(artist_net_value, expected_net):
+        raise ValueError(
+            f"Claim {target.id} cannot transition to {status.value}: artist_net_amount must equal recovered_amount - platform_fee_amount"
+        )
+
+    if not _is_close(platform_fee_value + artist_net_value, recovered_value):
+        raise ValueError(
+            f"Claim {target.id} cannot transition to {status.value}: platform_fee_amount + artist_net_amount must equal recovered_amount"
+        )
 
 
 def log_claim_status_change(mapper, connection, target: Claim) -> None:  # noqa: ARG001
@@ -50,6 +132,8 @@ def log_claim_status_change(mapper, connection, target: Claim) -> None:  # noqa:
 
     if old_status == new_status:
         return  # No actual change
+
+    _validate_claim_financial_invariants(target, new_status)
 
     # Get session from connection
     session = Session(bind=connection)
