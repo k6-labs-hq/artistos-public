@@ -345,12 +345,110 @@ app.include_router(collaborator_share_router.router)
             "200": {
                 "description": "Platform is healthy",
                 "content": {"application/json": {"example": {"status": "ok", "version": "2.0.0"}}},
-            }
+            },
+            "503": {
+                "description": "Platform is unhealthy - dependencies unreachable",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "status": "unhealthy",
+                            "version": "2.0.0",
+                            "checks": {
+                                "database": {"status": "fail", "error": "connection refused"},
+                                "redis": {"status": "ok", "latency_ms": 2.3},
+                                "s3": {"status": "fail", "error": "timeout"},
+                            },
+                        }
+                    }
+                },
+            },
         }
     },
 )
 def health():
-    return {"status": "ok", "version": "2.0.0"}
+    """
+    Health check with actual connectivity tests for critical dependencies.
+
+    Returns 200 OK only if ALL core dependencies (PostgreSQL, Redis, S3) are reachable.
+    Returns 503 Service Unavailable if any dependency check fails.
+
+    This prevents deployments from proceeding when dependencies are misconfigured
+    or unreachable, catching issues before they reach production traffic.
+    """
+    import time
+
+    from sqlalchemy import text
+    from starlette.responses import JSONResponse
+
+    checks = {}
+    all_healthy = True
+
+    # PostgreSQL connectivity check
+    try:
+        start = time.perf_counter()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        latency = (time.perf_counter() - start) * 1000
+        checks["database"] = {"status": "ok", "latency_ms": round(latency, 2)}
+    except Exception as exc:
+        checks["database"] = {"status": "fail", "error": str(exc)[:200]}
+        all_healthy = False
+
+    # Redis connectivity check
+    try:
+        if settings.redis_url:
+            import redis
+
+            start = time.perf_counter()
+            r = redis.Redis.from_url(settings.redis_url, socket_connect_timeout=2)
+            r.ping()
+            latency = (time.perf_counter() - start) * 1000
+            checks["redis"] = {"status": "ok", "latency_ms": round(latency, 2)}
+        else:
+            checks["redis"] = {"status": "not_configured"}
+            all_healthy = False
+    except Exception as exc:
+        checks["redis"] = {"status": "fail", "error": str(exc)[:200]}
+        all_healthy = False
+
+    # S3 connectivity check
+    try:
+        if settings.s3_endpoint_url and settings.s3_access_key_id:
+            import boto3
+
+            start = time.perf_counter()
+            s3 = boto3.client(
+                "s3",
+                region_name=settings.s3_region,
+                endpoint_url=settings.s3_endpoint_url,
+                aws_access_key_id=settings.s3_access_key_id,
+                aws_secret_access_key=settings.s3_secret_access_key,
+            )
+            # Test connectivity with head_bucket or list_buckets
+            try:
+                s3.head_bucket(Bucket=settings.s3_bucket)
+            except Exception:
+                # If bucket doesn't exist, test with list_buckets to verify credentials
+                s3.list_buckets()
+            latency = (time.perf_counter() - start) * 1000
+            checks["s3"] = {"status": "ok", "latency_ms": round(latency, 2)}
+        else:
+            checks["s3"] = {"status": "not_configured"}
+            all_healthy = False
+    except Exception as exc:
+        checks["s3"] = {"status": "fail", "error": str(exc)[:200]}
+        all_healthy = False
+
+    response_data = {
+        "status": "ok" if all_healthy else "unhealthy",
+        "version": "2.0.0",
+        "checks": checks,
+    }
+
+    if all_healthy:
+        return response_data
+    else:
+        return JSONResponse(status_code=503, content=response_data)
 
 
 @app.get("/health/readiness")
