@@ -8,8 +8,10 @@ from sqlalchemy.orm import Session
 
 from XR7.auth.event_notifications import send_event_notification
 from XR7.models.artist import Artist, ArtistLifecycleStatus
+from XR7.models.claim import Claim, ClaimStatus
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.platform_config import PlatformConfig
+from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
@@ -26,6 +28,19 @@ class FounderAssignmentResult:
     founder_fee_percent: float
     cohort_open: bool
     milestone: str | None
+
+
+@dataclass
+class FounderTerminationResult:
+    artist_id: str
+    was_founder: bool
+    slot_released: bool
+    previous_fee_percent: float
+    effective_fee_percent: float
+    claims_repriced: int
+    refund_due_total: float
+    slots_filled: int
+    slots_total: int
 
 
 def _safe_float(raw: str | None) -> float | None:
@@ -81,6 +96,110 @@ def founder_status_payload(db: Session) -> dict[str, int | float | bool]:
         "founder_fee_percent": float(cfg.founder_fee_percent),
         "cohort_open": filled < total,
     }
+
+
+def process_founder_termination(
+    db: Session,
+    *,
+    artist: Artist,
+    reason: str,
+    effective_fee_percent: float | None = None,
+    terminated_at: datetime | None = None,
+) -> FounderTerminationResult:
+    """Terminate founder status and reconcile fee differences on existing claims.
+
+    Handles two critical cases:
+    - Early founder termination: artist is moved to the standard fee for future claims.
+    - Fee policy changes: previously charged claim fees are recalculated against
+      ``effective_fee_percent``; any overcharge is recorded as refund due.
+    """
+    if not bool(artist.is_founder):
+        raise ValueError(f"Artist {artist.id} is not in Founder Circle")
+
+    cfg = get_or_create_platform_config(db, for_update=True)
+    previous_fee = float(artist.contingency_fee_percent or cfg.founder_fee_percent)
+    target_fee = (
+        float(effective_fee_percent)
+        if effective_fee_percent is not None
+        else float(resolve_standard_fee_percent(cfg))
+    )
+
+    slot_released = bool(artist.founder_slot_number is not None)
+    if slot_released:
+        cfg.founder_slots_filled = max(0, int(cfg.founder_slots_filled) - 1)
+
+    artist.is_founder = False
+    artist.founder_slot_number = None
+    artist.founder_locked_at = terminated_at or datetime.now(timezone.utc)
+    artist.contingency_fee_percent = target_fee
+
+    claims_repriced = 0
+    refund_due_total = 0.0
+    rows = (
+        db.query(Claim)
+        .filter(
+            Claim.artist_id == artist.id,
+            Claim.status.in_(
+                [
+                    ClaimStatus.FUNDS_RECEIVED,
+                    ClaimStatus.DISBURSEMENT_FAILED,
+                    ClaimStatus.PAID,
+                ]
+            ),
+            Claim.recovered_amount.isnot(None),
+            Claim.platform_fee_amount.isnot(None),
+        )
+        .all()
+    )
+
+    for claim in rows:
+        recovered = float(claim.recovered_amount or 0.0)
+        if recovered <= 0:
+            continue
+
+        current_fee = float(claim.platform_fee_amount or 0.0)
+        recalculated_fee = round(recovered * target_fee / 100.0, 2)
+
+        # Only issue refunds for overcharges; never back-charge the artist.
+        if current_fee > recalculated_fee:
+            delta = round(current_fee - recalculated_fee, 2)
+            refund_due_total = round(refund_due_total + delta, 2)
+            claim.platform_fee_amount = recalculated_fee
+            claim.contingency_fee = recalculated_fee
+            claim.platform_fee_percent = target_fee
+            claim.artist_net_amount = round(recovered - recalculated_fee, 2)
+            claim.updated_at = datetime.now(timezone.utc)
+            claims_repriced += 1
+
+    ledger = ImmutableLedgerService(db)
+    ledger.append(
+        artist.id,
+        "founder_termination_processed",
+        {
+            "artist_id": artist.id,
+            "reason": reason,
+            "previous_fee_percent": previous_fee,
+            "effective_fee_percent": target_fee,
+            "slot_released": slot_released,
+            "claims_repriced": claims_repriced,
+            "refund_due_total": refund_due_total,
+            "terminated_at": (terminated_at or datetime.now(timezone.utc)).isoformat(),
+        },
+    )
+
+    db.commit()
+
+    return FounderTerminationResult(
+        artist_id=artist.id,
+        was_founder=True,
+        slot_released=slot_released,
+        previous_fee_percent=previous_fee,
+        effective_fee_percent=target_fee,
+        claims_repriced=claims_repriced,
+        refund_due_total=refund_due_total,
+        slots_filled=int(cfg.founder_slots_filled),
+        slots_total=int(cfg.founder_cohort_limit),
+    )
 
 
 def assign_founder_slot_on_activation(db: Session, artist: Artist) -> FounderAssignmentResult:
