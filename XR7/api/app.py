@@ -5,12 +5,13 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+from XR7.api.middleware.data_residency import DataResidencyMiddleware
 from XR7.api.middleware.idempotency import IdempotencyMiddleware
+from XR7.api.middleware.limit_upload_size import LimitUploadSizeMiddleware
 from XR7.api.middleware.logging import RequestIDMiddleware, configure_structured_logging
 from XR7.api.middleware.tenant_enforcement import TenantEnforcementMiddleware
 from XR7.api.middleware.timeout import TimeoutMiddleware
 from XR7.api.middleware.versioning import APIVersioningMiddleware
-from XR7.api.middleware.data_residency import DataResidencyMiddleware
 from XR7.api.routers import admin_console as admin_console_router
 from XR7.api.routers import advance_governance as advance_governance_router
 from XR7.api.routers import (
@@ -86,8 +87,8 @@ from XR7.api.routers import xr7_metadata as xr7_metadata_router
 from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
 from XR7.models.base import Base, engine
-from XR7.services.live_updates import live_updates_manager
 from XR7.services.hubspot_client import HubSpotClient
+from XR7.services.live_updates import live_updates_manager
 from xr7_common.settings import settings
 
 
@@ -249,6 +250,10 @@ app.add_middleware(
     expose_headers=["X-Request-ID", "X-Tenant-ID"],
 )
 
+# Limit upload size to 100MB to prevent OOM from large file uploads
+# This middleware checks Content-Length before body is read into memory
+app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=104857600)
+
 # Global request timeout: 30 s safety net for all routes.
 # Long-running endpoints (file uploads, LLM calls, sync jobs) override this
 # via @with_timeout(N) on the handler together with TimeoutRoute on their router.
@@ -339,11 +344,7 @@ app.include_router(collaborator_share_router.router)
         "responses": {
             "200": {
                 "description": "Platform is healthy",
-                "content": {
-                    "application/json": {
-                        "example": {"status": "ok", "version": "2.0.0"}
-                    }
-                },
+                "content": {"application/json": {"example": {"status": "ok", "version": "2.0.0"}}},
             }
         }
     },
