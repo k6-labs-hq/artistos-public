@@ -3,11 +3,68 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict
-from sqlalchemy import JSON, Boolean, DateTime, Enum, Float, ForeignKey, Integer, String
+from pydantic import BaseModel, ConfigDict, field_validator
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
+
+# ISO 4217 currency codes supported by Trolley for international payouts
+# Ref: https://docs.trolley.com/api/#supported-currencies
+VALID_CURRENCY_CODES = frozenset(
+    [
+        "USD",  # US Dollar
+        "EUR",  # Euro
+        "GBP",  # British Pound
+        "CAD",  # Canadian Dollar
+        "AUD",  # Australian Dollar
+        "NZD",  # New Zealand Dollar
+        "JPY",  # Japanese Yen
+        "CNY",  # Chinese Yuan
+        "INR",  # Indian Rupee
+        "BRL",  # Brazilian Real
+        "MXN",  # Mexican Peso
+        "ARS",  # Argentine Peso
+        "CLP",  # Chilean Peso
+        "COP",  # Colombian Peso
+        "PEN",  # Peruvian Sol
+        "ZAR",  # South African Rand
+        "NGN",  # Nigerian Naira
+        "KES",  # Kenyan Shilling
+        "SGD",  # Singapore Dollar
+        "HKD",  # Hong Kong Dollar
+        "KRW",  # South Korean Won
+        "THB",  # Thai Baht
+        "MYR",  # Malaysian Ringgit
+        "IDR",  # Indonesian Rupiah
+        "PHP",  # Philippine Peso
+        "VND",  # Vietnamese Dong
+        "CHF",  # Swiss Franc
+        "SEK",  # Swedish Krona
+        "NOK",  # Norwegian Krone
+        "DKK",  # Danish Krone
+        "PLN",  # Polish Zloty
+        "CZK",  # Czech Koruna
+        "HUF",  # Hungarian Forint
+        "RON",  # Romanian Leu
+        "TRY",  # Turkish Lira
+        "RUB",  # Russian Ruble
+        "ILS",  # Israeli Shekel
+        "AED",  # UAE Dirham
+        "SAR",  # Saudi Riyal
+        "EGP",  # Egyptian Pound
+    ]
+)
 
 
 class ClaimStatus(str, enum.Enum):
@@ -26,6 +83,16 @@ class ClaimStatus(str, enum.Enum):
 
 class Claim(Base):
     __tablename__ = "claims"
+    __table_args__ = (
+        CheckConstraint(
+            f"currency IN ({','.join(repr(c) for c in sorted(VALID_CURRENCY_CODES))})",
+            name="valid_currency_code",
+        ),
+        CheckConstraint(
+            f"trolley_local_currency IS NULL OR trolley_local_currency IN ({','.join(repr(c) for c in sorted(VALID_CURRENCY_CODES))})",
+            name="valid_trolley_currency_code",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False)
@@ -130,3 +197,23 @@ class ClaimSchema(BaseModel):
     created_at: datetime
     updated_at: datetime
     deleted_at: datetime | None = None
+
+    @field_validator("currency")
+    @classmethod
+    def validate_currency(cls, v: str) -> str:
+        """Validate currency is a valid ISO 4217 code supported by Trolley."""
+        if v not in VALID_CURRENCY_CODES:
+            raise ValueError(
+                f"Invalid currency code '{v}'. Must be one of: {', '.join(sorted(VALID_CURRENCY_CODES))}"
+            )
+        return v
+
+    @field_validator("trolley_local_currency")
+    @classmethod
+    def validate_trolley_currency(cls, v: str | None) -> str | None:
+        """Validate trolley local currency is a valid ISO 4217 code."""
+        if v is not None and v not in VALID_CURRENCY_CODES:
+            raise ValueError(
+                f"Invalid trolley currency code '{v}'. Must be one of: {', '.join(sorted(VALID_CURRENCY_CODES))}"
+            )
+        return v
