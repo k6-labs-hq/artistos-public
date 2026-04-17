@@ -87,7 +87,7 @@ def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
         private_key = serialization.load_pem_private_key(
             private_key_pem.encode("utf-8"), password=None
         )
-        signature = private_key.sign(message.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256())
+        signature = private_key.sign(message.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256())  # type: ignore[call-arg,union-attr]
         return base64.b64encode(signature).decode("ascii")
 
     except ImportError:

@@ -68,11 +68,13 @@ def test_advance_claim_transitions(db_session, artist_and_anomaly):
 def test_advance_claim_raises_at_terminal_state(db_session, artist_and_anomaly):
     orchestrator = ClaimsOrchestrator(db_session)
     claim = orchestrator.create_claim("anomaly-1", "ROYALTY_DISPUTE")
-    # Advance all the way to CLOSED without hard-coding the number of
-    # intermediate states in the workflow.
+    # Advance to the state just before PAID, then reconcile payout amounts
+    # (required by the payout invariant) before continuing to CLOSED.
     for _ in range(10):
         if claim.status == ClaimStatus.CLOSED:
             break
+        if claim.status == ClaimStatus.ACCEPTED:
+            orchestrator.reconcile_recovered_amount(claim.id, 1000.0, "USD")
         claim = orchestrator.advance_claim(claim.id)
     assert claim.status == ClaimStatus.CLOSED
     with pytest.raises(ValueError):

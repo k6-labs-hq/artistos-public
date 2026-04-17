@@ -6,13 +6,13 @@ _current_tenant_id: ContextVar[str] = ContextVar("current_tenant_id", default=""
 _current_actor_sub: ContextVar[str] = ContextVar("current_actor_sub", default="")
 
 
-def set_tenant_context(tenant_id: str, actor_sub: str | None = None) -> tuple[Token, Token]:
+def set_tenant_context(tenant_id: str, actor_sub: str | None = None) -> tuple[Token[str], Token[str]]:
     tenant_token = _current_tenant_id.set((tenant_id or "").strip())
     actor_token = _current_actor_sub.set((actor_sub or "").strip())
     return tenant_token, actor_token
 
 
-def reset_tenant_context(tokens: tuple[Token, Token]) -> None:
+def reset_tenant_context(tokens: tuple[Token[str], Token[str]]) -> None:
     tenant_token, actor_token = tokens
     _current_tenant_id.reset(tenant_token)
     _current_actor_sub.reset(actor_token)
