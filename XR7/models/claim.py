@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import (
     JSON,
     Boolean,
@@ -79,6 +79,43 @@ class ClaimStatus(str, enum.Enum):
     DISBURSEMENT_FAILED = "DISBURSEMENT_FAILED"
     PAID = "PAID"
     CLOSED = "CLOSED"
+
+
+class ClaimEvidenceModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    summary: str | None = None
+    confidence_score: float | None = Field(default=None, ge=0, le=1)
+    sources: list[str] = Field(default_factory=list)
+    metadata: dict[str, Any] | None = None
+
+
+class ClaimCommunicationModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    channel: str
+    message: str
+    occurred_at: datetime | None = None
+    counterparty: str | None = None
+
+
+class ClaimSupportingDocumentModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    name: str
+    document_type: str | None = None
+    url: str | None = None
+    uploaded_at: datetime | None = None
+
+
+class ClaimLegalDefensibilityReportModel(BaseModel):
+    model_config = ConfigDict(extra="allow")
+
+    summary: str | None = None
+    defensibility_score: float | None = Field(default=None, ge=0, le=1)
+    risk_level: str | None = None
+    findings: list[str] = Field(default_factory=list)
+    recommended_actions: list[str] = Field(default_factory=list)
 
 
 class Claim(Base):
@@ -172,7 +209,7 @@ class ClaimSchema(BaseModel):
     trolley_local_currency: str | None = None
     payout_retry_count: int = 0
     payout_failure_reason: str | None = None
-    evidence: dict[str, Any] | None = None
+    evidence: ClaimEvidenceModel | None = None
     payer_name: str | None = None
     payer_contact: str | None = None
     original_due_date: datetime | None = None
@@ -185,14 +222,14 @@ class ClaimSchema(BaseModel):
     discovery_date: datetime | None = None
     sol_window_years: int | None = None
     sol_citation_source: str | None = None
-    communications: list[dict[str, Any]] | None = None
+    communications: list[ClaimCommunicationModel] | None = None
     anomaly_report: dict[str, Any] | None = None
-    supporting_documents: list[dict[str, Any]] | None = None
+    supporting_documents: list[ClaimSupportingDocumentModel] | None = None
     attorney_file_generated: bool = False
     attorney_file_generated_at: datetime | None = None
     trust_score: float | None = None
     attorney_review_required: bool = False
-    legal_defensibility_report: dict[str, Any] | None = None
+    legal_defensibility_report: ClaimLegalDefensibilityReportModel | None = None
     claim_strength_rating: str | None = None
     created_at: datetime
     updated_at: datetime
