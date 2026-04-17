@@ -47,6 +47,12 @@ class XR7Settings:
     }
     xr7_env: str = os.getenv("XR7_ENV", "development").lower()
 
+    # DB connection pool settings
+    db_pool_size: int = int(os.getenv("XR7_DB_POOL_SIZE", "10"))
+    db_max_overflow: int = int(os.getenv("XR7_DB_MAX_OVERFLOW", "20"))
+    db_pool_timeout: int = int(os.getenv("XR7_DB_POOL_TIMEOUT", "30"))
+    db_pool_recycle: int = int(os.getenv("XR7_DB_POOL_RECYCLE", "1800"))
+
     @property
     def plugin_allowed_prefixes(self) -> tuple[str, ...]:
         return tuple(p.strip() for p in self.plugin_allowed_prefixes_raw.split(",") if p.strip())

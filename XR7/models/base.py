@@ -1,12 +1,17 @@
 from collections.abc import Generator
+import logging
+import time
 from typing import Any
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy import event
+from sqlalchemy.orm import DeclarativeBase, sessionmaker, with_loader_criteria
 
+from XR7.services.tenant_context import get_current_actor_sub, get_current_tenant_id
 from xr7_common.settings import settings
 
 DATABASE_URL = settings.database_url
+logger = logging.getLogger(__name__)
 
 
 def _engine_connect_args(url: str) -> dict[str, object]:
@@ -15,10 +20,101 @@ def _engine_connect_args(url: str) -> dict[str, object]:
     return {}
 
 
+def _engine_pool_kwargs(url: str) -> dict[str, object]:
+    """Return pool settings only for non-SQLite databases."""
+    if url.startswith("sqlite"):
+        # SQLite does not support connection pooling via SQLAlchemy pool
+        return {}
+    return {
+        "pool_size": settings.db_pool_size,
+        "max_overflow": settings.db_max_overflow,
+        "pool_timeout": settings.db_pool_timeout,
+        "pool_recycle": settings.db_pool_recycle,
+    }
+
+
 engine = create_engine(
-    DATABASE_URL, connect_args=_engine_connect_args(DATABASE_URL), pool_pre_ping=True
+    DATABASE_URL,
+    connect_args=_engine_connect_args(DATABASE_URL),
+    pool_pre_ping=True,
+    **_engine_pool_kwargs(DATABASE_URL),
 )
+
+
+@event.listens_for(engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault("query_start_time", []).append(time.perf_counter())
+
+
+@event.listens_for(engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    start_times = conn.info.get("query_start_time", [])
+    if not start_times:
+        return
+    total = time.perf_counter() - start_times.pop(-1)
+    duration_ms = total * 1000
+
+    # Slow query logging threshold: >100ms
+    if duration_ms > 100:
+        logger.warning(
+            "slow_query_detected",
+            extra={
+                "duration_ms": round(duration_ms, 2),
+                "statement": statement[:500],
+            },
+        )
+
+    # Lightweight N+1 heuristic: repeated SELECT statements on same connection.
+    normalized = " ".join((statement or "").split())[:300]
+    if normalized.lower().startswith("select"):
+        counts = conn.info.setdefault("query_seen_counts", {})
+        counts[normalized] = counts.get(normalized, 0) + 1
+        if counts[normalized] == 10:
+            logger.warning(
+                "n_plus_one_suspected",
+                extra={"statement": normalized, "repeat_count": counts[normalized]},
+            )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+@event.listens_for(SessionLocal, "do_orm_execute")
+def _enforce_tenant_scope(execute_state) -> None:
+    tenant_id = get_current_tenant_id()
+    if not tenant_id:
+        return
+
+    actor_sub = get_current_actor_sub()
+    params = execute_state.parameters
+    if isinstance(params, dict):
+        explicit_tenant = str(params.get("tenant_id") or "").strip()
+        if explicit_tenant and explicit_tenant != tenant_id:
+            logger.warning(
+                "cross_tenant_parameter_attempt",
+                extra={
+                    "tenant_from_jwt": tenant_id,
+                    "tenant_from_query": explicit_tenant,
+                    "actor": actor_sub,
+                },
+            )
+
+    if execute_state.is_select:
+        tenant_entities: list[type] = []
+        for mapper in Base.registry.mappers:
+            model_cls = mapper.class_
+            if hasattr(model_cls, "tenant_id"):
+                tenant_entities.append(model_cls)
+
+        if tenant_entities:
+            execute_state.statement = execute_state.statement.options(
+                *[
+                    with_loader_criteria(
+                        entity,
+                        lambda cls, tenant_id=tenant_id: cls.tenant_id == tenant_id,
+                        include_aliases=True,
+                    )
+                    for entity in tenant_entities
+                ]
+            )
 
 
 class Base(DeclarativeBase):

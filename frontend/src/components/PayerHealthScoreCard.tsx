@@ -78,7 +78,9 @@ export function PayerHealthScoreCard({ artistId }: Props) {
     const range = max - min || 1;
     const w = 48, h = 20;
     const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - ((v - min) / range) * h}`).join(" ");
-    const trend = data[data.length - 1] - data[0];
+    const first = data[0] ?? 0;
+    const last = data[data.length - 1] ?? first;
+    const trend = last - first;
     return (
       <svg width={w} height={h} style={{ display: "inline-block" }}>
         <polyline points={pts} fill="none" stroke={trend >= 0 ? "#10B981" : "#F87171"} strokeWidth={1.5} />
@@ -179,7 +181,7 @@ export function PayerHealthScoreCard({ artistId }: Props) {
                   <div style={{ background: "#0F172A", padding: "10px 14px" }}>
                     {(Object.keys(subLabel) as (keyof SubScores)[]).map((k) => {
                       const val = p.sub_scores[k];
-                      const max = subMax[k];
+                      const max = subMax[k] ?? 1;
                       const pct = (val / max) * 100;
                       return (
                         <div key={k} style={{ marginBottom: 6 }}>

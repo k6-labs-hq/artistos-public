@@ -35,5 +35,27 @@ jobs:
       - name: Deploy environment overlay
         run: scripts/ops/deploy_env.sh ${{ inputs.environment }} ${{ inputs.image_tag }} xr7
 
+      - name: Smoke test — wait for rollout
+        run: |
+          kubectl rollout status deployment/xr7-api -n xr7 --timeout=300s
+          kubectl rollout status deployment/xr7-worker -n xr7 --timeout=300s
+
+      - name: Smoke test — health probe
+        run: |
+          # Retrieve the API service URL from the cluster
+          API_URL=$(kubectl get ingress xr7-api-ingress -n xr7 \
+            -o jsonpath='{.spec.rules[0].host}' 2>/dev/null || echo "xr7-api.xr7.svc.cluster.local")
+          # Use an in-cluster curl job to reach the health endpoint
+          kubectl run smoke-test-${{ github.run_id }} \
+            --image=curlimages/curl:8.5.0 \
+            --restart=Never \
+            --rm --attach \
+            --namespace=xr7 \
+            -- curl -sf --max-time 10 "http://xr7-api.xr7.svc.cluster.local/health/readiness" \
+            || (echo "Smoke test FAILED — rolling back" ; \
+                kubectl rollout undo deployment/xr7-api -n xr7 ; \
+                kubectl rollout undo deployment/xr7-worker -n xr7 ; \
+                exit 1)
+
       - name: SLO gate
         run: /usr/bin/env bash scripts/ops/slo_gate.sh

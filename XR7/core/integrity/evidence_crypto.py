@@ -78,51 +78,97 @@ def hmac_verify(chain_hash: str, signature: str) -> bool:
 
 
 def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
-    with tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file:
-        key_file.write(private_key_pem)
-        key_file.flush()
-        proc = subprocess.run(
-            ["openssl", "dgst", "-sha256", "-sign", key_file.name],
-            input=message.encode("utf-8"),
-            capture_output=True,
-            check=False,
+    """Sign message with RSA-SHA256 using cryptography library or openssl subprocess."""
+    try:
+        # Try cryptography library first (pure Python, cross-platform)
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import padding
+        
+        private_key = serialization.load_pem_private_key(
+            private_key_pem.encode("utf-8"),
+            password=None
         )
-    if proc.returncode != 0:
-        raise ValueError(
-            f"openssl sign failed: {proc.stderr.decode('utf-8', errors='ignore').strip()}"
+        signature = private_key.sign(
+            message.encode("utf-8"),
+            padding.PKCS1v15(),
+            hashes.SHA256()
         )
-    return base64.b64encode(proc.stdout).decode("ascii")
+        return base64.b64encode(signature).decode("ascii")
+        
+    except ImportError:
+        # Fall back to openssl subprocess if cryptography not available
+        with tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file:
+            key_file.write(private_key_pem)
+            key_file.flush()
+            proc = subprocess.run(
+                ["openssl", "dgst", "-sha256", "-sign", key_file.name],
+                input=message.encode("utf-8"),
+                capture_output=True,
+                check=False,
+            )
+        if proc.returncode != 0:
+            raise ValueError(
+                f"openssl sign failed: {proc.stderr.decode('utf-8', errors='ignore').strip()}"
+            )
+        return base64.b64encode(proc.stdout).decode("ascii")
 
 
 def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) -> bool:
+    """Verify RSA-SHA256 signature using cryptography library or openssl subprocess."""
     try:
-        signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
-    except Exception:
-        return False
+        # Try cryptography library first (pure Python, cross-platform)
+        from cryptography.hazmat.primitives import hashes, serialization
+        from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.exceptions import InvalidSignature
+        
+        try:
+            signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
+        except Exception:
+            return False
+            
+        public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
+        
+        try:
+            public_key.verify(
+                signature,
+                message.encode("utf-8"),
+                padding.PKCS1v15(),
+                hashes.SHA256()
+            )
+            return True
+        except InvalidSignature:
+            return False
+            
+    except ImportError:
+        # Fall back to openssl subprocess if cryptography not available
+        try:
+            signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
+        except Exception:
+            return False
 
-    with (
-        tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file,
-        tempfile.NamedTemporaryFile(mode="wb", delete=True) as sig_file,
-    ):
-        key_file.write(public_key_pem)
-        key_file.flush()
-        sig_file.write(signature)
-        sig_file.flush()
-        proc = subprocess.run(
-            [
-                "openssl",
-                "dgst",
-                "-sha256",
-                "-verify",
-                key_file.name,
-                "-signature",
-                sig_file.name,
-            ],
-            input=message.encode("utf-8"),
-            capture_output=True,
-            check=False,
-        )
-    return proc.returncode == 0
+        with (
+            tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file,
+            tempfile.NamedTemporaryFile(mode="wb", delete=True) as sig_file,
+        ):
+            key_file.write(public_key_pem)
+            key_file.flush()
+            sig_file.write(signature)
+            sig_file.flush()
+            proc = subprocess.run(
+                [
+                    "openssl",
+                    "dgst",
+                    "-sha256",
+                    "-verify",
+                    key_file.name,
+                    "-signature",
+                    sig_file.name,
+                ],
+                input=message.encode("utf-8"),
+                capture_output=True,
+                check=False,
+            )
+        return proc.returncode == 0
 
 
 # ---------------------------------------------------------------------------

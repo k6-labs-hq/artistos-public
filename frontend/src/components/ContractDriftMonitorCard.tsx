@@ -38,7 +38,8 @@ function DriftSparkline({ data }: { data: QuarterPoint[] }) {
   const areaTop = actual.map((v, i) => `${(i / (actual.length - 1)) * w},${h - (v / maxR) * h}`).join(" ");
   const areaBottom = [...actual].reverse().map((v, i) => {
     const idx = actual.length - 1 - i;
-    return `${(idx / (actual.length - 1)) * w},${h - (contracted[idx] / maxR) * h}`;
+    const contractedValue = contracted[idx] ?? 0;
+    return `${(idx / (actual.length - 1)) * w},${h - (contractedValue / maxR) * h}`;
   }).join(" ");
 
   return (
@@ -114,6 +115,8 @@ export function ContractDriftMonitorCard({ artistId }: Props) {
             Monitor whether your contracted rates and actual payouts are in sync — every quarter.
           </p>
           <button
+            type="button"
+            aria-label="Monitor my contracts for drift"
             onClick={load}
             style={{ background: amber, color: "#000", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}
           >
@@ -188,6 +191,8 @@ export function ContractDriftMonitorCard({ artistId }: Props) {
                       </div>
                       {(c.classification === "BREACH_RISK" || c.classification === "HARD_DRIFT") && (
                         <button
+                          type="button"
+                          aria-label={`Initiate dispute for contract ${c.contract_id}`}
                           onClick={() => initiateDispute(c.contract_id)}
                           disabled={disputing === c.contract_id}
                           style={{

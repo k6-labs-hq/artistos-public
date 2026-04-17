@@ -7,6 +7,8 @@ from fastapi import HTTPException
 from fastapi.routing import APIRoute
 from starlette.requests import Request
 from starlette.responses import Response
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp
 
 
 def with_timeout(seconds: float) -> Callable:
@@ -59,3 +61,21 @@ class TimeoutRoute(APIRoute):
                 )
 
         return handler_with_timeout
+
+
+class TimeoutMiddleware(BaseHTTPMiddleware):
+    """Global request timeout middleware compatible with newer Starlette versions."""
+
+    def __init__(self, app: ASGIApp, timeout: float = 30.0) -> None:
+        super().__init__(app)
+        self._timeout = float(timeout)
+
+    async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[override]
+        try:
+            with anyio.fail_after(self._timeout):
+                return await call_next(request)
+        except TimeoutError:
+            raise HTTPException(
+                status_code=504,
+                detail=f"Request timed out after {self._timeout:.0f}s. Please retry or reduce payload size.",
+            )

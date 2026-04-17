@@ -5,6 +5,7 @@ import type { AgentStatus, Dashboard } from "@/shared/types";
 import { SovereigntyInsightsPanel } from "./SovereigntyInsightsPanel";
 import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
 import { EarningsTimeMachineCard } from "./EarningsTimeMachineCard";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { GhostCatalogDetectorCard } from "./GhostCatalogDetectorCard";
 import { BlackBoxCountdownCard } from "./BlackBoxCountdownCard";
 import { RoyaltyDNAProfileCard } from "./RoyaltyDNAProfileCard";
@@ -30,7 +31,7 @@ type DashboardViewProps = {
   artistId: string;
 };
 
-export function DashboardView({ artistId }: DashboardViewProps) {
+function DashboardViewContent({ artistId }: DashboardViewProps) {
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [agentStatus, setAgentStatus] = useState<AgentStatus | null>(null);
   const [error, setError] = useState("");
@@ -188,17 +189,21 @@ export function DashboardView({ artistId }: DashboardViewProps) {
 
       {/* ── Module Selector ── */}
       <div style={{ marginTop: 32, borderTop: "1px solid #2D2D4E", paddingTop: 20 }}>
-        <div
-          style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: 12 }}
+        <button
+          type="button"
+          style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", marginBottom: 12, background: "transparent", border: 0, width: "100%", textAlign: "left", padding: 0 }}
           onClick={() => setSelectorOpen((o) => !o)}
+          aria-expanded={selectorOpen}
+          aria-controls="dashboard-module-selector"
+          aria-label="Toggle intelligence modules"
         >
           <span style={{ fontWeight: 700, fontSize: 15, color: "#F1F1F3" }}>Intelligence Modules</span>
           <span style={{ fontSize: 12, color: "#9CA3AF" }}>({enabledModules.size} active)</span>
           <span style={{ marginLeft: "auto", color: "#9CA3AF" }}>{selectorOpen ? "▲" : "▼"}</span>
-        </div>
+        </button>
 
         {selectorOpen && (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+          <div id="dashboard-module-selector" style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
             {ALL_MODULES.map((m) => {
               const on = enabledModules.has(m.id);
               return (
@@ -248,5 +253,14 @@ export function DashboardView({ artistId }: DashboardViewProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+
+export function DashboardView({ artistId }: DashboardViewProps) {
+  return (
+    <ErrorBoundary name="Dashboard View">
+      <DashboardViewContent artistId={artistId} />
+    </ErrorBoundary>
   );
 }

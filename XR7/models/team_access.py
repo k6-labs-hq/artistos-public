@@ -14,6 +14,7 @@ from XR7.models.base import Base
 class TeamRole(str, enum.Enum):
     ARTIST = "artist"
     MANAGER = "manager"
+    ANALYST = "analyst"
     ATTORNEY = "attorney"
 
 

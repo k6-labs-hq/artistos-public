@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 
+import { ErrorBoundary } from "./ErrorBoundary";
 import { RecoverabilityExplainer } from "./RecoverabilityExplainer";
 
 const roleOptions = [
@@ -41,7 +42,7 @@ const dashboardRows = [
   ["Backend Participation", "$96,000", "5 participation gaps", "Studio backend"],
 ];
 
-export function TVFilmWorkspace(): JSX.Element {
+function TVFilmWorkspaceContent(): JSX.Element {
   const [selectedRole, setSelectedRole] = useState<string>(roleOptions[5] ?? "Actor");
   const [agencyMode, setAgencyMode] = useState<boolean>(false);
   const [rosterCount, setRosterCount] = useState<number>(480);
@@ -98,7 +99,7 @@ export function TVFilmWorkspace(): JSX.Element {
           <p>Upload 100s to 10,000+ clients across unions, productions, and platforms.</p>
           <label className="stacked-field">
             <span>Roster Size</span>
-            <input type="range" min="100" max="10000" step="100" value={rosterCount} onChange={(event) => setRosterCount(Number(event.target.value))} />
+            <input type="range" min="100" max="10000" step="100" value={rosterCount} onChange={(event) => setRosterCount(Number(event.target.value))} aria-label="Agency roster size" />
           </label>
           <div className="roster-meter">
             <strong>{rosterCount.toLocaleString()} clients</strong>
@@ -185,5 +186,14 @@ export function TVFilmWorkspace(): JSX.Element {
         claimWindowLabel="Union windows + contract rights + discovery-rule damages"
       />
     </section>
+  );
+}
+
+
+export function TVFilmWorkspace(): JSX.Element {
+  return (
+    <ErrorBoundary name="TV/Film Workspace">
+      <TVFilmWorkspaceContent />
+    </ErrorBoundary>
   );
 }

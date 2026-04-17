@@ -59,8 +59,11 @@ from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.founder_program import handle_founder_notifications
+from XR7.services.live_updates import broadcast_live_update
+from XR7.services.webhook_delivery import OutboundWebhookService
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
+from XR7.tasks.webhooks import deliver_webhook_event
 from XR7.trolley.client import TrolleyClient, TrolleyException
 from xr7_common.logging import get_logger
 
@@ -124,7 +127,11 @@ def supported_formats() -> dict:
 
 
 def _save_events(db: Session, events: list[dict]) -> int:
-    """Persist normalised event dicts to the DB, returning the count saved."""
+    """Persist normalised event dicts to the DB, returning the count saved.
+
+    Commits in batches of 500 to limit memory pressure for large statements.
+    """
+    _CHUNK = 500
     count = 0
     for e in events:
         try:
@@ -148,6 +155,8 @@ def _save_events(db: Session, events: list[dict]) -> int:
             )
             db.add(event)
             count += 1
+            if count % _CHUNK == 0:
+                db.commit()
         except Exception:  # noqa: BLE001
             continue
     db.commit()
@@ -155,8 +164,13 @@ def _save_events(db: Session, events: list[dict]) -> int:
 
 
 def _save_payments(db: Session, payments: list[dict]) -> int:
-    """Persist normalised payment dicts to the DB, returning the count saved."""
+    """Persist normalised payment dicts to the DB, returning the count saved.
+
+    Commits in batches of 500 to limit memory pressure for large statements.
+    """
+    _CHUNK = 500
     count = 0
+    created: list[Payment] = []
     for p in payments:
         try:
             pt_raw = str(p.get("payment_type", "ROYALTY")).upper()
@@ -178,10 +192,35 @@ def _save_payments(db: Session, payments: list[dict]) -> int:
                 received_at=datetime.now(timezone.utc),
             )
             db.add(payment)
+            created.append(payment)
             count += 1
+            if count % _CHUNK == 0:
+                db.commit()
         except Exception:  # noqa: BLE001
             continue
     db.commit()
+    webhook_service = OutboundWebhookService(db)
+    for payment in created:
+        event = webhook_service.queue_event(
+            event_type="payment.received",
+            payload={
+                "payment_id": payment.id,
+                "artist_id": payment.artist_id,
+                "amount": float(payment.amount or 0.0),
+                "currency": payment.currency,
+                "source": payment.source,
+            },
+        )
+        deliver_webhook_event.delay(event.id)
+        broadcast_live_update(
+            "payment.received",
+            {
+                "payment_id": payment.id,
+                "artist_id": payment.artist_id,
+                "amount": float(payment.amount or 0.0),
+                "currency": payment.currency,
+            },
+        )
     return count
 
 

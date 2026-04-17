@@ -79,6 +79,8 @@ export function EarningsTimeMachineCard({ artistId }: Props) {
             Reconstruct your lifetime earnings as if the system had always worked correctly.
           </p>
           <button
+            type="button"
+            aria-label="Run earnings time machine analysis"
             onClick={runAnalysis}
             style={{ background: amber, color: "#000", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}
           >

@@ -24,6 +24,7 @@ from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
 from XR7.recovery.trust_defensibility import TrustDefensibilityService
+from XR7.services.cache import cached_response
 from XR7.services.branding import (
     branding_metadata,
     get_branding_for_artist,
@@ -37,7 +38,38 @@ router = APIRouter(tags=["anomalies"])
 logger = get_logger(__name__)
 
 
-@router.get("/artists/{artist_id}/anomalies", response_model=list[AnomalyWithRecoverabilitySchema])
+@router.get(
+    "/artists/{artist_id}/anomalies",
+    response_model=list[AnomalyWithRecoverabilitySchema],
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "List of detected anomalies with recoverability metadata",
+                "content": {
+                    "application/json": {
+                        "example": [
+                            {
+                                "id": "anm_abc123",
+                                "artist_id": "art_xyz789",
+                                "category": "ROYALTY",
+                                "severity": "HIGH",
+                                "status": "OPEN",
+                                "estimated_recoverable": 1200.50,
+                                "confidence_score": 0.87,
+                                "description": "Underreported streaming royalties Q3 2023",
+                                "recovery_probability": 0.74,
+                                "trust_score": 0.81,
+                                "urgent_flag": False,
+                            }
+                        ]
+                    }
+                },
+            },
+            "404": {"description": "Artist not found"},
+        }
+    },
+)
+@cached_response("anomalies_list", ttl_seconds=90)
 def list_anomalies(
     artist_id: str,
     status: str | None = None,

@@ -509,3 +509,95 @@ def nightly_advance_ensemble(self) -> dict:  # noqa: ANN001
         }
     finally:
         db.close()
+
+
+@celery_app.task(
+    name="xr7.pipeline.monthly_recovery_report",
+    bind=True,
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_kwargs={"max_retries": 2},
+)
+def monthly_recovery_report(self) -> dict:  # noqa: ANN001
+    """Generate a monthly summary report of recovery activity for every artist.
+
+    Aggregates anomalies, claims, and payments for the prior calendar month,
+    records a ledger entry for each artist, and returns a summary of artists
+    processed and total amounts recovered.
+    """
+    from datetime import date
+
+    db = SessionLocal()
+    try:
+        today = datetime.now(timezone.utc)
+        # First day of this month → last day of previous month
+        first_of_this_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        if first_of_this_month.month == 1:
+            period_start = first_of_this_month.replace(year=first_of_this_month.year - 1, month=12)
+        else:
+            period_start = first_of_this_month.replace(month=first_of_this_month.month - 1)
+        period_end = first_of_this_month
+
+        artists = db.query(Artist).all()
+        total_recovered = 0.0
+        reports_generated = 0
+
+        for artist in artists:
+            anomaly_count = (
+                db.query(Anomaly)
+                .filter(
+                    Anomaly.artist_id == artist.id,
+                    Anomaly.detected_at >= period_start,
+                    Anomaly.detected_at < period_end,
+                )
+                .count()
+            )
+            claims = (
+                db.query(Claim)
+                .filter(
+                    Claim.artist_id == artist.id,
+                    Claim.created_at >= period_start,
+                    Claim.created_at < period_end,
+                )
+                .all()
+            )
+            payments = (
+                db.query(Payment)
+                .filter(
+                    Payment.artist_id == artist.id,
+                    Payment.received_at >= period_start,
+                    Payment.received_at < period_end,
+                )
+                .all()
+            )
+
+            monthly_revenue = sum(float(p.amount or 0) for p in payments)
+            total_recovered += monthly_revenue
+
+            report = {
+                "period": f"{period_start.date()} to {period_end.date()}",
+                "anomalies_detected": anomaly_count,
+                "claims_filed": len(claims),
+                "claims_open": sum(
+                    1 for c in claims if str(c.status) not in {"SETTLED", "REJECTED", "WITHDRAWN"}
+                ),
+                "payments_received": len(payments),
+                "total_revenue": round(monthly_revenue, 2),
+            }
+
+            _ledger_event(db, artist.id, "monthly_recovery_report", report)
+            reports_generated += 1
+
+        logger.info(
+            "monthly_recovery_report: processed %d artists, total_recovered=%.2f",
+            reports_generated,
+            total_recovered,
+        )
+        return {
+            "artists_processed": reports_generated,
+            "period_start": period_start.isoformat(),
+            "period_end": period_end.isoformat(),
+            "total_recovered": round(total_recovered, 2),
+        }
+    finally:
+        db.close()

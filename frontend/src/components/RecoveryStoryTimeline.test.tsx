@@ -14,7 +14,7 @@ import type { TimelineEvent } from "./RecoveryStoryTimeline";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 const mockEvents: TimelineEvent[] = [
   {

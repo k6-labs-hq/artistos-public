@@ -43,6 +43,33 @@ from xr7_common.logging import get_logger
 router = APIRouter(tags=["intelligence"], route_class=TimeoutRoute)
 logger = get_logger(__name__)
 
+_MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+_ALLOWED_UPLOAD_MIME_TYPES = {
+    "application/pdf",
+    "text/plain",
+    "text/csv",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+}
+
+
+def _validate_upload(file: UploadFile, content: bytes, *, context: str) -> None:
+    if len(content) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"{context} exceeds max file size of {_MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
+        )
+    content_type = (file.content_type or "").lower().strip()
+    if content_type and content_type not in _ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail={
+                "message": "Unsupported file content type",
+                "content_type": content_type,
+                "allowed": sorted(_ALLOWED_UPLOAD_MIME_TYPES),
+            },
+        )
+
 
 def _safe_enqueue_calibration(artist_id: str) -> None:
     try:
@@ -269,6 +296,7 @@ async def extract_contract_terms_upload(
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded contract file is empty")
+    _validate_upload(file, content, context="Contract upload")
 
     ingestion = ContractDocumentIngestion()
     extracted = ingestion.extract_text(file.filename, content)

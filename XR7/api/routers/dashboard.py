@@ -43,6 +43,7 @@ from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.base import get_db
 from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus
 from XR7.models.support_message import SupportMessage, SupportMessageRole
+from XR7.services.cache import cached_response
 from XR7.services.branding import (
     apply_brand_placeholders,
     branding_metadata,
@@ -175,7 +176,51 @@ def get_dashboard_ui(org_id: str | None = Query(default=None), db: Session = Dep
     return FileResponse(str(_DASHBOARD_UI_PATH), media_type="text/html")
 
 
-@router.get("/artists/{artist_id}/dashboard")
+@router.get(
+    "/artists/{artist_id}/dashboard",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Artist recovery dashboard",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "leakage_discovered": {
+                                "total_anomalies": 14,
+                                "total_estimated_recoverable": 42500.00,
+                                "by_category": {"ROYALTY": 8, "TOURING": 4, "SYNC": 2},
+                                "by_severity": {"HIGH": 5, "MEDIUM": 6, "LOW": 3},
+                                "recent_discoveries": [],
+                            },
+                            "in_pursuit": {
+                                "active_claim_count": 7,
+                                "total_amount_in_pursuit": 31200.00,
+                                "total_gross_recovered": 8900.00,
+                                "total_net_recovered": 7565.00,
+                            },
+                            "recovered_and_deposited": {
+                                "total_deposited": 7565.00,
+                                "deposits": [],
+                            },
+                            "balance_still_pursuing": {
+                                "balance_still_pursuing": 22300.00,
+                                "total_pending_deposit": 2000.00,
+                            },
+                            "catalog_health": {
+                                "health_score": 72,
+                                "grade": "B",
+                                "signals": {},
+                                "recommendations": [],
+                            },
+                        }
+                    }
+                },
+            },
+            "404": {"description": "Artist not found"},
+        }
+    },
+)
+@cached_response("dashboard_payload", ttl_seconds=60)
 def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     """
     Return the artist's full recovery dashboard.

@@ -117,6 +117,8 @@ export function CatalogValueAppraiserCard({ artistId }: Props) {
             Get a defensible market-value estimate for your catalog with recovery upside included.
           </p>
           <button
+            type="button"
+            aria-label="Appraise my catalog value"
             onClick={appraise}
             style={{ background: amber, color: "#000", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}
           >
@@ -183,6 +185,9 @@ export function CatalogValueAppraiserCard({ artistId }: Props) {
           {/* Footer */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid #2D2D4E", paddingTop: 8 }}>
             <button
+              type="button"
+              aria-label={showDisclaimer ? "Hide catalog valuation disclaimer" : "Show catalog valuation disclaimer"}
+              aria-expanded={showDisclaimer}
               onClick={() => setShowDisclaimer(!showDisclaimer)}
               style={{ background: "none", border: "none", color: "#6B7280", fontSize: 11, cursor: "pointer" }}
             >
@@ -190,6 +195,8 @@ export function CatalogValueAppraiserCard({ artistId }: Props) {
             </button>
             <div style={{ display: "flex", gap: 8 }}>
               <button
+                type="button"
+                aria-label="Export catalog valuation summary"
                 onClick={() => alert("PNG export —  generates a branded shareable summary")}
                 style={{ background: "transparent", border: `1px solid ${amber}`, color: amber, borderRadius: 6, padding: "4px 12px", fontSize: 12, cursor: "pointer" }}
               >

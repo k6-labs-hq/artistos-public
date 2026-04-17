@@ -185,6 +185,8 @@ export function AdminWorkflowHandoffsPanel() {
                 value={adminKey}
                 onChange={(event) => setAdminKey(event.target.value)}
                 placeholder="Enter X-Admin-Key"
+                aria-label="Admin API key"
+                autoComplete="current-password"
               />
             </label>
             <label>
@@ -194,6 +196,7 @@ export function AdminWorkflowHandoffsPanel() {
                 value={adminActor}
                 onChange={(event) => setAdminActor(event.target.value)}
                 placeholder="ops@xr7.test"
+                aria-label="Admin actor email"
               />
             </label>
           </div>
@@ -201,43 +204,43 @@ export function AdminWorkflowHandoffsPanel() {
           <div className="handoff-admin-grid">
             <label>
               <span>Artist ID</span>
-              <input type="text" value={artistId} onChange={(event) => setArtistId(event.target.value)} placeholder="Optional exact artist id" />
+              <input type="text" value={artistId} onChange={(event) => setArtistId(event.target.value)} placeholder="Optional exact artist id" aria-label="Artist ID filter" />
             </label>
             <label>
               <span>Artist name search</span>
-              <input type="text" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by artist name" />
+              <input type="text" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search by artist name" aria-label="Artist name search" />
             </label>
             <label>
               <span>Status</span>
-              <input type="text" value={status} onChange={(event) => setStatus(event.target.value)} placeholder="active" />
+              <input type="text" value={status} onChange={(event) => setStatus(event.target.value)} placeholder="active" aria-label="Status filter" />
             </label>
             <label>
               <span>From agent</span>
-              <input type="text" value={fromAgent} onChange={(event) => setFromAgent(event.target.value)} placeholder="onboarding_preparation" />
+              <input type="text" value={fromAgent} onChange={(event) => setFromAgent(event.target.value)} placeholder="onboarding_preparation" aria-label="From agent filter" />
             </label>
             <label>
               <span>To agent</span>
-              <input type="text" value={toAgent} onChange={(event) => setToAgent(event.target.value)} placeholder="recovery_execution" />
+              <input type="text" value={toAgent} onChange={(event) => setToAgent(event.target.value)} placeholder="recovery_execution" aria-label="To agent filter" />
             </label>
             <label>
               <span>Limit</span>
-              <input type="number" min="1" max="200" value={limit} onChange={(event) => setLimit(event.target.value)} />
+              <input type="number" min="1" max="200" value={limit} onChange={(event) => setLimit(event.target.value)} aria-label="Result limit" />
             </label>
             <label>
               <span>Since</span>
-              <input type="date" value={since} onChange={(event) => setSince(event.target.value)} />
+              <input type="date" value={since} onChange={(event) => setSince(event.target.value)} aria-label="Since date" />
             </label>
             <label>
               <span>Until</span>
-              <input type="date" value={until} onChange={(event) => setUntil(event.target.value)} />
+              <input type="date" value={until} onChange={(event) => setUntil(event.target.value)} aria-label="Until date" />
             </label>
           </div>
 
           <div className="handoff-admin-actions">
-            <button type="button" className="handoff-admin-button handoff-admin-button--primary" onClick={handlePreview} disabled={loading}>
+            <button type="button" className="handoff-admin-button handoff-admin-button--primary" aria-label="Preview handoff results" onClick={handlePreview} disabled={loading}>
               {loading ? "Loading..." : "Preview Results"}
             </button>
-            <button type="button" className="handoff-admin-button" onClick={handleExportCsv} disabled={loading}>
+            <button type="button" className="handoff-admin-button" aria-label="Export handoff results as CSV" onClick={handleExportCsv} disabled={loading}>
               Export CSV
             </button>
           </div>

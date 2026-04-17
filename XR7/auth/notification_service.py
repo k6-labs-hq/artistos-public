@@ -47,8 +47,28 @@ import ssl
 from abc import ABC, abstractmethod
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from pathlib import Path
+
+from jinja2 import Environment, FileSystemLoader, TemplateNotFound
 
 logger = logging.getLogger(__name__)
+
+_NOTIFICATION_TEMPLATE_DIR = Path(__file__).resolve().parents[1] / "templates" / "notifications"
+_jinja_env = Environment(loader=FileSystemLoader(str(_NOTIFICATION_TEMPLATE_DIR)), autoescape=True)
+
+
+def _unsubscribe_url(email: str) -> str:
+    base = os.environ.get("XR7_UNSUBSCRIBE_URL", "https://XR7.com/unsubscribe").strip()
+    joiner = "&" if "?" in base else "?"
+    return f"{base}{joiner}email={email}"
+
+
+def _render_template(template_name: str, context: dict) -> str:
+    try:
+        return _jinja_env.get_template(template_name).render(**context)
+    except TemplateNotFound:
+        logger.warning("Notification template not found", extra={"template": template_name})
+        return ""
 
 
 # ---------------------------------------------------------------------------
@@ -68,7 +88,7 @@ class NotificationService(ABC):
         """
 
     @abstractmethod
-    def send_email(self, email: str, subject: str, body: str) -> bool:
+    def send_email(self, email: str, subject: str, body: str, html_body: str | None = None) -> bool:
         """
         Send an email to *email*.
 
@@ -86,15 +106,16 @@ class NotificationService(ABC):
     def send_email_otp(self, email: str, otp: str, artist_name: str) -> bool:
         """Format and send an email OTP message."""
         subject = "Your XR7 Verification Code"
-        body = (
-            f"Hi {artist_name},\n\n"
-            f"Your email verification code for the XR7 Royalty Estimator is:\n\n"
-            f"    {otp}\n\n"
-            f"This code expires in 5 minutes. Do not share it with anyone.\n\n"
-            f"If you did not request this code, please ignore this email.\n\n"
-            f"— The XR7 Team"
+        context = {
+            "artist_name": artist_name,
+            "otp": otp,
+            "unsubscribe_url": _unsubscribe_url(email),
+        }
+        text_body = _render_template("otp_email.txt.j2", context) or (
+            f"Hi {artist_name},\n\nYour verification code is {otp}.\n"
         )
-        return self.send_email(email, subject, body)
+        html_body = _render_template("otp_email.html.j2", context)
+        return self.send_email(email, subject, text_body, html_body=html_body or None)
 
     def send_estimate_results(
         self,
@@ -124,34 +145,42 @@ class NotificationService(ABC):
         def _fmt(n: float) -> str:
             return f"{currency} {n:,.2f}"
 
-        stream_lines = "\n".join(
-            f"  • {s.get('label', s.get('stream_type', ''))}: {_fmt(s.get('likely', 0))}"
+        stream_lines = [
+            f"{s.get('label', s.get('stream_type', ''))}: {_fmt(s.get('likely', 0))}"
             for s in streams
-        )
+        ]
 
         subject = f"Your XR7 Royalty Estimate — {_fmt(likely)} likely owed"
-        body = (
-            f"Hi {artist_name},\n\n"
-            f"Here is your personalised royalty estimate from the XR7 Royalty Estimator.\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"  ESTIMATED UNPAID ROYALTIES\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"  Conservative:  {_fmt(conservative)}\n"
-            f"  Likely:        {_fmt(likely)}\n"
-            f"  Optimistic:    {_fmt(optimistic)}\n\n"
-            f"Breakdown by revenue stream:\n"
-            f"{stream_lines}\n\n"
-            f"━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            f"Want to pursue recovery?\n"
-            f"Reply to this email or visit https://XR7.com/recovery to speak\n"
-            f"with an XR7 recovery specialist.\n\n"
-            f"Important notice\n"
-            f"────────────────\n"
-            f"{disclaimer}\n\n"
-            f"— The XR7 Team\n"
-            f"https://XR7.com\n"
-        )
-        return self.send_email(email, subject, body)
+        context = {
+            "artist_name": artist_name,
+            "currency": currency,
+            "conservative": f"{conservative:,.2f}",
+            "likely": f"{likely:,.2f}",
+            "optimistic": f"{optimistic:,.2f}",
+            "stream_lines": stream_lines,
+            "disclaimer": disclaimer,
+            "unsubscribe_url": _unsubscribe_url(email),
+        }
+        text_body = _render_template("estimate_results.txt.j2", context)
+        html_body = _render_template("estimate_results.html.j2", context)
+        if not text_body:
+            text_body = (
+                f"Hi {artist_name},\n\nLikely estimate: {_fmt(likely)}\n"
+                f"Conservative: {_fmt(conservative)}\nOptimistic: {_fmt(optimistic)}\n"
+            )
+        return self.send_email(email, subject, text_body, html_body=html_body or None)
+
+    def send_recovery_update(self, email: str, artist_name: str, message: str) -> bool:
+        """Send a templated recovery update with plain text + HTML versions."""
+        subject = "Your XR7 Recovery Update"
+        context = {
+            "artist_name": artist_name,
+            "message": message,
+            "unsubscribe_url": _unsubscribe_url(email),
+        }
+        text_body = _render_template("recovery_update.txt.j2", context) or message
+        html_body = _render_template("recovery_update.html.j2", context)
+        return self.send_email(email, subject, text_body, html_body=html_body or None)
 
 
 # ---------------------------------------------------------------------------
@@ -188,9 +217,11 @@ class MockNotificationService(NotificationService):
         self.sent_sms.append({"phone": phone, "message": message})
         return True
 
-    def send_email(self, email: str, subject: str, body: str) -> bool:
+    def send_email(self, email: str, subject: str, body: str, html_body: str | None = None) -> bool:
         logger.debug("MockEmail → [REDACTED] subject=%r", subject)
-        self.sent_emails.append({"email": email, "subject": subject, "body": body})
+        self.sent_emails.append(
+            {"email": email, "subject": subject, "body": body, "html_body": html_body}
+        )
         return True
 
 
@@ -240,11 +271,11 @@ class TwilioSMSService(NotificationService):
             logger.exception("Twilio SMS delivery failed")
             return False
 
-    def send_email(self, email: str, subject: str, body: str) -> bool:
+    def send_email(self, email: str, subject: str, body: str, html_body: str | None = None) -> bool:
         if self._smtp_fallback is None:
             logger.error("TwilioSMSService email requested without SMTP fallback configured")
             return False
-        return self._smtp_fallback.send_email(email, subject, body)
+        return self._smtp_fallback.send_email(email, subject, body, html_body=html_body)
 
 
 # ---------------------------------------------------------------------------
@@ -292,13 +323,15 @@ class SMTPEmailService(NotificationService):
             return False
         return self._twilio_fallback.send_sms(phone, message)
 
-    def send_email(self, email: str, subject: str, body: str) -> bool:
+    def send_email(self, email: str, subject: str, body: str, html_body: str | None = None) -> bool:
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
             msg["From"] = self._from_addr
             msg["To"] = email
             msg.attach(MIMEText(body, "plain"))
+            if html_body:
+                msg.attach(MIMEText(html_body, "html"))
 
             context = ssl.create_default_context()
             if self._use_ssl:
@@ -336,8 +369,8 @@ class CombinedNotificationService(NotificationService):
     def send_sms(self, phone: str, message: str) -> bool:
         return self._sms.send_sms(phone, message)
 
-    def send_email(self, email: str, subject: str, body: str) -> bool:
-        return self._email.send_email(email, subject, body)
+    def send_email(self, email: str, subject: str, body: str, html_body: str | None = None) -> bool:
+        return self._email.send_email(email, subject, body, html_body=html_body)
 
 
 # ---------------------------------------------------------------------------

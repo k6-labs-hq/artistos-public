@@ -33,6 +33,7 @@ from XR7.models.catalog_confirmation import CatalogConfirmation, CatalogConfirma
 from XR7.models.claim import Claim
 from XR7.models.event import Event
 from XR7.models.immutable_ledger_entry import ImmutableLedgerEntrySchema
+from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry
 from XR7.models.oauth_connector import ConnectorAccountLink
 from XR7.models.parser_plugin import ParserPlugin, ParserPluginSchema
 from XR7.models.statement import Statement
@@ -54,7 +55,35 @@ from XR7.services.workflow_orchestrator import XR7WorkflowService
 
 router = APIRouter(tags=["onboarding"], route_class=TimeoutRoute)
 
+_MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+_ALLOWED_UPLOAD_MIME_TYPES = {
+    "application/pdf",
+    "text/plain",
+    "text/csv",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}
+
 _PERMISSIONS_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "permissions_dashboard.html"
+
+
+def _validate_upload(file: UploadFile, content: bytes, *, context: str) -> None:
+    if len(content) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"{context} exceeds max file size of {_MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
+        )
+
+    content_type = (file.content_type or "").lower().strip()
+    if content_type and content_type not in _ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail={
+                "message": "Unsupported file content type",
+                "content_type": content_type,
+                "allowed": sorted(_ALLOWED_UPLOAD_MIME_TYPES),
+            },
+        )
 
 
 class CatalogConfirmRequest(BaseModel):
@@ -98,6 +127,15 @@ class SplitRepairRequest(BaseModel):
     rights_rows: list[dict[str, Any]]
     payout_rows: list[dict[str, Any]]
     apply_threshold: float = 0.85
+
+
+_VALID_CHECKPOINTS = frozenset(
+    ["terms_accepted", "statement_uploaded", "connector_linked", "claim_drafted"]
+)
+
+
+class OnboardingCheckpointRequest(BaseModel):
+    checkpoint: str
 
 
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
@@ -162,6 +200,127 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
         },
         "expected_status_flow": ["NEW", "ONBOARDED", "ACTIVE"],
     }
+
+
+@router.get("/artists/{artist_id}/onboarding/resume")
+def onboarding_resume(artist_id: str, db: Session = Depends(get_db)):
+    """Return resumable onboarding state from persisted checkpoints."""
+    _artist_or_404(artist_id, db)
+
+    checkpoint_rows = (
+        db.query(ImmutableLedgerEntry)
+        .filter(
+            ImmutableLedgerEntry.artist_id == artist_id,
+            ImmutableLedgerEntry.entry_type == "onboarding_checkpoint",
+        )
+        .order_by(ImmutableLedgerEntry.created_at.asc())
+        .all()
+    )
+
+    completed: list[str] = []
+    for row in checkpoint_rows:
+        try:
+            payload = json.loads(row.payload_json or "{}")
+        except json.JSONDecodeError:
+            continue
+        checkpoint = str(payload.get("checkpoint") or "").strip().lower()
+        if checkpoint in _VALID_CHECKPOINTS and checkpoint not in completed:
+            completed.append(checkpoint)
+
+    gates = {name: (name in completed) for name in sorted(_VALID_CHECKPOINTS)}
+    next_checkpoint = next((name for name in sorted(_VALID_CHECKPOINTS) if not gates[name]), None)
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "resume": {
+                "completed_checkpoints": completed,
+                "next_checkpoint": next_checkpoint,
+                "progress_percent": round((len(completed) / len(_VALID_CHECKPOINTS)) * 100, 2),
+            },
+            "gates": gates,
+            "checkpoint_events": [
+                {
+                    "id": row.id,
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                    "payload": row.payload_json,
+                }
+                for row in checkpoint_rows
+            ],
+        },
+    )
+
+
+@router.post("/artists/{artist_id}/onboarding/checkpoints")
+def record_onboarding_checkpoint(
+    artist_id: str,
+    payload: OnboardingCheckpointRequest,
+    db: Session = Depends(get_db),
+):
+    """Record a named onboarding checkpoint for an artist.
+
+    Accepted checkpoints: ``terms_accepted``, ``statement_uploaded``,
+    ``connector_linked``, ``claim_drafted``.
+
+    Returns the updated ``gates`` dict so the caller can drive UI progress.
+    """
+    _artist_or_404(artist_id, db)
+
+    checkpoint = payload.checkpoint.strip().lower()
+    if checkpoint not in _VALID_CHECKPOINTS:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Unknown checkpoint",
+                "valid_checkpoints": sorted(_VALID_CHECKPOINTS),
+            },
+        )
+
+    ImmutableLedgerService(db).append(
+        artist_id,
+        "onboarding_checkpoint",
+        {"checkpoint": checkpoint, "recorded_at": datetime.now(timezone.utc).isoformat()},
+    )
+
+    # Re-compute and return updated gates (same logic as onboarding_status)
+    terms_accepted = (
+        db.query(TermsAcceptance.id).filter(TermsAcceptance.artist_id == artist_id).first()
+        is not None
+    )
+    statement_count = (
+        db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    )
+    anomaly_count = (
+        db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    )
+    claim_count = (
+        db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
+    )
+    connector_count = (
+        db.query(func.count(ConnectorAccountLink.id))
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id,
+            ConnectorAccountLink.is_active.is_(True),
+        )
+        .scalar()
+        or 0
+    )
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "checkpoint_recorded": checkpoint,
+            "gates": {
+                "terms_accepted": bool(terms_accepted),
+                "statement_uploaded": int(statement_count) > 0,
+                "first_anomaly_detected": int(anomaly_count) > 0,
+                "first_claim_drafted": int(claim_count) > 0,
+                "connector_linked": int(connector_count) > 0,
+            },
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/onboarding/auto")
@@ -315,7 +474,9 @@ async def upload_any_statement(
 
     uploads: list[tuple[str, bytes]] = []
     for f in files:
-        uploads.append((f.filename or "upload.bin", await f.read()))
+        content = await f.read()
+        _validate_upload(f, content, context=f"Upload {f.filename or 'upload.bin'}")
+        uploads.append((f.filename or "upload.bin", content))
 
     report = FileIngestionPipeline().process(uploads, strict_validation=strict_validation)
     if not report.virus_scan_passed:
@@ -395,6 +556,7 @@ async def parse_statement_with_engine(
         plugin_entrypoint = plugin.plugin_entrypoint
 
     content = await file.read()
+    _validate_upload(file, content, context=file.filename or "statement upload")
     if parser_type.lower() in builtins:
         parser = get_statement_parser(parser_type)
         parsed = parser.parse(content, artist_id, file.filename or "statement.csv")

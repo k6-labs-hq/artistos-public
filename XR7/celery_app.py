@@ -81,6 +81,18 @@ celery_app.conf.update(
             "task": "xr7.tasks.ops.validate_backup_restore",
             "schedule": 604800,  # weekly
         },
+        "xr7-ops-backup-database-to-s3-daily": {
+            "task": "xr7.tasks.ops.backup_database_to_s3",
+            "schedule": 86400,  # daily
+        },
+        "xr7-pipeline-monthly-recovery-report": {
+            "task": "xr7.pipeline.monthly_recovery_report",
+            "schedule": 2592000,  # ~30 days
+        },
+        "xr7-webhooks-redeliver-failed": {
+            "task": "xr7.webhooks.redeliver_failed",
+            "schedule": 300,
+        },
         # ── XR7 Engine 2 — new modules ────────────────────────────────────
         "xr7-black-box-countdown-hourly": {
             "task": "xr7.modules.black_box_countdown.refresh_countdowns_all",

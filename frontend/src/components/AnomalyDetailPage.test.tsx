@@ -14,7 +14,7 @@ import type { Anomaly, RecoverabilityResult } from "@/shared/types";
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 const mockAnomaly: Anomaly = {
   id: "anom-123",

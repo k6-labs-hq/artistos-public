@@ -35,9 +35,12 @@ export interface Anomaly {
   artist_id: string;
   subtype?: string;
   category?: string;
-  severity?: AnomalySeverity | string;
+  severity?: AnomalySeverity | string | number;
   estimated_recoverable?: number;
   created_at?: string;
+  detected_at?: string;
+  description?: string;
+  status?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -56,7 +59,10 @@ export interface RecoverabilityResult {
   };
   recoverability?: {
     recoverability_class?: string;
+    confidence_score?: number;
+    reasoning?: string;
   };
+  next_steps?: string[];
 }
 
 // ---------------------------------------------------------------------------

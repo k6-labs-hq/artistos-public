@@ -157,7 +157,7 @@ class TestAuthMe:
         assert resp.status_code == 200
         data = resp.json()
         assert data["role"] == "admin"
-        assert data["sub"] == "admin@example.com"
+        assert data["subject"] == "admin@example.com"
 
     def test_artist_token_returns_me_payload(self):
         artist_id = _create_artist()
@@ -176,18 +176,18 @@ class TestAuthMe:
 class TestAdminScope:
     def test_admin_token_accepted_on_admin_endpoint(self):
         token = _make_token("admin")
-        resp = client.get("/governance/admin/audit/events", headers=_auth(token))
+        resp = client.get("/admin/audit/events", headers=_auth(token))
         # 200 or 404 (route exists); reject 401/403
         assert resp.status_code not in (401, 403)
 
     def test_artist_token_rejected_on_admin_endpoint(self):
         artist_id = _create_artist()
         token = _make_token("artist", subject=artist_id, extra={"artist_id": artist_id})
-        resp = client.get("/governance/admin/audit/events", headers=_auth(token))
+        resp = client.get("/admin/audit/events", headers=_auth(token))
         assert resp.status_code == 403
 
     def test_no_token_rejected_on_admin_endpoint(self):
-        resp = client.get("/governance/admin/audit/events")
+        resp = client.get("/admin/audit/events")
         assert resp.status_code == 401
 
 
@@ -201,7 +201,7 @@ class TestArtistScope:
         artist_id = _create_artist()
         token = _make_token("artist", subject=artist_id, extra={"artist_id": artist_id})
         resp = client.post(
-            f"/governance/artists/{artist_id}/privacy/export",
+            f"/artists/{artist_id}/privacy/export",
             headers=_auth(token),
         )
         assert resp.status_code not in (401, 403)
@@ -211,7 +211,7 @@ class TestArtistScope:
         intruder_id = _create_artist(name="Intruder", email="intruder@example.com")
         token = _make_token("artist", subject=intruder_id, extra={"artist_id": intruder_id})
         resp = client.post(
-            f"/governance/artists/{owner_id}/privacy/export",
+            f"/artists/{owner_id}/privacy/export",
             headers=_auth(token),
         )
         assert resp.status_code == 403
@@ -220,7 +220,7 @@ class TestArtistScope:
         artist_id = _create_artist(name="Managed Artist", email="managed@example.com")
         token = _make_token("admin")
         resp = client.post(
-            f"/governance/artists/{artist_id}/privacy/export",
+            f"/artists/{artist_id}/privacy/export",
             headers=_auth(token),
         )
         assert resp.status_code not in (401, 403)

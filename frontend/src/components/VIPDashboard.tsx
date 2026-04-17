@@ -14,6 +14,7 @@ import { PersonaCard } from "./PersonaCard";
 import { ConciergeInbox } from "./ConciergeInbox";
 import { RecoveryStoryTimeline } from "./RecoveryStoryTimeline";
 import { LegacyMap } from "./LegacyMap";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { FoundersCircleBanner } from "./FoundersCircleBanner";
 import { WeeklyBriefCard } from "./WeeklyBriefCard";
 import { CopilotChat } from "./CopilotChat";
@@ -67,7 +68,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
 
 /* ─── Component ─────────────────────────────────────────────────────────── */
 
-export function VIPDashboard({
+function VIPDashboardContent({
   artistId,
   apiBase = "",
   agentState,
@@ -159,6 +160,8 @@ export function VIPDashboard({
           <button
             key={t.id}
             role="tab"
+            id={`vip-tab-${t.id}`}
+            aria-controls={`vip-panel-${t.id}`}
             aria-selected={activeTab === t.id}
             className={["vd-tab", activeTab === t.id ? "active" : ""].join(" ")}
             onClick={() => setActiveTab(t.id)}
@@ -209,6 +212,15 @@ export function VIPDashboard({
 
       <style>{css}</style>
     </div>
+  );
+}
+
+
+export function VIPDashboard(props: VIPDashboardProps) {
+  return (
+    <ErrorBoundary name="VIP Dashboard">
+      <VIPDashboardContent {...props} />
+    </ErrorBoundary>
   );
 }
 

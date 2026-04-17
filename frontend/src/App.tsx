@@ -202,7 +202,11 @@ export function App() {
           return;
         }
 
-        const nextId = visible[0].target.id;
+        const firstVisible = visible[0];
+        if (!firstVisible) {
+          return;
+        }
+        const nextId = firstVisible.target.id;
         setActiveSectionId((current) => (current === nextId ? current : nextId));
       },
       {
@@ -225,8 +229,9 @@ export function App() {
   const anomalyMatch = useMemo(() => window.location.pathname.match(/^\/anomalies\/([^/]+)$/), []);
   const adminHandoffsRoute = useMemo(() => window.location.pathname === "/admin/workflow/handoffs/ui", []);
 
-  if (anomalyMatch) {
-    return <AnomalyDetailPage anomalyId={decodeURIComponent(anomalyMatch[1])} />;
+  const anomalyId = anomalyMatch?.[1];
+  if (anomalyId) {
+    return <AnomalyDetailPage anomalyId={decodeURIComponent(anomalyId)} />;
   }
 
   if (adminHandoffsRoute) {

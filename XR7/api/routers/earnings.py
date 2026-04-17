@@ -12,6 +12,7 @@ from XR7.ml.forecaster import EarningsForecaster
 from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.models.base import get_db
 from XR7.models.event import Event
+from XR7.services.cache import cached_response
 from XR7.services.branding import (
     branding_metadata,
     get_branding_for_artist,
@@ -36,6 +37,7 @@ def get_engine():
 
 
 @router.get("/artists/{artist_id}/earnings")
+@cached_response("earnings_summary", ttl_seconds=120)
 def get_earnings_summary(
     artist_id: str,
     db: Session = Depends(get_db),
