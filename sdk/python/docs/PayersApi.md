@@ -32,7 +32,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.PayersApi(api_client)
-    payer_id = 'payer_id_example' # str | 
+    payer_id = 'payer_id_example' # str |
 
     try:
         # Payer Behavior
@@ -50,7 +50,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **payer_id** | **str**|  | 
+ **payer_id** | **str**|  |
 
 ### Return type
 
@@ -98,7 +98,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.PayersApi(api_client)
-    payer_id = 'payer_id_example' # str | 
+    payer_id = 'payer_id_example' # str |
 
     try:
         # Payer Risk
@@ -116,7 +116,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **payer_id** | **str**|  | 
+ **payer_id** | **str**|  |
 
 ### Return type
 
@@ -139,4 +139,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

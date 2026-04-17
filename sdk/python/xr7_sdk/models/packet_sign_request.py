@@ -90,5 +90,3 @@ class PacketSignRequest(BaseModel):
             "note": obj.get("note")
         })
         return _obj
-
-

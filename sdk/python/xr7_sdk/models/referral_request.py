@@ -85,5 +85,3 @@ class ReferralRequest(BaseModel):
             "referred_artist_id": obj.get("referred_artist_id")
         })
         return _obj
-
-

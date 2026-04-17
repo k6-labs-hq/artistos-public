@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**email** | **str** |  | [optional] 
+**artist_id** | **str** |  |
+**email** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ artist_login_request_dict = artist_login_request_instance.to_dict()
 artist_login_request_from_dict = ArtistLoginRequest.from_dict(artist_login_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

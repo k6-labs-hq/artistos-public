@@ -6,8 +6,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tenant_id** | **str** |  | [optional] [default to 'default']
-**platform** | **str** |  | 
-**signals** | **List[Dict[str, object]]** |  | [optional] 
+**platform** | **str** |  |
+**signals** | **List[Dict[str, object]]** |  | [optional]
 
 ## Example
 
@@ -27,5 +27,3 @@ ugc_signal_ingest_request_dict = ugc_signal_ingest_request_instance.to_dict()
 ugc_signal_ingest_request_from_dict = UGCSignalIngestRequest.from_dict(ugc_signal_ingest_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

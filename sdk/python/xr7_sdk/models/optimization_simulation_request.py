@@ -85,5 +85,3 @@ class OptimizationSimulationRequest(BaseModel):
             "changes": obj.get("changes")
         })
         return _obj
-
-

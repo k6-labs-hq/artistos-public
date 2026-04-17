@@ -89,5 +89,3 @@ class TeamMemberCreate(BaseModel):
             "role": obj.get("role")
         })
         return _obj
-
-

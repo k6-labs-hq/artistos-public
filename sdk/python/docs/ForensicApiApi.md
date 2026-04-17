@@ -42,8 +42,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    provider = 'provider_example' # str | 
-    redirect_uri = 'redirect_uri_example' # str | 
+    provider = 'provider_example' # str |
+    redirect_uri = 'redirect_uri_example' # str |
 
     try:
         # Auth Connect
@@ -61,8 +61,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **provider** | **str**|  | 
- **redirect_uri** | **str**|  | 
+ **provider** | **str**|  |
+ **redirect_uri** | **str**|  |
 
 ### Return type
 
@@ -172,7 +172,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    xr7_api_routers_forensic_catalog_confirm_request = xr7_sdk.XR7ApiRoutersForensicCatalogConfirmRequest() # XR7ApiRoutersForensicCatalogConfirmRequest | 
+    xr7_api_routers_forensic_catalog_confirm_request = xr7_sdk.XR7ApiRoutersForensicCatalogConfirmRequest() # XR7ApiRoutersForensicCatalogConfirmRequest |
 
     try:
         # Confirm Catalog
@@ -190,7 +190,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **xr7_api_routers_forensic_catalog_confirm_request** | [**XR7ApiRoutersForensicCatalogConfirmRequest**](XR7ApiRoutersForensicCatalogConfirmRequest.md)|  | 
+ **xr7_api_routers_forensic_catalog_confirm_request** | [**XR7ApiRoutersForensicCatalogConfirmRequest**](XR7ApiRoutersForensicCatalogConfirmRequest.md)|  |
 
 ### Return type
 
@@ -238,7 +238,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Catalog
@@ -256,7 +256,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -305,7 +305,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    entry_id = 'entry_id_example' # str | 
+    entry_id = 'entry_id_example' # str |
 
     try:
         # Get Ledger Entry
@@ -323,7 +323,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **entry_id** | **str**|  | 
+ **entry_id** | **str**|  |
 
 ### Return type
 
@@ -372,7 +372,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Ledger
@@ -390,7 +390,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -438,7 +438,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Variance
@@ -456,7 +456,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -505,7 +505,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Recovery Submit
@@ -523,7 +523,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -571,7 +571,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    statement_id = 'statement_id_example' # str | 
+    statement_id = 'statement_id_example' # str |
 
     try:
         # Statements Status
@@ -589,7 +589,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **statement_id** | **str**|  | 
+ **statement_id** | **str**|  |
 
 ### Return type
 
@@ -641,7 +641,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    forensic_universal_royalty_event_create = xr7_sdk.ForensicUniversalRoyaltyEventCreate() # ForensicUniversalRoyaltyEventCreate | 
+    forensic_universal_royalty_event_create = xr7_sdk.ForensicUniversalRoyaltyEventCreate() # ForensicUniversalRoyaltyEventCreate |
 
     try:
         # Statements Upload
@@ -659,7 +659,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **forensic_universal_royalty_event_create** | [**ForensicUniversalRoyaltyEventCreate**](ForensicUniversalRoyaltyEventCreate.md)|  | 
+ **forensic_universal_royalty_event_create** | [**ForensicUniversalRoyaltyEventCreate**](ForensicUniversalRoyaltyEventCreate.md)|  |
 
 ### Return type
 
@@ -707,7 +707,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ForensicApiApi(api_client)
-    variance_id = 'variance_id_example' # str | 
+    variance_id = 'variance_id_example' # str |
 
     try:
         # Variance Evidence
@@ -725,7 +725,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **variance_id** | **str**|  | 
+ **variance_id** | **str**|  |
 
 ### Return type
 
@@ -748,4 +748,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

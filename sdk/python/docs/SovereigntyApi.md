@@ -49,8 +49,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SovereigntyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    advance_accept_request = xr7_sdk.AdvanceAcceptRequest() # AdvanceAcceptRequest | 
+    artist_id = 'artist_id_example' # str |
+    advance_accept_request = xr7_sdk.AdvanceAcceptRequest() # AdvanceAcceptRequest |
 
     try:
         # Accept Advance Offer
@@ -68,8 +68,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **advance_accept_request** | [**AdvanceAcceptRequest**](AdvanceAcceptRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **advance_accept_request** | [**AdvanceAcceptRequest**](AdvanceAcceptRequest.md)|  |
 
 ### Return type
 
@@ -133,8 +133,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SovereigntyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    advance_offer_request = xr7_sdk.AdvanceOfferRequest() # AdvanceOfferRequest | 
+    artist_id = 'artist_id_example' # str |
+    advance_offer_request = xr7_sdk.AdvanceOfferRequest() # AdvanceOfferRequest |
 
     try:
         # Create Advance Offer
@@ -152,8 +152,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **advance_offer_request** | [**AdvanceOfferRequest**](AdvanceOfferRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **advance_offer_request** | [**AdvanceOfferRequest**](AdvanceOfferRequest.md)|  |
 
 ### Return type
 
@@ -211,7 +211,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SovereigntyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Advance History
@@ -229,7 +229,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -289,7 +289,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SovereigntyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Rights Gaps
@@ -307,7 +307,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -367,7 +367,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SovereigntyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Register Rights Packets
@@ -385,7 +385,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -445,7 +445,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SovereigntyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Scan Rights
@@ -463,7 +463,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -486,4 +486,3 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

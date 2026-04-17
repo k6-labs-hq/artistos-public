@@ -1,0 +1,21 @@
+# Development dependencies for code quality and formatting
+# Install: pip install -r dev-requirements.txt
+
+# Pre-commit hooks
+pre-commit>=3.7.0
+
+# Code formatters
+black>=24.3.0
+ruff>=0.3.4
+isort>=5.13.0
+
+# Type checking
+mypy>=1.9.0
+
+# Testing extras (if not in main requirements.txt)
+pytest-xdist>=3.5.0  # Parallel test execution
+pytest-timeout>=2.2.0  # Test timeout support
+
+# Documentation
+mkdocs>=1.5.3
+mkdocs-material>=9.5.0

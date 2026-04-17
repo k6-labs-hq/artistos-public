@@ -130,5 +130,3 @@ class ReviewItemSchema(BaseModel):
             "resolved_at": obj.get("resolved_at")
         })
         return _obj
-
-

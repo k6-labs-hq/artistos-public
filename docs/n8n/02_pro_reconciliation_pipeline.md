@@ -67,10 +67,10 @@ return [{ json: $json }];
 ---
 
 ### Node 02 — Fetch PRO Statement Data
-**Type:** HTTP Request  
-**Method:** `GET`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/pro-statement`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `GET`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/pro-statement`
+**Auth:** Header Auth — `XR7 API`
 **Query params:**
 ```
 artist_id = {{ $json.artist_id }}
@@ -85,16 +85,16 @@ period    = {{ $json.period }}
 - `statement_id`
 - `total_reported`
 
-**Retry:** 3 attempts, 15-second backoff  
+**Retry:** 3 attempts, 15-second backoff
 **On error:** Route to Error Handler
 
 ---
 
 ### Node 03 — Fetch Artist Registered Works
-**Type:** HTTP Request  
-**Method:** `GET`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/catalog/works`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `GET`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/catalog/works`
+**Auth:** Header Auth — `XR7 API`
 **Query params:**
 ```
 artist_id = {{ $json.artist_id }}
@@ -108,10 +108,10 @@ include_ids = isrc,iswc,ipi
 ---
 
 ### Node 04 — Run Reconciliation
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/reconcile`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/reconcile`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -145,17 +145,17 @@ include_ids = isrc,iswc,ipi
 - `total_reported`
 - `total_gap`
 
-**Branching (IF node after):**  
-- `discrepancy_count > 0` → Node 05a  
+**Branching (IF node after):**
+- `discrepancy_count > 0` → Node 05a
 - `discrepancy_count == 0` → Node 07
 
 ---
 
 ### Node 05a — Flag Discrepancies / Create Anomaly Records
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/anomalies/bulk-create`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/anomalies/bulk-create`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -173,18 +173,18 @@ include_ids = isrc,iswc,ipi
 ---
 
 ### Node 05b — Route by Severity
-**Type:** IF  
-**Condition:** `{{ $json.high_severity_count }} > 0`  
-- **True branch** → Node 06a (Auto-open Recovery)  
+**Type:** IF
+**Condition:** `{{ $json.high_severity_count }} > 0`
+- **True branch** → Node 06a (Auto-open Recovery)
 - **False branch** → Node 06b (Add to Watchlist)
 
 ---
 
 ### Node 06a — Auto-open Recovery
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/open`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/open`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -202,10 +202,10 @@ include_ids = isrc,iswc,ipi
 ---
 
 ### Node 06b — Add to Watchlist
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/watchlist`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/watchlist`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -218,9 +218,9 @@ include_ids = isrc,iswc,ipi
 ---
 
 ### Node 07 — Mark Period Reconciled
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/reconciliation/{{ $node['Node 04'].json.reconciliation_id }}/mark-complete`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/reconciliation/{{ $node['Node 04'].json.reconciliation_id }}/mark-complete`
 **Auth:** Header Auth — `XR7 API`
 
 ---

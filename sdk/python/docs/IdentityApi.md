@@ -46,8 +46,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IdentityApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    identity_match_request = xr7_sdk.IdentityMatchRequest() # IdentityMatchRequest | 
+    artist_id = 'artist_id_example' # str |
+    identity_match_request = xr7_sdk.IdentityMatchRequest() # IdentityMatchRequest |
 
     try:
         # Auto Match Identity
@@ -65,8 +65,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **identity_match_request** | [**IdentityMatchRequest**](IdentityMatchRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **identity_match_request** | [**IdentityMatchRequest**](IdentityMatchRequest.md)|  |
 
 ### Return type
 
@@ -126,9 +126,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IdentityApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    match_id = 'match_id_example' # str | 
-    identity_decision_request = xr7_sdk.IdentityDecisionRequest() # IdentityDecisionRequest | 
+    artist_id = 'artist_id_example' # str |
+    match_id = 'match_id_example' # str |
+    identity_decision_request = xr7_sdk.IdentityDecisionRequest() # IdentityDecisionRequest |
 
     try:
         # Decide Identity Match
@@ -146,9 +146,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **match_id** | **str**|  | 
- **identity_decision_request** | [**IdentityDecisionRequest**](IdentityDecisionRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **match_id** | **str**|  |
+ **identity_decision_request** | [**IdentityDecisionRequest**](IdentityDecisionRequest.md)|  |
 
 ### Return type
 
@@ -206,8 +206,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IdentityApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    match_id = 'match_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    match_id = 'match_id_example' # str |
 
     try:
         # Get Identity Match Audit
@@ -225,8 +225,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **match_id** | **str**|  | 
+ **artist_id** | **str**|  |
+ **match_id** | **str**|  |
 
 ### Return type
 
@@ -284,7 +284,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IdentityApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Identity Matches
@@ -302,7 +302,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -325,4 +325,3 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

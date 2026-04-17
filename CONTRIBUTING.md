@@ -77,7 +77,7 @@ Leave a comment on the issue you're working on each day:
    ```bash
    # JWT secret (production)
    python3 -c "import secrets; print(secrets.token_urlsafe(48))"
-   
+
    # Widget admin key (production)
    python3 -c "import secrets; print(secrets.token_urlsafe(48))"
    ```

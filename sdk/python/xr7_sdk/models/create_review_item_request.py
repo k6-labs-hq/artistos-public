@@ -107,5 +107,3 @@ class CreateReviewItemRequest(BaseModel):
             "payload": obj.get("payload")
         })
         return _obj
-
-

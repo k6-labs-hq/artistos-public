@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**provider** | **str** |  | 
-**authorization_url** | **str** |  | 
-**configured** | **bool** |  | 
-**state** | **str** |  | 
+**provider** | **str** |  |
+**authorization_url** | **str** |  |
+**configured** | **bool** |  |
+**state** | **str** |  |
 
 ## Example
 
@@ -28,5 +28,3 @@ auth_connect_response_dict = auth_connect_response_instance.to_dict()
 auth_connect_response_from_dict = AuthConnectResponse.from_dict(auth_connect_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

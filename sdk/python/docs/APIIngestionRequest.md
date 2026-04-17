@@ -6,9 +6,9 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tenant_id** | **str** |  | [optional] [default to 'default']
-**providers** | **List[str]** |  | [optional] 
-**since** | **datetime** |  | [optional] 
-**until** | **datetime** |  | [optional] 
+**providers** | **List[str]** |  | [optional]
+**since** | **datetime** |  | [optional]
+**until** | **datetime** |  | [optional]
 **queue_backend** | **str** |  | [optional] [default to 'celery']
 
 ## Example
@@ -29,5 +29,3 @@ api_ingestion_request_dict = api_ingestion_request_instance.to_dict()
 api_ingestion_request_from_dict = APIIngestionRequest.from_dict(api_ingestion_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

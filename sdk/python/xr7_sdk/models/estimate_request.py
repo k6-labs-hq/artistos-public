@@ -93,5 +93,3 @@ class EstimateRequest(BaseModel):
             "territory": obj.get("territory") if obj.get("territory") is not None else 'US'
         })
         return _obj
-
-

@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**additional_notes** | **str** |  | [optional] 
-**attorney_engagement_deadline** | **datetime** |  | [optional] 
+**additional_notes** | **str** |  | [optional]
+**attorney_engagement_deadline** | **datetime** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ attorney_evidence_request_dict = attorney_evidence_request_instance.to_dict()
 attorney_evidence_request_from_dict = AttorneyEvidenceRequest.from_dict(attorney_evidence_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

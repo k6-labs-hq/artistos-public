@@ -41,7 +41,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -62,7 +62,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -114,8 +114,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
-    bulk_onboard_request = xr7_sdk.BulkOnboardRequest() # BulkOnboardRequest | 
+    org_id = 'org_id_example' # str |
+    bulk_onboard_request = xr7_sdk.BulkOnboardRequest() # BulkOnboardRequest |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -136,8 +136,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **bulk_onboard_request** | [**BulkOnboardRequest**](BulkOnboardRequest.md)|  | 
+ **org_id** | **str**|  |
+ **bulk_onboard_request** | [**BulkOnboardRequest**](BulkOnboardRequest.md)|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -188,7 +188,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     severity = 'severity_example' # str |  (optional)
     status = 'status_example' # str |  (optional)
     category = 'category_example' # str |  (optional)
@@ -213,10 +213,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **severity** | **str**|  | [optional] 
- **status** | **str**|  | [optional] 
- **category** | **str**|  | [optional] 
+ **org_id** | **str**|  |
+ **severity** | **str**|  | [optional]
+ **status** | **str**|  | [optional]
+ **category** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 100]
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
@@ -268,8 +268,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
-    artist_id = 'artist_id_example' # str | 
+    org_id = 'org_id_example' # str |
+    artist_id = 'artist_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -290,8 +290,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **artist_id** | **str**|  | 
+ **org_id** | **str**|  |
+ **artist_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -342,7 +342,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -363,7 +363,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -414,7 +414,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     status = 'status_example' # str |  (optional)
     sol_window_days = 30 # int |  (optional) (default to 30)
     limit = 100 # int |  (optional) (default to 100)
@@ -438,8 +438,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **status** | **str**|  | [optional] 
+ **org_id** | **str**|  |
+ **status** | **str**|  | [optional]
  **sol_window_days** | **int**|  | [optional] [default to 30]
  **limit** | **int**|  | [optional] [default to 100]
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
@@ -492,7 +492,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -513,7 +513,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -564,7 +564,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -585,7 +585,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -636,7 +636,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -657,7 +657,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -708,7 +708,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.B2bApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
     x_org_key = '' # str |  (optional) (default to '')
     x_org_role = '' # str |  (optional) (default to '')
     x_org_actor = '' # str |  (optional) (default to '')
@@ -729,7 +729,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -801,7 +801,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | [optional] 
+ **org_id** | **str**|  | [optional]
  **x_org_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_role** | **str**|  | [optional] [default to &#39;&#39;]
  **x_org_actor** | **str**|  | [optional] [default to &#39;&#39;]
@@ -827,4 +827,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

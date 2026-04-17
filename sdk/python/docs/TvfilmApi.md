@@ -48,7 +48,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Run Tvfilm Agents
@@ -66,7 +66,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -176,8 +176,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    tv_film_bulk_claim_draft_request = xr7_sdk.TVFilmBulkClaimDraftRequest() # TVFilmBulkClaimDraftRequest | 
+    artist_id = 'artist_id_example' # str |
+    tv_film_bulk_claim_draft_request = xr7_sdk.TVFilmBulkClaimDraftRequest() # TVFilmBulkClaimDraftRequest |
 
     try:
         # Tvfilm Bulk Draft Claims
@@ -195,8 +195,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **tv_film_bulk_claim_draft_request** | [**TVFilmBulkClaimDraftRequest**](TVFilmBulkClaimDraftRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **tv_film_bulk_claim_draft_request** | [**TVFilmBulkClaimDraftRequest**](TVFilmBulkClaimDraftRequest.md)|  |
 
 ### Return type
 
@@ -245,8 +245,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    tv_film_bulk_export_request = xr7_sdk.TVFilmBulkExportRequest() # TVFilmBulkExportRequest | 
+    artist_id = 'artist_id_example' # str |
+    tv_film_bulk_export_request = xr7_sdk.TVFilmBulkExportRequest() # TVFilmBulkExportRequest |
 
     try:
         # Tvfilm Bulk Export Claims
@@ -264,8 +264,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **tv_film_bulk_export_request** | [**TVFilmBulkExportRequest**](TVFilmBulkExportRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **tv_film_bulk_export_request** | [**TVFilmBulkExportRequest**](TVFilmBulkExportRequest.md)|  |
 
 ### Return type
 
@@ -313,7 +313,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Tvfilm Calculation Audit
@@ -331,7 +331,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -379,7 +379,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Tvfilm Dashboard
@@ -397,7 +397,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -446,8 +446,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    tv_film_claim_draft_request = xr7_sdk.TVFilmClaimDraftRequest() # TVFilmClaimDraftRequest | 
+    artist_id = 'artist_id_example' # str |
+    tv_film_claim_draft_request = xr7_sdk.TVFilmClaimDraftRequest() # TVFilmClaimDraftRequest |
 
     try:
         # Tvfilm Draft Claims
@@ -465,8 +465,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **tv_film_claim_draft_request** | [**TVFilmClaimDraftRequest**](TVFilmClaimDraftRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **tv_film_claim_draft_request** | [**TVFilmClaimDraftRequest**](TVFilmClaimDraftRequest.md)|  |
 
 ### Return type
 
@@ -515,7 +515,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    tv_film_portfolio_analysis_request = xr7_sdk.TVFilmPortfolioAnalysisRequest() # TVFilmPortfolioAnalysisRequest | 
+    tv_film_portfolio_analysis_request = xr7_sdk.TVFilmPortfolioAnalysisRequest() # TVFilmPortfolioAnalysisRequest |
 
     try:
         # Tvfilm Enterprise Portfolio Analyze
@@ -533,7 +533,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **tv_film_portfolio_analysis_request** | [**TVFilmPortfolioAnalysisRequest**](TVFilmPortfolioAnalysisRequest.md)|  | 
+ **tv_film_portfolio_analysis_request** | [**TVFilmPortfolioAnalysisRequest**](TVFilmPortfolioAnalysisRequest.md)|  |
 
 ### Return type
 
@@ -581,7 +581,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    job_id = 'job_id_example' # str | 
+    job_id = 'job_id_example' # str |
 
     try:
         # Tvfilm Enterprise Portfolio Job
@@ -599,7 +599,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **job_id** | **str**|  | 
+ **job_id** | **str**|  |
 
 ### Return type
 
@@ -708,7 +708,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
     format = 'zip' # str |  (optional) (default to 'zip')
 
     try:
@@ -727,7 +727,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
  **format** | **str**|  | [optional] [default to &#39;zip&#39;]
 
 ### Return type
@@ -777,8 +777,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    tv_film_forecast_request = xr7_sdk.TVFilmForecastRequest() # TVFilmForecastRequest | 
+    artist_id = 'artist_id_example' # str |
+    tv_film_forecast_request = xr7_sdk.TVFilmForecastRequest() # TVFilmForecastRequest |
 
     try:
         # Tvfilm Forecast
@@ -796,8 +796,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **tv_film_forecast_request** | [**TVFilmForecastRequest**](TVFilmForecastRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **tv_film_forecast_request** | [**TVFilmForecastRequest**](TVFilmForecastRequest.md)|  |
 
 ### Return type
 
@@ -845,8 +845,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    file = 'file_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    file = 'file_example' # str |
 
     try:
         # Tvfilm Ingestion Commit
@@ -864,8 +864,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **file** | **str**|  | 
+ **artist_id** | **str**|  |
+ **file** | **str**|  |
 
 ### Return type
 
@@ -974,7 +974,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    file = 'file_example' # str | 
+    file = 'file_example' # str |
 
     try:
         # Tvfilm Ingestion Preview
@@ -992,7 +992,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **file** | **str**|  | 
+ **file** | **str**|  |
 
 ### Return type
 
@@ -1101,7 +1101,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Tvfilm Scan Anomalies
@@ -1119,7 +1119,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1168,7 +1168,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TvfilmApi(api_client)
-    tv_film_trust_explain_request = xr7_sdk.TVFilmTrustExplainRequest() # TVFilmTrustExplainRequest | 
+    tv_film_trust_explain_request = xr7_sdk.TVFilmTrustExplainRequest() # TVFilmTrustExplainRequest |
 
     try:
         # Tvfilm Trust Explain
@@ -1186,7 +1186,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **tv_film_trust_explain_request** | [**TVFilmTrustExplainRequest**](TVFilmTrustExplainRequest.md)|  | 
+ **tv_film_trust_explain_request** | [**TVFilmTrustExplainRequest**](TVFilmTrustExplainRequest.md)|  |
 
 ### Return type
 
@@ -1209,4 +1209,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

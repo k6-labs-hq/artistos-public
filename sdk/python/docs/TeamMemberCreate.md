@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**user_email** | **str** |  | 
-**role** | [**TeamRole**](TeamRole.md) |  | 
+**user_email** | **str** |  |
+**role** | [**TeamRole**](TeamRole.md) |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ team_member_create_dict = team_member_create_instance.to_dict()
 team_member_create_from_dict = TeamMemberCreate.from_dict(team_member_create_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

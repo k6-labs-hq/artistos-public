@@ -5,18 +5,18 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**state** | **str** |  | 
-**code** | **str** |  | 
-**external_account_id** | **str** |  | 
+**state** | **str** |  |
+**code** | **str** |  |
+**external_account_id** | **str** |  |
 **tenant_id** | **str** |  | [optional] [default to 'default']
-**granted_scopes** | **List[str]** |  | [optional] 
+**granted_scopes** | **List[str]** |  | [optional]
 **allow_partial_scope_grant** | **bool** |  | [optional] [default to False]
-**access_token** | **str** |  | [optional] 
-**refresh_token** | **str** |  | [optional] 
+**access_token** | **str** |  | [optional]
+**refresh_token** | **str** |  | [optional]
 **token_type** | **str** |  | [optional] [default to 'Bearer']
-**expires_in_seconds** | **int** |  | [optional] 
-**display_name** | **str** |  | [optional] 
-**profile_metadata** | **Dict[str, str]** |  | [optional] 
+**expires_in_seconds** | **int** |  | [optional]
+**display_name** | **str** |  | [optional]
+**profile_metadata** | **Dict[str, str]** |  | [optional]
 
 ## Example
 
@@ -36,5 +36,3 @@ o_auth_token_exchange_request_dict = o_auth_token_exchange_request_instance.to_d
 o_auth_token_exchange_request_from_dict = OAuthTokenExchangeRequest.from_dict(o_auth_token_exchange_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

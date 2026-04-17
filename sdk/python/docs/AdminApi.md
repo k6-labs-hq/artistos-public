@@ -62,7 +62,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -111,8 +111,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdminApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    founder_assign_request = xr7_sdk.FounderAssignRequest() # FounderAssignRequest | 
+    artist_id = 'artist_id_example' # str |
+    founder_assign_request = xr7_sdk.FounderAssignRequest() # FounderAssignRequest |
     x_admin_key = '' # str |  (optional) (default to '')
     x_admin_actor = 'x_admin_actor_example' # str |  (optional)
 
@@ -132,10 +132,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **founder_assign_request** | [**FounderAssignRequest**](FounderAssignRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **founder_assign_request** | [**FounderAssignRequest**](FounderAssignRequest.md)|  |
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -203,7 +203,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -275,7 +275,7 @@ Name | Type | Description  | Notes
  **limit** | **int**|  | [optional] [default to 200]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -347,13 +347,13 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **severity** | **str**|  | [optional] 
- **artist_id** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **severity** | **str**|  | [optional]
+ **artist_id** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -425,13 +425,13 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **q** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **q** | **str**|  | [optional]
  **sort** | **str**|  | [optional] [default to &#39;created_at_desc&#39;]
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -503,12 +503,12 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **actor_filter** | **str**|  | [optional] 
- **action** | **str**|  | [optional] 
+ **actor_filter** | **str**|  | [optional]
+ **action** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 100]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -581,14 +581,14 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **artist_id** | **str**|  | [optional] 
- **jurisdiction** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **artist_id** | **str**|  | [optional]
+ **jurisdiction** | **str**|  | [optional]
  **sort** | **str**|  | [optional] [default to &#39;updated_at_desc&#39;]
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -660,13 +660,13 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **artist_id** | **str**|  | [optional] 
- **source_type** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **artist_id** | **str**|  | [optional]
+ **source_type** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -738,13 +738,13 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **tx_type** | **str**|  | [optional] 
- **artist_id** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **tx_type** | **str**|  | [optional]
+ **artist_id** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 50]
  **offset** | **int**|  | [optional] [default to 0]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -812,9 +812,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **jurisdiction** | **str**|  | [optional] 
+ **jurisdiction** | **str**|  | [optional]
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -863,7 +863,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdminApi(api_client)
-    founder_cohort_limit_update_request = xr7_sdk.FounderCohortLimitUpdateRequest() # FounderCohortLimitUpdateRequest | 
+    founder_cohort_limit_update_request = xr7_sdk.FounderCohortLimitUpdateRequest() # FounderCohortLimitUpdateRequest |
     x_admin_key = '' # str |  (optional) (default to '')
     x_admin_actor = 'x_admin_actor_example' # str |  (optional)
 
@@ -883,9 +883,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **founder_cohort_limit_update_request** | [**FounderCohortLimitUpdateRequest**](FounderCohortLimitUpdateRequest.md)|  | 
+ **founder_cohort_limit_update_request** | [**FounderCohortLimitUpdateRequest**](FounderCohortLimitUpdateRequest.md)|  |
  **x_admin_key** | **str**|  | [optional] [default to &#39;&#39;]
- **x_admin_actor** | **str**|  | [optional] 
+ **x_admin_actor** | **str**|  | [optional]
 
 ### Return type
 
@@ -908,4 +908,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

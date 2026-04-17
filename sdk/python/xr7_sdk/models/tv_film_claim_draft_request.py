@@ -87,5 +87,3 @@ class TVFilmClaimDraftRequest(BaseModel):
             "union_template": obj.get("union_template") if obj.get("union_template") is not None else 'SAG-AFTRA'
         })
         return _obj
-
-

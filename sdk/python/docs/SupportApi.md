@@ -36,8 +36,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SupportApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    support_action_request = xr7_sdk.SupportActionRequest() # SupportActionRequest | 
+    artist_id = 'artist_id_example' # str |
+    support_action_request = xr7_sdk.SupportActionRequest() # SupportActionRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -57,10 +57,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **support_action_request** | [**SupportActionRequest**](SupportActionRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **support_action_request** | [**SupportActionRequest**](SupportActionRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -110,8 +110,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SupportApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    support_chat_request = xr7_sdk.SupportChatRequest() # SupportChatRequest | 
+    artist_id = 'artist_id_example' # str |
+    support_chat_request = xr7_sdk.SupportChatRequest() # SupportChatRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -131,10 +131,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **support_chat_request** | [**SupportChatRequest**](SupportChatRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **support_chat_request** | [**SupportChatRequest**](SupportChatRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -183,7 +183,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SupportApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     page = 1 # int |  (optional) (default to 1)
     page_size = 20 # int |  (optional) (default to 20)
     cursor = 'cursor_example' # str |  (optional)
@@ -207,13 +207,13 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **page** | **int**|  | [optional] [default to 1]
  **page_size** | **int**|  | [optional] [default to 20]
- **cursor** | **str**|  | [optional] 
- **thread_id** | **str**|  | [optional] 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **cursor** | **str**|  | [optional]
+ **thread_id** | **str**|  | [optional]
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -262,7 +262,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.SupportApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -282,9 +282,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -307,4 +307,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

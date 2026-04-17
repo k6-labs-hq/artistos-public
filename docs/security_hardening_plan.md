@@ -1,9 +1,9 @@
 # XR7 Security Hardening Plan
 
-**Version:** 1.0  
-**Compliance targets:** SOC 2 Type II, ISO 27001, OWASP ASVS Level 2  
-**Scope:** XR7 application, infrastructure, CI/CD pipeline, and third-party integrations  
-**Owner:** Security Lead + Engineering Lead  
+**Version:** 1.0
+**Compliance targets:** SOC 2 Type II, ISO 27001, OWASP ASVS Level 2
+**Scope:** XR7 application, infrastructure, CI/CD pipeline, and third-party integrations
+**Owner:** Security Lead + Engineering Lead
 **Review cadence:** Quarterly + after any incident
 
 ---
@@ -199,7 +199,7 @@ class Settings(BaseSettings):
     database_url: SecretStr          # VAULT_INJECT: db/creds/xr7
     jwt_private_key: SecretStr       # VAULT_INJECT: kv/jwt/private_key
     redis_url: SecretStr             # VAULT_INJECT: kv/redis/url
-    
+
     model_config = ConfigDict(env_file=".env", env_file_encoding="utf-8")
 ```
 

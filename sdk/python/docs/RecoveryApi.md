@@ -61,7 +61,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Artist Benchmarking
@@ -79,7 +79,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -132,7 +132,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Audit Eligibility
@@ -150,7 +150,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -198,7 +198,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Catalog Integrity
@@ -216,7 +216,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -264,7 +264,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Deadline Risk
@@ -282,7 +282,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -331,7 +331,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post = xr7_sdk.BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost() # BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost |  (optional)
 
     try:
@@ -350,8 +350,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post** | [**BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost**](BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.md)|  | [optional] 
+ **artist_id** | **str**|  |
+ **body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post** | [**BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost**](BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.md)|  | [optional]
 
 ### Return type
 
@@ -399,7 +399,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Fraud Scan
@@ -417,7 +417,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -465,7 +465,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Hiphop Brand Audit
@@ -483,7 +483,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -531,7 +531,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Playbook Summary
@@ -549,7 +549,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -597,8 +597,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    request_body = ['request_body_example'] # List[Optional[str]] | 
+    artist_id = 'artist_id_example' # str |
+    request_body = ['request_body_example'] # List[Optional[str]] |
 
     try:
         # Pooled Claim
@@ -616,8 +616,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **request_body** | [**List[Optional[str]]**](str.md)|  | 
+ **artist_id** | **str**|  |
+ **request_body** | [**List[Optional[str]]**](str.md)|  |
 
 ### Return type
 
@@ -672,7 +672,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Priority Queue
@@ -690,7 +690,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -738,7 +738,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Rate Benchmark Advanced
@@ -756,7 +756,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -810,7 +810,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Rate Benchmark
@@ -828,7 +828,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -876,7 +876,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Reconstruct Historical
@@ -894,7 +894,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -949,7 +949,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recoupment
@@ -967,7 +967,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1015,7 +1015,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recoupment Deep Audit
@@ -1033,7 +1033,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1081,7 +1081,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recovery Attribution
@@ -1099,7 +1099,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1147,7 +1147,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recovery Expected Value
@@ -1165,7 +1165,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1213,7 +1213,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recovery Funnel
@@ -1231,7 +1231,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1279,7 +1279,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recovery Playbook
@@ -1297,7 +1297,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1345,7 +1345,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Recovery Roi
@@ -1363,7 +1363,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1427,8 +1427,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    recovery_auto_request = xr7_sdk.RecoveryAutoRequest() # RecoveryAutoRequest | 
+    artist_id = 'artist_id_example' # str |
+    recovery_auto_request = xr7_sdk.RecoveryAutoRequest() # RecoveryAutoRequest |
 
     try:
         # Run Recovery Autopilot
@@ -1446,8 +1446,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **recovery_auto_request** | [**RecoveryAutoRequest**](RecoveryAutoRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **recovery_auto_request** | [**RecoveryAutoRequest**](RecoveryAutoRequest.md)|  |
 
 ### Return type
 
@@ -1495,7 +1495,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Sla Status
@@ -1513,7 +1513,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1567,7 +1567,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Sol Status
@@ -1585,7 +1585,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1633,7 +1633,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Split Conflicts
@@ -1651,7 +1651,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1699,7 +1699,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Split Verification
@@ -1717,7 +1717,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1765,7 +1765,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     settlement_csv = '' # str |  (optional) (default to '')
     merch_csv = '' # str |  (optional) (default to '')
 
@@ -1785,7 +1785,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **settlement_csv** | **str**|  | [optional] [default to &#39;&#39;]
  **merch_csv** | **str**|  | [optional] [default to &#39;&#39;]
 
@@ -1835,9 +1835,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    platform = 'platform_example' # str | 
-    use_id = 'use_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    platform = 'platform_example' # str |
+    use_id = 'use_id_example' # str |
 
     try:
         # Ugc Auto Claim
@@ -1855,9 +1855,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **platform** | **str**|  | 
- **use_id** | **str**|  | 
+ **artist_id** | **str**|  |
+ **platform** | **str**|  |
+ **use_id** | **str**|  |
 
 ### Return type
 
@@ -1905,8 +1905,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    request_body = None # Dict[str, object] | 
+    artist_id = 'artist_id_example' # str |
+    request_body = None # Dict[str, object] |
     platform = 'tiktok' # str |  (optional) (default to 'tiktok')
 
     try:
@@ -1925,8 +1925,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **request_body** | [**Dict[str, object]**](object.md)|  | 
+ **artist_id** | **str**|  |
+ **request_body** | [**Dict[str, object]**](object.md)|  |
  **platform** | **str**|  | [optional] [default to &#39;tiktok&#39;]
 
 ### Return type
@@ -1975,7 +1975,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Ugc Global Scan
@@ -1993,7 +1993,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -2041,7 +2041,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Ugc Monitor
@@ -2059,7 +2059,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -2107,7 +2107,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Underpayment Heatmap
@@ -2125,7 +2125,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -2148,4 +2148,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

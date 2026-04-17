@@ -8,7 +8,7 @@ Fictional artist **Nova Zephyr** with three tracks used across all files:
 | Autumn Waves | USXR72024002 | T-847293016-0 |
 | Midnight Run | USXR72023003 | T-736182940-0 |
 
-Coverage period: **January–December 2025** (full year).  
+Coverage period: **January–December 2025** (full year).
 All monetary amounts are in **USD** unless noted.
 
 ---
@@ -170,15 +170,15 @@ Use these files to exercise the fraud detection, gap analysis, and rate-audit mo
 
 The files are designed to be uploaded together so the system can perform deep-dive reconciliation:
 
-1. **Distributor vs PRO reconciliation** — Upload any distributor file (e.g. `distrokid_sample.csv`) alongside `ascap_sample.csv` and `bmi_sample.csv`. The system should correlate stream counts to expected performance royalty payments and flag under-reported periods.  
+1. **Distributor vs PRO reconciliation** — Upload any distributor file (e.g. `distrokid_sample.csv`) alongside `ascap_sample.csv` and `bmi_sample.csv`. The system should correlate stream counts to expected performance royalty payments and flag under-reported periods.
 
-2. **MLC mechanical vs distributor stream count** — Upload `mlc_sample.csv` alongside `spotify_sample.csv`. Compare Units in MLC against Streams in Spotify direct report. Any delta > 5% indicates unreported mechanicals.  
+2. **MLC mechanical vs distributor stream count** — Upload `mlc_sample.csv` alongside `spotify_sample.csv`. Compare Units in MLC against Streams in Spotify direct report. Any delta > 5% indicates unreported mechanicals.
 
-3. **Multi-distributor catalog audit** — Upload all 11 distributor files together. The system deduplicates events by ISRC + period + platform to identify which distributors are reporting the same streams (potential double-counting) and which have gaps.  
+3. **Multi-distributor catalog audit** — Upload all 11 distributor files together. The system deduplicates events by ISRC + period + platform to identify which distributors are reporting the same streams (potential double-counting) and which have gaps.
 
-4. **Bandcamp direct-to-fan vs distributor totals** — `bandcamp_sample.csv` contains sales that bypass DSP aggregation. Cross-reference against `cdbaby_sample.csv` Bandcamp line items to verify the distributor is passing through all direct sales correctly.  
+4. **Bandcamp direct-to-fan vs distributor totals** — `bandcamp_sample.csv` contains sales that bypass DSP aggregation. Cross-reference against `cdbaby_sample.csv` Bandcamp line items to verify the distributor is passing through all direct sales correctly.
 
-5. **Creator-economy completeness** — Upload YouTube, TikTok, Instagram, Twitch, and Patreon files. The system should map these to the total revenue picture and flag quarters where social/video revenue exceeds streaming income (a common indicator of catalog undervaluation).  
+5. **Creator-economy completeness** — Upload YouTube, TikTok, Instagram, Twitch, and Patreon files. The system should map these to the total revenue picture and flag quarters where social/video revenue exceeds streaming income (a common indicator of catalog undervaluation).
 
 6. **Fraud detection end-to-end** — Upload `anomaly_bot_geo_spike.csv` + `spotify_sample.csv` together. Both files contain matching June RU/IN spikes; cross-source confirmation should trigger a high-confidence fraud alert from `FraudInflationDetector`.
 

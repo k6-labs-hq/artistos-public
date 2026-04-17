@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**role** | **str** |  | 
+**role** | **str** |  |
 **agency_mode** | **bool** |  | [optional] [default to False]
 
 ## Example
@@ -26,5 +26,3 @@ tv_film_trust_explain_request_dict = tv_film_trust_explain_request_instance.to_d
 tv_film_trust_explain_request_from_dict = TVFilmTrustExplainRequest.from_dict(tv_film_trust_explain_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

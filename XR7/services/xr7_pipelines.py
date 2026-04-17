@@ -135,7 +135,7 @@ def run_api_ingestion_pipeline(
             continue
 
         token = open_sealed(cred.encrypted_access_token)
-        
+
         # Use connection pooling via context manager
         with XR7PlatformAPIClient(provider, token) as client:
             payload = client.fetch_all(scheduler, since=since, until=until)

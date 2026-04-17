@@ -5,18 +5,18 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**source_type** | **str** |  | 
-**source_id** | **str** |  | [optional] 
-**reason** | **str** |  | 
-**priority_score** | **float** |  | 
-**status** | [**ReviewItemStatus**](ReviewItemStatus.md) |  | 
-**assigned_analyst_email** | **str** |  | [optional] 
-**payload** | **Dict[str, object]** |  | [optional] 
-**created_at** | **datetime** |  | 
-**updated_at** | **datetime** |  | 
-**resolved_at** | **datetime** |  | [optional] 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**source_type** | **str** |  |
+**source_id** | **str** |  | [optional]
+**reason** | **str** |  |
+**priority_score** | **float** |  |
+**status** | [**ReviewItemStatus**](ReviewItemStatus.md) |  |
+**assigned_analyst_email** | **str** |  | [optional]
+**payload** | **Dict[str, object]** |  | [optional]
+**created_at** | **datetime** |  |
+**updated_at** | **datetime** |  |
+**resolved_at** | **datetime** |  | [optional]
 
 ## Example
 
@@ -36,5 +36,3 @@ review_item_schema_dict = review_item_schema_instance.to_dict()
 review_item_schema_from_dict = ReviewItemSchema.from_dict(review_item_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

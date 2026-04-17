@@ -1,8 +1,8 @@
 # XR7 Data Model Evolution Plan
 
-**Version:** 1.0  
-**Scope:** Long-term roadmap for XR7 schema evolution across 3–5 major versions.  
-**Horizon:** XR7 v2 (current) → XR7 v6 (target, ~2028)  
+**Version:** 1.0
+**Scope:** Long-term roadmap for XR7 schema evolution across 3–5 major versions.
+**Horizon:** XR7 v2 (current) → XR7 v6 (target, ~2028)
 **Principle:** Every schema change is backward-compatible until an explicit deprecation period expires. No breaking changes without a 6-month notice period.
 
 ---

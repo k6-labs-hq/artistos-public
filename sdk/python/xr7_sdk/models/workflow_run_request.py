@@ -85,5 +85,3 @@ class WorkflowRunRequest(BaseModel):
             "async_run": obj.get("async_run") if obj.get("async_run") is not None else False
         })
         return _obj
-
-

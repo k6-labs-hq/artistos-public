@@ -104,5 +104,3 @@ class BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost(BaseModel)
             "packages": obj.get("packages")
         })
         return _obj
-
-

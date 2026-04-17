@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**work_id** | **str** |  | 
+**work_id** | **str** |  |
 **ownership_confirmed** | **str** |  | [optional] [default to 'confirmed']
 **splits_confirmed** | **str** |  | [optional] [default to 'confirmed']
 **publisher_confirmed** | **str** |  | [optional] [default to 'confirmed']
 **admin_confirmed** | **str** |  | [optional] [default to 'confirmed']
-**correction_notes** | **str** |  | [optional] 
+**correction_notes** | **str** |  | [optional]
 
 ## Example
 
@@ -30,5 +30,3 @@ xr7_api_routers_onboarding_catalog_confirm_request_dict = xr7_api_routers_onboar
 xr7_api_routers_onboarding_catalog_confirm_request_from_dict = XR7ApiRoutersOnboardingCatalogConfirmRequest.from_dict(xr7_api_routers_onboarding_catalog_confirm_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

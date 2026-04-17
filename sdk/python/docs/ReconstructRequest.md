@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**start_date** | **datetime** |  | 
-**end_date** | **datetime** |  | 
+**start_date** | **datetime** |  |
+**end_date** | **datetime** |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ reconstruct_request_dict = reconstruct_request_instance.to_dict()
 reconstruct_request_from_dict = ReconstructRequest.from_dict(reconstruct_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -36,7 +36,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TrolleyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Create Trolley Recipient
@@ -54,7 +54,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -103,7 +103,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TrolleyApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Disburse Claim
@@ -121,7 +121,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -169,7 +169,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TrolleyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Trolley Status
@@ -187,7 +187,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -235,7 +235,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TrolleyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Trolley Widget Url
@@ -253,7 +253,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -302,9 +302,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.TrolleyApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    claim_id = 'claim_id_example' # str | 
-    manual_remittance_request = xr7_sdk.ManualRemittanceRequest() # ManualRemittanceRequest | 
+    artist_id = 'artist_id_example' # str |
+    claim_id = 'claim_id_example' # str |
+    manual_remittance_request = xr7_sdk.ManualRemittanceRequest() # ManualRemittanceRequest |
 
     try:
         # Manual Remittance
@@ -322,9 +322,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **claim_id** | **str**|  | 
- **manual_remittance_request** | [**ManualRemittanceRequest**](ManualRemittanceRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **claim_id** | **str**|  |
+ **manual_remittance_request** | [**ManualRemittanceRequest**](ManualRemittanceRequest.md)|  |
 
 ### Return type
 
@@ -408,4 +408,3 @@ No authorization required
 **200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

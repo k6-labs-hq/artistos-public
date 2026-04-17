@@ -1,9 +1,9 @@
 # XR7 AI-Augmentation Roadmap — Engine v2
 
-**Version:** 1.0  
-**Date:** 2026-04-09  
-**Scope:** Complete roadmap for AI integration across XR7's ingestion, normalization, matching, and recovery pipeline  
-**Horizon:** XR7 v2.0 (2026 Q3) → v2.5 (2027 Q1) → v3.0 (2027 Q4)  
+**Version:** 1.0
+**Date:** 2026-04-09
+**Scope:** Complete roadmap for AI integration across XR7's ingestion, normalization, matching, and recovery pipeline
+**Horizon:** XR7 v2.0 (2026 Q3) → v2.5 (2027 Q1) → v3.0 (2027 Q4)
 **Philosophy:** AI augments human decision-making; it does not replace it. Every AI decision is explainable, auditable, and reversible by a human analyst.
 
 ---
@@ -102,13 +102,13 @@ async def are_same_party(name_a: str, name_b: str, context: dict) -> PartyEquiva
     """Determine if two party names refer to the same person/org."""
     prompt = f"""
     Music rights context: Given these two party names, determine if they refer to the same person or organization.
-    
+
     Name A: {name_a}
     Context A: IPI={context.get('ipi_a')}, Territories={context.get('territories_a')}
-    
+
     Name B: {name_b}
     Context B: IPI={context.get('ipi_b')}, Territories={context.get('territories_b')}
-    
+
     Respond JSON: {{"same_party": bool, "confidence": float, "reasoning": str}}
     """
     # ... call LLM, parse response, return typed result
@@ -200,7 +200,7 @@ class ReconciliationScorer:
     - DSP × territory × subscription_type × content_type
     - Historical rate baseline for this combination
     - Known contractual adjustments
-    
+
     Returns:
     - expected_amount: Decimal
     - expected_range: (Decimal, Decimal)  # 90% confidence interval
@@ -284,21 +284,21 @@ Without accurate cue sheets, performance royalties from broadcast and streaming 
 class CueSheetExtractor:
     """
     Use LLM to extract structured cue sheet data from unstructured PDF text.
-    
+
     Input: raw text extracted from cue sheet PDF (via pdfplumber)
     Output: structured CueSheet object
     """
-    
+
     EXTRACTION_PROMPT = """
     Extract all music cues from this television/film cue sheet.
     For each cue, extract: sequence number, timecode, work title, artist, usage type, duration.
     If a field is not present, use null.
     Return as JSON array of cue objects.
-    
+
     Cue sheet text:
     {text}
     """
-    
+
     async def extract(self, pdf_bytes: bytes) -> CueSheet:
         text = self._pdf_to_text(pdf_bytes)
         response = await llm.complete(self.EXTRACTION_PROMPT.format(text=text))
@@ -449,11 +449,11 @@ Instead of waiting for users to view dashboards, the insight engine proactively 
 
 ```
 Weekly insight scan (per tenant):
-  • "Your Spotify US match rate dropped from 94% to 81% this month — 
+  • "Your Spotify US match rate dropped from 94% to 81% this month —
      possible format change. 3 other artists on the same label saw the same drop."
-  • "You have $4,200 in unsubmitted anomalies > 60 days old — 
+  • "You have $4,200 in unsubmitted anomalies > 60 days old —
      these may expire under Spotify's 12-month claim window."
-  • "PRO (ASCAP) payout for Q4 was 23% lower than Q3 with no catalog change — 
+  • "PRO (ASCAP) payout for Q4 was 23% lower than Q3 with no catalog change —
      recommend PRO reconciliation review."
 ```
 
@@ -476,10 +476,10 @@ User: "How much did Spotify underpay me for 'Blinding Lights' in 2025?"
 
 → System parses intent → SQL query generated → result returned as natural language:
 
-"In 2025, Spotify reported $18,440 for 'Blinding Lights'. 
- Based on your contracted rate of $0.00042/stream and 
- 47.2M reported streams, the expected amount was $19,824. 
- The discrepancy is $1,384 (7.0%). 
+"In 2025, Spotify reported $18,440 for 'Blinding Lights'.
+ Based on your contracted rate of $0.00042/stream and
+ 47.2M reported streams, the expected amount was $19,824.
+ The discrepancy is $1,384 (7.0%).
  A claim was filed in October and is currently under review."
 ```
 
@@ -569,10 +569,10 @@ These actions require human approval regardless of AI confidence:
 Users are informed when AI has contributed to a decision displayed in the UI:
 
 ```
-"This match was scored by XR7's AI with 94% confidence. 
+"This match was scored by XR7's AI with 94% confidence.
  Your analyst will review it within 48 hours."
 
-"This claim narrative was drafted by AI. 
+"This claim narrative was drafted by AI.
  Click 'Review' to read and approve before submission."
 ```
 
@@ -672,7 +672,7 @@ Models can degrade silently without re-training if the input data distribution c
 async def check_input_drift(model_name: str):
     current_features = await get_recent_feature_distribution(model_name, days=7)
     baseline_features = await get_baseline_distribution(model_name)
-    
+
     for feature, dist in current_features.items():
         psi = calculate_population_stability_index(baseline_features[feature], dist)
         if psi > 0.2:   # PSI > 0.2 = significant drift

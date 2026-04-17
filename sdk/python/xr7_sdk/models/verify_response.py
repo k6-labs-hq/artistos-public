@@ -91,5 +91,3 @@ class VerifyResponse(BaseModel):
             "expires_in_seconds": obj.get("expires_in_seconds")
         })
         return _obj
-
-

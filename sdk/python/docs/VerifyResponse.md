@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**estimate_token** | **str** |  | 
-**artist_name** | **str** |  | 
-**message** | **str** |  | 
-**expires_in_seconds** | **int** |  | 
+**estimate_token** | **str** |  |
+**artist_name** | **str** |  |
+**message** | **str** |  |
+**expires_in_seconds** | **int** |  |
 
 ## Example
 
@@ -28,5 +28,3 @@ verify_response_dict = verify_response_instance.to_dict()
 verify_response_from_dict = VerifyResponse.from_dict(verify_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

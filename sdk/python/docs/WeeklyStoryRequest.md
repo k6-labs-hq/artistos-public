@@ -30,5 +30,3 @@ weekly_story_request_dict = weekly_story_request_instance.to_dict()
 weekly_story_request_from_dict = WeeklyStoryRequest.from_dict(weekly_story_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

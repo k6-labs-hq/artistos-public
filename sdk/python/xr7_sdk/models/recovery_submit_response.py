@@ -96,5 +96,3 @@ class RecoverySubmitResponse(BaseModel):
             "task_id": obj.get("task_id")
         })
         return _obj
-
-

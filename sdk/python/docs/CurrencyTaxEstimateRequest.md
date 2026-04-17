@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**gross_amount** | **float** |  | 
+**gross_amount** | **float** |  |
 **source_currency** | **str** |  | [optional] [default to 'USD']
 **payout_currency** | **str** |  | [optional] [default to 'USD']
 **fx_rate** | **float** |  | [optional] [default to 1.0]
@@ -29,5 +29,3 @@ currency_tax_estimate_request_dict = currency_tax_estimate_request_instance.to_d
 currency_tax_estimate_request_from_dict = CurrencyTaxEstimateRequest.from_dict(currency_tax_estimate_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

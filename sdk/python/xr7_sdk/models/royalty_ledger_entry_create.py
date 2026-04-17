@@ -163,5 +163,3 @@ class RoyaltyLedgerEntryCreate(BaseModel):
             "territory": obj.get("territory")
         })
         return _obj
-
-

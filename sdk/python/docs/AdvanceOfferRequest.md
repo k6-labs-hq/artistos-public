@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**predicted_low_forecast** | **float** |  | 
+**predicted_low_forecast** | **float** |  |
 **currency** | **str** |  | [optional] [default to 'USD']
 **advance_fee_pct** | **float** |  | [optional] [default to 3.0]
 
@@ -27,5 +27,3 @@ advance_offer_request_dict = advance_offer_request_instance.to_dict()
 advance_offer_request_from_dict = AdvanceOfferRequest.from_dict(advance_offer_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

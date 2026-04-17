@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**anomaly_ids** | **List[str]** |  | [optional] 
-**confidence_override** | **float** |  | [optional] 
+**anomaly_ids** | **List[str]** |  | [optional]
+**confidence_override** | **float** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ tv_film_forecast_request_dict = tv_film_forecast_request_instance.to_dict()
 tv_film_forecast_request_from_dict = TVFilmForecastRequest.from_dict(tv_film_forecast_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

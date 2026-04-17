@@ -92,5 +92,3 @@ class AdviceRequest(BaseModel):
             "user_message": obj.get("user_message")
         })
         return _obj
-
-

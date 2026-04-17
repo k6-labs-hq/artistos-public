@@ -89,5 +89,3 @@ class RegisterRequest(BaseModel):
             "email": obj.get("email")
         })
         return _obj
-
-

@@ -45,7 +45,7 @@ Trigger when a new DSP statement file arrives (via webhook, S3 event, or schedul
 ## Node Specifications
 
 ### Node 01 — Validate Incoming Payload
-**Type:** Function  
+**Type:** Function
 **Purpose:** Guard against malformed trigger payloads before any API calls.
 
 ```javascript
@@ -64,10 +64,10 @@ return [{ json: $json }];
 ---
 
 ### Node 02 — Upload Statement File to Ingestion API
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/upload`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/upload`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -78,7 +78,7 @@ return [{ json: $json }];
 }
 ```
 
-**On error:** Route to `[Error Handler]`  
+**On error:** Route to `[Error Handler]`
 **Retry:** 3 attempts, 10-second backoff
 
 **Response fields used downstream:**
@@ -87,17 +87,17 @@ return [{ json: $json }];
 ---
 
 ### Node 03 — Poll Ingestion Status
-**Type:** Loop (Wait → HTTP Request → IF)  
-**Poll URL:** `GET {{ $vars.XR7_BASE_URL }}/api/v1/ingestion/jobs/{{ $node["Node 02"].json.ingestion_job_id }}`  
-**Auth:** Header Auth — `XR7 API`  
-**Poll interval:** 5 seconds  
+**Type:** Loop (Wait → HTTP Request → IF)
+**Poll URL:** `GET {{ $vars.XR7_BASE_URL }}/api/v1/ingestion/jobs/{{ $node["Node 02"].json.ingestion_job_id }}`
+**Auth:** Header Auth — `XR7 API`
+**Poll interval:** 5 seconds
 **Max polls:** 60 (i.e., 5-minute timeout)
 
 **Wait node settings:** 5 seconds between iterations
 
 **IF condition (exit loop):** `{{ $json.status }}` equals `"completed"` OR `"failed"`
 
-**On `failed` status:** Route to `[Error Handler]`  
+**On `failed` status:** Route to `[Error Handler]`
 **On `completed` status:** Continue to Node 04
 
 **Response fields used downstream:**
@@ -107,10 +107,10 @@ return [{ json: $json }];
 ---
 
 ### Node 04 — Extract Identity Signals
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/extract-signals`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/extract-signals`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -129,16 +129,16 @@ return [{ json: $json }];
 - `signals.pro_writer_id`
 - `signals.distributor_list` (array)
 
-**On error:** Route to `[Error Handler]`  
+**On error:** Route to `[Error Handler]`
 **Retry:** 2 attempts, 5-second backoff
 
 ---
 
 ### Node 05 — Run Catalog Match
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/fingerprinting/match`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/fingerprinting/match`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -164,10 +164,10 @@ return [{ json: $json }];
 ---
 
 ### Node 06 — Persist Matched Statement Rows
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/persist`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/persist`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -183,16 +183,16 @@ return [{ json: $json }];
 - `persisted_count`
 - `statement_ids` (array)
 
-**On error:** Route to `[Error Handler]`  
+**On error:** Route to `[Error Handler]`
 **Idempotency:** Node is idempotent — re-running with the same `ingestion_job_id` is safe.
 
 ---
 
 ### Node 07 — Trigger Normalization / Metadata Repair
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/normalization/repair`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/normalization/repair`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -210,8 +210,8 @@ return [{ json: $json }];
 ---
 
 ### Node 08 — Notify on Success
-**Type:** HTTP Request (or Slack node)  
-**URL:** `{{ $vars.WEBHOOK_ERROR_CHANNEL }}`  
+**Type:** HTTP Request (or Slack node)
+**URL:** `{{ $vars.WEBHOOK_ERROR_CHANNEL }}`
 **Body:**
 ```json
 {
@@ -223,7 +223,7 @@ return [{ json: $json }];
 
 ## Error Handler Node
 
-**Type:** HTTP Request → Slack  
+**Type:** HTTP Request → Slack
 **Trigger:** Any node routes here on error.
 
 ```json

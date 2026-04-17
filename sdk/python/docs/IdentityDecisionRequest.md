@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**decision** | [**IdentityDecisionStatus**](IdentityDecisionStatus.md) |  | 
-**actor** | **str** |  | 
-**reason** | **str** |  | 
+**decision** | [**IdentityDecisionStatus**](IdentityDecisionStatus.md) |  |
+**actor** | **str** |  |
+**reason** | **str** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ identity_decision_request_dict = identity_decision_request_instance.to_dict()
 identity_decision_request_from_dict = IdentityDecisionRequest.from_dict(identity_decision_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

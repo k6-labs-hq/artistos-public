@@ -5,14 +5,14 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
+**email** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
 **notify_anomaly_detected** | **bool** |  | [optional] [default to True]
 **notify_urgent_sol** | **bool** |  | [optional] [default to True]
 **notify_deposit_received** | **bool** |  | [optional] [default to True]
 **notify_claim_advanced** | **bool** |  | [optional] [default to True]
-**quiet_hours_start** | **str** |  | [optional] 
-**quiet_hours_end** | **str** |  | [optional] 
+**quiet_hours_start** | **str** |  | [optional]
+**quiet_hours_end** | **str** |  | [optional]
 
 ## Example
 
@@ -32,5 +32,3 @@ notification_preference_upsert_dict = notification_preference_upsert_instance.to
 notification_preference_upsert_from_dict = NotificationPreferenceUpsert.from_dict(notification_preference_upsert_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

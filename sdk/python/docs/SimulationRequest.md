@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tenant_id** | **str** |  | [optional] [default to 'default']
-**scenarios** | **List[Dict[str, object]]** |  | [optional] 
+**scenarios** | **List[Dict[str, object]]** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ simulation_request_dict = simulation_request_instance.to_dict()
 simulation_request_from_dict = SimulationRequest.from_dict(simulation_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

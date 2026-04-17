@@ -35,7 +35,7 @@ import type { AcceptArtistOfferArtistsArtistIdAdvanceOffersOfferIdAcceptPostRequ
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -108,7 +108,7 @@ import type { AnalystQueueAdminAdvancesQueueAnalystGetRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -169,7 +169,7 @@ import type { ApproveAnalystAdminAdvancesOpportunitiesOpportunityIdAnalystDecisi
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -242,7 +242,7 @@ import type { ApproveExecutiveAdminAdvancesOpportunitiesOpportunityIdExecutiveDe
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -315,7 +315,7 @@ import type { CompletePacketAdminAdvancesPacketsPacketIdCompletePostRequest } fr
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -385,7 +385,7 @@ import type { CreateFailedPacketAdminAdvancesOffersOfferIdFailedRecoveryPacketPo
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -458,7 +458,7 @@ import type { ExecutiveQueueAdminAdvancesQueueExecutiveGetRequest } from '@xr7/s
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -519,7 +519,7 @@ import type { ListArtistOffersArtistsArtistIdAdvanceOffersGetRequest } from '@xr
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -589,7 +589,7 @@ import type { PublishOfferAdminAdvancesOpportunitiesOpportunityIdPublishOfferPos
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -659,7 +659,7 @@ import type { RunNightlyEvalAdminAdvancesRunNightlyEvalPostRequest } from '@xr7/
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -720,7 +720,7 @@ import type { SignFailedPacketAdminAdvancesPacketsPacketIdSignPostRequest } from
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -774,4 +774,3 @@ example().catch(console.error);
 | **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**statement_id** | **str** |  | [optional] 
-**statement_signals** | **Dict[str, object]** |  | 
+**statement_id** | **str** |  | [optional]
+**statement_signals** | **Dict[str, object]** |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ identity_match_request_dict = identity_match_request_instance.to_dict()
 identity_match_request_from_dict = IdentityMatchRequest.from_dict(identity_match_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

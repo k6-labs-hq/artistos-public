@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**claim** | **Dict[str, object]** |  | [optional] 
+**claim** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -25,5 +25,3 @@ negotiation_script_request_dict = negotiation_script_request_instance.to_dict()
 negotiation_script_request_from_dict = NegotiationScriptRequest.from_dict(negotiation_script_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

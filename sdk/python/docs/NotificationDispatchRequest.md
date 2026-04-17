@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**event_key** | **str** |  | 
-**title** | **str** |  | 
-**body** | **str** |  | 
+**event_key** | **str** |  |
+**title** | **str** |  |
+**body** | **str** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ notification_dispatch_request_dict = notification_dispatch_request_instance.to_d
 notification_dispatch_request_from_dict = NotificationDispatchRequest.from_dict(notification_dispatch_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

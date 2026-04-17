@@ -5,22 +5,22 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**source** | **str** |  | 
-**record_type** | [**LedgerRecordType**](LedgerRecordType.md) |  | 
-**source_file** | **str** |  | [optional] 
-**source_row** | **int** |  | [optional] 
-**contract_version** | **str** |  | [optional] 
-**work_id** | **str** |  | [optional] 
-**event_type** | **str** |  | [optional] 
-**period_start** | **date** |  | [optional] 
-**period_end** | **date** |  | [optional] 
+**source** | **str** |  |
+**record_type** | [**LedgerRecordType**](LedgerRecordType.md) |  |
+**source_file** | **str** |  | [optional]
+**source_row** | **int** |  | [optional]
+**contract_version** | **str** |  | [optional]
+**work_id** | **str** |  | [optional]
+**event_type** | **str** |  | [optional]
+**period_start** | **date** |  | [optional]
+**period_end** | **date** |  | [optional]
 **quantity** | **float** |  | [optional] [default to 0.0]
 **rate** | **float** |  | [optional] [default to 0.0]
 **expected_amount** | **float** |  | [optional] [default to 0.0]
 **received_amount** | **float** |  | [optional] [default to 0.0]
 **currency** | **str** |  | [optional] [default to 'USD']
-**fx_rate_used** | **float** |  | [optional] 
-**territory** | **str** |  | [optional] 
+**fx_rate_used** | **float** |  | [optional]
+**territory** | **str** |  | [optional]
 
 ## Example
 
@@ -40,5 +40,3 @@ royalty_ledger_entry_create_dict = royalty_ledger_entry_create_instance.to_dict(
 royalty_ledger_entry_create_from_dict = RoyaltyLedgerEntryCreate.from_dict(royalty_ledger_entry_create_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

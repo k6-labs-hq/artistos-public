@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**parser_type** | **str** |  | 
-**plugin_name** | **str** |  | 
-**plugin_entrypoint** | **str** |  | 
-**plugin_signature** | **str** |  | [optional] 
+**parser_type** | **str** |  |
+**plugin_name** | **str** |  |
+**plugin_entrypoint** | **str** |  |
+**plugin_signature** | **str** |  | [optional]
 **enabled** | **bool** |  | [optional] [default to True]
 
 ## Example
@@ -29,5 +29,3 @@ parser_plugin_upsert_request_dict = parser_plugin_upsert_request_instance.to_dic
 parser_plugin_upsert_request_from_dict = ParserPluginUpsertRequest.from_dict(parser_plugin_upsert_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

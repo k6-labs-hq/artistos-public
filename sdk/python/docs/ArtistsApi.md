@@ -40,7 +40,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Artist Summary
@@ -58,7 +58,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -111,7 +111,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Catalog Health
@@ -129,7 +129,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -187,7 +187,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Connect Artist
@@ -205,7 +205,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -253,8 +253,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    provider = 'provider_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    provider = 'provider_example' # str |
 
     try:
         # Connect Provider
@@ -272,8 +272,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **provider** | **str**|  | 
+ **artist_id** | **str**|  |
+ **provider** | **str**|  |
 
 ### Return type
 
@@ -323,7 +323,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_create = xr7_sdk.ArtistCreate() # ArtistCreate | 
+    artist_create = xr7_sdk.ArtistCreate() # ArtistCreate |
 
     try:
         # Create Artist
@@ -341,7 +341,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_create** | [**ArtistCreate**](ArtistCreate.md)|  | 
+ **artist_create** | [**ArtistCreate**](ArtistCreate.md)|  |
 
 ### Return type
 
@@ -390,7 +390,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Artist
@@ -408,7 +408,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -456,7 +456,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Artist Preferences
@@ -474,7 +474,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -522,8 +522,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    provider = 'provider_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    provider = 'provider_example' # str |
 
     try:
         # Provider Connection Status
@@ -541,8 +541,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **provider** | **str**|  | 
+ **artist_id** | **str**|  |
+ **provider** | **str**|  |
 
 ### Return type
 
@@ -591,8 +591,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    artist_preference_update_request = xr7_sdk.ArtistPreferenceUpdateRequest() # ArtistPreferenceUpdateRequest | 
+    artist_id = 'artist_id_example' # str |
+    artist_preference_update_request = xr7_sdk.ArtistPreferenceUpdateRequest() # ArtistPreferenceUpdateRequest |
 
     try:
         # Update Artist Preferences
@@ -610,8 +610,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **artist_preference_update_request** | [**ArtistPreferenceUpdateRequest**](ArtistPreferenceUpdateRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **artist_preference_update_request** | [**ArtistPreferenceUpdateRequest**](ArtistPreferenceUpdateRequest.md)|  |
 
 ### Return type
 
@@ -659,7 +659,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ArtistsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Weekly Digest
@@ -677,7 +677,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -700,4 +700,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

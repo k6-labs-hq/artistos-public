@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**claim_id** | **str** |  | [optional] 
-**markdown** | **str** |  | 
-**evidence_zip_link** | **str** |  | [optional] 
+**artist_id** | **str** |  |
+**claim_id** | **str** |  | [optional]
+**markdown** | **str** |  |
+**evidence_zip_link** | **str** |  | [optional]
 
 ## Example
 
@@ -28,5 +28,3 @@ demand_letter_response_dict = demand_letter_response_instance.to_dict()
 demand_letter_response_from_dict = DemandLetterResponse.from_dict(demand_letter_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

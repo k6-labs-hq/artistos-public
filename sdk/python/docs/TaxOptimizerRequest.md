@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**gross_amount** | **float** |  | 
+**gross_amount** | **float** |  |
 **us_withholding_rate** | **float** |  | [optional] [default to 0.3]
 **global_withholding_rate** | **float** |  | [optional] [default to 0.1]
 **fx_rate** | **float** |  | [optional] [default to 1.0]
@@ -28,5 +28,3 @@ tax_optimizer_request_dict = tax_optimizer_request_instance.to_dict()
 tax_optimizer_request_from_dict = TaxOptimizerRequest.from_dict(tax_optimizer_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

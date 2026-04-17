@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**contingency_fee_percent** | **float** |  | [optional] 
-**reason** | **str** |  | [optional] 
+**contingency_fee_percent** | **float** |  | [optional]
+**reason** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ founder_assign_request_dict = founder_assign_request_instance.to_dict()
 founder_assign_request_from_dict = FounderAssignRequest.from_dict(founder_assign_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

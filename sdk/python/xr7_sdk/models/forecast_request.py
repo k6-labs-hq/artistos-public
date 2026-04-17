@@ -89,5 +89,3 @@ class ForecastRequest(BaseModel):
             "by_category": obj.get("by_category") if obj.get("by_category") is not None else False
         })
         return _obj
-
-

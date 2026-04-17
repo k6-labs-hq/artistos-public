@@ -103,5 +103,3 @@ class RegisterResponse(BaseModel):
             "dev_email_otp": obj.get("dev_email_otp")
         })
         return _obj
-
-

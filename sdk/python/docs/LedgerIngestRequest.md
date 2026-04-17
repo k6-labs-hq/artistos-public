@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**entries** | [**List[RoyaltyLedgerEntryCreate]**](RoyaltyLedgerEntryCreate.md) |  | 
+**entries** | [**List[RoyaltyLedgerEntryCreate]**](RoyaltyLedgerEntryCreate.md) |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ ledger_ingest_request_dict = ledger_ingest_request_instance.to_dict()
 ledger_ingest_request_from_dict = LedgerIngestRequest.from_dict(ledger_ingest_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

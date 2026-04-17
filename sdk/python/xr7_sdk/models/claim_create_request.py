@@ -87,5 +87,3 @@ class ClaimCreateRequest(BaseModel):
             "claim_type": obj.get("claim_type") if obj.get("claim_type") is not None else 'RECOVERY'
         })
         return _obj
-
-

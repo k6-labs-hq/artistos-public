@@ -87,5 +87,3 @@ class UtilityRankRequest(BaseModel):
             "analyst_hourly_cost": obj.get("analyst_hourly_cost") if obj.get("analyst_hourly_cost") is not None else 75.0
         })
         return _obj
-
-

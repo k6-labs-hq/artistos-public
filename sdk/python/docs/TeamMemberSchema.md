@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**user_email** | **str** |  | 
-**role** | [**TeamRole**](TeamRole.md) |  | 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**user_email** | **str** |  |
+**role** | [**TeamRole**](TeamRole.md) |  |
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -29,5 +29,3 @@ team_member_schema_dict = team_member_schema_instance.to_dict()
 team_member_schema_from_dict = TeamMemberSchema.from_dict(team_member_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -94,5 +94,3 @@ class DemandLetterRequest(BaseModel):
             "evidence": obj.get("evidence")
         })
         return _obj
-
-

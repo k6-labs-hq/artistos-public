@@ -89,5 +89,3 @@ class SplitRepairRequest(BaseModel):
             "apply_threshold": obj.get("apply_threshold") if obj.get("apply_threshold") is not None else 0.85
         })
         return _obj
-
-

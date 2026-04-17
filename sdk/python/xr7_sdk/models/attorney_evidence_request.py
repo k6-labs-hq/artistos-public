@@ -98,5 +98,3 @@ class AttorneyEvidenceRequest(BaseModel):
             "attorney_engagement_deadline": obj.get("attorney_engagement_deadline")
         })
         return _obj
-
-

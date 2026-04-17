@@ -42,13 +42,13 @@ def _observe(event: str, **fields: Any) -> None:
     # Check multiple test indicators
     import os
     import sys
-    
+
     is_testing = (
         "pytest" in sys.modules
         or os.getenv("PYTEST_CURRENT_TEST") is not None
         or "test" in sys.argv[0].lower() if sys.argv else False
     )
-    
+
     if not is_testing:
         logger.info(
             "branding_observability",

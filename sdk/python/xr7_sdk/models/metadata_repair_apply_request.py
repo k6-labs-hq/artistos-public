@@ -89,5 +89,3 @@ class MetadataRepairApplyRequest(BaseModel):
             "dry_run": obj.get("dry_run") if obj.get("dry_run") is not None else False
         })
         return _obj
-
-

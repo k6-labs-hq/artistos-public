@@ -27,7 +27,7 @@ router = APIRouter()
 class ArtistCreate(BaseModel):
     name: str
     email: str
-    
+
     class Config:
         json_schema_extra = {
             "example": {

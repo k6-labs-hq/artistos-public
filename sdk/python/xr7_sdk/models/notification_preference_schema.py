@@ -128,5 +128,3 @@ class NotificationPreferenceSchema(BaseModel):
             "updated_at": obj.get("updated_at")
         })
         return _obj
-
-

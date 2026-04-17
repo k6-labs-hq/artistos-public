@@ -33,8 +33,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7UgcApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    ugc_signal_ingest_request = xr7_sdk.UGCSignalIngestRequest() # UGCSignalIngestRequest | 
+    artist_id = 'artist_id_example' # str |
+    ugc_signal_ingest_request = xr7_sdk.UGCSignalIngestRequest() # UGCSignalIngestRequest |
 
     try:
         # Ingest Signals
@@ -52,8 +52,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **ugc_signal_ingest_request** | [**UGCSignalIngestRequest**](UGCSignalIngestRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **ugc_signal_ingest_request** | [**UGCSignalIngestRequest**](UGCSignalIngestRequest.md)|  |
 
 ### Return type
 
@@ -101,7 +101,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7UgcApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     tenant_id = 'default' # str |  (optional) (default to 'default')
     min_confidence = 0.65 # float |  (optional) (default to 0.65)
     min_estimated_value = 0.0 # float |  (optional) (default to 0.0)
@@ -123,11 +123,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **tenant_id** | **str**|  | [optional] [default to &#39;default&#39;]
  **min_confidence** | **float**|  | [optional] [default to 0.65]
  **min_estimated_value** | **float**|  | [optional] [default to 0.0]
- **status** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
 
 ### Return type
 
@@ -150,4 +150,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

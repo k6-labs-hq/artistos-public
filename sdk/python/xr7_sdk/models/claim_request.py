@@ -85,5 +85,3 @@ class ClaimRequest(BaseModel):
             "lead_id": obj.get("lead_id")
         })
         return _obj
-
-

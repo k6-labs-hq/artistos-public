@@ -33,8 +33,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7MetadataApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    metadata_repair_apply_request = xr7_sdk.MetadataRepairApplyRequest() # MetadataRepairApplyRequest | 
+    artist_id = 'artist_id_example' # str |
+    metadata_repair_apply_request = xr7_sdk.MetadataRepairApplyRequest() # MetadataRepairApplyRequest |
 
     try:
         # Apply Repairs
@@ -52,8 +52,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **metadata_repair_apply_request** | [**MetadataRepairApplyRequest**](MetadataRepairApplyRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **metadata_repair_apply_request** | [**MetadataRepairApplyRequest**](MetadataRepairApplyRequest.md)|  |
 
 ### Return type
 
@@ -102,8 +102,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7MetadataApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    metadata_repair_suggest_request = xr7_sdk.MetadataRepairSuggestRequest() # MetadataRepairSuggestRequest | 
+    artist_id = 'artist_id_example' # str |
+    metadata_repair_suggest_request = xr7_sdk.MetadataRepairSuggestRequest() # MetadataRepairSuggestRequest |
 
     try:
         # Suggest Repairs
@@ -121,8 +121,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **metadata_repair_suggest_request** | [**MetadataRepairSuggestRequest**](MetadataRepairSuggestRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **metadata_repair_suggest_request** | [**MetadataRepairSuggestRequest**](MetadataRepairSuggestRequest.md)|  |
 
 ### Return type
 
@@ -145,4 +145,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

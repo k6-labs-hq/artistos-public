@@ -52,7 +52,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Activate Negotiator Agent
@@ -70,7 +70,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -119,7 +119,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Advance Claim
@@ -137,7 +137,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -185,7 +185,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Automation Plan
@@ -203,7 +203,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -251,7 +251,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Evidence Optimized
@@ -269,7 +269,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -317,7 +317,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Evidence Strength
@@ -335,7 +335,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -383,7 +383,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Forecast
@@ -401,7 +401,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -449,7 +449,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Negotiation Intel
@@ -467,7 +467,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -515,7 +515,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Playbook
@@ -533,7 +533,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -581,7 +581,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Sla Prediction
@@ -599,7 +599,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -647,7 +647,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Claim Strength Explainer
@@ -665,7 +665,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -725,8 +725,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    claim_create_request = xr7_sdk.ClaimCreateRequest() # ClaimCreateRequest | 
+    artist_id = 'artist_id_example' # str |
+    claim_create_request = xr7_sdk.ClaimCreateRequest() # ClaimCreateRequest |
 
     try:
         # Create Claim For Artist
@@ -744,8 +744,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **claim_create_request** | [**ClaimCreateRequest**](ClaimCreateRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **claim_create_request** | [**ClaimCreateRequest**](ClaimCreateRequest.md)|  |
 
 ### Return type
 
@@ -793,7 +793,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Escalate Legal
@@ -811,7 +811,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -859,7 +859,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
     format = 'zip' # str |  (optional) (default to 'zip')
     refresh = False # bool |  (optional) (default to False)
 
@@ -879,7 +879,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
  **format** | **str**|  | [optional] [default to &#39;zip&#39;]
  **refresh** | **bool**|  | [optional] [default to False]
 
@@ -931,7 +931,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
     mode = 'standard' # str |  (optional) (default to 'standard')
 
     try:
@@ -950,7 +950,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
  **mode** | **str**|  | [optional] [default to &#39;standard&#39;]
 
 ### Return type
@@ -1000,8 +1000,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
-    attorney_evidence_request = xr7_sdk.AttorneyEvidenceRequest() # AttorneyEvidenceRequest | 
+    claim_id = 'claim_id_example' # str |
+    attorney_evidence_request = xr7_sdk.AttorneyEvidenceRequest() # AttorneyEvidenceRequest |
 
     try:
         # Generate Attorney Evidence File
@@ -1019,8 +1019,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
- **attorney_evidence_request** | [**AttorneyEvidenceRequest**](AttorneyEvidenceRequest.md)|  | 
+ **claim_id** | **str**|  |
+ **attorney_evidence_request** | [**AttorneyEvidenceRequest**](AttorneyEvidenceRequest.md)|  |
 
 ### Return type
 
@@ -1069,8 +1069,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
-    attorney_evidence_request = xr7_sdk.AttorneyEvidenceRequest() # AttorneyEvidenceRequest | 
+    claim_id = 'claim_id_example' # str |
+    attorney_evidence_request = xr7_sdk.AttorneyEvidenceRequest() # AttorneyEvidenceRequest |
 
     try:
         # Generate Attorney Evidence File
@@ -1088,8 +1088,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
- **attorney_evidence_request** | [**AttorneyEvidenceRequest**](AttorneyEvidenceRequest.md)|  | 
+ **claim_id** | **str**|  |
+ **attorney_evidence_request** | [**AttorneyEvidenceRequest**](AttorneyEvidenceRequest.md)|  |
 
 ### Return type
 
@@ -1137,7 +1137,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Generate Evidence
@@ -1155,7 +1155,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -1204,7 +1204,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Get Claim
@@ -1222,7 +1222,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -1280,7 +1280,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Get Evidence
@@ -1298,7 +1298,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -1356,7 +1356,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Claims
@@ -1374,7 +1374,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1424,8 +1424,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
-    reconcile_request = xr7_sdk.ReconcileRequest() # ReconcileRequest | 
+    claim_id = 'claim_id_example' # str |
+    reconcile_request = xr7_sdk.ReconcileRequest() # ReconcileRequest |
 
     try:
         # Reconcile Claim
@@ -1443,8 +1443,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
- **reconcile_request** | [**ReconcileRequest**](ReconcileRequest.md)|  | 
+ **claim_id** | **str**|  |
+ **reconcile_request** | [**ReconcileRequest**](ReconcileRequest.md)|  |
 
 ### Return type
 
@@ -1492,7 +1492,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ClaimsApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
     expected_prior_packet_hash = 'expected_prior_packet_hash_example' # str |  (optional)
 
     try:
@@ -1511,8 +1511,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
- **expected_prior_packet_hash** | **str**|  | [optional] 
+ **claim_id** | **str**|  |
+ **expected_prior_packet_hash** | **str**|  | [optional]
 
 ### Return type
 
@@ -1535,4 +1535,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

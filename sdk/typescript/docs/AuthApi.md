@@ -159,7 +159,7 @@ import type { AuthMeAuthMeGetRequest } from '@xr7/sdk';
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -201,4 +201,3 @@ This endpoint does not need any parameter.
 | **200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

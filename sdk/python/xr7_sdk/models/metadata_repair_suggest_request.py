@@ -89,5 +89,3 @@ class MetadataRepairSuggestRequest(BaseModel):
             "max_items": obj.get("max_items") if obj.get("max_items") is not None else 50
         })
         return _obj
-
-

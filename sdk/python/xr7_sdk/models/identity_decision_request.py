@@ -91,5 +91,3 @@ class IdentityDecisionRequest(BaseModel):
             "reason": obj.get("reason")
         })
         return _obj
-
-

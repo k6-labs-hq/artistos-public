@@ -15,7 +15,7 @@ Name | Type | Description | Notes
 **support_email** | **str** |  | [optional] [default to 'support@xr7.ai']
 **support_phone** | **str** |  | [optional] [default to '+1-800-XR7-HELP']
 **legal_disclaimer** | **str** |  | [optional] [default to 'Forecasts and recovery estimates are provided for operational guidance only. Actual outcomes may vary based on payer behavior, legal deadlines, and data quality.']
-**custom_domain** | **str** |  | [optional] 
+**custom_domain** | **str** |  | [optional]
 **white_label_enabled** | **bool** |  | [optional] [default to False]
 
 ## Example
@@ -36,5 +36,3 @@ branding_profile_upsert_request_dict = branding_profile_upsert_request_instance.
 branding_profile_upsert_request_from_dict = BrandingProfileUpsertRequest.from_dict(branding_profile_upsert_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

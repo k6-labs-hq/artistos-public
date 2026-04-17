@@ -87,5 +87,3 @@ class SupportActionRequest(BaseModel):
             "payload": obj.get("payload")
         })
         return _obj
-
-

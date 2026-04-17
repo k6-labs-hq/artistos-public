@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**referred_artist_id** | **str** |  | 
+**referred_artist_id** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ referral_request_dict = referral_request_instance.to_dict()
 referral_request_from_dict = ReferralRequest.from_dict(referral_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -91,5 +91,3 @@ class TaxOptimizerRequest(BaseModel):
             "fx_rate": obj.get("fx_rate") if obj.get("fx_rate") is not None else 1.0
         })
         return _obj
-
-

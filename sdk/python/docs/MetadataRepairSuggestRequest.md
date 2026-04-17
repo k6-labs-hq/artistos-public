@@ -27,5 +27,3 @@ metadata_repair_suggest_request_dict = metadata_repair_suggest_request_instance.
 metadata_repair_suggest_request_from_dict = MetadataRepairSuggestRequest.from_dict(metadata_repair_suggest_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

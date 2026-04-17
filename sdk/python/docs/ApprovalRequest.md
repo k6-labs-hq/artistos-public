@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**approved** | **bool** |  | 
-**notes** | **str** |  | [optional] 
+**approved** | **bool** |  |
+**notes** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ approval_request_dict = approval_request_instance.to_dict()
 approval_request_from_dict = ApprovalRequest.from_dict(approval_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

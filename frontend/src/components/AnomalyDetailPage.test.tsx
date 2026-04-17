@@ -185,7 +185,7 @@ describe("AnomalyDetailPage", () => {
 
     it("does not fetch recoverability when artist_id missing", async () => {
       const anomalyWithoutArtist = { ...mockAnomaly, artist_id: "" };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => anomalyWithoutArtist,
@@ -275,7 +275,7 @@ describe("AnomalyDetailPage", () => {
 
     it("handles zero estimated_recoverable", async () => {
       const zeroAnomaly = { ...mockAnomaly, estimated_recoverable: 0 };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => zeroAnomaly,
@@ -293,7 +293,7 @@ describe("AnomalyDetailPage", () => {
 
     it("handles null estimated_recoverable", async () => {
       const nullAnomaly = { ...mockAnomaly, estimated_recoverable: null };
-      
+
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => nullAnomaly,
@@ -362,7 +362,7 @@ describe("AnomalyDetailPage", () => {
       mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
 
       const { unmount } = render(<AnomalyDetailPage anomalyId="anom-123" />);
-      
+
       unmount();
 
       // Should not crash or cause errors

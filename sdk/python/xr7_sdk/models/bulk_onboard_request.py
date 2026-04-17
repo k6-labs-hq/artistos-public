@@ -85,5 +85,3 @@ class BulkOnboardRequest(BaseModel):
             "artists": obj.get("artists")
         })
         return _obj
-
-

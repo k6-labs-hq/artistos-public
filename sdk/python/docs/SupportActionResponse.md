@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**action** | **str** |  | 
-**result** | **Dict[str, object]** |  | 
-**formatted_message** | **str** |  | 
+**artist_id** | **str** |  |
+**action** | **str** |  |
+**result** | **Dict[str, object]** |  |
+**formatted_message** | **str** |  |
 
 ## Example
 
@@ -28,5 +28,3 @@ support_action_response_dict = support_action_response_instance.to_dict()
 support_action_response_from_dict = SupportActionResponse.from_dict(support_action_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

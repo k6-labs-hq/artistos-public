@@ -43,25 +43,25 @@ These issues are real but require a planned migration — bulk auto-fixing them 
 ## 2. Remaining Risks & Recommendations
 
 ### Risk 1 — API Layer DB Access (Medium Risk, High Effort to Fix)
-**Description**: ~75 router files make `db.query()` calls directly rather than routing through service classes. This is not a runtime bug but violates the defined architecture boundary.  
-**Impact**: Tests are harder to write (must mock DB instead of service); business logic can't be reused outside HTTP context; harder to migrate to async later.  
+**Description**: ~75 router files make `db.query()` calls directly rather than routing through service classes. This is not a runtime bug but violates the defined architecture boundary.
+**Impact**: Tests are harder to write (must mock DB instead of service); business logic can't be reused outside HTTP context; harder to migrate to async later.
 **Recommendation**: In v2.1, create a batch migration script that introduces service-class wrappers for each router's most common queries. Prioritise the highest-traffic routers first (recovery, claims, anomalies, onboarding). Enforce the boundary in CI using `check_domain_boundaries.py` as a blocking check.
 
 ### Risk 2 — External API Credential Gaps (Low Code Risk, High Business Risk)
-**Description**: Four integrations require production API credentials that are not yet obtained: Trolley, ASCAP/BMI/SESAC, YouTube/TikTok/Meta, Ticketmaster/AXS.  
-**Impact**: Until credentials are obtained, these integration paths fall back to local stubs.  
+**Description**: Four integrations require production API credentials that are not yet obtained: Trolley, ASCAP/BMI/SESAC, YouTube/TikTok/Meta, Ticketmaster/AXS.
+**Impact**: Until credentials are obtained, these integration paths fall back to local stubs.
 **Recommendation**: Assign a BD owner to each credential track. All integration code is in place and tested against stubs. Onboarding is a credentials hand-off, not a development task.
 
 ### Risk 3 — 49 Pre-Existing Test Failures (Low Code Risk)
-**Description**: 49 tests are expected failures against external API stubs (PRO connectors, Trolley sandbox). They are not regressions but will appear as failures in fresh CI runs without credentials.  
+**Description**: 49 tests are expected failures against external API stubs (PRO connectors, Trolley sandbox). They are not regressions but will appear as failures in fresh CI runs without credentials.
 **Recommendation**: Mark these with `@pytest.mark.skip(reason="requires external credentials")` to cleanly separate structural test failures from credential-gated test failures.
 
 ### Risk 4 — LLM Dependency (Medium Risk)
-**Description**: Claim narrative generation, copilot Q&A, and cue-sheet PDF extraction depend on `OPENAI_API_KEY`. If not set, these features degrade gracefully but return empty/stub responses.  
+**Description**: Claim narrative generation, copilot Q&A, and cue-sheet PDF extraction depend on `OPENAI_API_KEY`. If not set, these features degrade gracefully but return empty/stub responses.
 **Recommendation**: Document the graceful degradation in configuration docs. Add a health-check endpoint that reports which AI features are active based on credential availability.
 
 ### Risk 5 — Celery Task Monitoring (Low Risk)
-**Description**: Flower is included in `docker-compose.yml` for local development but is not deployed in the production Kubernetes manifests.  
+**Description**: Flower is included in `docker-compose.yml` for local development but is not deployed in the production Kubernetes manifests.
 **Recommendation**: Add a Flower deployment to the production Kustomize overlay, or configure Celery to emit task events to the OTel collector.
 
 ---

@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**analyst_email** | **str** |  | 
+**analyst_email** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ assign_review_item_request_dict = assign_review_item_request_instance.to_dict()
 assign_review_item_request_from_dict = AssignReviewItemRequest.from_dict(assign_review_item_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

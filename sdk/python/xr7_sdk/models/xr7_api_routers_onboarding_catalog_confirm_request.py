@@ -100,5 +100,3 @@ class XR7ApiRoutersOnboardingCatalogConfirmRequest(BaseModel):
             "correction_notes": obj.get("correction_notes")
         })
         return _obj
-
-

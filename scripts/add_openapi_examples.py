@@ -17,25 +17,25 @@ from typing import Any
 def generate_example_value(prop_name: str, prop_schema: dict[str, Any]) -> Any:
     """
     Generate a realistic example value based on property name and schema.
-    
+
     Args:
         prop_name: The property name (e.g., "email", "artist_id")
         prop_schema: The OpenAPI property schema
-        
+
     Returns:
         An appropriate example value for documentation
     """
     prop_type = prop_schema.get("type")
     prop_format = prop_schema.get("format")
-    
+
     # Handle enums first
     if "enum" in prop_schema and prop_schema["enum"]:
         return prop_schema["enum"][0]
-    
+
     # String type
     if prop_type == "string":
         lower_name = prop_name.lower()
-        
+
         # Date/time formats
         if prop_format == "date-time" or "timestamp" in lower_name or "created_at" in lower_name or "updated_at" in lower_name:
             return "2026-04-16T10:30:00Z"
@@ -43,7 +43,7 @@ def generate_example_value(prop_name: str, prop_schema: dict[str, Any]) -> Any:
             return "2026-04-16"
         if prop_format == "time":
             return "10:30:00"
-        
+
         # Common field patterns
         if "email" in lower_name:
             return "artist@example.com"
@@ -90,14 +90,14 @@ def generate_example_value(prop_name: str, prop_schema: dict[str, Any]) -> Any:
             return "CA"
         if "zip" in lower_name or "postal" in lower_name:
             return "94102"
-        
+
         # Default string
         return "example_value"
-    
+
     # Number types
     if prop_type in ("integer", "number"):
         lower_name = prop_name.lower()
-        
+
         if "amount" in lower_name or "price" in lower_name or "revenue" in lower_name:
             return 1234.56 if prop_type == "number" else 1234
         if "count" in lower_name or "total" in lower_name:
@@ -116,28 +116,28 @@ def generate_example_value(prop_name: str, prop_schema: dict[str, Any]) -> Any:
             return 0
         if "page" in lower_name:
             return 1
-        
+
         # Default number
         return 42 if prop_type == "integer" else 42.0
-    
+
     # Boolean
     if prop_type == "boolean":
         lower_name = prop_name.lower()
         if "is_" in lower_name or "has_" in lower_name or "enabled" in lower_name:
             return True
         return False
-    
+
     # Array
     if prop_type == "array":
         items_schema = prop_schema.get("items", {})
         item_example = generate_example_value("item", items_schema)
         return [item_example]
-    
+
     # Object
     if prop_type == "object":
         # For generic objects, return a simple example
         return {"key": "value"}
-    
+
     # Default fallback
     return None
 
@@ -145,57 +145,57 @@ def generate_example_value(prop_name: str, prop_schema: dict[str, Any]) -> Any:
 def add_examples_to_schema(schema: dict[str, Any]) -> dict[str, Any]:
     """
     Add example values to a schema object's properties.
-    
+
     Args:
         schema: An OpenAPI schema object
-        
+
     Returns:
         The schema with examples added
     """
     if "properties" not in schema:
         return schema
-    
+
     example_obj = {}
-    
+
     for prop_name, prop_schema in schema["properties"].items():
         # Skip if example already exists
         if "example" in prop_schema:
             example_obj[prop_name] = prop_schema["example"]
             continue
-        
+
         # Generate and add example
         example_value = generate_example_value(prop_name, prop_schema)
         if example_value is not None:
             prop_schema["example"] = example_value
             example_obj[prop_name] = example_value
-    
+
     # Add schema-level example
     if example_obj and "example" not in schema:
         schema["example"] = example_obj
-    
+
     return schema
 
 
 def add_examples_to_openapi_spec(spec_path: Path) -> None:
     """
     Add examples to all schemas in the OpenAPI specification.
-    
+
     Args:
         spec_path: Path to the openapi.json file
     """
     print(f"Reading OpenAPI spec from {spec_path}...")
     with open(spec_path, "r", encoding="utf-8") as f:
         spec = json.load(f)
-    
+
     # Process all schema components
     schemas = spec.get("components", {}).get("schemas", {})
     if not schemas:
         print("No schemas found in OpenAPI spec.")
         return
-    
+
     print(f"Processing {len(schemas)} schemas...")
     modified_count = 0
-    
+
     for schema_name, schema in schemas.items():
         if "properties" in schema:
             original = json.dumps(schema)
@@ -203,12 +203,12 @@ def add_examples_to_openapi_spec(spec_path: Path) -> None:
             if json.dumps(schema) != original:
                 modified_count += 1
                 print(f"  ✓ Added examples to {schema_name}")
-    
+
     # Write back to file
     print(f"\nWriting updated spec to {spec_path}...")
     with open(spec_path, "w", encoding="utf-8") as f:
         json.dump(spec, f, indent=2)
-    
+
     print(f"✅ Done! Modified {modified_count} schemas with examples.")
 
 
@@ -216,12 +216,12 @@ def main() -> None:
     """Main entry point."""
     root = Path(__file__).resolve().parents[1]
     spec_path = root / "openapi" / "openapi.json"
-    
+
     if not spec_path.exists():
         print(f"❌ OpenAPI spec not found at {spec_path}")
         print("   Run: make openapi")
         return
-    
+
     add_examples_to_openapi_spec(spec_path)
 
 

@@ -37,7 +37,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.BrandingApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
 
     try:
         # Branding Templates
@@ -55,7 +55,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
 
 ### Return type
 
@@ -104,8 +104,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.BrandingApi(api_client)
-    org_id = 'org_id_example' # str | 
-    branding_profile_upsert_request = xr7_sdk.BrandingProfileUpsertRequest() # BrandingProfileUpsertRequest | 
+    org_id = 'org_id_example' # str |
+    branding_profile_upsert_request = xr7_sdk.BrandingProfileUpsertRequest() # BrandingProfileUpsertRequest |
 
     try:
         # Create Branding
@@ -123,8 +123,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **branding_profile_upsert_request** | [**BrandingProfileUpsertRequest**](BrandingProfileUpsertRequest.md)|  | 
+ **org_id** | **str**|  |
+ **branding_profile_upsert_request** | [**BrandingProfileUpsertRequest**](BrandingProfileUpsertRequest.md)|  |
 
 ### Return type
 
@@ -173,8 +173,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.BrandingApi(api_client)
-    org_id = 'org_id_example' # str | 
-    help_article_create_request = xr7_sdk.HelpArticleCreateRequest() # HelpArticleCreateRequest | 
+    org_id = 'org_id_example' # str |
+    help_article_create_request = xr7_sdk.HelpArticleCreateRequest() # HelpArticleCreateRequest |
 
     try:
         # Create Help Article
@@ -192,8 +192,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **help_article_create_request** | [**HelpArticleCreateRequest**](HelpArticleCreateRequest.md)|  | 
+ **org_id** | **str**|  |
+ **help_article_create_request** | [**HelpArticleCreateRequest**](HelpArticleCreateRequest.md)|  |
 
 ### Return type
 
@@ -241,7 +241,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.BrandingApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
 
     try:
         # Get Branding
@@ -259,7 +259,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
 
 ### Return type
 
@@ -307,7 +307,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.BrandingApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
 
     try:
         # List Help Articles
@@ -325,7 +325,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
 
 ### Return type
 
@@ -374,8 +374,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.BrandingApi(api_client)
-    org_id = 'org_id_example' # str | 
-    branding_profile_patch_request = xr7_sdk.BrandingProfilePatchRequest() # BrandingProfilePatchRequest | 
+    org_id = 'org_id_example' # str |
+    branding_profile_patch_request = xr7_sdk.BrandingProfilePatchRequest() # BrandingProfilePatchRequest |
 
     try:
         # Patch Branding
@@ -393,8 +393,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
- **branding_profile_patch_request** | [**BrandingProfilePatchRequest**](BrandingProfilePatchRequest.md)|  | 
+ **org_id** | **str**|  |
+ **branding_profile_patch_request** | [**BrandingProfilePatchRequest**](BrandingProfilePatchRequest.md)|  |
 
 ### Return type
 
@@ -483,4 +483,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

@@ -34,7 +34,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ValuationApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     tenant_id = 'default' # str |  (optional) (default to 'default')
 
     try:
@@ -53,7 +53,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **tenant_id** | **str**|  | [optional] [default to &#39;default&#39;]
 
 ### Return type
@@ -103,8 +103,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ValuationApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    xr7_api_routers_xr7_valuation_forecast_request = xr7_sdk.XR7ApiRoutersXr7ValuationForecastRequest() # XR7ApiRoutersXr7ValuationForecastRequest | 
+    artist_id = 'artist_id_example' # str |
+    xr7_api_routers_xr7_valuation_forecast_request = xr7_sdk.XR7ApiRoutersXr7ValuationForecastRequest() # XR7ApiRoutersXr7ValuationForecastRequest |
 
     try:
         # Recovery Forecast
@@ -122,8 +122,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **xr7_api_routers_xr7_valuation_forecast_request** | [**XR7ApiRoutersXr7ValuationForecastRequest**](XR7ApiRoutersXr7ValuationForecastRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **xr7_api_routers_xr7_valuation_forecast_request** | [**XR7ApiRoutersXr7ValuationForecastRequest**](XR7ApiRoutersXr7ValuationForecastRequest.md)|  |
 
 ### Return type
 
@@ -172,8 +172,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ValuationApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    simulation_request = xr7_sdk.SimulationRequest() # SimulationRequest | 
+    artist_id = 'artist_id_example' # str |
+    simulation_request = xr7_sdk.SimulationRequest() # SimulationRequest |
 
     try:
         # Simulation
@@ -191,8 +191,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **simulation_request** | [**SimulationRequest**](SimulationRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **simulation_request** | [**SimulationRequest**](SimulationRequest.md)|  |
 
 ### Return type
 
@@ -240,7 +240,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ValuationApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     tenant_id = 'default' # str |  (optional) (default to 'default')
     as_of = '2013-10-20' # date |  (optional)
 
@@ -260,9 +260,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **tenant_id** | **str**|  | [optional] [default to &#39;default&#39;]
- **as_of** | **date**|  | [optional] 
+ **as_of** | **date**|  | [optional]
 
 ### Return type
 
@@ -285,4 +285,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

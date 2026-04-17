@@ -87,5 +87,3 @@ class AdminLoginRequest(BaseModel):
             "password": obj.get("password")
         })
         return _obj
-
-

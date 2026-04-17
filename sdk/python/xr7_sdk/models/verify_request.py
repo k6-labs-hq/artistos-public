@@ -89,5 +89,3 @@ class VerifyRequest(BaseModel):
             "email_otp": obj.get("email_otp")
         })
         return _obj
-
-

@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**platform** | **str** |  | 
-**rows** | **List[Dict[str, object]]** |  | 
+**platform** | **str** |  |
+**rows** | **List[Dict[str, object]]** |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ creator_ingest_request_dict = creator_ingest_request_instance.to_dict()
 creator_ingest_request_from_dict = CreatorIngestRequest.from_dict(creator_ingest_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

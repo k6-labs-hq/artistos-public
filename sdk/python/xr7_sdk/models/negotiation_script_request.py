@@ -85,5 +85,3 @@ class NegotiationScriptRequest(BaseModel):
             "claim": obj.get("claim")
         })
         return _obj
-
-

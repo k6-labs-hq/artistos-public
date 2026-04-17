@@ -87,5 +87,3 @@ class SimulationRequest(BaseModel):
             "scenarios": obj.get("scenarios")
         })
         return _obj
-
-

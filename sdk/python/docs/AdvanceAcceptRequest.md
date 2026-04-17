@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**advance_id** | **str** |  | 
+**advance_id** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ advance_accept_request_dict = advance_accept_request_instance.to_dict()
 advance_accept_request_from_dict = AdvanceAcceptRequest.from_dict(advance_accept_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

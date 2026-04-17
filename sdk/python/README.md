@@ -67,8 +67,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryIntelligenceLLMApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    demand_letter_request = xr7_sdk.DemandLetterRequest() # DemandLetterRequest | 
+    artist_id = 'artist_id_example' # str |
+    demand_letter_request = xr7_sdk.DemandLetterRequest() # DemandLetterRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -584,7 +584,3 @@ Authentication schemes defined for the API:
 
 
 ## Author
-
-
-
-

@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**failure_reason** | **str** |  | 
+**failure_reason** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ failed_packet_request_dict = failed_packet_request_instance.to_dict()
 failed_packet_request_from_dict = FailedPacketRequest.from_dict(failed_packet_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

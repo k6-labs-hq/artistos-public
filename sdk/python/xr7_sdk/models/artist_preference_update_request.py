@@ -89,5 +89,3 @@ class ArtistPreferenceUpdateRequest(BaseModel):
             "preferred_contract_type": obj.get("preferred_contract_type") if obj.get("preferred_contract_type") is not None else 'recording'
         })
         return _obj
-
-

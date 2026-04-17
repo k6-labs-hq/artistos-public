@@ -85,5 +85,3 @@ class AssignReviewItemRequest(BaseModel):
             "analyst_email": obj.get("analyst_email")
         })
         return _obj
-
-

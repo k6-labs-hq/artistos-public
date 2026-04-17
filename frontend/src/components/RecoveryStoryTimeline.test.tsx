@@ -293,7 +293,7 @@ describe("RecoveryStoryTimeline", () => {
         json: async () => ({ events: [] }),
       });
 
-      expect(() => 
+      expect(() =>
         render(<RecoveryStoryTimeline artistId="artist-123" vertical="music" />)
       ).not.toThrow();
     });
@@ -304,7 +304,7 @@ describe("RecoveryStoryTimeline", () => {
         json: async () => ({ events: [] }),
       });
 
-      expect(() => 
+      expect(() =>
         render(<RecoveryStoryTimeline artistId="artist-123" vertical="tv_film" />)
       ).not.toThrow();
     });
@@ -315,7 +315,7 @@ describe("RecoveryStoryTimeline", () => {
         json: async () => ({ events: [] }),
       });
 
-      expect(() => 
+      expect(() =>
         render(<RecoveryStoryTimeline artistId="artist-123" vertical="both" />)
       ).not.toThrow();
     });

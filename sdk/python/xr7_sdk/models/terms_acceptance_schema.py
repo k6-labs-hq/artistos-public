@@ -108,5 +108,3 @@ class TermsAcceptanceSchema(BaseModel):
             "user_agent": obj.get("user_agent")
         })
         return _obj
-
-

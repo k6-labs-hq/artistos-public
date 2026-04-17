@@ -101,5 +101,3 @@ class DemandLetterResponse(BaseModel):
             "evidence_zip_link": obj.get("evidence_zip_link")
         })
         return _obj
-
-

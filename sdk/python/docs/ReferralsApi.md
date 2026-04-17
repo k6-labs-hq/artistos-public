@@ -44,7 +44,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ReferralsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Referrals
@@ -62,7 +62,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -125,8 +125,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ReferralsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    referral_request = xr7_sdk.ReferralRequest() # ReferralRequest | 
+    artist_id = 'artist_id_example' # str |
+    referral_request = xr7_sdk.ReferralRequest() # ReferralRequest |
 
     try:
         # Register Referral
@@ -144,8 +144,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **referral_request** | [**ReferralRequest**](ReferralRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **referral_request** | [**ReferralRequest**](ReferralRequest.md)|  |
 
 ### Return type
 
@@ -168,4 +168,3 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

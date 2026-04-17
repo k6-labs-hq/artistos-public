@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**founder_cohort_limit** | **int** |  | 
+**founder_cohort_limit** | **int** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ founder_cohort_limit_update_request_dict = founder_cohort_limit_update_request_i
 founder_cohort_limit_update_request_from_dict = FounderCohortLimitUpdateRequest.from_dict(founder_cohort_limit_update_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

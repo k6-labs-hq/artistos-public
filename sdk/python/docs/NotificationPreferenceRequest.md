@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
+**email** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
 **notify_anomaly_detected** | **bool** |  | [optional] [default to True]
 **notify_urgent_sol** | **bool** |  | [optional] [default to True]
 **notify_deposit_received** | **bool** |  | [optional] [default to True]
@@ -32,5 +32,3 @@ notification_preference_request_dict = notification_preference_request_instance.
 notification_preference_request_from_dict = NotificationPreferenceRequest.from_dict(notification_preference_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

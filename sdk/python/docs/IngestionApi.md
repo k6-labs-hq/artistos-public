@@ -39,7 +39,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     genre = 'latin' # str |  (optional) (default to 'latin')
     territory = 'LATAM' # str |  (optional) (default to 'LATAM')
 
@@ -59,7 +59,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **genre** | **str**|  | [optional] [default to &#39;latin&#39;]
  **territory** | **str**|  | [optional] [default to &#39;LATAM&#39;]
 
@@ -109,7 +109,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     years_back = 10 # int |  (optional) (default to 10)
 
     try:
@@ -128,7 +128,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **years_back** | **int**|  | [optional] [default to 10]
 
 ### Return type
@@ -180,8 +180,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    statement_id = 'statement_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    statement_id = 'statement_id_example' # str |
 
     try:
         # Get Statement
@@ -199,8 +199,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **statement_id** | **str**|  | 
+ **artist_id** | **str**|  |
+ **statement_id** | **str**|  |
 
 ### Return type
 
@@ -251,7 +251,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Statements
@@ -269,7 +269,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -317,7 +317,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Regional Global Status
@@ -335,7 +335,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -383,7 +383,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Soundexchange Mlc Status
@@ -401,7 +401,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -543,8 +543,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    file = 'file_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    file = 'file_example' # str |
 
     try:
         # Upload Statement
@@ -562,8 +562,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **file** | **str**|  | 
+ **artist_id** | **str**|  |
+ **file** | **str**|  |
 
 ### Return type
 
@@ -613,8 +613,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IngestionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    files = ['files_example'] # List[str] | 
+    artist_id = 'artist_id_example' # str |
+    files = ['files_example'] # List[str] |
 
     try:
         # Upload Statement Batch
@@ -632,8 +632,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **files** | [**List[str]**](str.md)|  | 
+ **artist_id** | **str**|  |
+ **files** | [**List[str]**](str.md)|  |
 
 ### Return type
 
@@ -656,4 +656,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**thread_id** | **str** |  | 
-**response** | **str** |  | 
-**confidence** | **float** |  | 
-**suggested_quick_replies** | **List[str]** |  | 
-**escalate_recommended** | **bool** |  | 
+**artist_id** | **str** |  |
+**thread_id** | **str** |  |
+**response** | **str** |  |
+**confidence** | **float** |  |
+**suggested_quick_replies** | **List[str]** |  |
+**escalate_recommended** | **bool** |  |
 
 ## Example
 
@@ -30,5 +30,3 @@ support_chat_response_dict = support_chat_response_instance.to_dict()
 support_chat_response_from_dict = SupportChatResponse.from_dict(support_chat_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -92,5 +92,3 @@ class ManualRemittanceRequest(BaseModel):
             "reference_number": obj.get("reference_number")
         })
         return _obj
-
-

@@ -95,5 +95,3 @@ class WeeklyStoryRequest(BaseModel):
             "currency": obj.get("currency") if obj.get("currency") is not None else 'USD'
         })
         return _obj
-
-

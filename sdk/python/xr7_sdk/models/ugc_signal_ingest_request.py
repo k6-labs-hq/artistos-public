@@ -89,5 +89,3 @@ class UGCSignalIngestRequest(BaseModel):
             "signals": obj.get("signals")
         })
         return _obj
-
-

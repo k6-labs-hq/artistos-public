@@ -23,7 +23,7 @@ jobs:
     defaults:
       run:
         working-directory: ./frontend
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -70,29 +70,29 @@ jobs:
           script: |
             const fs = require('fs');
             const coveragePath = './frontend/coverage/coverage-summary.json';
-            
+
             if (!fs.existsSync(coveragePath)) {
               console.log('Coverage summary not found, skipping comment');
               return;
             }
-            
+
             const coverage = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
             const total = coverage.total;
-            
+
             const comment = `## 🧪 Frontend Test Coverage
-            
+
             | Metric | Coverage | Threshold |
             |--------|----------|-----------|
             | Lines | ${total.lines.pct.toFixed(2)}% | 15% |
             | Functions | ${total.functions.pct.toFixed(2)}% | 15% |
             | Branches | ${total.branches.pct.toFixed(2)}% | 10% |
             | Statements | ${total.statements.pct.toFixed(2)}% | 15% |
-            
+
             **Status:** ${total.lines.pct >= 15 && total.functions.pct >= 15 && total.branches.pct >= 10 && total.statements.pct >= 15 ? '✅ Passing' : '❌ Below threshold'}
-            
+
             📊 [View full coverage report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
             `;
-            
+
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -106,7 +106,7 @@ jobs:
     defaults:
       run:
         working-directory: ./frontend
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6

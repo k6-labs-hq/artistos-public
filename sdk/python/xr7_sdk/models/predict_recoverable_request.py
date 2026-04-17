@@ -97,5 +97,3 @@ class PredictRecoverableRequest(BaseModel):
             "genre": obj.get("genre")
         })
         return _obj
-
-

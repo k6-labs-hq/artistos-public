@@ -5,13 +5,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**usage_rows** | **List[Dict[str, object]]** |  | 
+**usage_rows** | **List[Dict[str, object]]** |  |
 **fallback_rate** | **float** |  | [optional] [default to 0.004]
 **default_withholding_rate** | **float** |  | [optional] [default to 0.0]
 **default_fx_rate** | **float** |  | [optional] [default to 1.0]
 **payout_currency** | **str** |  | [optional] [default to 'USD']
-**received_amount** | **float** |  | [optional] 
-**contract_terms** | **Dict[str, object]** |  | [optional] 
+**received_amount** | **float** |  | [optional]
+**contract_terms** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -31,5 +31,3 @@ simulate_payout_request_dict = simulate_payout_request_instance.to_dict()
 simulate_payout_request_from_dict = SimulatePayoutRequest.from_dict(simulate_payout_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -87,5 +87,3 @@ class SupportSuggestionResponse(BaseModel):
             "suggestions": obj.get("suggestions")
         })
         return _obj
-
-

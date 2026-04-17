@@ -99,5 +99,3 @@ class ReviewAssignmentSchema(BaseModel):
             "unassigned_at": obj.get("unassigned_at")
         })
         return _obj
-
-

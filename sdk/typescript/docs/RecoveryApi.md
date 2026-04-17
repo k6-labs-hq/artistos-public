@@ -1391,7 +1391,7 @@ import type { RunRecoveryAutopilotArtistsArtistIdRecoveryAutoPostRequest } from 
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -2125,4 +2125,3 @@ No authorization required
 | **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

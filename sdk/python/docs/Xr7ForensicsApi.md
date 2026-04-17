@@ -42,7 +42,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     tenant_id = 'default' # str |  (optional) (default to 'default')
 
     try:
@@ -61,7 +61,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **tenant_id** | **str**|  | [optional] [default to &#39;default&#39;]
 
 ### Return type
@@ -111,8 +111,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    api_ingestion_request = xr7_sdk.APIIngestionRequest() # APIIngestionRequest | 
+    artist_id = 'artist_id_example' # str |
+    api_ingestion_request = xr7_sdk.APIIngestionRequest() # APIIngestionRequest |
 
     try:
         # Queue Api Ingestion
@@ -130,8 +130,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **api_ingestion_request** | [**APIIngestionRequest**](APIIngestionRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **api_ingestion_request** | [**APIIngestionRequest**](APIIngestionRequest.md)|  |
 
 ### Return type
 
@@ -180,8 +180,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    black_box_request = xr7_sdk.BlackBoxRequest() # BlackBoxRequest | 
+    artist_id = 'artist_id_example' # str |
+    black_box_request = xr7_sdk.BlackBoxRequest() # BlackBoxRequest |
 
     try:
         # Queue Black Box
@@ -199,8 +199,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **black_box_request** | [**BlackBoxRequest**](BlackBoxRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **black_box_request** | [**BlackBoxRequest**](BlackBoxRequest.md)|  |
 
 ### Return type
 
@@ -248,9 +248,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    source_system = 'source_system_example' # str | 
-    file = 'file_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    source_system = 'source_system_example' # str |
+    file = 'file_example' # str |
     tenant_id = 'default' # str |  (optional) (default to 'default')
     queue_backend = 'celery' # str |  (optional) (default to 'celery')
 
@@ -270,9 +270,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **source_system** | **str**|  | 
- **file** | **str**|  | 
+ **artist_id** | **str**|  |
+ **source_system** | **str**|  |
+ **file** | **str**|  |
  **tenant_id** | **str**|  | [optional] [default to &#39;default&#39;]
  **queue_backend** | **str**|  | [optional] [default to &#39;celery&#39;]
 
@@ -323,8 +323,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    fingerprinting_request = xr7_sdk.FingerprintingRequest() # FingerprintingRequest | 
+    artist_id = 'artist_id_example' # str |
+    fingerprinting_request = xr7_sdk.FingerprintingRequest() # FingerprintingRequest |
 
     try:
         # Queue Fingerprinting
@@ -342,8 +342,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **fingerprinting_request** | [**FingerprintingRequest**](FingerprintingRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **fingerprinting_request** | [**FingerprintingRequest**](FingerprintingRequest.md)|  |
 
 ### Return type
 
@@ -392,8 +392,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    reconciliation_request = xr7_sdk.ReconciliationRequest() # ReconciliationRequest | 
+    artist_id = 'artist_id_example' # str |
+    reconciliation_request = xr7_sdk.ReconciliationRequest() # ReconciliationRequest |
 
     try:
         # Queue Reconciliation
@@ -411,8 +411,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **reconciliation_request** | [**ReconciliationRequest**](ReconciliationRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **reconciliation_request** | [**ReconciliationRequest**](ReconciliationRequest.md)|  |
 
 ### Return type
 
@@ -461,8 +461,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    api_ingestion_request = xr7_sdk.APIIngestionRequest() # APIIngestionRequest | 
+    artist_id = 'artist_id_example' # str |
+    api_ingestion_request = xr7_sdk.APIIngestionRequest() # APIIngestionRequest |
 
     try:
         # Run Api Ingestion
@@ -480,8 +480,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **api_ingestion_request** | [**APIIngestionRequest**](APIIngestionRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **api_ingestion_request** | [**APIIngestionRequest**](APIIngestionRequest.md)|  |
 
 ### Return type
 
@@ -530,8 +530,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    black_box_request = xr7_sdk.BlackBoxRequest() # BlackBoxRequest | 
+    artist_id = 'artist_id_example' # str |
+    black_box_request = xr7_sdk.BlackBoxRequest() # BlackBoxRequest |
 
     try:
         # Run Black Box
@@ -549,8 +549,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **black_box_request** | [**BlackBoxRequest**](BlackBoxRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **black_box_request** | [**BlackBoxRequest**](BlackBoxRequest.md)|  |
 
 ### Return type
 
@@ -598,9 +598,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    source_system = 'source_system_example' # str | 
-    file = 'file_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    source_system = 'source_system_example' # str |
+    file = 'file_example' # str |
     tenant_id = 'default' # str |  (optional) (default to 'default')
 
     try:
@@ -619,9 +619,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **source_system** | **str**|  | 
- **file** | **str**|  | 
+ **artist_id** | **str**|  |
+ **source_system** | **str**|  |
+ **file** | **str**|  |
  **tenant_id** | **str**|  | [optional] [default to &#39;default&#39;]
 
 ### Return type
@@ -671,8 +671,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    fingerprinting_request = xr7_sdk.FingerprintingRequest() # FingerprintingRequest | 
+    artist_id = 'artist_id_example' # str |
+    fingerprinting_request = xr7_sdk.FingerprintingRequest() # FingerprintingRequest |
 
     try:
         # Run Fingerprinting
@@ -690,8 +690,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **fingerprinting_request** | [**FingerprintingRequest**](FingerprintingRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **fingerprinting_request** | [**FingerprintingRequest**](FingerprintingRequest.md)|  |
 
 ### Return type
 
@@ -740,8 +740,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    reconciliation_request = xr7_sdk.ReconciliationRequest() # ReconciliationRequest | 
+    artist_id = 'artist_id_example' # str |
+    reconciliation_request = xr7_sdk.ReconciliationRequest() # ReconciliationRequest |
 
     try:
         # Run Reconciliation
@@ -759,8 +759,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **reconciliation_request** | [**ReconciliationRequest**](ReconciliationRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **reconciliation_request** | [**ReconciliationRequest**](ReconciliationRequest.md)|  |
 
 ### Return type
 
@@ -809,8 +809,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.Xr7ForensicsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    xr7_connector_credential_upsert = xr7_sdk.XR7ConnectorCredentialUpsert() # XR7ConnectorCredentialUpsert | 
+    artist_id = 'artist_id_example' # str |
+    xr7_connector_credential_upsert = xr7_sdk.XR7ConnectorCredentialUpsert() # XR7ConnectorCredentialUpsert |
 
     try:
         # Upsert Xr7 Credentials
@@ -828,8 +828,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **xr7_connector_credential_upsert** | [**XR7ConnectorCredentialUpsert**](XR7ConnectorCredentialUpsert.md)|  | 
+ **artist_id** | **str**|  |
+ **xr7_connector_credential_upsert** | [**XR7ConnectorCredentialUpsert**](XR7ConnectorCredentialUpsert.md)|  |
 
 ### Return type
 
@@ -852,4 +852,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

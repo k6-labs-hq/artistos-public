@@ -114,5 +114,3 @@ class EvidenceAnchorSchema(BaseModel):
             "created_at": obj.get("created_at")
         })
         return _obj
-
-

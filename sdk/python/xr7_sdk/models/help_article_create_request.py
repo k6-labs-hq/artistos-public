@@ -89,5 +89,3 @@ class HelpArticleCreateRequest(BaseModel):
             "category": obj.get("category") if obj.get("category") is not None else 'faq'
         })
         return _obj
-
-

@@ -96,5 +96,3 @@ class ClaimTemplateRequest(BaseModel):
             "evidence_summary": obj.get("evidence_summary")
         })
         return _obj
-
-

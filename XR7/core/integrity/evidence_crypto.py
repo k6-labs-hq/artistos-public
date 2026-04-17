@@ -83,7 +83,7 @@ def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
         # Try cryptography library first (pure Python, cross-platform)
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import padding
-        
+
         private_key = serialization.load_pem_private_key(
             private_key_pem.encode("utf-8"),
             password=None
@@ -94,7 +94,7 @@ def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
             hashes.SHA256()
         )
         return base64.b64encode(signature).decode("ascii")
-        
+
     except ImportError:
         # Fall back to openssl subprocess if cryptography not available
         with tempfile.NamedTemporaryFile(mode="w", delete=True) as key_file:
@@ -120,14 +120,14 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import padding
         from cryptography.exceptions import InvalidSignature
-        
+
         try:
             signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
         except Exception:
             return False
-            
+
         public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
-        
+
         try:
             public_key.verify(
                 signature,
@@ -138,7 +138,7 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
             return True
         except InvalidSignature:
             return False
-            
+
     except ImportError:
         # Fall back to openssl subprocess if cryptography not available
         try:

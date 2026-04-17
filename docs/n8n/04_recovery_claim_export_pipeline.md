@@ -58,10 +58,10 @@ Drive the full claim lifecycle from `IDENTIFIED` through evidence packaging, ana
 ## Node Specifications
 
 ### Node 01 — Load IDENTIFIED Claims
-**Type:** HTTP Request  
-**Method:** `GET`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `GET`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims`
+**Auth:** Header Auth — `XR7 API`
 **Query params:**
 ```
 artist_id = {{ $json.artist_id }}          (optional — omit for org-wide run)
@@ -81,9 +81,9 @@ limit     = 100
 ### Node 02 — For Each Claim: Compute Evidence Packet
 **Type:** SplitInBatches (batch_size=10) then HTTP Request in loop
 
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/evidence/build`  
-**Auth:** Header Auth — `XR7 API`  
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/evidence/build`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -111,10 +111,10 @@ limit     = 100
 ---
 
 ### Node 03 — Seal Evidence Packet
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/evidence/seal`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/evidence/seal`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -137,10 +137,10 @@ limit     = 100
 ---
 
 ### Node 04 — Score Claim Confidence
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/score`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/score`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -163,10 +163,10 @@ limit     = 100
 ---
 
 ### Node 05a — Auto-advance to PREPARED
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/advance`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/advance`
+**Auth:** Header Auth — `XR7 API`
 **Body:** `{ "target_status": "PREPARED", "reason": "auto_high_confidence" }`
 
 **Purpose:** Calls `next_status(ClaimStatus.IDENTIFIED)` → `PREPARED` via the state machine.
@@ -174,9 +174,9 @@ limit     = 100
 ---
 
 ### Node 05b — Queue for Analyst Review
-**Type:** HTTP Request (and Slack notification)  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/review-queue`  
+**Type:** HTTP Request (and Slack notification)
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/review-queue`
 **Body:** `{ "claim_id": "{{ $json.id }}", "confidence": "{{ $node['Node 04'].json.confidence }}", "reason": "medium_confidence_manual_review" }`
 
 **Slack message:**
@@ -191,9 +191,9 @@ limit     = 100
 ---
 
 ### Node 05c — Flag as Needs More Evidence
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/flag`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/flag`
 **Body:** `{ "reason": "low_confidence_insufficient_evidence", "band": "low" }`
 
 **Workflow ends here** for this claim — it goes back to the ingestion team for additional data gathering.
@@ -201,18 +201,18 @@ limit     = 100
 ---
 
 ### Node 06 — Advance: PREPARED → SUBMITTED
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/advance`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/advance`
 **Body:** `{ "target_status": "SUBMITTED", "reason": "auto_pipeline_advance" }`
 
 ---
 
 ### Node 07 — Generate Claim Document (PDF)
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/generate-document`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/generate-document`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -228,16 +228,16 @@ limit     = 100
 - `document_url` — signed S3/GCS URL to the generated PDF
 - `document_id`
 
-**Timeout:** 30 seconds (PDF generation can be slow for large evidence packets)  
+**Timeout:** 30 seconds (PDF generation can be slow for large evidence packets)
 **Retry:** 2 attempts, 15-second backoff
 
 ---
 
 ### Node 08 — File Claim
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/file`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/file`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -249,24 +249,24 @@ limit     = 100
 
 **`payer_type` values:** `"pro"`, `"dsp"`, `"distributor"`, `"mlc"`, `"attorney"`
 
-**On success:** Continue to Node 09  
+**On success:** Continue to Node 09
 **On failure:** Route to Error Handler — do NOT auto-retry filing (idempotency risk with external systems)
 
 ---
 
 ### Node 09 — Advance: SUBMITTED → FILED
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/advance`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/advance`
 **Body:** `{ "target_status": "FILED", "reason": "successful_filing", "external_reference": "{{ $node['Node 08'].json.filing_reference }}" }`
 
 ---
 
 ### Node 10 — Export Claim Package
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/export`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/{{ $json.id }}/export`
+**Auth:** Header Auth — `XR7 API`
 **Body:**
 ```json
 {
@@ -282,10 +282,10 @@ limit     = 100
 ---
 
 ### Node 11 — Log to Immutable Ledger
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/ledger/append`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/ledger/append`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {

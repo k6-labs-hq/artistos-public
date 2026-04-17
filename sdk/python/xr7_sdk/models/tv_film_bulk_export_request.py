@@ -85,5 +85,3 @@ class TVFilmBulkExportRequest(BaseModel):
             "claim_ids": obj.get("claim_ids")
         })
         return _obj
-
-

@@ -59,8 +59,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    split_repair_request = xr7_sdk.SplitRepairRequest() # SplitRepairRequest | 
+    artist_id = 'artist_id_example' # str |
+    split_repair_request = xr7_sdk.SplitRepairRequest() # SplitRepairRequest |
 
     try:
         # Apply Split Repairs
@@ -78,8 +78,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **split_repair_request** | [**SplitRepairRequest**](SplitRepairRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **split_repair_request** | [**SplitRepairRequest**](SplitRepairRequest.md)|  |
 
 ### Return type
 
@@ -127,7 +127,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Build Catalog Work Graph
@@ -145,7 +145,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -193,7 +193,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Catalog Metadata Health
@@ -211,7 +211,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -259,7 +259,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Catalog Repairs
@@ -277,7 +277,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -327,8 +327,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    xr7_api_routers_onboarding_catalog_confirm_request = xr7_sdk.XR7ApiRoutersOnboardingCatalogConfirmRequest() # XR7ApiRoutersOnboardingCatalogConfirmRequest | 
+    artist_id = 'artist_id_example' # str |
+    xr7_api_routers_onboarding_catalog_confirm_request = xr7_sdk.XR7ApiRoutersOnboardingCatalogConfirmRequest() # XR7ApiRoutersOnboardingCatalogConfirmRequest |
 
     try:
         # Confirm Catalog Item
@@ -346,8 +346,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **xr7_api_routers_onboarding_catalog_confirm_request** | [**XR7ApiRoutersOnboardingCatalogConfirmRequest**](XR7ApiRoutersOnboardingCatalogConfirmRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **xr7_api_routers_onboarding_catalog_confirm_request** | [**XR7ApiRoutersOnboardingCatalogConfirmRequest**](XR7ApiRoutersOnboardingCatalogConfirmRequest.md)|  |
 
 ### Return type
 
@@ -397,8 +397,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    sync_job_create_request = xr7_sdk.SyncJobCreateRequest() # SyncJobCreateRequest | 
+    artist_id = 'artist_id_example' # str |
+    sync_job_create_request = xr7_sdk.SyncJobCreateRequest() # SyncJobCreateRequest |
 
     try:
         # Create Sync Job
@@ -416,8 +416,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **sync_job_create_request** | [**SyncJobCreateRequest**](SyncJobCreateRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **sync_job_create_request** | [**SyncJobCreateRequest**](SyncJobCreateRequest.md)|  |
 
 ### Return type
 
@@ -465,7 +465,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Generate Audit Evidence Packet
@@ -483,7 +483,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -593,8 +593,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    job_id = 'job_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    job_id = 'job_id_example' # str |
 
     try:
         # Get Sync Job
@@ -612,8 +612,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **job_id** | **str**|  | 
+ **artist_id** | **str**|  |
+ **job_id** | **str**|  |
 
 ### Return type
 
@@ -661,7 +661,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Infer Catalog
@@ -679,7 +679,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -728,7 +728,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Catalog Confirmations
@@ -746,7 +746,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -795,7 +795,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Immutable Ledger Entries
@@ -813,7 +813,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -862,7 +862,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Parser Plugins
@@ -880,7 +880,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -929,7 +929,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Sync Jobs
@@ -947,7 +947,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -995,7 +995,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Missing Data Status
@@ -1013,7 +1013,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1067,8 +1067,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    onboarding_auto_request = xr7_sdk.OnboardingAutoRequest() # OnboardingAutoRequest | 
+    artist_id = 'artist_id_example' # str |
+    onboarding_auto_request = xr7_sdk.OnboardingAutoRequest() # OnboardingAutoRequest |
 
     try:
         # Onboarding Auto
@@ -1086,8 +1086,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **onboarding_auto_request** | [**OnboardingAutoRequest**](OnboardingAutoRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **onboarding_auto_request** | [**OnboardingAutoRequest**](OnboardingAutoRequest.md)|  |
 
 ### Return type
 
@@ -1135,7 +1135,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Onboarding Status
@@ -1153,7 +1153,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1201,9 +1201,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    parser_type = 'parser_type_example' # str | 
-    file = 'file_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    parser_type = 'parser_type_example' # str |
+    file = 'file_example' # str |
 
     try:
         # Parse Statement With Engine
@@ -1221,9 +1221,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **parser_type** | **str**|  | 
- **file** | **str**|  | 
+ **artist_id** | **str**|  |
+ **parser_type** | **str**|  |
+ **file** | **str**|  |
 
 ### Return type
 
@@ -1271,7 +1271,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Permissions Dashboard
@@ -1289,7 +1289,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1337,7 +1337,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Preview Full Workflow
@@ -1355,7 +1355,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1403,7 +1403,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Requeue Due Sync Jobs
@@ -1421,7 +1421,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1469,8 +1469,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    integration = 'integration_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    integration = 'integration_example' # str |
 
     try:
         # Run Data Fetcher
@@ -1488,8 +1488,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **integration** | **str**|  | 
+ **artist_id** | **str**|  |
+ **integration** | **str**|  |
 
 ### Return type
 
@@ -1538,8 +1538,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    workflow_run_request = xr7_sdk.WorkflowRunRequest() # WorkflowRunRequest | 
+    artist_id = 'artist_id_example' # str |
+    workflow_run_request = xr7_sdk.WorkflowRunRequest() # WorkflowRunRequest |
 
     try:
         # Run Full Workflow
@@ -1557,8 +1557,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **workflow_run_request** | [**WorkflowRunRequest**](WorkflowRunRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **workflow_run_request** | [**WorkflowRunRequest**](WorkflowRunRequest.md)|  |
 
 ### Return type
 
@@ -1606,7 +1606,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Run Recovery Automation
@@ -1624,7 +1624,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -1673,8 +1673,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    job_id = 'job_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    job_id = 'job_id_example' # str |
     async_run = False # bool |  (optional) (default to False)
 
     try:
@@ -1693,8 +1693,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **job_id** | **str**|  | 
+ **artist_id** | **str**|  |
+ **job_id** | **str**|  |
  **async_run** | **bool**|  | [optional] [default to False]
 
 ### Return type
@@ -1743,8 +1743,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    files = ['files_example'] # List[str] | 
+    artist_id = 'artist_id_example' # str |
+    files = ['files_example'] # List[str] |
     strict_validation = True # bool |  (optional) (default to True)
 
     try:
@@ -1763,8 +1763,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **files** | [**List[str]**](str.md)|  | 
+ **artist_id** | **str**|  |
+ **files** | [**List[str]**](str.md)|  |
  **strict_validation** | **bool**|  | [optional] [default to True]
 
 ### Return type
@@ -1815,8 +1815,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    parser_plugin_upsert_request = xr7_sdk.ParserPluginUpsertRequest() # ParserPluginUpsertRequest | 
+    artist_id = 'artist_id_example' # str |
+    parser_plugin_upsert_request = xr7_sdk.ParserPluginUpsertRequest() # ParserPluginUpsertRequest |
 
     try:
         # Upsert Parser Plugin
@@ -1834,8 +1834,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **parser_plugin_upsert_request** | [**ParserPluginUpsertRequest**](ParserPluginUpsertRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **parser_plugin_upsert_request** | [**ParserPluginUpsertRequest**](ParserPluginUpsertRequest.md)|  |
 
 ### Return type
 
@@ -1884,8 +1884,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.OnboardingApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    variance_scan_request = xr7_sdk.VarianceScanRequest() # VarianceScanRequest | 
+    artist_id = 'artist_id_example' # str |
+    variance_scan_request = xr7_sdk.VarianceScanRequest() # VarianceScanRequest |
 
     try:
         # Variance Scan
@@ -1903,8 +1903,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **variance_scan_request** | [**VarianceScanRequest**](VarianceScanRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **variance_scan_request** | [**VarianceScanRequest**](VarianceScanRequest.md)|  |
 
 ### Return type
 
@@ -1927,4 +1927,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
