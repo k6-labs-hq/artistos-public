@@ -133,6 +133,7 @@ def accept_terms(
         .filter(
             TermsAcceptance.artist_id == artist_id,
             TermsAcceptance.terms_version == TERMS_VERSION,
+            TermsAcceptance.deleted_at.is_(None),
         )
         .first()
     )
@@ -177,6 +178,7 @@ def terms_status(artist_id: str, db: Session = Depends(get_db)) -> dict:
         .filter(
             TermsAcceptance.artist_id == artist_id,
             TermsAcceptance.terms_version == TERMS_VERSION,
+            TermsAcceptance.deleted_at.is_(None),
         )
         .first()
     )
@@ -238,6 +240,7 @@ def require_terms_accepted(artist_id: str, db: Session) -> None:
         .filter(
             TermsAcceptance.artist_id == artist_id,
             TermsAcceptance.terms_version == TERMS_VERSION,
+            TermsAcceptance.deleted_at.is_(None),
         )
         .first()
     )

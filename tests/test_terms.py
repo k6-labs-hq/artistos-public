@@ -23,10 +23,12 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from tests.conftest import TestSession as _TestSession
 from XR7.api.app import app
+from XR7.api.routers.terms import require_terms_accepted
 from XR7.legal.terms import TERMS_TEXT, TERMS_VERSION, terms_text_sha256
 from XR7.models.artist import Artist
 from XR7.models.terms_acceptance import TermsAcceptance
@@ -295,6 +297,29 @@ class TestTermsStatus:
         data = client.get(f"/artists/{artist}/terms/status").json()
         assert data["text_sha256"] == terms_text_sha256()
 
+    def test_status_ignores_soft_deleted_acceptance(self, artist):
+        _accept_terms(artist)
+
+        db = _TestSession()
+        rec = (
+            db.query(TermsAcceptance)
+            .filter(
+                TermsAcceptance.artist_id == artist,
+                TermsAcceptance.terms_version == TERMS_VERSION,
+            )
+            .first()
+        )
+        assert rec is not None
+        rec.deleted_at = datetime.now(timezone.utc)
+        db.commit()
+        db.close()
+
+        resp = client.get(f"/artists/{artist}/terms/status")
+        assert resp.status_code == 200
+        body = resp.json()
+        assert body["accepted"] is False
+        assert body["pending_version"] == TERMS_VERSION
+
 
 # ---------------------------------------------------------------------------
 # Statement upload gate (T&C required)
@@ -360,6 +385,61 @@ class TestStatementUploadGate:
         assert r.status_code == 201
         # Upload should now succeed
         assert self._upload(aid) == 201
+
+    def test_require_terms_guard_after_soft_deleted_acceptance_raises_403(self):
+        db = _TestSession()
+        a = Artist(
+            id=str(uuid.uuid4()),
+            name="Soft Deleted Terms Artist",
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(a)
+        db.commit()
+        aid = a.id
+        db.close()
+
+        r = _accept_terms(aid)
+        assert r.status_code == 201
+
+        db = _TestSession()
+        rec = (
+            db.query(TermsAcceptance)
+            .filter(
+                TermsAcceptance.artist_id == aid,
+                TermsAcceptance.terms_version == TERMS_VERSION,
+            )
+            .first()
+        )
+        assert rec is not None
+        rec.deleted_at = datetime.now(timezone.utc)
+        db.commit()
+        db.close()
+
+        db = _TestSession()
+        with pytest.raises(HTTPException) as exc_info:
+            require_terms_accepted(aid, db)
+        db.close()
+
+        assert exc_info.value.status_code == 403
+
+
+class TestSoftDeletedAcceptanceReaccept:
+    def test_reaccept_creates_new_record_when_previous_soft_deleted(self, artist):
+        first = _accept_terms(artist)
+        assert first.status_code == 201
+        first_id = first.json()["id"]
+
+        db = _TestSession()
+        rec = db.query(TermsAcceptance).filter(TermsAcceptance.id == first_id).first()
+        assert rec is not None
+        rec.deleted_at = datetime.now(timezone.utc)
+        db.commit()
+        db.close()
+
+        second = _accept_terms(artist)
+        assert second.status_code == 201
+        second_id = second.json()["id"]
+        assert second_id != first_id
 
 
 # ---------------------------------------------------------------------------

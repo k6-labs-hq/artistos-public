@@ -1,7 +1,9 @@
 """
-TermsAcceptance — immutable audit ledger for Artist T&C acceptances.
+TermsAcceptance — audit ledger for Artist T&C acceptances.
 
-Each row records a single acceptance event and is never updated or deleted.
+Each row records a single acceptance event. Rows are soft-deleted via
+``deleted_at`` so legal history remains recoverable while application queries
+exclude removed records by default.
 The ``text_sha256`` column stores the SHA-256 hash of the T&C text that was
 presented at the moment of acceptance, so the exact version can always be
 reconstructed even if the live text changes later.
@@ -37,6 +39,7 @@ class TermsAcceptance(Base):
     # Network metadata for audit / fraud-prevention purposes
     ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
 
 class TermsAcceptanceSchema(BaseModel):
@@ -49,3 +52,4 @@ class TermsAcceptanceSchema(BaseModel):
     accepted_at: datetime
     ip_address: str | None = None
     user_agent: str | None = None
+    deleted_at: datetime | None = None

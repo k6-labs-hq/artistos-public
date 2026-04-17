@@ -32,8 +32,7 @@ from XR7.models.base import get_db
 from XR7.models.catalog_confirmation import CatalogConfirmation, CatalogConfirmationSchema
 from XR7.models.claim import Claim
 from XR7.models.event import Event
-from XR7.models.immutable_ledger_entry import ImmutableLedgerEntrySchema
-from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry
+from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry, ImmutableLedgerEntrySchema
 from XR7.models.oauth_connector import ConnectorAccountLink
 from XR7.models.parser_plugin import ParserPlugin, ParserPluginSchema
 from XR7.models.statement import Statement
@@ -148,7 +147,12 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
     artist = _artist_or_404(artist_id, db)
 
     terms_accepted = (
-        db.query(TermsAcceptance.id).filter(TermsAcceptance.artist_id == artist_id).first()
+        db.query(TermsAcceptance.id)
+        .filter(
+            TermsAcceptance.artist_id == artist_id,
+            TermsAcceptance.deleted_at.is_(None),
+        )
+        .first()
         is not None
     )
     statement_count = (
@@ -285,7 +289,12 @@ def record_onboarding_checkpoint(
 
     # Re-compute and return updated gates (same logic as onboarding_status)
     terms_accepted = (
-        db.query(TermsAcceptance.id).filter(TermsAcceptance.artist_id == artist_id).first()
+        db.query(TermsAcceptance.id)
+        .filter(
+            TermsAcceptance.artist_id == artist_id,
+            TermsAcceptance.deleted_at.is_(None),
+        )
+        .first()
         is not None
     )
     statement_count = (
@@ -294,9 +303,7 @@ def record_onboarding_checkpoint(
     anomaly_count = (
         db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
     )
-    claim_count = (
-        db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
-    )
+    claim_count = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
     connector_count = (
         db.query(func.count(ConnectorAccountLink.id))
         .filter(
