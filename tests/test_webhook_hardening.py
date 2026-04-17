@@ -12,7 +12,7 @@ import pytest
 
 from tests.conftest import TestSession
 from XR7.models.artist import Artist
-from XR7.models.webhook_event import WebhookEvent, WebhookEventStatus
+from XR7.models.webhook_event import WebhookEventStatus
 from XR7.services.webhook_delivery import OutboundWebhookService
 
 
@@ -23,7 +23,9 @@ class TestWebhookHardening:
         db = TestSession()
         try:
             artist_id = str(uuid.uuid4())
-            artist = Artist(id=artist_id, name="Test Artist", email=f"artist_{artist_id[:8]}@test.com")
+            artist = Artist(
+                id=artist_id, name="Test Artist", email=f"artist_{artist_id[:8]}@test.com"
+            )
             db.add(artist)
             db.commit()
             return artist_id
@@ -59,12 +61,20 @@ class TestWebhookHardening:
             artist_id = setup_artist
             service = OutboundWebhookService(db, secret="test-secret-key")
 
-            original_payload_dict = {"event": "claim.created", "artist_id": artist_id, "amount": 1000}
+            original_payload_dict = {
+                "event": "claim.created",
+                "artist_id": artist_id,
+                "amount": 1000,
+            }
             original_payload = json.dumps(original_payload_dict, default=str, sort_keys=True)
             signature = service._sign(original_payload)
 
             # Tamper with payload
-            tampered_payload_dict = {"event": "claim.created", "artist_id": artist_id, "amount": 9999}
+            tampered_payload_dict = {
+                "event": "claim.created",
+                "artist_id": artist_id,
+                "amount": 9999,
+            }
             tampered_payload = json.dumps(tampered_payload_dict, default=str, sort_keys=True)
             tampered_signature = service._sign(tampered_payload)
 
@@ -92,7 +102,9 @@ class TestWebhookHardening:
             mock_client_class.return_value = mock_client
 
             # Queue and deliver event
-            service = OutboundWebhookService(db, secret="test-secret", endpoint="https://example.com/webhook")
+            service = OutboundWebhookService(
+                db, secret="test-secret", endpoint="https://example.com/webhook"
+            )
             event = service.queue_event(
                 event_type="claim.created",
                 payload={"claim_id": "test-123", "artist_id": artist_id},
@@ -132,7 +144,9 @@ class TestWebhookHardening:
             mock_client_class.return_value = mock_client
 
             # Queue and deliver event
-            service = OutboundWebhookService(db, secret="test-secret", endpoint="https://example.com/webhook")
+            service = OutboundWebhookService(
+                db, secret="test-secret", endpoint="https://example.com/webhook"
+            )
             event = service.queue_event(
                 event_type="claim.created",
                 payload={"claim_id": "test-123", "artist_id": artist_id},

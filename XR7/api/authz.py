@@ -5,7 +5,7 @@ import hmac
 import os
 from typing import Callable
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Header, HTTPException
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -169,17 +169,23 @@ def require_permission(
     Raises:
         HTTPException: 403 if actor doesn't have permission
     """
+
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
-            return await _check_permission_and_call(func, scope, resource_type, owner_field, args, kwargs)
+            return await _check_permission_and_call(
+                func, scope, resource_type, owner_field, args, kwargs
+            )
 
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
-            return _check_permission_and_call_sync(func, scope, resource_type, owner_field, args, kwargs)
+            return _check_permission_and_call_sync(
+                func, scope, resource_type, owner_field, args, kwargs
+            )
 
         # Return async wrapper if the function is async, otherwise sync wrapper
         import inspect
+
         if inspect.iscoroutinefunction(func):
             return async_wrapper
         else:
@@ -188,7 +194,14 @@ def require_permission(
     return decorator
 
 
-def _check_permission_and_call_sync(func: Callable, scope: str, resource_type: str | None, owner_field: str, args: tuple, kwargs: dict):
+def _check_permission_and_call_sync(
+    func: Callable,
+    scope: str,
+    resource_type: str | None,
+    owner_field: str,
+    args: tuple,
+    kwargs: dict,
+):
     """Synchronous permission check and function call."""
     db: Session | None = kwargs.get("db")
     actor_email: str | None = kwargs.get("actor_email")
@@ -213,7 +226,14 @@ def _check_permission_and_call_sync(func: Callable, scope: str, resource_type: s
     return func(*args, **kwargs)
 
 
-async def _check_permission_and_call(func: Callable, scope: str, resource_type: str | None, owner_field: str, args: tuple, kwargs: dict):
+async def _check_permission_and_call(
+    func: Callable,
+    scope: str,
+    resource_type: str | None,
+    owner_field: str,
+    args: tuple,
+    kwargs: dict,
+):
     """Async permission check and function call."""
     _check_permission_and_call_sync(func, scope, resource_type, owner_field, args, kwargs)
     return await func(*args, **kwargs)

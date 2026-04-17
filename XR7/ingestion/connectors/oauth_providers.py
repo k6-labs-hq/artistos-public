@@ -217,6 +217,7 @@ class OAuthProviderService:
     def _post_token(self, payload: dict[str, str]) -> dict[str, Any]:
         if not self.config:
             raise OAuthProviderError("Unsupported OAuth provider")
+
         def _call() -> dict[str, Any]:
             try:
                 with httpx.Client(timeout=12.0) as client:

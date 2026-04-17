@@ -7,20 +7,18 @@ from __future__ import annotations
 import uuid
 
 import pytest
-from fastapi import Depends, Header
+
+# Test endpoint using the decorator
+from fastapi import APIRouter, Depends, Header
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from tests.conftest import TestSession
 from XR7.api.app import app
 from XR7.api.authz import require_permission
-from XR7.models.base import get_db
 from XR7.models.artist import Artist
+from XR7.models.base import get_db
 from XR7.models.team_access import TeamMember, TeamRole
-
-
-# Test endpoint using the decorator
-from fastapi import APIRouter
 
 test_router = APIRouter()
 
@@ -48,7 +46,9 @@ class TestResourceLevelAuthz:
         db = TestSession()
         try:
             artist_id = str(uuid.uuid4())
-            artist = Artist(id=artist_id, name="Test Artist", email=f"artist_{artist_id[:8]}@test.com")
+            artist = Artist(
+                id=artist_id, name="Test Artist", email=f"artist_{artist_id[:8]}@test.com"
+            )
             db.add(artist)
 
             # Add manager
@@ -68,7 +68,11 @@ class TestResourceLevelAuthz:
             db.add(analyst)
 
             db.commit()
-            return {"artist_id": artist_id, "manager_email": "manager@test.com", "analyst_email": "analyst@test.com"}
+            return {
+                "artist_id": artist_id,
+                "manager_email": "manager@test.com",
+                "analyst_email": "analyst@test.com",
+            }
         finally:
             db.close()
 

@@ -43,7 +43,6 @@ from XR7.llm.claim_drafter import royalty_chat_agent
 from XR7.models.base import get_db
 from XR7.models.catalog_fix_issue import CatalogFixIssue, CatalogFixStatus
 from XR7.models.support_message import SupportMessage, SupportMessageRole
-from XR7.services.cache import cached_response
 from XR7.services.branding import (
     apply_brand_placeholders,
     branding_metadata,
@@ -51,6 +50,7 @@ from XR7.services.branding import (
     get_branding_profile,
     inject_branding_metadata,
 )
+from XR7.services.cache import cached_response
 from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine

@@ -85,14 +85,9 @@ def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
         from cryptography.hazmat.primitives.asymmetric import padding
 
         private_key = serialization.load_pem_private_key(
-            private_key_pem.encode("utf-8"),
-            password=None
+            private_key_pem.encode("utf-8"), password=None
         )
-        signature = private_key.sign(
-            message.encode("utf-8"),
-            padding.PKCS1v15(),
-            hashes.SHA256()
-        )
+        signature = private_key.sign(message.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256())
         return base64.b64encode(signature).decode("ascii")
 
     except ImportError:
@@ -117,9 +112,9 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
     """Verify RSA-SHA256 signature using cryptography library or openssl subprocess."""
     try:
         # Try cryptography library first (pure Python, cross-platform)
+        from cryptography.exceptions import InvalidSignature
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import padding
-        from cryptography.exceptions import InvalidSignature
 
         try:
             signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
@@ -130,10 +125,7 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
 
         try:
             public_key.verify(
-                signature,
-                message.encode("utf-8"),
-                padding.PKCS1v15(),
-                hashes.SHA256()
+                signature, message.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256()
             )
             return True
         except InvalidSignature:

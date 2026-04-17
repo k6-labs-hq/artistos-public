@@ -6,7 +6,6 @@ import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
@@ -401,7 +400,11 @@ def list_claims(
         "responses": {
             "200": {
                 "description": "CSV file of all claims for the artist",
-                "content": {"text/csv": {"example": "id,artist_id,status,...\nclm_abc123,art_xyz,submitted,..."}},
+                "content": {
+                    "text/csv": {
+                        "example": "id,artist_id,status,...\nclm_abc123,art_xyz,submitted,..."
+                    }
+                },
             }
         }
     },
@@ -420,9 +423,18 @@ def export_claims_csv(
     claims = q.order_by(Claim.created_at.desc()).all()
 
     fields = [
-        "id", "artist_id", "status", "contract_type", "governing_law_state",
-        "amount_claimed", "amount_recovered", "description",
-        "infringement_date", "discovery_date", "created_at", "updated_at",
+        "id",
+        "artist_id",
+        "status",
+        "contract_type",
+        "governing_law_state",
+        "amount_claimed",
+        "amount_recovered",
+        "description",
+        "infringement_date",
+        "discovery_date",
+        "created_at",
+        "updated_at",
     ]
 
     buf = io.StringIO()

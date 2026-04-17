@@ -545,13 +545,11 @@ def founder_roster(
 @router.get("/reports/founder-cohort")
 def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
 
-
     @router.get("/feature-flags")
     def list_feature_flags(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
         rows = FeatureFlagService(db).list_flags()
         _log(db, actor, "list", "feature_flags", {"count": len(rows)})
         return [FeatureFlagSchema.model_validate(row).model_dump() for row in rows]
-
 
     @router.put("/feature-flags/{flag_key}")
     def upsert_feature_flag(
@@ -571,7 +569,6 @@ def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = De
         _log(db, actor, "upsert", "feature_flag", {"key": flag_key, "enabled": row.enabled})
         return FeatureFlagSchema.model_validate(row).model_dump()
 
-
     @router.get("/feature-flags/{flag_key}/evaluate")
     def evaluate_feature_flag(
         flag_key: str,
@@ -588,7 +585,6 @@ def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = De
         _log(db, actor, "evaluate", "feature_flag", {"key": flag_key, "subject_id": subject_id})
         return {"key": flag_key, "subject_id": subject_id, "enabled": enabled}
 
-
     @router.get("/webhooks")
     def list_webhook_events(
         status: str | None = Query(default=None),
@@ -604,9 +600,11 @@ def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = De
         rows = query.order_by(WebhookEvent.created_at.desc()).offset(offset).limit(limit).all()
         _log(db, actor, "list", "webhooks", {"status": status, "total": total})
         return _paginated_response(
-            [WebhookEventSchema.model_validate(row).model_dump() for row in rows], total, limit, offset
+            [WebhookEventSchema.model_validate(row).model_dump() for row in rows],
+            total,
+            limit,
+            offset,
         )
-
 
     @router.post("/webhooks/{event_id}/retry")
     def retry_webhook_event(
@@ -623,6 +621,7 @@ def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = De
         deliver_webhook_event.delay(row.id)
         _log(db, actor, "retry", "webhook", {"event_id": row.id})
         return {"event_id": row.id, "status": row.status, "queued": True}
+
     total_founders: int = (
         db.query(func.count(Artist.id)).filter(Artist.is_founder.is_(True)).scalar() or 0
     )

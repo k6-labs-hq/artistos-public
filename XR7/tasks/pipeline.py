@@ -525,7 +525,6 @@ def monthly_recovery_report(self) -> dict:  # noqa: ANN001
     records a ledger entry for each artist, and returns a summary of artists
     processed and total amounts recovered.
     """
-    from datetime import date
 
     db = SessionLocal()
     try:

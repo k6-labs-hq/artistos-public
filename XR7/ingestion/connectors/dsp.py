@@ -50,6 +50,7 @@ class DSPConnector(BaseConnector):
         Return ``True`` if all required credential environment variables are set,
         ``False`` otherwise.  Does NOT make a real network call.
         """
+
         def _check() -> bool:
             env_vars = self._required_env_vars()
             return all(self.config.get(v.lower()) or os.environ.get(v, "") for v in env_vars)

@@ -201,11 +201,16 @@ def backup_database_to_s3(self) -> dict[str, Any]:  # noqa: ANN001
         result = subprocess.run(  # noqa: S603
             [
                 "pg_dump",
-                "-h", pg_host,
-                "-p", pg_port,
-                "-U", pg_user,
-                "-F", "c",  # custom format (compressed)
-                "-f", tmp_path,
+                "-h",
+                pg_host,
+                "-p",
+                pg_port,
+                "-U",
+                pg_user,
+                "-F",
+                "c",  # custom format (compressed)
+                "-f",
+                tmp_path,
                 pg_db,
             ],
             env=pg_env,
@@ -233,7 +238,10 @@ def backup_database_to_s3(self) -> dict[str, Any]:  # noqa: ANN001
 
         logger.info(
             "backup_database_to_s3: uploaded %s (%d bytes) to s3://%s/%s",
-            tmp_path, file_size, bucket, s3_key,
+            tmp_path,
+            file_size,
+            bucket,
+            s3_key,
         )
 
         # Audit log entry

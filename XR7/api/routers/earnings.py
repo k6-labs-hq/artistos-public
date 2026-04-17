@@ -12,12 +12,12 @@ from XR7.ml.forecaster import EarningsForecaster
 from XR7.ml.rate_benchmarker import RateBenchmarker
 from XR7.models.base import get_db
 from XR7.models.event import Event
-from XR7.services.cache import cached_response
 from XR7.services.branding import (
     branding_metadata,
     get_branding_for_artist,
     inject_branding_metadata,
 )
+from XR7.services.cache import cached_response
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.post_repair_forecast_pipeline import (
     FORECAST_DISCLAIMER,

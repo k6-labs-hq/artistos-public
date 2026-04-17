@@ -24,10 +24,11 @@ import os
 from pathlib import Path
 
 import pytest
-from alembic import command as alembic_command
 from alembic.config import Config as AlembicConfig
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
+
+from alembic import command as alembic_command
 
 # ---------------------------------------------------------------------------
 # Helpers

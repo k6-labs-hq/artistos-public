@@ -24,12 +24,12 @@ from XR7.recovery.payer_behavior_model import payer_behavior_profile
 from XR7.recovery.recoverability_classifier import build_recoverability_payload
 from XR7.recovery.recovery_probability_model import anomaly_recovery_probability
 from XR7.recovery.trust_defensibility import TrustDefensibilityService
-from XR7.services.cache import cached_response
 from XR7.services.branding import (
     branding_metadata,
     get_branding_for_artist,
     inject_branding_metadata,
 )
+from XR7.services.cache import cached_response
 from XR7.services.review_queue import enqueue_review_item
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger

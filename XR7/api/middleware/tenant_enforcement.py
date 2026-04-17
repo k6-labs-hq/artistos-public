@@ -36,7 +36,9 @@ class TenantEnforcementMiddleware(BaseHTTPMiddleware):
         return authz[7:].strip()
 
     @staticmethod
-    def _audit_cross_tenant_attempt(*, actor: str, tenant_jwt: str, tenant_header: str, request: Request) -> None:
+    def _audit_cross_tenant_attempt(
+        *, actor: str, tenant_jwt: str, tenant_header: str, request: Request
+    ) -> None:
         db = SessionLocal()
         try:
             db.add(

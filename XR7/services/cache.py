@@ -49,7 +49,9 @@ def cached_response(prefix: str, ttl_seconds: int = 120) -> Callable:
 
             result = func(*args, **kwargs)
             try:
-                _cache_client.setex(key, ttl_seconds, json.dumps(jsonable_encoder(result), default=str))
+                _cache_client.setex(
+                    key, ttl_seconds, json.dumps(jsonable_encoder(result), default=str)
+                )
             except Exception:
                 pass
             return result

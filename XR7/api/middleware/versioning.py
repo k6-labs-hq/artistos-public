@@ -15,7 +15,9 @@ class APIVersioningMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[override]
         path = request.scope.get("path") or ""
-        is_versioned = path == self._supported_prefix or path.startswith(f"{self._supported_prefix}/")
+        is_versioned = path == self._supported_prefix or path.startswith(
+            f"{self._supported_prefix}/"
+        )
         if is_versioned:
             request.scope["path"] = path[len(self._supported_prefix) :] or "/"
 

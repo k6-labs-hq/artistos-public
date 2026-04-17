@@ -19,15 +19,21 @@ _DEFAULT_ENDPOINT = os.getenv("XR7_OUTBOUND_WEBHOOK_URL", "")
 class OutboundWebhookService:
     """Publishes outbound webhook events with HMAC signing and retry metadata."""
 
-    def __init__(self, db: Session, *, secret: str | None = None, endpoint: str | None = None) -> None:
+    def __init__(
+        self, db: Session, *, secret: str | None = None, endpoint: str | None = None
+    ) -> None:
         self.db = db
         self.secret = (secret if secret is not None else _DEFAULT_SECRET).strip()
         self.endpoint = (endpoint if endpoint is not None else _DEFAULT_ENDPOINT).strip()
 
     def _sign(self, payload: str) -> str:
-        return hmac.new(self.secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256).hexdigest()
+        return hmac.new(
+            self.secret.encode("utf-8"), payload.encode("utf-8"), hashlib.sha256
+        ).hexdigest()
 
-    def queue_event(self, *, event_type: str, payload: dict[str, Any], source: str = "xr7") -> WebhookEvent:
+    def queue_event(
+        self, *, event_type: str, payload: dict[str, Any], source: str = "xr7"
+    ) -> WebhookEvent:
         raw_payload = json.dumps(payload, default=str, sort_keys=True)
         signature = self._sign(raw_payload) if self.secret else None
         row = WebhookEvent(
@@ -59,7 +65,9 @@ class OutboundWebhookService:
 
         try:
             with httpx.Client(timeout=10.0) as client:
-                response = client.post(self.endpoint, content=row.raw_payload.encode("utf-8"), headers=headers)
+                response = client.post(
+                    self.endpoint, content=row.raw_payload.encode("utf-8"), headers=headers
+                )
             response.raise_for_status()
         except Exception as exc:  # noqa: BLE001
             row.status = WebhookEventStatus.FAILED
