@@ -812,6 +812,18 @@
             "title": "Created At",
             "type": "string"
           },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
           "description": {
             "anyOf": [
               {
@@ -1079,6 +1091,18 @@
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
           },
           "description": {
             "anyOf": [
@@ -4182,6 +4206,48 @@
         "title": "CircuitBreakerStatusResponse",
         "type": "object"
       },
+      "ClaimCommunicationModel": {
+        "additionalProperties": true,
+        "properties": {
+          "channel": {
+            "title": "Channel",
+            "type": "string"
+          },
+          "counterparty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "occurred_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          }
+        },
+        "required": [
+          "channel",
+          "message"
+        ],
+        "title": "ClaimCommunicationModel",
+        "type": "object"
+      },
       "ClaimCreateRequest": {
         "properties": {
           "anomaly_id": {
@@ -4198,6 +4264,112 @@
           "anomaly_id"
         ],
         "title": "ClaimCreateRequest",
+        "type": "object"
+      },
+      "ClaimEvidenceModel": {
+        "additionalProperties": true,
+        "properties": {
+          "confidence_score": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Score"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Metadata"
+          },
+          "sources": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "title": "ClaimEvidenceModel",
+        "type": "object"
+      },
+      "ClaimLegalDefensibilityReportModel": {
+        "additionalProperties": true,
+        "properties": {
+          "defensibility_score": {
+            "anyOf": [
+              {
+                "maximum": 1.0,
+                "minimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Defensibility Score"
+          },
+          "findings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Findings",
+            "type": "array"
+          },
+          "recommended_actions": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Recommended Actions",
+            "type": "array"
+          },
+          "risk_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Level"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "title": "ClaimLegalDefensibilityReportModel",
         "type": "object"
       },
       "ClaimRequest": {
@@ -4287,8 +4459,7 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/components/schemas/ClaimCommunicationModel"
                 },
                 "type": "array"
               },
@@ -4323,6 +4494,18 @@
             "title": "Currency",
             "type": "string"
           },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
+          },
           "discovery_date": {
             "anyOf": [
               {
@@ -4338,14 +4521,12 @@
           "evidence": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ClaimEvidenceModel"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Evidence"
+            ]
           },
           "governing_law_state": {
             "default": "USA",
@@ -4376,14 +4557,12 @@
           "legal_defensibility_report": {
             "anyOf": [
               {
-                "additionalProperties": true,
-                "type": "object"
+                "$ref": "#/components/schemas/ClaimLegalDefensibilityReportModel"
               },
               {
                 "type": "null"
               }
-            ],
-            "title": "Legal Defensibility Report"
+            ]
           },
           "original_due_date": {
             "anyOf": [
@@ -4549,8 +4728,7 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
-                  "type": "object"
+                  "$ref": "#/components/schemas/ClaimSupportingDocumentModel"
                 },
                 "type": "array"
               },
@@ -4661,6 +4839,54 @@
         ],
         "title": "ClaimStatus",
         "type": "string"
+      },
+      "ClaimSupportingDocumentModel": {
+        "additionalProperties": true,
+        "properties": {
+          "document_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "uploaded_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploaded At"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "ClaimSupportingDocumentModel",
+        "type": "object"
       },
       "ClaimTemplateRequest": {
         "properties": {
@@ -8427,6 +8653,19 @@
         "title": "OnboardingAutoRequest",
         "type": "object"
       },
+      "OnboardingCheckpointRequest": {
+        "properties": {
+          "checkpoint": {
+            "title": "Checkpoint",
+            "type": "string"
+          }
+        },
+        "required": [
+          "checkpoint"
+        ],
+        "title": "OnboardingCheckpointRequest",
+        "type": "object"
+      },
       "OptimizationSimulationRequest": {
         "properties": {
           "changes": {
@@ -10370,12 +10609,22 @@
         "title": "StructuredFeedbackRequest",
         "type": "object"
       },
+      "SupportAction": {
+        "description": "Valid actions that can be dispatched through the support action endpoint.",
+        "enum": [
+          "show_top_payers",
+          "explain_anomaly",
+          "generate_weekly_digest_now",
+          "run_catalog_readiness_check"
+        ],
+        "title": "SupportAction",
+        "type": "string"
+      },
       "SupportActionRequest": {
         "properties": {
           "action": {
-            "description": "one_of_safe_actions",
-            "title": "Action",
-            "type": "string"
+            "$ref": "#/components/schemas/SupportAction",
+            "description": "One of the supported support actions: 'show_top_payers', 'explain_anomaly', 'generate_weekly_digest_now', 'run_catalog_readiness_check'."
           },
           "payload": {
             "additionalProperties": true,
@@ -11205,6 +11454,7 @@
         "enum": [
           "artist",
           "manager",
+          "analyst",
           "attorney"
         ],
         "title": "TeamRole",
@@ -11412,6 +11662,18 @@
           "artist_id": {
             "title": "Artist Id",
             "type": "string"
+          },
+          "deleted_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deleted At"
           },
           "id": {
             "title": "Id",
@@ -11723,7 +11985,9 @@
       "TrolleyTxnType": {
         "enum": [
           "REMITTANCE",
-          "DISBURSEMENT"
+          "DISBURSEMENT",
+          "REFUND",
+          "CHARGEBACK"
         ],
         "title": "TrolleyTxnType",
         "type": "string"
@@ -16830,6 +17094,21 @@
           "200": {
             "content": {
               "application/json": {
+                "example": [
+                  {
+                    "artist_id": "art_xyz789",
+                    "category": "ROYALTY",
+                    "confidence_score": 0.87,
+                    "description": "Underreported streaming royalties Q3 2023",
+                    "estimated_recoverable": 1200.5,
+                    "id": "anm_abc123",
+                    "recovery_probability": 0.74,
+                    "severity": "HIGH",
+                    "status": "OPEN",
+                    "trust_score": 0.81,
+                    "urgent_flag": false
+                  }
+                ],
                 "schema": {
                   "items": {
                     "$ref": "#/components/schemas/AnomalyWithRecoverabilitySchema"
@@ -16839,7 +17118,10 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "List of detected anomalies with recoverability metadata"
+          },
+          "404": {
+            "description": "Artist not found"
           },
           "422": {
             "content": {
@@ -18259,10 +18541,27 @@
           "200": {
             "content": {
               "application/json": {
+                "example": [
+                  {
+                    "claim": {
+                      "amount_claimed": 1500.0,
+                      "artist_id": "art_xyz",
+                      "id": "clm_abc123",
+                      "status": "submitted"
+                    },
+                    "forecast": {
+                      "predicted_amount": 1350.0
+                    },
+                    "sol": {
+                      "days_remaining": 120,
+                      "status": "active"
+                    }
+                  }
+                ],
                 "schema": {}
               }
             },
-            "description": "Successful Response"
+            "description": "List of claims with forecast and SOL metadata"
           },
           "422": {
             "content": {
@@ -18295,6 +18594,38 @@
             "schema": {
               "title": "Artist Id",
               "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Actor-Email",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Actor-Role",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
             }
           }
         ],
@@ -18336,6 +18667,143 @@
           }
         ],
         "summary": "Create Claim For Artist",
+        "tags": [
+          "claims"
+        ]
+      }
+    },
+    "/artists/{artist_id}/claims/export.csv": {
+      "get": {
+        "description": "Download all claims for an artist as a CSV file.",
+        "operationId": "export_claims_csv_artists__artist_id__claims_export_csv_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Filter by claim status",
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by claim status",
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "text/csv": {
+                "example": "id,artist_id,status,...\nclm_abc123,art_xyz,submitted,..."
+              }
+            },
+            "description": "CSV file of all claims for the artist"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export Claims Csv",
+        "tags": [
+          "claims"
+        ]
+      }
+    },
+    "/artists/{artist_id}/claims/search": {
+      "get": {
+        "description": "Full-text search over claims for an artist.\n\nUses PostgreSQL ``to_tsvector`` / ``plainto_tsquery`` when available,\nfalling back to ILIKE pattern matching for SQLite (test environments).\nSearches across ``description``, ``contract_type``, and ``governing_law_state``.",
+        "operationId": "search_claims_artists__artist_id__claims_search_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Search query string",
+            "in": "query",
+            "name": "q",
+            "required": true,
+            "schema": {
+              "description": "Search query string",
+              "minLength": 2,
+              "title": "Q",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Search Claims",
         "tags": [
           "claims"
         ]
@@ -20474,10 +20942,50 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "balance_still_pursuing": {
+                    "balance_still_pursuing": 22300.0,
+                    "total_pending_deposit": 2000.0
+                  },
+                  "catalog_health": {
+                    "grade": "B",
+                    "health_score": 72,
+                    "recommendations": [],
+                    "signals": {}
+                  },
+                  "in_pursuit": {
+                    "active_claim_count": 7,
+                    "total_amount_in_pursuit": 31200.0,
+                    "total_gross_recovered": 8900.0,
+                    "total_net_recovered": 7565.0
+                  },
+                  "leakage_discovered": {
+                    "by_category": {
+                      "ROYALTY": 8,
+                      "SYNC": 2,
+                      "TOURING": 4
+                    },
+                    "by_severity": {
+                      "HIGH": 5,
+                      "LOW": 3,
+                      "MEDIUM": 6
+                    },
+                    "recent_discoveries": [],
+                    "total_anomalies": 14,
+                    "total_estimated_recoverable": 42500.0
+                  },
+                  "recovered_and_deposited": {
+                    "deposits": [],
+                    "total_deposited": 7565.0
+                  }
+                },
                 "schema": {}
               }
             },
-            "description": "Successful Response"
+            "description": "Artist recovery dashboard"
+          },
+          "404": {
+            "description": "Artist not found"
           },
           "422": {
             "content": {
@@ -24229,6 +24737,98 @@
         ]
       }
     },
+    "/artists/{artist_id}/onboarding/checkpoints": {
+      "post": {
+        "description": "Record a named onboarding checkpoint for an artist.\n\nAccepted checkpoints: ``terms_accepted``, ``statement_uploaded``,\n``connector_linked``, ``claim_drafted``.\n\nReturns the updated ``gates`` dict so the caller can drive UI progress.",
+        "operationId": "record_onboarding_checkpoint_artists__artist_id__onboarding_checkpoints_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnboardingCheckpointRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Record Onboarding Checkpoint",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
+    "/artists/{artist_id}/onboarding/resume": {
+      "get": {
+        "description": "Return resumable onboarding state from persisted checkpoints.",
+        "operationId": "onboarding_resume_artists__artist_id__onboarding_resume_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Onboarding Resume",
+        "tags": [
+          "onboarding"
+        ]
+      }
+    },
     "/artists/{artist_id}/onboarding/status": {
       "get": {
         "operationId": "onboarding_status_artists__artist_id__onboarding_status_get",
@@ -27451,6 +28051,7 @@
     },
     "/artists/{artist_id}/support/action": {
       "post": {
+        "description": "Dispatch a structured support action for an artist.\n\n**Valid actions** (`action` field):\n\n| Action | Payload fields | Description |\n|---|---|---|\n| `show_top_payers` | *(none)* | Returns a ranked snapshot of the top 5 payers with outstanding recoverable amounts. |\n| `explain_anomaly` | `anomaly_id` (str, required) | Returns a structured explanation of the specified anomaly. |\n| `generate_weekly_digest_now` | *(none)* | Generates an on-demand preview of the weekly recovery digest. |\n| `run_catalog_readiness_check` | *(none)* | Runs a catalog readiness check and returns the current readiness score. |\n\nCallers with role `artist`, `manager`, or `attorney` may invoke this endpoint.",
         "operationId": "support_action_artists__artist_id__support_action_post",
         "parameters": [
           {
@@ -30743,12 +31344,20 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "expires_in_seconds": 3600,
+                  "token_type": "bearer"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/TokenResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "JWT access token for admin"
+          },
+          "401": {
+            "description": "Invalid admin credentials"
           },
           "422": {
             "content": {
@@ -30759,6 +31368,9 @@
               }
             },
             "description": "Validation Error"
+          },
+          "503": {
+            "description": "Admin login not configured"
           }
         },
         "summary": "Admin Login",
@@ -30784,12 +31396,23 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                  "expires_in_seconds": 3600,
+                  "token_type": "bearer"
+                },
                 "schema": {
                   "$ref": "#/components/schemas/TokenResponse"
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "JWT access token for artist"
+          },
+          "401": {
+            "description": "Artist email mismatch"
+          },
+          "404": {
+            "description": "Artist not found"
           },
           "422": {
             "content": {
@@ -30815,6 +31438,15 @@
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "artist_email": "artist@example.com",
+                  "artist_id": "art_xyz789",
+                  "expires_at": 1700003600,
+                  "issued_at": 1700000000,
+                  "role": "artist",
+                  "subject": "art_xyz789",
+                  "tenant_id": "default"
+                },
                 "schema": {
                   "additionalProperties": true,
                   "title": "Response Auth Me Auth Me Get",
@@ -30822,7 +31454,10 @@
                 }
               }
             },
-            "description": "Successful Response"
+            "description": "Decoded JWT claims for the authenticated caller"
+          },
+          "401": {
+            "description": "Missing or invalid token"
           }
         },
         "security": [
@@ -32326,6 +32961,38 @@
               "title": "Claim Id",
               "type": "string"
             }
+          },
+          {
+            "in": "header",
+            "name": "X-Actor-Email",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Email"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Actor-Role",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Actor-Role"
+            }
           }
         ],
         "responses": {
@@ -33538,15 +34205,45 @@
     },
     "/health": {
       "get": {
+        "description": "Health check with actual connectivity tests for critical dependencies.\n\nReturns 200 OK only if ALL core dependencies (PostgreSQL, Redis, S3) are reachable.\nReturns 503 Service Unavailable if any dependency check fails.\n\nThis prevents deployments from proceeding when dependencies are misconfigured\nor unreachable, catching issues before they reach production traffic.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
             "content": {
               "application/json": {
+                "example": {
+                  "status": "ok",
+                  "version": "2.0.0"
+                },
                 "schema": {}
               }
             },
-            "description": "Successful Response"
+            "description": "Platform is healthy"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "checks": {
+                    "database": {
+                      "error": "connection refused",
+                      "status": "fail"
+                    },
+                    "redis": {
+                      "latency_ms": 2.3,
+                      "status": "ok"
+                    },
+                    "s3": {
+                      "error": "timeout",
+                      "status": "fail"
+                    }
+                  },
+                  "status": "unhealthy",
+                  "version": "2.0.0"
+                }
+              }
+            },
+            "description": "Platform is unhealthy - dependencies unreachable"
           }
         },
         "summary": "Health"
@@ -35393,7 +36090,7 @@
             "schema": {
               "anyOf": [
                 {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ReviewItemStatus"
                 },
                 {
                   "type": "null"
