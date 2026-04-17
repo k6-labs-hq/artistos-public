@@ -1,10 +1,16 @@
+import json
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.timeout import TimeoutMiddleware
 
+from XR7.api.middleware.idempotency import IdempotencyMiddleware
+from XR7.api.middleware.logging import RequestIDMiddleware, configure_structured_logging
+from XR7.api.middleware.tenant_enforcement import TenantEnforcementMiddleware
+from XR7.api.middleware.timeout import TimeoutMiddleware
+from XR7.api.middleware.versioning import APIVersioningMiddleware
+from XR7.api.middleware.data_residency import DataResidencyMiddleware
 from XR7.api.routers import admin_console as admin_console_router
 from XR7.api.routers import advance_governance as advance_governance_router
 from XR7.api.routers import (
@@ -80,6 +86,7 @@ from XR7.api.routers import xr7_metadata as xr7_metadata_router
 from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
 from XR7.models.base import Base, engine
+from XR7.services.live_updates import live_updates_manager
 from XR7.services.hubspot_client import HubSpotClient
 from xr7_common.settings import settings
 
@@ -109,6 +116,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.connector_sync_cursor  # noqa: F401
     import XR7.models.data_residency  # noqa: F401
     import XR7.models.evidence_anchor  # noqa: F401
+    import XR7.models.feature_flag  # noqa: F401
     import XR7.models.fingerprint_job  # noqa: F401
     import XR7.models.fingerprint_match  # noqa: F401
     import XR7.models.forensic_universal_event  # noqa: F401
@@ -145,6 +153,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.xr7_royalty  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    configure_structured_logging()
     yield
 
 
@@ -233,13 +242,22 @@ app.add_middleware(
         "X-Actor-Email",
         "X-Actor-Role",
         "X-Trolley-Signature",
+        "X-Request-ID",
+        "X-Tenant-ID",
+        "Idempotency-Key",
     ],
+    expose_headers=["X-Request-ID", "X-Tenant-ID"],
 )
 
 # Global request timeout: 30 s safety net for all routes.
 # Long-running endpoints (file uploads, LLM calls, sync jobs) override this
 # via @with_timeout(N) on the handler together with TimeoutRoute on their router.
 app.add_middleware(TimeoutMiddleware, timeout=30)
+app.add_middleware(RequestIDMiddleware)
+app.add_middleware(TenantEnforcementMiddleware)
+app.add_middleware(IdempotencyMiddleware)
+app.add_middleware(APIVersioningMiddleware)
+app.add_middleware(DataResidencyMiddleware)
 
 app.include_router(earnings.router)
 app.include_router(anomalies.router)
@@ -315,7 +333,21 @@ app.include_router(recovery_credit_score_router.router)
 app.include_router(collaborator_share_router.router)
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Platform is healthy",
+                "content": {
+                    "application/json": {
+                        "example": {"status": "ok", "version": "2.0.0"}
+                    }
+                },
+            }
+        }
+    },
+)
 def health():
     return {"status": "ok", "version": "2.0.0"}
 
@@ -539,3 +571,27 @@ def readiness():
             "KOMCA_API_KEY, and SACEM_API_KEY."
         ),
     }
+
+
+@app.websocket("/ws/live-updates")
+async def live_updates_socket(websocket: WebSocket):
+    raw_cursor = websocket.query_params.get("after_event_id", "").strip()
+    after_event_id = None
+    if raw_cursor:
+        try:
+            after_event_id = max(int(raw_cursor), 0)
+        except ValueError:
+            after_event_id = None
+
+    replayed = await live_updates_manager.connect(websocket, after_event_id=after_event_id)
+    try:
+        if replayed:
+            await websocket.send_text(
+                json.dumps({"event_type": "replay_complete", "payload": {"replayed": replayed}})
+            )
+        while True:
+            msg = await websocket.receive_text()
+            if msg.strip().lower() in {"ping", "heartbeat"}:
+                await websocket.send_text(json.dumps({"event_type": "pong", "payload": {}}))
+    except WebSocketDisconnect:
+        await live_updates_manager.disconnect(websocket)

@@ -19,10 +19,14 @@ from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistSchema
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
+from XR7.models.feature_flag import FeatureFlagSchema
 from XR7.models.review_queue import ReviewItem, ReviewItemSchema
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema
+from XR7.models.webhook_event import WebhookEvent, WebhookEventSchema, WebhookEventStatus
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
+from XR7.services.feature_flags import FeatureFlagService
 from XR7.services.founder_program import founder_status_payload, get_or_create_platform_config
+from XR7.tasks.webhooks import deliver_webhook_event
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -34,6 +38,15 @@ class FounderAssignRequest(BaseModel):
 
 class FounderCohortLimitUpdateRequest(BaseModel):
     founder_cohort_limit: int
+
+
+class FeatureFlagUpsertRequest(BaseModel):
+    key: str
+    description: str | None = None
+    enabled: bool = False
+    rollout_percentage: int = 0
+    target_user_ids: list[str] = []
+    conditions: dict = {}
 
 
 def _require_admin(
@@ -531,6 +544,85 @@ def founder_roster(
 
 @router.get("/reports/founder-cohort")
 def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
+
+
+    @router.get("/feature-flags")
+    def list_feature_flags(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
+        rows = FeatureFlagService(db).list_flags()
+        _log(db, actor, "list", "feature_flags", {"count": len(rows)})
+        return [FeatureFlagSchema.model_validate(row).model_dump() for row in rows]
+
+
+    @router.put("/feature-flags/{flag_key}")
+    def upsert_feature_flag(
+        flag_key: str,
+        payload: FeatureFlagUpsertRequest,
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        row = FeatureFlagService(db).upsert_flag(
+            key=flag_key,
+            description=payload.description,
+            enabled=payload.enabled,
+            rollout_percentage=payload.rollout_percentage,
+            target_user_ids=payload.target_user_ids,
+            conditions=payload.conditions,
+        )
+        _log(db, actor, "upsert", "feature_flag", {"key": flag_key, "enabled": row.enabled})
+        return FeatureFlagSchema.model_validate(row).model_dump()
+
+
+    @router.get("/feature-flags/{flag_key}/evaluate")
+    def evaluate_feature_flag(
+        flag_key: str,
+        subject_id: str | None = Query(default=None),
+        environment: str | None = Query(default=None),
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        enabled = FeatureFlagService(db).is_enabled(
+            flag_key,
+            subject_id=subject_id,
+            attributes={"environment": environment},
+        )
+        _log(db, actor, "evaluate", "feature_flag", {"key": flag_key, "subject_id": subject_id})
+        return {"key": flag_key, "subject_id": subject_id, "enabled": enabled}
+
+
+    @router.get("/webhooks")
+    def list_webhook_events(
+        status: str | None = Query(default=None),
+        limit: int = Query(default=50, ge=1, le=200),
+        offset: int = Query(default=0, ge=0),
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        query = db.query(WebhookEvent)
+        if status:
+            query = query.filter(WebhookEvent.status == status)
+        total = query.count()
+        rows = query.order_by(WebhookEvent.created_at.desc()).offset(offset).limit(limit).all()
+        _log(db, actor, "list", "webhooks", {"status": status, "total": total})
+        return _paginated_response(
+            [WebhookEventSchema.model_validate(row).model_dump() for row in rows], total, limit, offset
+        )
+
+
+    @router.post("/webhooks/{event_id}/retry")
+    def retry_webhook_event(
+        event_id: str,
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        row = db.query(WebhookEvent).filter(WebhookEvent.id == event_id).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Webhook event not found")
+        row.status = WebhookEventStatus.REPLAYING
+        row.processing_error = None
+        db.commit()
+        deliver_webhook_event.delay(row.id)
+        _log(db, actor, "retry", "webhook", {"event_id": row.id})
+        return {"event_id": row.id, "status": row.status, "queued": True}
     total_founders: int = (
         db.query(func.count(Artist.id)).filter(Artist.is_founder.is_(True)).scalar() or 0
     )

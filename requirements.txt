@@ -18,6 +18,7 @@ httpx>=0.24.0
 python-multipart>=0.0.6
 openpyxl>=3.1.2
 PyJWT>=2.8.0
+cryptography>=42.0.0
 langgraph
 langchain
 langchain-openai
