@@ -23,3 +23,4 @@ langgraph
 langchain
 langchain-openai
 langgraph-checkpoint
+jinja2>=3.1.0
