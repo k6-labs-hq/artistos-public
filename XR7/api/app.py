@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+# Register claim status audit event listener
+import XR7.services.claim_status_audit  # noqa: F401
 from XR7.api.middleware.data_residency import DataResidencyMiddleware
 from XR7.api.middleware.idempotency import IdempotencyMiddleware
 from XR7.api.middleware.limit_upload_size import LimitUploadSizeMiddleware
