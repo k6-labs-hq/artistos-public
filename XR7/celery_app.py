@@ -93,6 +93,11 @@ celery_app.conf.update(
             "task": "xr7.webhooks.redeliver_failed",
             "schedule": 300,
         },
+        # ── Billing / Payouts ──────────────────────────────────────────────
+        "xr7-billing-scan-stuck-disbursements": {
+            "task": "xr7.billing.scan_stuck_disbursements",
+            "schedule": 900,  # every 15 minutes
+        },
         # ── XR7 Engine 2 — new modules ────────────────────────────────────
         "xr7-black-box-countdown-hourly": {
             "task": "xr7.modules.black_box_countdown.refresh_countdowns_all",

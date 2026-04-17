@@ -11,6 +11,9 @@ from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus,
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.founder_program import get_or_create_platform_config, resolve_standard_fee_percent
 from XR7.trolley.client import TrolleyClient, TrolleyException
+from xr7_common.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BillingEngine:
@@ -211,6 +214,17 @@ class BillingEngine:
             claim.payout_failure_reason = str(exc)
             claim.payout_retry_count = int(claim.payout_retry_count or 0) + 1
             self.db_session.commit()
+
+            # Queue automatic retry with exponential backoff
+            # Import here to avoid circular dependency
+            from XR7.tasks.billing_tasks import retry_failed_disbursement
+
+            retry_failed_disbursement.delay(claim.id)
+            logger.info(
+                f"Disbursement failed for claim {claim.id}, queued for automatic retry "
+                f"(attempt {claim.payout_retry_count}/5)"
+            )
+
             raise
 
         payment = response.get("payment") if isinstance(response, dict) else {}
