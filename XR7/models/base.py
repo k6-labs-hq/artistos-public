@@ -1,10 +1,9 @@
-from collections.abc import Generator
 import logging
 import time
+from collections.abc import Generator
 from typing import Any
 
-from sqlalchemy import create_engine
-from sqlalchemy import event
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, with_loader_criteria
 
 from XR7.services.tenant_context import get_current_actor_sub, get_current_tenant_id
@@ -17,6 +16,10 @@ logger = logging.getLogger(__name__)
 def _engine_connect_args(url: str) -> dict[str, object]:
     if url.startswith("sqlite"):
         return {"check_same_thread": False}
+    if url.startswith("postgresql"):
+        # Prevent long-running queries from hanging indefinitely
+        # statement_timeout: Kill queries running longer than 30 seconds
+        return {"options": "-c statement_timeout=30000"}
     return {}
 
 
@@ -74,6 +77,8 @@ def after_cursor_execute(conn, cursor, statement, parameters, context, executema
                 "n_plus_one_suspected",
                 extra={"statement": normalized, "repeat_count": counts[normalized]},
             )
+
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
