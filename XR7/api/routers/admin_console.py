@@ -13,7 +13,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import query_handoffs
-from XR7.api.deps import get_artist_or_404
 from XR7.models.admin_audit_log import AdminAuditLog, AdminAuditLogSchema
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistSchema
@@ -26,9 +25,11 @@ from XR7.models.webhook_event import WebhookEvent, WebhookEventSchema, WebhookEv
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
 from XR7.services.feature_flags import FeatureFlagService
 from XR7.services.founder_program import founder_status_payload, get_or_create_platform_config
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.tasks.webhooks import deliver_webhook_event
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+_router_service = router_service_for("admin_console")
 
 
 class FounderAssignRequest(BaseModel):
@@ -667,7 +668,7 @@ def assign_founder_manually(
     actor: str = Depends(_require_admin),
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
 
     cfg = get_or_create_platform_config(db, for_update=True)
     if artist.is_founder and artist.founder_slot_number is not None:

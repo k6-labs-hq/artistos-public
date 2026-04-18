@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
+from typing import Any
 
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -81,3 +82,65 @@ def queue_metrics(db: Session) -> dict:
         "alert_threshold": threshold,
         "threshold_exceeded": int(open_count) >= threshold,
     }
+
+
+def confidence_tier_for_score(confidence_score: float | None) -> str:
+    score = float(confidence_score or 0.0)
+    if score >= 0.85:
+        return "high"
+    if score >= 0.6:
+        return "medium"
+    return "low"
+
+
+def route_confidence_tier_item(
+    db: Session,
+    *,
+    artist_id: str,
+    source_type: ReviewSourceType,
+    source_id: str | None,
+    reason: str,
+    confidence_score: float | None,
+    payload: dict[str, Any] | None = None,
+) -> ReviewItem:
+    tier = confidence_tier_for_score(confidence_score)
+    base_payload = dict(payload or {})
+    base_payload["confidence_score"] = float(confidence_score or 0.0)
+    base_payload["confidence_tier"] = tier
+
+    if tier == "high":
+        priority = 0.15
+    elif tier == "medium":
+        priority = 0.5
+    else:
+        priority = 0.9
+
+    return enqueue_review_item(
+        db,
+        artist_id=artist_id,
+        source_type=source_type,
+        source_id=source_id,
+        reason=reason,
+        priority_score=priority,
+        payload=base_payload,
+    )
+
+
+def increment_override_tracking(
+    db: Session,
+    *,
+    item: ReviewItem,
+    override_reason: str,
+) -> ReviewItem:
+    payload = dict(item.payload or {})
+    override_count = int(payload.get("override_count") or 0) + 1
+    payload["override_count"] = override_count
+    payload["last_override_reason"] = override_reason
+    payload["last_override_at"] = datetime.now(timezone.utc).isoformat()
+    payload["active_learning_candidate"] = True
+
+    item.payload = payload
+    item.updated_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(item)
+    return item

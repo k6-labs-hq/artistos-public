@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from XR7.ai_music.influence_detector import InfluenceDetector
 from XR7.anomaly.engine import AnomalyEngine
 from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
-from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
@@ -31,10 +30,12 @@ from XR7.services.branding import (
 )
 from XR7.services.cache import cached_response
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["anomalies"])
+_router_service = router_service_for("anomalies")
 logger = get_logger(__name__)
 
 
@@ -184,7 +185,7 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
 
 @router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
 def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     rg = RightsGraph()
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
@@ -227,7 +228,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ai-music/scan-influence")
 async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     detector = InfluenceDetector(db)
     matches = await detector.scan_new_ai_releases(artist_id)
@@ -252,7 +253,7 @@ async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/anomalies/fraud-scan")
 def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     result = FraudInflationDetector().flag_anomalies_for_report(artist_id)
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})

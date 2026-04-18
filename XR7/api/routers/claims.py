@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import run_export_prep_pipeline_sync
 from XR7.api.authz import authorize_advance_approval_access, authorize_claim_edit_access
-from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import (
     enforce_claim_access,
     get_auth_payload,
@@ -56,12 +55,14 @@ from XR7.services.live_updates import broadcast_live_update
 from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
 from XR7.services.pdf_builder import safe_pdf_text as _safe_pdf_text
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.services.webhook_delivery import OutboundWebhookService
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from XR7.tasks.webhooks import deliver_webhook_event
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["claims"])
+_router_service = router_service_for("claims")
 logger = get_logger(__name__)
 
 
@@ -416,7 +417,7 @@ def export_claims_csv(
     _auth: dict | None = Depends(get_optional_auth_payload),
 ):
     """Download all claims for an artist as a CSV file."""
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     q = db.query(Claim).filter(Claim.artist_id == artist_id)
     if status:
         q = q.filter(Claim.status == status)
@@ -473,7 +474,7 @@ def search_claims(
     falling back to ILIKE pattern matching for SQLite (test environments).
     Searches across ``description``, ``contract_type``, and ``governing_law_state``.
     """
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     from sqlalchemy import text as sa_text
 
@@ -578,7 +579,7 @@ def create_claim_for_artist(
     x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
     x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     authorize_claim_edit_access(
         artist_id,
         db,

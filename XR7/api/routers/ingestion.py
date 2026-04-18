@@ -33,7 +33,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.engine import AnomalyEngine
-from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.auth.event_notifications import send_event_notification
 from XR7.earnings.engine import EarningsEngine
@@ -61,6 +60,7 @@ from XR7.services.branding import inject_branding_metadata
 from XR7.services.founder_program import handle_founder_notifications
 from XR7.services.live_updates import broadcast_live_update
 from XR7.services.rate_limiter import check_upload_rate_limit
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.services.webhook_delivery import OutboundWebhookService
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
@@ -69,6 +69,7 @@ from XR7.trolley.client import TrolleyClient, TrolleyException
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["ingestion"])
+_router_service = router_service_for("ingestion")
 logger = get_logger(__name__)
 
 # Maximum upload size: 50 MB (most statements are < 5 MB)
@@ -259,7 +260,7 @@ async def upload_statement(
     ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint
     returns HTTP 403 until the artist has agreed to the terms.
     """
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
 
     # CRITICAL SECURITY: Rate limit uploads to prevent resource exhaustion
     check_upload_rate_limit(artist_id)
@@ -537,7 +538,7 @@ async def upload_statement_batch(
     db: Session = Depends(get_db),
 ):
     """Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing."""
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
 
     # CRITICAL SECURITY: Rate limit uploads to prevent resource exhaustion
     check_upload_rate_limit(artist_id)
@@ -730,7 +731,7 @@ async def upload_statement_batch(
 async def connect_soundexchange_mlc(
     artist_id: str, years_back: int = 10, db: Session = Depends(get_db)
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     connector = SoundExchangeMLCConnector()
     rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
     anomalies = await connector.detect_unreported_uses(["USRC17607839", "USRC17607840"])
@@ -757,7 +758,7 @@ def soundexchange_mlc_status(artist_id: str, db: Session = Depends(get_db)):
 async def connect_regional_global(
     artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     connector = RegionalGlobalConnector()
     rows = await connector.fetch_statements(artist_id, genre, territory)
     anomalies = await connector.auto_detect_genre_specific_anomalies(artist_id, genre, territory)
@@ -793,7 +794,7 @@ def list_statements(artist_id: str, db: Session = Depends(get_db)):
     """
     Return all statement uploads for an artist, newest first.
     """
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     return (
         db.query(Statement)

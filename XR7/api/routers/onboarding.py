@@ -12,7 +12,6 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.variance_detection_engine import run_variance_scan
-from XR7.api.deps import get_artist_or_404
 from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.graph.catalog_graph_builder import build_catalog_graph
 from XR7.ingestion.fetchers import get_fetcher
@@ -49,10 +48,12 @@ from XR7.services.branding import (
 )
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.workflow_orchestrator import XR7WorkflowService
 
 router = APIRouter(tags=["onboarding"], route_class=TimeoutRoute)
+_router_service = router_service_for("onboarding")
 
 _MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
 _ALLOWED_UPLOAD_MIME_TYPES = {
@@ -138,7 +139,7 @@ class OnboardingCheckpointRequest(BaseModel):
 
 
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
     return artist
 
 
