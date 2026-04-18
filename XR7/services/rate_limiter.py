@@ -24,10 +24,13 @@ from typing import TYPE_CHECKING
 import redis
 from fastapi import HTTPException, status
 
+from xr7_common.logging import get_logger
 from xr7_common.settings import settings
 
 if TYPE_CHECKING:
     pass
+
+logger = get_logger(__name__)
 
 # Rate limit configuration
 UPLOAD_RATE_LIMIT_PER_ARTIST = 10  # uploads per window
@@ -60,32 +63,35 @@ def check_upload_rate_limit(artist_id: str) -> None:
         >>> # ... 8 more uploads ...
         >>> check_upload_rate_limit("artist_123")  # 11th upload: raises 429
     """
-    r = get_redis_client()
-    key = f"upload_rate_limit:{artist_id}"
+    try:
+        r = get_redis_client()
+        key = f"upload_rate_limit:{artist_id}"
 
-    # Get current count
-    current_count = r.get(key)
+        current_count = r.get(key)
 
-    if current_count is None:
-        # First upload in this window
-        r.setex(key, UPLOAD_RATE_LIMIT_WINDOW, 1)
-        return
+        if current_count is None:
+            r.setex(key, UPLOAD_RATE_LIMIT_WINDOW, 1)
+            return
 
-    count = int(current_count)
-    if count >= UPLOAD_RATE_LIMIT_PER_ARTIST:
-        # Rate limit exceeded
-        ttl = r.ttl(key)
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail=(
-                f"Upload rate limit exceeded. Maximum {UPLOAD_RATE_LIMIT_PER_ARTIST} uploads "
-                f"per hour allowed. Please try again in {ttl // 60 + 1} minutes."
-            ),
-            headers={"Retry-After": str(ttl if ttl > 0 else UPLOAD_RATE_LIMIT_WINDOW)},
+        count = int(current_count)
+        if count >= UPLOAD_RATE_LIMIT_PER_ARTIST:
+            ttl = r.ttl(key)
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail=(
+                    f"Upload rate limit exceeded. Maximum {UPLOAD_RATE_LIMIT_PER_ARTIST} uploads "
+                    f"per hour allowed. Please try again in {ttl // 60 + 1} minutes."
+                ),
+                headers={"Retry-After": str(ttl if ttl > 0 else UPLOAD_RATE_LIMIT_WINDOW)},
+            )
+
+        r.incr(key)
+    except redis.RedisError as exc:
+        logger.warning(
+            "Upload rate limiter unavailable; allowing request",
+            extra={"artist_id": artist_id, "error": str(exc)[:200]},
         )
-
-    # Increment counter
-    r.incr(key)
+        return
 
 
 def increment_upload_count(artist_id: str) -> None:
@@ -98,15 +104,20 @@ def increment_upload_count(artist_id: str) -> None:
     Args:
         artist_id: The artist ID
     """
-    r = get_redis_client()
-    key = f"upload_rate_limit:{artist_id}"
+    try:
+        r = get_redis_client()
+        key = f"upload_rate_limit:{artist_id}"
 
-    # If key doesn't exist, create it with count=1
-    if r.get(key) is None:
-        r.setex(key, UPLOAD_RATE_LIMIT_WINDOW, 1)
-    else:
-        # Key exists, increment it
-        r.incr(key)
+        if r.get(key) is None:
+            r.setex(key, UPLOAD_RATE_LIMIT_WINDOW, 1)
+        else:
+            r.incr(key)
+    except redis.RedisError as exc:
+        logger.warning(
+            "Upload rate limiter unavailable during increment; skipping counter update",
+            extra={"artist_id": artist_id, "error": str(exc)[:200]},
+        )
+        return
 
 
 def get_remaining_uploads(artist_id: str) -> dict[str, int]:
@@ -123,25 +134,36 @@ def get_remaining_uploads(artist_id: str) -> dict[str, int]:
         >>> get_remaining_uploads("artist_123")
         {"remaining": 7, "reset_in_seconds": 2400, "limit": 10}
     """
-    r = get_redis_client()
-    key = f"upload_rate_limit:{artist_id}"
+    try:
+        r = get_redis_client()
+        key = f"upload_rate_limit:{artist_id}"
 
-    current_count = r.get(key)
-    if current_count is None:
+        current_count = r.get(key)
+        if current_count is None:
+            return {
+                "remaining": UPLOAD_RATE_LIMIT_PER_ARTIST,
+                "reset_in_seconds": UPLOAD_RATE_LIMIT_WINDOW,
+                "limit": UPLOAD_RATE_LIMIT_PER_ARTIST,
+            }
+
+        count = int(current_count)
+        ttl = r.ttl(key)
+
+        return {
+            "remaining": max(0, UPLOAD_RATE_LIMIT_PER_ARTIST - count),
+            "reset_in_seconds": ttl if ttl > 0 else UPLOAD_RATE_LIMIT_WINDOW,
+            "limit": UPLOAD_RATE_LIMIT_PER_ARTIST,
+        }
+    except redis.RedisError as exc:
+        logger.warning(
+            "Upload rate limiter unavailable while reading quota; returning full allowance",
+            extra={"artist_id": artist_id, "error": str(exc)[:200]},
+        )
         return {
             "remaining": UPLOAD_RATE_LIMIT_PER_ARTIST,
             "reset_in_seconds": UPLOAD_RATE_LIMIT_WINDOW,
             "limit": UPLOAD_RATE_LIMIT_PER_ARTIST,
         }
-
-    count = int(current_count)
-    ttl = r.ttl(key)
-
-    return {
-        "remaining": max(0, UPLOAD_RATE_LIMIT_PER_ARTIST - count),
-        "reset_in_seconds": ttl if ttl > 0 else UPLOAD_RATE_LIMIT_WINDOW,
-        "limit": UPLOAD_RATE_LIMIT_PER_ARTIST,
-    }
 
 
 def reset_upload_rate_limit(artist_id: str) -> None:
@@ -156,6 +178,13 @@ def reset_upload_rate_limit(artist_id: str) -> None:
     Args:
         artist_id: The artist ID to reset
     """
-    r = get_redis_client()
-    key = f"upload_rate_limit:{artist_id}"
-    r.delete(key)
+    try:
+        r = get_redis_client()
+        key = f"upload_rate_limit:{artist_id}"
+        r.delete(key)
+    except redis.RedisError as exc:
+        logger.warning(
+            "Upload rate limiter unavailable during reset; skipping delete",
+            extra={"artist_id": artist_id, "error": str(exc)[:200]},
+        )
+        return

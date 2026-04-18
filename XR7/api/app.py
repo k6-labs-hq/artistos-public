@@ -1,5 +1,7 @@
+import importlib.util
 import json
 import os
+import sys
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -210,6 +212,119 @@ def _security_gate_status(env: str | None = None) -> dict[str, object]:
     }
 
 
+def _optional_module_available(module_name: str) -> bool:
+    return importlib.util.find_spec(module_name) is not None
+
+
+def _llm_feature_status() -> dict[str, object]:
+    provider = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
+    model = os.environ.get(
+        "LLM_MODEL",
+        "grok-beta" if provider in {"xai", "xai-grok", "grok"} else "gpt-4o-mini",
+    )
+
+    llm_api_key_configured = bool(os.environ.get("LLM_API_KEY"))
+    openai_api_key_configured = bool(os.environ.get("OPENAI_API_KEY"))
+    xai_api_key_configured = bool(os.environ.get("XAI_API_KEY"))
+
+    langchain_core_available = _optional_module_available("langchain_core")
+    langchain_openai_available = _optional_module_available("langchain_openai")
+    langchain_xai_available = _optional_module_available("langchain_xai")
+
+    provider_runtime_available = (
+        langchain_xai_available
+        if provider in {"xai", "xai-grok", "grok"}
+        else langchain_openai_available
+    )
+    shared_llm_ready = bool(
+        llm_api_key_configured and langchain_core_available and provider_runtime_available
+    )
+    advisor_ready = bool(
+        langchain_core_available
+        and (
+            (openai_api_key_configured and langchain_openai_available)
+            or (xai_api_key_configured and langchain_xai_available)
+        )
+    )
+
+    features = {
+        "vip_copilot": {
+            "available": advisor_ready,
+            "fallback_enabled": True,
+            "credential_source": "OPENAI_API_KEY or XAI_API_KEY",
+        },
+        "claim_drafting": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+        "negotiation_script": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+        "gap_explainer": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+        "specialized_agents": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+    }
+    available_count = sum(1 for feature in features.values() if feature["available"])
+
+    return {
+        "provider": provider,
+        "model": model,
+        "credentials": {
+            "llm_api_key_configured": llm_api_key_configured,
+            "openai_api_key_configured": openai_api_key_configured,
+            "xai_api_key_configured": xai_api_key_configured,
+        },
+        "dependencies": {
+            "langchain_core_available": langchain_core_available,
+            "langchain_openai_available": langchain_openai_available,
+            "langchain_xai_available": langchain_xai_available,
+        },
+        "features": features,
+        "status": (
+            "ready"
+            if available_count == len(features)
+            else ("partial" if available_count else "fallback_only")
+        ),
+        "available_feature_count": available_count,
+        "total_feature_count": len(features),
+    }
+
+
+def _runtime_setting(env_name: str, fallback: object | None = None) -> object | None:
+    value = os.environ.get(env_name)
+    if value is not None:
+        return value
+    return fallback
+
+
+def _running_under_pytest() -> bool:
+    return "pytest" in sys.modules or os.environ.get("PYTEST_CURRENT_TEST") is not None
+
+
+def _health_probe_timeout_seconds() -> float:
+    raw_value = os.environ.get("XR7_HEALTH_PROBE_TIMEOUT_SECONDS")
+    if raw_value is not None:
+        try:
+            return max(float(raw_value), 0.01)
+        except ValueError:
+            pass
+
+    if _running_under_pytest():
+        return 0.02
+
+    return 2.0
+
+
 _security_gates = _security_gate_status()
 
 if _env == "production" and _allowed_origins_raw == "*":
@@ -382,6 +497,29 @@ def health():
     from sqlalchemy import text
     from starlette.responses import JSONResponse
 
+    probe_timeout_seconds = _health_probe_timeout_seconds()
+    use_runtime_only_dependency_config = _running_under_pytest()
+    redis_url = _runtime_setting(
+        "REDIS_URL", None if use_runtime_only_dependency_config else settings.redis_url
+    )
+    s3_endpoint_url = _runtime_setting(
+        "S3_ENDPOINT_URL", None if use_runtime_only_dependency_config else settings.s3_endpoint_url
+    )
+    s3_access_key_id = _runtime_setting(
+        "S3_ACCESS_KEY_ID",
+        None if use_runtime_only_dependency_config else settings.s3_access_key_id,
+    )
+    s3_secret_access_key = _runtime_setting(
+        "S3_SECRET_ACCESS_KEY",
+        None if use_runtime_only_dependency_config else settings.s3_secret_access_key,
+    )
+    s3_bucket = _runtime_setting(
+        "S3_BUCKET", None if use_runtime_only_dependency_config else settings.s3_bucket
+    )
+    s3_region = _runtime_setting(
+        "S3_REGION", None if use_runtime_only_dependency_config else settings.s3_region
+    )
+
     checks = {}
     all_healthy = True
 
@@ -398,11 +536,15 @@ def health():
 
     # Redis connectivity check
     try:
-        if settings.redis_url:
+        if redis_url:
             import redis
 
             start = time.perf_counter()
-            r = redis.Redis.from_url(settings.redis_url, socket_connect_timeout=2)
+            r = redis.Redis.from_url(
+                str(redis_url),
+                socket_connect_timeout=probe_timeout_seconds,
+                socket_timeout=probe_timeout_seconds,
+            )
             r.ping()
             latency = (time.perf_counter() - start) * 1000
             checks["redis"] = {"status": "ok", "latency_ms": round(latency, 2)}
@@ -415,20 +557,26 @@ def health():
 
     # S3 connectivity check
     try:
-        if settings.s3_endpoint_url and settings.s3_access_key_id:
+        if s3_endpoint_url and s3_access_key_id:
             import boto3
+            from botocore.config import Config
 
             start = time.perf_counter()
             s3 = boto3.client(
                 "s3",
-                region_name=settings.s3_region,
-                endpoint_url=settings.s3_endpoint_url,
-                aws_access_key_id=settings.s3_access_key_id,
-                aws_secret_access_key=settings.s3_secret_access_key,
+                region_name=str(s3_region or "us-east-1"),
+                endpoint_url=str(s3_endpoint_url),
+                aws_access_key_id=str(s3_access_key_id),
+                aws_secret_access_key=str(s3_secret_access_key or ""),
+                config=Config(
+                    connect_timeout=probe_timeout_seconds,
+                    read_timeout=probe_timeout_seconds,
+                    retries={"max_attempts": 0},
+                ),
             )
             # Test connectivity with head_bucket or list_buckets
             try:
-                s3.head_bucket(Bucket=settings.s3_bucket)
+                s3.head_bucket(Bucket=str(s3_bucket))
             except Exception:
                 # If bucket doesn't exist, test with list_buckets to verify credentials
                 s3.list_buckets()
@@ -445,6 +593,7 @@ def health():
         "status": "ok" if all_healthy else "unhealthy",
         "version": "2.0.0",
         "checks": checks,
+        "llm": _llm_feature_status(),
     }
 
     if all_healthy:
@@ -480,6 +629,15 @@ def readiness():
     from XR7.ingestion.connectors.ticketing import TicketingConnector
     from XR7.ingestion.statement_parser import SUPPORTED_FORMATS
     from XR7.services.market_readiness_architecture import evaluate_architecture_readiness
+
+    redis_url = _runtime_setting("REDIS_URL", settings.redis_url)
+    celery_broker_url = _runtime_setting("CELERY_BROKER_URL", settings.celery_broker_url)
+    celery_result_backend = _runtime_setting(
+        "CELERY_RESULT_BACKEND", settings.celery_result_backend
+    )
+    s3_endpoint_url = _runtime_setting("S3_ENDPOINT_URL", settings.s3_endpoint_url)
+    s3_access_key_id = _runtime_setting("S3_ACCESS_KEY_ID", settings.s3_access_key_id)
+    s3_secret_access_key = _runtime_setting("S3_SECRET_ACCESS_KEY", settings.s3_secret_access_key)
 
     def _connector_status(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -545,11 +703,9 @@ def readiness():
     )
     trolley_webhook_secret_set = bool(os.environ.get("TROLLEY_SECRET_KEY"))
 
-    redis_ready = bool(settings.redis_url)
-    celery_ready = bool(settings.celery_broker_url and settings.celery_result_backend)
-    storage_ready = bool(
-        settings.s3_endpoint_url and settings.s3_access_key_id and settings.s3_secret_access_key
-    )
+    redis_ready = bool(redis_url)
+    celery_ready = bool(celery_broker_url and celery_result_backend)
+    storage_ready = bool(s3_endpoint_url and s3_access_key_id and s3_secret_access_key)
     plugin_signature_ready = bool(settings.plugin_signature_secret)
     hubspot_client = HubSpotClient()
 
@@ -586,14 +742,14 @@ def readiness():
         },
         "queues": {
             "redis_configured": redis_ready,
-            "celery_broker_url": settings.celery_broker_url,
-            "celery_result_backend": settings.celery_result_backend,
+            "celery_broker_url": celery_broker_url,
+            "celery_result_backend": celery_result_backend,
             "celery_registered_tasks": sorted(celery_app.tasks.keys())[:50],
             "status": "ready" if redis_ready and celery_ready else "missing_credentials",
         },
         "storage": {
             "provider": "s3-compatible",
-            "endpoint": settings.s3_endpoint_url,
+            "endpoint": s3_endpoint_url,
             "bucket": settings.s3_bucket,
             "region": settings.s3_region,
             "configured": storage_ready,

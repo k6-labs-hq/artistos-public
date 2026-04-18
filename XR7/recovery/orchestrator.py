@@ -319,13 +319,13 @@ class ClaimsOrchestrator:
         if not claim:
             raise ValueError(f"Claim {claim_id} not found")
         artist = self.db_session.query(Artist).filter(Artist.id == claim.artist_id).first()
-        fee_percent = float(getattr(artist, "contingency_fee_percent", 0.0) or 0.0)
+        billing_engine = BillingEngine(self.db_session)
         claim.recovered_amount = recovered_amount
         claim.currency = currency
-        claim.platform_fee_percent = fee_percent
-        claim.contingency_fee = BillingEngine(self.db_session).calculate_contingency_fee(
+        claim.contingency_fee = billing_engine.calculate_contingency_fee(
             recovered_amount, claim.artist_id
         )
+        claim.platform_fee_percent = float(getattr(artist, "contingency_fee_percent", 0.0) or 0.0)
         claim.platform_fee_amount = claim.contingency_fee
         claim.artist_net_amount = float(recovered_amount or 0.0) - float(
             claim.contingency_fee or 0.0

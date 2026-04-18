@@ -329,3 +329,83 @@ def test_health_error_message_truncation(client, mock_env_settings):
         data = response.json()
         # Error message should be truncated
         assert len(data["checks"]["database"]["error"]) == 200
+
+
+def test_health_includes_llm_feature_detection(client, mock_env_settings, monkeypatch):
+    """Test /health reports LLM feature availability and fallback posture."""
+    with (
+        patch("sqlalchemy.engine.base.Engine.connect") as mock_db,
+        patch("redis.Redis.from_url") as mock_redis,
+        patch("boto3.client") as mock_s3,
+        patch("XR7.api.app._optional_module_available") as mock_optional_module,
+    ):
+        mock_conn = MagicMock()
+        mock_db.return_value.__enter__.return_value = mock_conn
+        mock_conn.execute.return_value = None
+
+        mock_redis_instance = MagicMock()
+        mock_redis_instance.ping.return_value = True
+        mock_redis.return_value = mock_redis_instance
+
+        mock_s3_instance = MagicMock()
+        mock_s3_instance.head_bucket.return_value = {}
+        mock_s3.return_value = mock_s3_instance
+
+        monkeypatch.setenv("LLM_PROVIDER", "openai")
+        monkeypatch.setenv("LLM_MODEL", "gpt-4o-mini")
+        monkeypatch.setenv("LLM_API_KEY", "llm-test-key")
+        monkeypatch.setenv("OPENAI_API_KEY", "openai-test-key")
+        monkeypatch.delenv("XAI_API_KEY", raising=False)
+
+        mock_optional_module.side_effect = lambda module_name: module_name in {
+            "langchain_core",
+            "langchain_openai",
+        }
+
+        response = client.get("/health")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert "llm" in data
+        assert data["llm"]["provider"] == "openai"
+        assert data["llm"]["status"] == "ready"
+        assert data["llm"]["credentials"]["llm_api_key_configured"] is True
+        assert data["llm"]["credentials"]["openai_api_key_configured"] is True
+        assert data["llm"]["features"]["vip_copilot"]["available"] is True
+        assert data["llm"]["features"]["gap_explainer"]["available"] is True
+
+
+def test_health_reports_llm_fallback_only_when_credentials_absent(
+    client, mock_env_settings, monkeypatch
+):
+    """Test /health reports fallback-only LLM mode when credentials are absent."""
+    with (
+        patch("sqlalchemy.engine.base.Engine.connect") as mock_db,
+        patch("redis.Redis.from_url") as mock_redis,
+        patch("boto3.client") as mock_s3,
+        patch("XR7.api.app._optional_module_available", return_value=False),
+    ):
+        mock_conn = MagicMock()
+        mock_db.return_value.__enter__.return_value = mock_conn
+        mock_conn.execute.return_value = None
+
+        mock_redis_instance = MagicMock()
+        mock_redis_instance.ping.return_value = True
+        mock_redis.return_value = mock_redis_instance
+
+        mock_s3_instance = MagicMock()
+        mock_s3_instance.head_bucket.return_value = {}
+        mock_s3.return_value = mock_s3_instance
+
+        monkeypatch.delenv("LLM_API_KEY", raising=False)
+        monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+        monkeypatch.delenv("XAI_API_KEY", raising=False)
+
+        response = client.get("/health")
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["llm"]["status"] == "fallback_only"
+        assert data["llm"]["available_feature_count"] == 0
+        assert data["llm"]["features"]["vip_copilot"]["fallback_enabled"] is True
+        assert data["llm"]["features"]["claim_drafting"]["available"] is False
