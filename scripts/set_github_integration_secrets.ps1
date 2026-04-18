@@ -1,10 +1,10 @@
-$ErrorActionPreference = "Stop"
-
 param(
     [string]$Repo = "k6-labs-hq/ArtistOS",
     [string]$EnvFile,
     [switch]$DryRun
 )
+
+$ErrorActionPreference = "Stop"
 
 $secretNames = @(
     "ASCAP_API_KEY",
@@ -22,6 +22,11 @@ $secretNames = @(
     "TROLLEY_SANDBOX_API_KEY",
     "TROLLEY_SANDBOX_SECRET_KEY"
 )
+
+$envFileAliases = @{
+    "TROLLEY_SANDBOX_API_KEY" = @("TROLLEY_SANDBOX_API_KEY", "TROLLEY_API_KEY")
+    "TROLLEY_SANDBOX_SECRET_KEY" = @("TROLLEY_SANDBOX_SECRET_KEY", "TROLLEY_SECRET_KEY")
+}
 
 function ConvertTo-PlainText {
     param([Security.SecureString]$SecureValue)
@@ -94,11 +99,22 @@ if ($EnvFile) {
 foreach ($secretName in $secretNames) {
     $value = ""
 
-    if ($envSecrets.ContainsKey($secretName) -and -not [string]::IsNullOrWhiteSpace($envSecrets[$secretName])) {
-        $value = $envSecrets[$secretName]
-        Write-Host "Loaded $secretName from env file." -ForegroundColor DarkYellow
+    $candidateNames = if ($envFileAliases.ContainsKey($secretName)) {
+        $envFileAliases[$secretName]
     }
     else {
+        @($secretName)
+    }
+
+    foreach ($candidateName in $candidateNames) {
+        if ($envSecrets.ContainsKey($candidateName) -and -not [string]::IsNullOrWhiteSpace($envSecrets[$candidateName])) {
+            $value = $envSecrets[$candidateName]
+            Write-Host "Loaded $secretName from env file key $candidateName." -ForegroundColor DarkYellow
+            break
+        }
+    }
+
+    if ([string]::IsNullOrWhiteSpace($value)) {
         $secureValue = Read-Host -AsSecureString -Prompt "$secretName (leave empty to skip)"
         $value = ConvertTo-PlainText -SecureValue $secureValue
     }
