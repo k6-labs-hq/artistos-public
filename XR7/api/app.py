@@ -13,6 +13,7 @@ from XR7.api.middleware.data_residency import DataResidencyMiddleware
 from XR7.api.middleware.idempotency import IdempotencyMiddleware
 from XR7.api.middleware.limit_upload_size import LimitUploadSizeMiddleware
 from XR7.api.middleware.logging import RequestIDMiddleware, configure_structured_logging
+from XR7.api.middleware.security_headers import SecurityHeadersMiddleware
 from XR7.api.middleware.tenant_enforcement import TenantEnforcementMiddleware
 from XR7.api.middleware.timeout import TimeoutMiddleware
 from XR7.api.middleware.versioning import APIVersioningMiddleware
@@ -91,6 +92,7 @@ from XR7.api.routers import xr7_metadata as xr7_metadata_router
 from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
 from XR7.models.base import Base, engine
+from XR7.observability.tracing import configure_tracing
 from XR7.services.hubspot_client import HubSpotClient
 from XR7.services.live_updates import live_updates_manager
 from xr7_common.settings import settings
@@ -159,6 +161,7 @@ async def lifespan(app: FastAPI):
 
     Base.metadata.create_all(bind=engine)
     configure_structured_logging()
+    configure_tracing()
     yield
 
 
@@ -380,6 +383,7 @@ app.add_middleware(TenantEnforcementMiddleware)
 app.add_middleware(IdempotencyMiddleware)
 app.add_middleware(APIVersioningMiddleware)
 app.add_middleware(DataResidencyMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(earnings.router)
 app.include_router(anomalies.router)
