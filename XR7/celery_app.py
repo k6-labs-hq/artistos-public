@@ -119,6 +119,11 @@ celery_app.conf.update(
             "task": "xr7.modules.recovery_score.recalculate_all",
             "schedule": 86400,  # daily
         },
+        # ── Evidence Chain Integrity (SOC 2 CC7.2 continuous monitoring) ──
+        "xr7-chain-verification-daily": {
+            "task": "xr7.chain_verification.verify_all_tenants",
+            "schedule": 86400,  # daily - scheduled verification for all tenants
+        },
     },
 )
 
