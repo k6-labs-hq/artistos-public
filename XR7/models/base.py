@@ -6,6 +6,7 @@ from typing import Any
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker, with_loader_criteria
 
+from XR7.exceptions import TenantIsolationViolation
 from XR7.services.tenant_context import get_current_actor_sub, get_current_tenant_id
 from xr7_common.settings import settings
 
@@ -84,6 +85,14 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 @event.listens_for(SessionLocal, "do_orm_execute")
 def _enforce_tenant_scope(execute_state) -> None:
+    """Enforce tenant isolation on all SELECT queries.
+
+    Automatically filters queries to only return rows matching the current
+    tenant ID from the JWT context. This prevents accidental or malicious
+    cross-tenant data access.
+
+    For write operations (INSERT/UPDATE/DELETE), see _enforce_tenant_writes.
+    """
     tenant_id = get_current_tenant_id()
     if not tenant_id:
         return
@@ -120,6 +129,107 @@ def _enforce_tenant_scope(execute_state) -> None:
                     for entity in tenant_entities
                 ]
             )
+
+
+@event.listens_for(SessionLocal, "before_flush")
+def _enforce_tenant_writes(session, flush_context, instances) -> None:
+    """Enforce tenant isolation on write operations (INSERT/UPDATE/DELETE).
+
+    Validates that:
+    1. INSERT: Auto-injects current tenant_id if model has one
+    2. UPDATE: Verifies target object belongs to current tenant
+    3. DELETE: Verifies target object belongs to current tenant
+
+    Raises:
+        TenantIsolationViolation: If write operation crosses tenant boundary
+
+    Compliance: SOC 2 CC6.7 — Logical access controls (tenant isolation)
+    """
+    tenant_id = get_current_tenant_id()
+    if not tenant_id:
+        # No tenant context set (e.g., system migrations, tests)
+        return
+
+    actor_sub = get_current_actor_sub()
+
+    # Check new objects (INSERT)
+    for obj in session.new:
+        if hasattr(obj, "tenant_id"):
+            if obj.tenant_id is None:
+                # Auto-inject tenant_id for new objects
+                obj.tenant_id = tenant_id
+                logger.debug(
+                    "tenant_id_auto_injected",
+                    extra={
+                        "model": obj.__class__.__name__,
+                        "tenant_id": tenant_id,
+                        "actor": actor_sub,
+                    },
+                )
+            elif obj.tenant_id != tenant_id:
+                # Attempting to INSERT with wrong tenant_id
+                logger.error(
+                    "tenant_isolation_violation_insert",
+                    extra={
+                        "model": obj.__class__.__name__,
+                        "current_tenant": tenant_id,
+                        "target_tenant": obj.tenant_id,
+                        "actor": actor_sub,
+                    },
+                )
+                raise TenantIsolationViolation(
+                    current_tenant=tenant_id,
+                    target_tenant=obj.tenant_id,
+                    operation="INSERT",
+                    model=obj.__class__.__name__,
+                    actor_sub=actor_sub,
+                )
+
+    # Check modified objects (UPDATE)
+    for obj in session.dirty:
+        if hasattr(obj, "tenant_id"):
+            obj_tenant = getattr(obj, "tenant_id", None)
+            if obj_tenant and obj_tenant != tenant_id:
+                logger.error(
+                    "tenant_isolation_violation_update",
+                    extra={
+                        "model": obj.__class__.__name__,
+                        "current_tenant": tenant_id,
+                        "target_tenant": obj_tenant,
+                        "actor": actor_sub,
+                        "object_id": getattr(obj, "id", "unknown"),
+                    },
+                )
+                raise TenantIsolationViolation(
+                    current_tenant=tenant_id,
+                    target_tenant=obj_tenant,
+                    operation="UPDATE",
+                    model=obj.__class__.__name__,
+                    actor_sub=actor_sub,
+                )
+
+    # Check deleted objects (DELETE)
+    for obj in session.deleted:
+        if hasattr(obj, "tenant_id"):
+            obj_tenant = getattr(obj, "tenant_id", None)
+            if obj_tenant and obj_tenant != tenant_id:
+                logger.error(
+                    "tenant_isolation_violation_delete",
+                    extra={
+                        "model": obj.__class__.__name__,
+                        "current_tenant": tenant_id,
+                        "target_tenant": obj_tenant,
+                        "actor": actor_sub,
+                        "object_id": getattr(obj, "id", "unknown"),
+                    },
+                )
+                raise TenantIsolationViolation(
+                    current_tenant=tenant_id,
+                    target_tenant=obj_tenant,
+                    operation="DELETE",
+                    model=obj.__class__.__name__,
+                    actor_sub=actor_sub,
+                )
 
 
 class Base(DeclarativeBase):
