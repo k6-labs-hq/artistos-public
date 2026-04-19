@@ -875,12 +875,50 @@ def get_evidence(
     db: Session = Depends(get_db),
     auth_payload: dict = Depends(get_auth_payload),
 ):
+    """
+    Retrieve evidence packet for a claim with SHA-256 chain integrity verification.
+
+    Security: Evidence packets are served directly to attorneys and used in legal proceedings.
+    Every read path MUST verify chain integrity to detect tampering (database compromise,
+    insider threat, or bit rot). Without verification, modified evidence could be served
+    as trustworthy, creating legal liability and destroying platform credibility.
+
+    Compliance: SOC 2 CC7.2 - System monitoring must detect unauthorized data modifications
+    Regulatory: Evidence tampering detection is required for attorney trust and audit integrity
+    """
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
     enforce_claim_access(claim.artist_id, auth_payload)
+
     if isinstance(claim.evidence, dict) and claim.evidence:
+        # Verify packet integrity before serving to attorney/artist
+        # SOC 2 CC7.2: Detect unauthorized modifications before evidence is used
+        orchestrator = ClaimsOrchestrator(db)
+        verification = orchestrator.verify_packet_integrity(claim.evidence)
+
+        if not verification.get("valid"):
+            # Evidence chain integrity failure - potential tampering detected
+            logger.error(
+                "evidence_packet_tampering_detected",
+                extra={
+                    "claim_id": claim_id,
+                    "artist_id": claim.artist_id,
+                    "checks": verification.get("checks"),
+                    "packet_hash": verification.get("packet_hash"),
+                    "prior_packet_hash": verification.get("prior_packet_hash"),
+                    "severity": "P0",
+                    "security_event": "evidence_integrity_failure",
+                },
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Evidence integrity verification failed. This incident has been logged for investigation.",
+            )
+
         return claim.evidence
+
+    # Generate fresh evidence packet if none exists
     return ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
 
 

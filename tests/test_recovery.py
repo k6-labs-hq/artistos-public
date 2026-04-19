@@ -189,6 +189,47 @@ def test_generate_evidence_packet_integrity_chain_advances(db_session, artist_an
     assert second_packet["metadata"]["revision"] == 2
 
 
+def test_evidence_packet_verification_detects_tampering(db_session, artist_and_anomaly):
+    """
+    P0 Security Test: Evidence tampering detection on read.
+
+    Scenario: Database compromise or insider threat tampers with evidence.integrity.packet_hash.
+    Expected: verify_packet_integrity() must detect tampering and return valid=False.
+
+    Business Context: Evidence packets are served to attorneys for legal proceedings.
+    Tampered evidence that passes as valid would destroy platform credibility and create
+    legal liability. The get_evidence() endpoint uses this verification before serving evidence.
+
+    Compliance: SOC 2 CC7.2 - System monitoring must detect unauthorized data modifications
+    Regulatory: Evidence integrity is required for attorney trust and audit compliance
+    """
+    orchestrator = ClaimsOrchestrator(db_session)
+    claim = orchestrator.create_claim("anomaly-1", "ROYALTY_DISPUTE")
+
+    # Generate valid evidence packet
+    valid_packet = orchestrator.generate_evidence_packet(claim.id)
+    assert valid_packet["integrity"]["packet_hash"]
+
+    # Verify untampered packet passes
+    verification = orchestrator.verify_packet_integrity(valid_packet)
+    assert verification["valid"] is True
+    assert verification["checks"]["packet_hash_matches"] is True
+
+    # Tamper with evidence: modify packet_hash to simulate database tampering
+    tampered_packet = valid_packet.copy()
+    original_hash = tampered_packet["integrity"]["packet_hash"]
+    tampered_packet["integrity"]["packet_hash"] = "0" * 64  # Invalid hash
+    assert tampered_packet["integrity"]["packet_hash"] != original_hash
+
+    # Verify tampered packet is rejected
+    tampered_verification = orchestrator.verify_packet_integrity(tampered_packet)
+    assert tampered_verification["valid"] is False
+    assert tampered_verification["checks"]["packet_hash_matches"] is False
+
+    # This verification failure would trigger P0 alert in get_evidence() endpoint
+    # See XR7/api/routers/claims.py::get_evidence() for production usage
+
+
 def test_claim_evidence_export_zip_and_pdf():
     client = TestClient(app)
     db = _TestSession()
