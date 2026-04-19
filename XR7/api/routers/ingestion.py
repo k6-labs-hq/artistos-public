@@ -30,6 +30,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import func
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.engine import AnomalyEngine
@@ -128,13 +129,23 @@ def supported_formats() -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _save_events(db: Session, events: list[dict]) -> int:
-    """Persist normalised event dicts to the DB, returning the count saved.
+def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
+    """Persist normalised event dicts to the DB with row-level deduplication.
+
+    Uses INSERT...ON CONFLICT DO NOTHING to skip duplicate events based on
+    the unique constraint (artist_id, event_type, platform, territory,
+    timestamp, quantity, unit_value, work_id).
+
+    Returns dict with counts: {"inserted": N, "skipped": M}
 
     Commits in batches of 500 to limit memory pressure for large statements.
     """
     _CHUNK = 500
-    count = 0
+    inserted = 0
+    skipped = 0
+
+    # Prepare event records
+    event_records = []
     for e in events:
         try:
             et_raw = str(e.get("event_type", "STREAM")).upper()
@@ -143,26 +154,63 @@ def _save_events(db: Session, events: list[dict]) -> int:
             except ValueError:
                 event_type = EventType.STREAM
 
-            event = Event(
-                id=str(uuid.uuid4()),
-                event_type=event_type,
-                artist_id=e["artist_id"],
-                platform=e.get("platform"),
-                territory=e.get("territory"),
-                timestamp=e.get("timestamp") or datetime.now(timezone.utc),
-                quantity=int(e.get("quantity", 1)),
-                unit_value=float(e.get("unit_value", 0.0)),
-                currency=e.get("currency", "USD"),
-                # work_id left None — future work: match by ISRC lookup
+            event_records.append(
+                {
+                    "id": str(uuid.uuid4()),
+                    "event_type": event_type.value,
+                    "artist_id": e["artist_id"],
+                    "platform": e.get("platform"),
+                    "territory": e.get("territory"),
+                    "timestamp": e.get("timestamp") or datetime.now(timezone.utc),
+                    "quantity": int(e.get("quantity", 1)),
+                    "unit_value": float(e.get("unit_value", 0.0)),
+                    "currency": e.get("currency", "USD"),
+                    "work_id": None,  # future: match by ISRC lookup
+                }
             )
-            db.add(event)
-            count += 1
-            if count % _CHUNK == 0:
-                db.commit()
         except Exception:  # noqa: BLE001
+            skipped += 1
             continue
-    db.commit()
-    return count
+
+    # Bulk insert with ON CONFLICT DO NOTHING for deduplication
+    total_attempted = len(event_records)
+    for i in range(0, total_attempted, _CHUNK):
+        chunk = event_records[i : i + _CHUNK]
+        if not chunk:
+            continue
+
+        # Use PostgreSQL INSERT...ON CONFLICT DO NOTHING
+        stmt = insert(Event.__table__).values(chunk)
+        stmt = stmt.on_conflict_do_nothing(
+            index_elements=[
+                "artist_id",
+                "event_type",
+                "platform",
+                "territory",
+                "timestamp",
+                "quantity",
+                "unit_value",
+            ]
+        )
+
+        result = db.execute(stmt)
+        db.commit()
+
+        # Track how many were actually inserted (excluding duplicates)
+        inserted += result.rowcount
+
+    skipped += total_attempted - inserted
+    logger.info(
+        "Event ingestion complete",
+        extra={
+            "total_events": len(events),
+            "inserted": inserted,
+            "skipped_duplicates": skipped,
+            "deduplication_rate": round(skipped / len(events) * 100, 1) if events else 0,
+        },
+    )
+
+    return {"inserted": inserted, "skipped": skipped}
 
 
 def _save_payments(db: Session, payments: list[dict]) -> int:
@@ -323,7 +371,8 @@ async def upload_statement(
         error_summary = "; ".join(result.errors[:5])
 
     # Persist
-    events_created = _save_events(db, result.events)
+    event_result = _save_events(db, result.events)
+    events_created = event_result["inserted"]
     payments_created = _save_payments(db, result.payments)
 
     # Run anomaly detection on newly ingested data
@@ -614,7 +663,8 @@ async def upload_statement_batch(
             statement_signals = extract_statement_signals(
                 content, filename, format_detected=result.format_detected
             )
-            events_created = _save_events(db, result.events)
+            event_result = _save_events(db, result.events)
+            events_created = event_result["inserted"]
             payments_created = _save_payments(db, result.payments)
 
             statement = Statement(
