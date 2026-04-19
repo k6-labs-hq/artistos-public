@@ -15,10 +15,55 @@ DOMAIN BOUNDARY NOTE:
 
 from __future__ import annotations
 
-from fastapi import HTTPException
+import hmac
+import os
+
+from fastapi import Header, HTTPException
 from sqlalchemy.orm import Session
 
 from XR7.models.artist import Artist
+
+
+def get_current_admin(
+    x_admin_key: str = Header(default="", alias="X-Admin-Key"),
+    x_admin_actor: str | None = Header(default=None, alias="X-Admin-Actor"),
+) -> dict[str, str | None]:
+    """Validate admin API key and return admin context.
+
+    CANONICAL VERSION: Do not duplicate this logic elsewhere in the codebase.
+    All admin-protected endpoints requiring admin context should use this function.
+
+    Args:
+        x_admin_key: Admin key from X-Admin-Key header
+        x_admin_actor: Optional admin actor identifier from X-Admin-Actor header
+
+    Returns:
+        Dict with admin context (sub, email, actor)
+
+    Raises:
+        HTTPException: 503 if admin key not configured, 401 if invalid
+    """
+    expected = (
+        os.environ.get("ADMIN_API_KEY")
+        or os.environ.get("WIDGET_ADMIN_KEY")
+        or os.environ.get("ADMIN_SECRET_KEY")
+    )
+    if not expected:
+        env = os.environ.get("XR7_ENV", "development").lower()
+        if env == "production":
+            raise HTTPException(
+                status_code=503,
+                detail="Admin API key not configured",
+            )
+        expected = "admin-secret"
+    if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
+        raise HTTPException(status_code=401, detail="Invalid or missing admin key")
+
+    return {
+        "sub": "admin",
+        "email": x_admin_actor or "admin@xr7.ai",
+        "actor": x_admin_actor,
+    }
 
 
 def get_artist_or_404(artist_id: str, db: Session) -> Artist:

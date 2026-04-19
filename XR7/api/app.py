@@ -57,6 +57,7 @@ from XR7.api.routers import expansion as expansion_router
 from XR7.api.routers import fetchers as fetchers_router
 from XR7.api.routers import fingerprinting as fingerprinting_router
 from XR7.api.routers import forensic as forensic_router
+from XR7.api.routers import gdpr as gdpr_router
 from XR7.api.routers import ghost_catalog as ghost_catalog_router
 from XR7.api.routers import governance as governance_router
 from XR7.api.routers import identity as identity_router
@@ -442,6 +443,7 @@ app.include_router(copilot_router.router)
 app.include_router(vip_referrals_router.router)
 app.include_router(case_rooms_router.router)
 app.include_router(data_residency_router.router)
+app.include_router(gdpr_router.router)
 app.include_router(connector_reliability_router.router)
 app.include_router(slo_router.router)
 app.include_router(batch_ingestion_router.router)
