@@ -13,6 +13,7 @@ from XR7.api.middleware.data_residency import DataResidencyMiddleware
 from XR7.api.middleware.idempotency import IdempotencyMiddleware
 from XR7.api.middleware.limit_upload_size import LimitUploadSizeMiddleware
 from XR7.api.middleware.logging import RequestIDMiddleware, configure_structured_logging
+from XR7.api.middleware.request_deduplication import RequestDeduplicationMiddleware
 from XR7.api.middleware.security_headers import SecurityHeadersMiddleware
 from XR7.api.middleware.tenant_enforcement import TenantEnforcementMiddleware
 from XR7.api.middleware.timeout import TimeoutMiddleware
@@ -65,6 +66,7 @@ from XR7.api.routers import llm_recovery as llm_recovery_router
 from XR7.api.routers import messages as messages_router
 from XR7.api.routers import ml_suite as ml_suite_router
 from XR7.api.routers import notifications as notifications_router
+from XR7.api.routers import observability as observability_router
 from XR7.api.routers import onboarding as onboarding_router
 from XR7.api.routers import payer_health as payer_health_router
 from XR7.api.routers import payers as payers_router
@@ -384,6 +386,7 @@ app.add_middleware(IdempotencyMiddleware)
 app.add_middleware(APIVersioningMiddleware)
 app.add_middleware(DataResidencyMiddleware)
 app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestDeduplicationMiddleware)
 
 app.include_router(earnings.router)
 app.include_router(anomalies.router)
@@ -457,6 +460,7 @@ app.include_router(contract_drift_router.router)
 app.include_router(catalog_value_router.router)
 app.include_router(recovery_credit_score_router.router)
 app.include_router(collaborator_share_router.router)
+app.include_router(observability_router.router)
 
 
 @app.get(
