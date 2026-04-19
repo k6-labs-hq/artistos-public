@@ -25,9 +25,10 @@ from pydantic import BaseModel, ConfigDict, EmailStr
 from sqlalchemy import or_, text
 from sqlalchemy.orm import Session
 
-from XR7.api.deps import get_current_admin, get_db
+from XR7.api.deps import get_current_admin
 from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.artist import Artist
+from XR7.models.base import get_db
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)

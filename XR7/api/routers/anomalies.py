@@ -7,6 +7,7 @@ from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
+from XR7.ml.confidence_gating import ConfidenceGatingService
 from XR7.models.anomaly import (
     Anomaly,
     AnomalyRecoveryProbabilityResponseSchema,
@@ -190,33 +191,88 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
 
+    gating = ConfidenceGatingService(db)
     enriched: list[dict] = []
+    rejected_count = 0
+    auto_accepted_count = 0
+
     for row in anomaly_dicts:
+        # Apply confidence gating
+        confidence = float(row.get("confidence_score") or 0.0)
+        decision = gating.evaluate(
+            confidence=confidence,
+            context={
+                "anomaly_type": row.get("subtype") or row.get("category"),
+                "estimated_recoverable": float(row.get("estimated_recoverable") or 0.0),
+                "artist_id": artist_id,
+                "urgency_flag": bool(row.get("urgent_flag")),
+            },
+        )
+
+        # Skip rejected anomalies (too low confidence)
+        if not decision.should_create:
+            rejected_count += 1
+            logger.debug(
+                "anomaly_rejected_by_gating",
+                extra={
+                    "artist_id": artist_id,
+                    "confidence": confidence,
+                    "tier": decision.tier.value,
+                    "reasoning": decision.reasoning,
+                },
+            )
+            continue
+
+        # Enrich anomaly metadata
         row_payload = dict(row)
         row_payload.update(build_recoverability_payload(row_payload))
+        row_payload["gating_decision"] = {
+            "tier": decision.tier.value,
+            "priority_score": decision.priority_score,
+            "reasoning": decision.reasoning,
+        }
         enriched.append(row_payload)
+
         anomaly_id = row.get("id")
-        priority = float(row.get("estimated_recoverable") or 0.0)
         reason = f"Anomaly detected: {row.get('subtype') or row.get('category') or 'UNKNOWN'}"
-        enqueue_review_item(
-            db,
-            artist_id=artist_id,
-            source_type=ReviewSourceType.ANOMALY,
-            source_id=str(anomaly_id) if anomaly_id else None,
-            reason=reason,
-            priority_score=priority,
-            payload=row_payload,
-        )
-        if float(row.get("confidence_score") or 1.0) < 0.55:
+
+        # Route to review queue if required (REVIEW tier)
+        if decision.requires_review:
             enqueue_review_item(
                 db,
                 artist_id=artist_id,
                 source_type=ReviewSourceType.ML_CONFIDENCE,
                 source_id=str(anomaly_id) if anomaly_id else None,
-                reason="Low rule confidence anomaly requires analyst review",
-                priority_score=priority,
+                reason=f"{reason} (confidence: {confidence:.2f})",
+                priority_score=decision.priority_score,
                 payload=row_payload,
             )
+        else:
+            # AUTO_ACCEPT tier: log for auditing, bypass manual review
+            auto_accepted_count += 1
+            logger.info(
+                "anomaly_auto_accepted",
+                extra={
+                    "artist_id": artist_id,
+                    "anomaly_id": anomaly_id,
+                    "confidence": confidence,
+                    "estimated_recoverable": row.get("estimated_recoverable"),
+                },
+            )
+
+    # Log gating metrics
+    gating_metrics = gating.get_metrics()
+    logger.info(
+        "anomaly_detection_gating_complete",
+        extra={
+            "artist_id": artist_id,
+            "total_detected": len(anomaly_dicts),
+            "enriched_count": len(enriched),
+            "rejected_count": rejected_count,
+            "auto_accepted_count": auto_accepted_count,
+            "gating_metrics": gating_metrics,
+        },
+    )
 
     try:
         hubspot_sync_recovery_update.delay(artist_id, event="anomalies_detected")
