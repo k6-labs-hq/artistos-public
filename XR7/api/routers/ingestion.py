@@ -41,6 +41,7 @@ from XR7.fingerprinting.matching.identity_matching import persist_identity_match
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
+from XR7.ingestion.parse_timeout import StatementParseTimeoutError, parse_with_timeout
 from XR7.ingestion.statement_parser import SUPPORTED_FORMATS, parse_csv, parse_statement_file
 from XR7.ingestion.statement_signal_extractor import (
     extract_statement_signals,
@@ -358,8 +359,24 @@ async def upload_statement(
         or 0
     )
 
-    # Parse
-    result = parse_statement_file(content, artist_id, filename=file.filename or "statement.csv")
+    # Parse with timeout enforcement (prevents DoS from malformed files)
+    try:
+        result = parse_with_timeout(
+            parse_statement_file,
+            content,
+            artist_id,
+            filename=file.filename or "statement.csv",
+        )
+    except StatementParseTimeoutError as timeout_err:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Statement parsing timed out after {timeout_err.timeout_seconds} seconds. "
+                "The file may be malformed or too complex to process. "
+                "Please check the file format and try uploading a smaller date range."
+            ),
+        )
+
     statement_signals = extract_statement_signals(
         content, file.filename or "statement.csv", format_detected=result.format_detected
     )
@@ -659,7 +676,22 @@ async def upload_statement_batch(
                 ]
                 result.format_detected = "pdf"
             else:
-                result = parse_statement_file(content, artist_id, filename=filename)
+                try:
+                    result = parse_with_timeout(
+                        parse_statement_file, content, artist_id, filename=filename
+                    )
+                except StatementParseTimeoutError as timeout_err:
+                    # For batch upload, log timeout but continue with other files
+                    logger.error(
+                        f"Batch upload file parsing timeout: {filename}",
+                        extra={"artist_id": artist_id, "filename": filename},
+                    )
+                    result = parse_csv(b"", artist_id)
+                    result.errors = [
+                        f"Parsing timed out after {timeout_err.timeout_seconds}s (file may be malformed)"
+                    ]
+                    result.format_detected = "timeout"
+
             statement_signals = extract_statement_signals(
                 content, filename, format_detected=result.format_detected
             )
