@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import JSON, Boolean, CheckConstraint, DateTime, Float, Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, validates
 
 from XR7.models.base import Base
 
@@ -63,6 +63,41 @@ class Artist(Base):
     organization_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     enterprise_mode_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
+
+    @validates("contingency_fee_percent")
+    def _validate_founders_circle_rate_lock(self, key: str, value: float | None) -> float | None:
+        """Enforce immutability of contingency_fee_percent after Founders Circle lock.
+
+        Business Rule: Founders Circle members (2,500 artist cap) receive a lifetime
+        rate lock guarantee. Once `founder_locked_at` is set, the contingency fee
+        cannot be changed - not even by admins or the artist themselves.
+
+        This prevents rate manipulation that would undermine the Founders Circle
+        value proposition and violates the explicit contract promise.
+
+        Compliance: SOC 2 CC6.1 - Logical access controls (immutable financial terms)
+
+        Raises:
+            ValueError: If attempting to change fee after founder_locked_at is set
+
+        Regulatory citation: 17 CFR § 270.22c-2 (anti-manipulation of fee schedules)
+        """
+        # First check: is this a Founders Circle member with a lock timestamp?
+        if self.founder_locked_at is not None:
+            # Retrieve the current value from the database
+            # self.contingency_fee_percent references the ORM-managed value before this change
+            current_value = self.contingency_fee_percent
+
+            # Allow setting the same value (idempotent operation)
+            if current_value is not None and value != current_value:
+                raise ValueError(
+                    f"Cannot modify contingency_fee_percent for Founders Circle member. "
+                    f"Rate locked at {current_value}% since {self.founder_locked_at.isoformat()}. "
+                    f"Attempted new value: {value}%. "
+                    f"This violates the Founders Circle lifetime rate guarantee."
+                )
+
+        return value
 
 
 class ArtistSchema(BaseModel):

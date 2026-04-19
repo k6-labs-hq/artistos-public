@@ -21,7 +21,6 @@ from __future__ import annotations
 import os
 
 from opentelemetry import trace
-from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
@@ -64,12 +63,20 @@ def configure_tracing() -> None:
     )
     provider = TracerProvider(resource=resource)
 
-    # Configure Jaeger exporter
-    exporter = JaegerExporter(
-        agent_host_name=jaeger_host,
-        agent_port=jaeger_port,
-    )
-    provider.add_span_processor(BatchSpanProcessor(exporter))
+    # Configure Jaeger exporter (conditional import to handle version compatibility)
+    try:
+        from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+
+        exporter = JaegerExporter(
+            agent_host_name=jaeger_host,
+            agent_port=jaeger_port,
+        )
+        provider.add_span_processor(BatchSpanProcessor(exporter))
+    except ImportError:
+        logger.warning(
+            "Jaeger exporter not available - tracing enabled but exports will be dropped. "
+            "Install opentelemetry-exporter-jaeger<1.21.0 or use alternative exporter."
+        )
 
     # Set as global tracer provider
     trace.set_tracer_provider(provider)

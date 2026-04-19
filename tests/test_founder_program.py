@@ -252,3 +252,82 @@ def test_process_founder_termination_reprices_claims_and_calculates_refund_due()
         assert float(claim.platform_fee_percent or 0.0) == 10.0
     finally:
         db.close()
+
+
+def test_founders_circle_rate_lock_prevents_fee_changes():
+    """P0: Verify that contingency_fee_percent is immutable after founder_locked_at is set.
+
+    Business Requirement: Founders Circle (2,500 artist cap) members receive a lifetime
+    rate lock guarantee. Once locked, the rate cannot be changed by anyone - not admins,
+    not the artist, not system processes.
+
+    This test ensures the @validates decorator on Artist.contingency_fee_percent enforces
+    this immutability at the ORM level, preventing rate manipulation that would violate
+    the explicit contract promise to Founders Circle members.
+
+    Compliance: SOC 2 CC6.1 - Logical access controls (immutable financial terms)
+    Regulatory citation: 17 CFR § 270.22c-2 (anti-manipulation of fee schedules)
+    """
+    db = _TestSession()
+    try:
+        # Create a Founders Circle member with locked rate
+        artist = Artist(
+            id=str(uuid.uuid4()),
+            name="Founder Rate Lock Test",
+            email="ratelock@test.artist",
+            is_founder=True,
+            founder_slot_number=42,
+            founder_locked_at=datetime.now(timezone.utc),
+            contingency_fee_percent=12.0,  # Locked at 12%
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(artist)
+        db.commit()
+        db.refresh(artist)
+
+        # Verify initial state
+        assert artist.is_founder is True
+        assert artist.founder_locked_at is not None
+        assert artist.contingency_fee_percent == 12.0
+
+        # TEST 1: Attempt to change rate - should raise ValueError
+        try:
+            artist.contingency_fee_percent = 15.0
+            db.flush()
+            assert False, "Expected ValueError when changing locked rate"
+        except ValueError as e:
+            # Expected error
+            assert "Cannot modify contingency_fee_percent for Founders Circle member" in str(e)
+            assert "Rate locked at 12.0%" in str(e)
+            assert "lifetime rate guarantee" in str(e)
+            db.rollback()
+
+        # TEST 2: Setting the SAME value should succeed (idempotent operation)
+        artist.contingency_fee_percent = 12.0
+        db.flush()  # Should not raise
+        db.commit()
+        db.refresh(artist)
+        assert artist.contingency_fee_percent == 12.0
+
+        # TEST 3: Non-locked artist can change rate freely
+        non_founder = Artist(
+            id=str(uuid.uuid4()),
+            name="Non-Founder Test",
+            email="nonfounder@test.artist",
+            is_founder=False,
+            founder_locked_at=None,  # No lock
+            contingency_fee_percent=17.5,
+            created_at=datetime.now(timezone.utc),
+        )
+        db.add(non_founder)
+        db.commit()
+
+        # This should succeed - no lock, so rate can change
+        non_founder.contingency_fee_percent = 18.0
+        db.flush()
+        db.commit()
+        db.refresh(non_founder)
+        assert non_founder.contingency_fee_percent == 18.0
+
+    finally:
+        db.close()
