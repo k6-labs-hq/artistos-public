@@ -13,9 +13,8 @@ name: Production Build & Deploy
 #   6. deploy-prod    — gated deploy to production (requires environment approval)
 
 on:
+  workflow_dispatch:
   push:
-    branches:
-      - main
     tags:
       - "v*.*.*"
 
