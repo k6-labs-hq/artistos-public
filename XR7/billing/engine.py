@@ -48,6 +48,43 @@ class BillingEngine:
     def create_invoice(
         self, claim_id: str, recovered_amount: float, currency: str, artist_id: str | None = None
     ) -> dict:
+        """Create invoice for a claim with idempotency guarantee.
+
+        IDEMPOTENCY: If an invoice already exists for this claim_id, returns the existing
+        invoice instead of creating a duplicate. This prevents double-billing.
+
+        Args:
+            claim_id: Claim identifier
+            recovered_amount: Amount recovered from the claim
+            currency: Currency code (USD, EUR, etc.)
+            artist_id: Optional artist identifier for fee calculation
+
+        Returns:
+            Invoice dict with invoice_id, claim_id, recovered_amount, contingency_fee, etc.
+
+        Raises:
+            ValueError: If recovered_amount is negative
+        """
+        if recovered_amount < 0:
+            raise ValueError("recovered_amount must be non-negative")
+
+        # IDEMPOTENCY CHECK: Return existing invoice if one exists for this claim
+        existing_invoice = next(
+            (inv for inv in self._invoices.values() if inv["claim_id"] == claim_id),
+            None,
+        )
+        if existing_invoice:
+            logger.info(
+                "invoice_idempotency_hit",
+                extra={
+                    "claim_id": claim_id,
+                    "existing_invoice_id": existing_invoice["invoice_id"],
+                    "recovered_amount": recovered_amount,
+                },
+            )
+            return existing_invoice
+
+        # Create new invoice
         invoice_id = str(uuid.uuid4())
         contingency_fee = self.calculate_contingency_fee(recovered_amount, artist_id)
         invoice = {
@@ -60,6 +97,18 @@ class BillingEngine:
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
         self._invoices[invoice_id] = invoice
+
+        logger.info(
+            "invoice_created",
+            extra={
+                "invoice_id": invoice_id,
+                "claim_id": claim_id,
+                "recovered_amount": recovered_amount,
+                "contingency_fee": contingency_fee,
+                "currency": currency,
+            },
+        )
+
         return invoice
 
     def get_artist_billing_summary(self, artist_id: str) -> dict:
