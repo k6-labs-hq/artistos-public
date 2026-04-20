@@ -24,7 +24,19 @@ DEFAULT_TIMEOUT_SECONDS = 60
 class TimeoutMiddleware(BaseHTTPMiddleware):
     """Global timeout middleware (currently stub)."""
     
+    def __init__(self, app, timeout: int = DEFAULT_TIMEOUT_SECONDS):
+        """Initialize timeout middleware.
+        
+        Args:
+            app: ASGI application
+            timeout: Request timeout in seconds
+        """
+        super().__init__(app)
+        self.timeout = timeout
+        logger.info(f"TimeoutMiddleware initialized with {timeout}s timeout")
+    
     async def dispatch(self, request, call_next):
+        # TODO: Implement asyncio.wait_for() with timeout enforcement
         return await call_next(request)
 
 

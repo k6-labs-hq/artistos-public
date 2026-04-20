@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Float, DateTime, Integer, Text
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from XR7.models.base import Base
 from datetime import datetime
 
@@ -25,13 +25,12 @@ class SloMetricUpdate(BaseModel):
 
 class SloMetricSchema(BaseModel):
     """Schema for SLO metric response."""
+    model_config = ConfigDict(from_attributes=True)
+    
     id: str
     metric_name: str
     value: float
     timestamp: datetime
-    
-    class Config:
-        from_attributes = True
 
 
 class TenantCostLedger(Base):
@@ -55,12 +54,11 @@ class TenantCostLedgerCreate(BaseModel):
 
 class TenantCostLedgerSchema(BaseModel):
     """Schema for tenant cost response."""
+    model_config = ConfigDict(from_attributes=True)
+    
     id: int
     tenant_id: str
     cost_usd: float
     cost_type: str
     timestamp: datetime
     metadata: str | None = None
-    
-    class Config:
-        from_attributes = True
