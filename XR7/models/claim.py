@@ -18,53 +18,12 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
+from XR7.validators.currency import ISO_4217_CODES
 
 # ISO 4217 currency codes supported by Trolley for international payouts
 # Ref: https://docs.trolley.com/api/#supported-currencies
-VALID_CURRENCY_CODES = frozenset(
-    [
-        "USD",  # US Dollar
-        "EUR",  # Euro
-        "GBP",  # British Pound
-        "CAD",  # Canadian Dollar
-        "AUD",  # Australian Dollar
-        "NZD",  # New Zealand Dollar
-        "JPY",  # Japanese Yen
-        "CNY",  # Chinese Yuan
-        "INR",  # Indian Rupee
-        "BRL",  # Brazilian Real
-        "MXN",  # Mexican Peso
-        "ARS",  # Argentine Peso
-        "CLP",  # Chilean Peso
-        "COP",  # Colombian Peso
-        "PEN",  # Peruvian Sol
-        "ZAR",  # South African Rand
-        "NGN",  # Nigerian Naira
-        "KES",  # Kenyan Shilling
-        "SGD",  # Singapore Dollar
-        "HKD",  # Hong Kong Dollar
-        "KRW",  # South Korean Won
-        "THB",  # Thai Baht
-        "MYR",  # Malaysian Ringgit
-        "IDR",  # Indonesian Rupiah
-        "PHP",  # Philippine Peso
-        "VND",  # Vietnamese Dong
-        "CHF",  # Swiss Franc
-        "SEK",  # Swedish Krona
-        "NOK",  # Norwegian Krone
-        "DKK",  # Danish Krone
-        "PLN",  # Polish Zloty
-        "CZK",  # Czech Koruna
-        "HUF",  # Hungarian Forint
-        "RON",  # Romanian Leu
-        "TRY",  # Turkish Lira
-        "RUB",  # Russian Ruble
-        "ILS",  # Israeli Shekel
-        "AED",  # UAE Dirham
-        "SAR",  # Saudi Riyal
-        "EGP",  # Egyptian Pound
-    ]
-)
+# (now using centralized ISO 4217 validator - Issue #77)
+VALID_CURRENCY_CODES = frozenset(ISO_4217_CODES)
 
 
 class ClaimStatus(str, enum.Enum):
