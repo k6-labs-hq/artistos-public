@@ -1,18 +1,60 @@
 # Contributing
 
+`main` is the source of truth. All work goes through pull requests. Do not push directly to `main`.
+
 ## Workflow
 
-1. **Pick up a task** — find an issue assigned to you on the [Project board](https://github.com/orgs/k6-labs-hq/projects), or self-assign one from the backlog.
-2. **Move it to "In Progress"** on the Project board.
-3. **Create a branch** from `main`:
-   ```bash
-   git checkout main && git pull
-   git checkout -b <type>/<short-description>   # e.g. fix/claims-state-bug
-   ```
-4. **Commit** using conventional messages (`fix:`, `feat:`, `chore:`, `docs:`, `refactor:`, `test:`).
-5. **Open a PR** targeting `main`. The PR template requires a linked issue (`Closes #123`).
-6. **Wait for review** — a CODEOWNER review is required before merge.
-7. **Merge** once approved and CI is green. The merge closes the linked issue automatically.
+**1. Pick a task**
+- Open the [Project board](https://github.com/orgs/k6-labs-hq/projects/1).
+- Either work an item already **Assigned** to you, OR grab one from **Backlog**.
+- If grabbing from Backlog: add yourself as assignee on the issue.
+- Move the card to **In Progress**.
+
+**2. Branch from main**
+```bash
+git checkout main
+git pull
+git checkout -b <type>/<short-description>
+# types: feat, fix, chore, docs, refactor, test
+# example: feat/idempotency-middleware
+```
+
+**3. Work the task**
+- Keep PRs scoped to one issue. Don't bundle unrelated work.
+- Commit with conventional messages that reference the issue:
+  ```
+  feat(api): add idempotency middleware (#44)
+  fix(auth): reject malformed tokens
+  ```
+- Pre-commit hooks auto-run black + ruff before each commit. After cloning, run `pre-commit install` once.
+- Push your branch early — draft PRs are fine and encouraged.
+
+**4. Open a PR**
+- **Base**: `main`.
+- PR title: same conventional format as commits.
+- PR description **must** include `Closes #N` where N is the issue number — this auto-closes the issue and links the project card.
+- Move the card to **In Review**.
+
+**5. Get reviewed**
+- Request a reviewer (another team member). **Don't approve your own PR.**
+- CI must be green.
+- If changes are requested, push more commits. The card stays in **In Review**.
+
+**6. Merge**
+- **The reviewer merges the PR, not the author.**
+- Use "Squash and merge" for a clean history.
+- The linked issue auto-closes → card auto-moves to **Done**.
+- Delete the branch after merge.
+
+## Key rules
+
+- ❌ Never commit directly to `main`
+- ❌ Never merge your own PR
+- ❌ One PR = one issue — don't bundle multiple tasks
+- ❌ No compiled artifacts (`.js` files alongside `.tsx` sources)
+- ✅ Small PRs, reviewed fast, merged often
+- ✅ Use `Closes #N` in every PR description
+- ✅ Move cards through columns as you work
 
 ## Branch naming
 
