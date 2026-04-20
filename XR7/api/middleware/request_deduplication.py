@@ -1,0 +1,7 @@
+"""Request deduplication middleware stub."""
+
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class RequestDeduplicationMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        return await call_next(request)
