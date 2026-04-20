@@ -92,7 +92,7 @@ class TestRBACService:
         # Arrange
         mock_db = Mock()
         mock_member = Mock()
-        mock_member.role = Team Role.ARTIST.value
+        mock_member.role = TeamRole.ARTIST.value
         mock_db.query.return_value.filter.return_value.first.return_value = mock_member
         
         rbac = RBACService(mock_db)

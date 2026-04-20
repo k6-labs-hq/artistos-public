@@ -19,6 +19,18 @@ logger = get_logger(__name__)
 DEFAULT_PARSE_TIMEOUT = 30
 
 
+class TimeoutConfig:
+    """Configuration for parse timeout settings."""
+    
+    def __init__(self, timeout_seconds: int = DEFAULT_PARSE_TIMEOUT) -> None:
+        """Initialize timeout configuration.
+        
+        Args:
+            timeout_seconds: Timeout in seconds
+        """
+        self.timeout_seconds = timeout_seconds
+
+
 class StatementParseTimeoutError(Exception):
     """Raised when statement parsing exceeds timeout threshold.
     
