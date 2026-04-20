@@ -22,6 +22,7 @@ import XR7.models.advance_offer  # noqa: F401
 import XR7.models.advance_opportunity  # noqa: F401
 import XR7.models.advance_recovery_packet  # noqa: F401
 import XR7.models.agent_handoff  # noqa: F401
+import XR7.models.api_key  # noqa: F401
 import XR7.models.artist_message  # noqa: F401
 import XR7.models.artist_referral  # noqa: F401
 import XR7.models.batch_ingestion_job  # noqa: F401
