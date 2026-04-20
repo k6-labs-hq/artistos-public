@@ -29,7 +29,7 @@ logger = get_logger(__name__)
 
 class ConfidenceTier(str, Enum):
     """Confidence-based decision tiers for anomaly triage."""
-    
+
     REJECT = "REJECT"  # Below minimum threshold, don't create
     REVIEW = "REVIEW"  # Medium confidence, needs manual review
     AUTO_ACCEPT = "AUTO_ACCEPT"  # High confidence, bypass review
@@ -57,7 +57,7 @@ URGENT_AUTO_ACCEPT_THRESHOLD = 0.75
 @dataclass
 class GatingDecision:
     """Result of confidence gating evaluation."""
-    
+
     tier: ConfidenceTier
     should_create: bool
     requires_review: bool
@@ -72,14 +72,14 @@ class GatingDecision:
 
 class ConfidenceGatingService:
     """Service for confidence-based anomaly triage.
-    
+
     Applies ML confidence thresholds to automatically filter and route
     detected anomalies based on confidence scores and contextual factors.
-    
+
     Usage::
-    
+
         gating = ConfidenceGatingService(db)
-        
+
         decision = gating.evaluate(
             confidence=0.87,
             context={
@@ -89,37 +89,37 @@ class ConfidenceGatingService:
                 "urgency_flag": False,
             }
         )
-        
+
         if decision.should_create:
             if decision.requires_review:
                 enqueue_for_review()
             else:
                 auto_accept()
-        
+
         metrics = gating.get_metrics()
     """
-    
+
     def __init__(self, db: Session) -> None:
         """Initialize gating service.
-        
+
         Args:
             db: SQLAlchemy database session
         """
         self.db = db
-        
+
         # Metrics tracking
         self._total_evaluated = 0
         self._rejected_count = 0
         self._review_count = 0
         self._auto_accept_count = 0
-    
+
     def evaluate(
         self,
         confidence: float,
         context: dict | None = None,
     ) -> GatingDecision:
         """Evaluate whether to create/route an anomaly based on confidence.
-        
+
         Args:
             confidence: ML confidence score (0.0 to 1.0)
             context: Optional context with:
@@ -127,18 +127,18 @@ class ConfidenceGatingService:
                 - estimated_recoverable: float (dollar amount)
                 - artist_id: str
                 - urgency_flag: bool (whether anomaly is urgent/time-sensitive)
-        
+
         Returns:
             GatingDecision with tier, routing instructions, and reasoning
         """
         context = context or {}
         self._total_evaluated += 1
-        
+
         # Extract context
         urgency_flag = context.get("urgency_flag", False)
         estimated_recoverable = float(context.get("estimated_recoverable", 0.0))
-        anomaly_type = context.get("anomaly_type", "UNKNOWN")
-        
+
+
         # Compute priority score (0-100)
         # Factors: confidence (70%), dollar amount (20%), urgency (10%)
         priority_score = (
@@ -146,9 +146,9 @@ class ConfidenceGatingService:
             + min(estimated_recoverable / 10000.0, 1.0) * 20.0
             + (10.0 if urgency_flag else 0.0)
         )
-        
+
         # Decision logic
-        
+
         # REJECT: Below minimum threshold
         if confidence < MIN_CONFIDENCE:
             self._rejected_count += 1
@@ -158,18 +158,13 @@ class ConfidenceGatingService:
                 requires_review=False,
                 priority_score=priority_score,
                 reasoning=(
-                    f"Confidence {confidence:.2f} below minimum threshold "
-                    f"{MIN_CONFIDENCE:.2f}"
+                    f"Confidence {confidence:.2f} below minimum threshold " f"{MIN_CONFIDENCE:.2f}"
                 ),
             )
-        
+
         # AUTO_ACCEPT: High confidence
-        auto_threshold = (
-            URGENT_AUTO_ACCEPT_THRESHOLD 
-            if urgency_flag 
-            else AUTO_ACCEPT_THRESHOLD
-        )
-        
+        auto_threshold = URGENT_AUTO_ACCEPT_THRESHOLD if urgency_flag else AUTO_ACCEPT_THRESHOLD
+
         if confidence >= auto_threshold:
             self._auto_accept_count += 1
             threshold_type = "urgent" if urgency_flag else "standard"
@@ -183,7 +178,7 @@ class ConfidenceGatingService:
                     f"auto-accept threshold {auto_threshold:.2f}"
                 ),
             )
-        
+
         # REVIEW: Medium confidence, needs manual review
         self._review_count += 1
         return GatingDecision(
@@ -196,15 +191,15 @@ class ConfidenceGatingService:
                 f"({MIN_CONFIDENCE:.2f} to {auto_threshold:.2f})"
             ),
         )
-    
+
     def get_metrics(self) -> dict:
         """Get gating metrics for monitoring.
-        
+
         Returns:
             Dict with counts and rates for rejected/review/auto-accept tiers
         """
         total = self._total_evaluated
-        
+
         if total == 0:
             return {
                 "total_evaluated": 0,
@@ -215,7 +210,7 @@ class ConfidenceGatingService:
                 "review_rate": 0.0,
                 "auto_accept_rate": 0.0,
             }
-        
+
         return {
             "total_evaluated": total,
             "rejected_count": self._rejected_count,

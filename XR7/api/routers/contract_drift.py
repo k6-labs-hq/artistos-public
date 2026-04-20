@@ -1,1 +1,3 @@
-from fastapi import APIRouter; router = APIRouter(tags=['contract_drift'])
+from fastapi import APIRouter
+
+router = APIRouter(tags=["contract_drift"])

@@ -63,6 +63,7 @@ from XR7.api.routers import forensic as forensic_router
 from XR7.api.routers import gdpr as gdpr_router
 from XR7.api.routers import ghost_catalog as ghost_catalog_router
 from XR7.api.routers import governance as governance_router
+from XR7.api.routers import health as health_router
 from XR7.api.routers import identity as identity_router
 from XR7.api.routers import intelligence as intelligence_router
 from XR7.api.routers import invites as invites_router
@@ -99,7 +100,6 @@ from XR7.api.routers import xr7_forensics as xr7_forensics_router
 from XR7.api.routers import xr7_metadata as xr7_metadata_router
 from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
-from XR7.api.routers import health as health_router
 from XR7.models.base import Base, engine
 from XR7.observability.tracing import configure_tracing
 from XR7.services.hubspot_client import HubSpotClient

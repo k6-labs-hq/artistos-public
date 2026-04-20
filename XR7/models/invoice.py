@@ -37,15 +37,11 @@ class Invoice(Base):
         UniqueConstraint("claim_id", name="uq_invoices_claim_id"),
     )
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     claim_id: Mapped[str] = mapped_column(
         String, ForeignKey("claims.id"), nullable=False, unique=True
     )
-    artist_id: Mapped[str] = mapped_column(
-        String, ForeignKey("artists.id"), nullable=False
-    )
+    artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False)
 
     # Financial amounts
     recovered_amount: Mapped[float] = mapped_column(Float, nullable=False)

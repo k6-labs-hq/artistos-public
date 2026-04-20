@@ -1,1 +1,2 @@
-def configure_tracing(app): pass
+def configure_tracing(app):
+    pass

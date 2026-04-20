@@ -18,7 +18,7 @@ from typing import TypedDict
 
 class ClauseMatch(TypedDict):
     """Represents a single clause match in the contract text."""
-    
+
     clause_type: str  # "rate", "recoupment", "audit_right"
     text: str  # The matched text span
     start_pos: int  # Character position in original text
@@ -61,18 +61,18 @@ AUDIT_RIGHT_PATTERNS = [
 def extract_clauses(text: str) -> list[ClauseMatch]:
     """
     Extract and highlight actionable clauses from contract text.
-    
+
     Searches for:
     - Rate clauses (royalty percentages, splits)
     - Recoupment terms (advance recoupment language)
     - Audit rights (inspection rights, frequency)
-    
+
     Args:
         text: Contract text (from PDF extraction or OCR)
-    
+
     Returns:
         List of ClauseMatch dicts with type, text, position, and confidence
-    
+
     Example:
         >>> text = "Artist shall receive 15% of net streaming revenues."
         >>> clauses = extract_clauses(text)
@@ -82,7 +82,7 @@ def extract_clauses(text: str) -> list[ClauseMatch]:
         0.85
     """
     matches: list[ClauseMatch] = []
-    
+
     # Search for rate clauses
     for pattern, confidence in RATE_PATTERNS:
         for match in re.finditer(pattern, text, re.IGNORECASE):
@@ -90,103 +90,109 @@ def extract_clauses(text: str) -> list[ClauseMatch]:
             start = max(0, match.start() - 100)
             end = min(len(text), match.end() + 100)
             context = text[start:end]
-            
-            matches.append({
-                "clause_type": "rate",
-                "text": context,
-                "start_pos": match.start(),
-                "end_pos": match.end(),
-                "confidence": confidence,
-                "metadata": {
-                    "matched_value": match.group(0),
-                    "pattern": pattern,
-                },
-            })
-    
+
+            matches.append(
+                {
+                    "clause_type": "rate",
+                    "text": context,
+                    "start_pos": match.start(),
+                    "end_pos": match.end(),
+                    "confidence": confidence,
+                    "metadata": {
+                        "matched_value": match.group(0),
+                        "pattern": pattern,
+                    },
+                }
+            )
+
     # Search for recoupment clauses
     for pattern, confidence in RECOUPMENT_PATTERNS:
         for match in re.finditer(pattern, text, re.IGNORECASE):
             start = max(0, match.start() - 100)
             end = min(len(text), match.end() + 100)
             context = text[start:end]
-            
-            matches.append({
-                "clause_type": "recoupment",
-                "text": context,
-                "start_pos": match.start(),
-                "end_pos": match.end(),
-                "confidence": confidence,
-                "metadata": {
-                    "matched_value": match.group(0),
-                    "pattern": pattern,
-                },
-            })
-    
+
+            matches.append(
+                {
+                    "clause_type": "recoupment",
+                    "text": context,
+                    "start_pos": match.start(),
+                    "end_pos": match.end(),
+                    "confidence": confidence,
+                    "metadata": {
+                        "matched_value": match.group(0),
+                        "pattern": pattern,
+                    },
+                }
+            )
+
     # Search for audit right clauses
     for pattern, confidence in AUDIT_RIGHT_PATTERNS:
         for match in re.finditer(pattern, text, re.IGNORECASE):
             start = max(0, match.start() - 100)
             end = min(len(text), match.end() + 100)
             context = text[start:end]
-            
-            matches.append({
-                "clause_type": "audit_right",
-                "text": context,
-                "start_pos": match.start(),
-                "end_pos": match.end(),
-                "confidence": confidence,
-                "metadata": {
-                    "matched_value": match.group(0),
-                    "pattern": pattern,
-                },
-            })
-    
+
+            matches.append(
+                {
+                    "clause_type": "audit_right",
+                    "text": context,
+                    "start_pos": match.start(),
+                    "end_pos": match.end(),
+                    "confidence": confidence,
+                    "metadata": {
+                        "matched_value": match.group(0),
+                        "pattern": pattern,
+                    },
+                }
+            )
+
     # Sort by position in document
     matches.sort(key=lambda m: m["start_pos"])
-    
+
     # Deduplicate overlapping matches (keep highest confidence)
     deduped: list[ClauseMatch] = []
     for match in matches:
         # Check if this match overlaps with any previous match
         overlaps = False
         for prev in deduped:
-            if (match["start_pos"] <= prev["end_pos"] and match["end_pos"] >= prev["start_pos"]):
+            if match["start_pos"] <= prev["end_pos"] and match["end_pos"] >= prev["start_pos"]:
                 # Overlaps - keep higher confidence match
                 if match["confidence"] > prev["confidence"]:
                     deduped.remove(prev)
                     deduped.append(match)
                 overlaps = True
                 break
-        
+
         if not overlaps:
             deduped.append(match)
-    
+
     return deduped
 
 
 def flag_low_confidence_review(clauses: list[ClauseMatch], threshold: float = 0.80) -> list[str]:
     """
     Generate review warnings for low-confidence clause extractions.
-    
+
     Args:
         clauses: List of extracted clauses
         threshold: Confidence threshold below which to flag for review (default: 0.80)
-    
+
     Returns:
         List of warning messages for manual review
-    
+
     Example:
         >>> warnings = flag_low_confidence_review(clauses, threshold=0.85)
         >>> if warnings:
         ...     print(f"Manual review needed: {len(warnings)} low-confidence clauses")
     """
     warnings = []
-    
+
     for clause in clauses:
         if clause["confidence"] < threshold:
             warnings.append(
                 f"Low confidence ({clause['confidence']:.2f}) on {clause['clause_type']} clause "
                 f"at position {clause['start_pos']}: '{clause['metadata']['matched_value']}'"
             )
-    
+
     return warnings

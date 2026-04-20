@@ -11,26 +11,30 @@ Allows credential-gated tests to run in CI without real API keys.
 """
 
 import os
-from typing import Generator
+
 import pytest
 
 
 class StubCredentials:
     """Stubbed credential provider for testing."""
-    
+
     def __init__(self):
         self.trolley_api_key = os.getenv("TROLLEY_API_KEY_TEST", "test_trolley_key_stub")
         self.trolley_secret_key = os.getenv("TROLLEY_SECRET_KEY_TEST", "test_trolley_secret_stub")
         self.spotify_client_id = os.getenv("SPOTIFY_CLIENT_ID_TEST", "test_spotify_client_stub")
-        self.spotify_client_secret = os.getenv("SPOTIFY_CLIENT_SECRET_TEST", "test_spotify_secret_stub")
+        self.spotify_client_secret = os.getenv(
+            "SPOTIFY_CLIENT_SECRET_TEST", "test_spotify_secret_stub"
+        )
         self.youtube_api_key = os.getenv("YOUTUBE_API_KEY_TEST", "test_youtube_key_stub")
-        self.soundcloud_client_id = os.getenv("SOUNDCLOUD_CLIENT_ID_TEST", "test_soundcloud_client_stub")
-        
+        self.soundcloud_client_id = os.getenv(
+            "SOUNDCLOUD_CLIENT_ID_TEST", "test_soundcloud_client_stub"
+        )
+
         # PRO credentials
         self.ascap_api_key = os.getenv("ASCAP_API_KEY_TEST", "test_ascap_key_stub")
         self.bmi_api_key = os.getenv("BMI_API_KEY_TEST", "test_bmi_key_stub")
         self.sesac_api_key = os.getenv("SESAC_API_KEY_TEST", "test_sesac_key_stub")
-    
+
     def is_real(self) -> bool:
         """Check if using real credentials (not stubs)."""
         return not self.trolley_api_key.endswith("_stub")
@@ -40,7 +44,7 @@ class StubCredentials:
 def credentials() -> StubCredentials:
     """
     Provide test credentials for integration tests.
-    
+
     Usage:
         ```python
         def test_trolley_payout(credentials):
@@ -51,7 +55,7 @@ def credentials() -> StubCredentials:
                 # Run stub test
                 pass
         ```
-    
+
     In CI: Uses stub credentials (no real API calls)
     Locally: Set real credentials in .env.test to run full integration tests
     """

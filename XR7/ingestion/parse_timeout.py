@@ -6,7 +6,6 @@ cause parser to hang or consume excessive CPU/memory.
 
 from __future__ import annotations
 
-import multiprocessing
 import signal
 from typing import Any, Callable
 
@@ -21,10 +20,10 @@ DEFAULT_PARSE_TIMEOUT = 30
 
 class TimeoutConfig:
     """Configuration for parse timeout settings."""
-    
+
     def __init__(self, timeout_seconds: int = DEFAULT_PARSE_TIMEOUT) -> None:
         """Initialize timeout configuration.
-        
+
         Args:
             timeout_seconds: Timeout in seconds
         """
@@ -33,15 +32,15 @@ class TimeoutConfig:
 
 class StatementParseTimeoutError(Exception):
     """Raised when statement parsing exceeds timeout threshold.
-    
+
     Attributes:
         timeout_seconds: Timeout value that was exceeded
         message: Error message
     """
-    
+
     def __init__(self, timeout_seconds: int, message: str | None = None) -> None:
         """Initialize timeout error.
-        
+
         Args:
             timeout_seconds: Timeout that was exceeded
             message: Optional custom error message
@@ -66,24 +65,24 @@ def parse_with_timeout(
     **kwargs,
 ) -> Any:
     """Execute a parsing function with timeout enforcement.
-    
+
     Wraps the provided function in a timeout mechanism. If execution exceeds
     the timeout, raises StatementParseTimeoutError to prevent resource exhaustion.
-    
+
     Args:
         func: Function to execute with timeout
         *args: Positional arguments for func
         timeout_seconds: Maximum execution time in seconds (default: 30)
         **kwargs: Keyword arguments for func
-    
+
     Returns:
         Result from func execution
-    
+
     Raises:
         StatementParseTimeoutError: If execution exceeds timeout
-    
+
     Example::
-    
+
         try:
             result = parse_with_timeout(
                 parse_statement_file,
@@ -94,7 +93,7 @@ def parse_with_timeout(
             )
         except StatementParseTimeoutError as e:
             logger.error(f"Parsing timed out: {e}")
-    
+
     Notes:
         - Uses SIGALRM signal on Unix/Linux (not Windows compatible)
         - For Windows, consider using threading.Timer or multiprocessing
@@ -103,13 +102,13 @@ def parse_with_timeout(
     # TODO: Add Windows-compatible timeout mechanism
     # Current implementation uses SIGALRM which is Unix-only
     # For production on Windows, use multiprocessing.Process with join(timeout)
-    
+
     try:
         # Set up signal-based timeout (Unix only)
-        if hasattr(signal, 'SIGALRM'):
+        if hasattr(signal, "SIGALRM"):
             old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
             signal.alarm(timeout_seconds)
-            
+
             try:
                 result = func(*args, **kwargs)
                 signal.alarm(0)  # Cancel alarm
@@ -125,11 +124,11 @@ def parse_with_timeout(
                 extra={"timeout_seconds": timeout_seconds},
             )
             return func(*args, **kwargs)
-    
+
     except StatementParseTimeoutError:
         # Re-raise timeout errors
         raise
-    
+
     except Exception as exc:
         # Log other errors
         logger.error(
@@ -146,32 +145,32 @@ def parse_with_timeout_multiprocessing(
     **kwargs,
 ) -> Any:
     """Execute parsing with timeout using multiprocessing (Windows-compatible).
-    
+
     Alternative to signal-based timeout that works on Windows.
     Uses multiprocessing.Process with join(timeout) to enforce timeout.
-    
+
     Args:
         func: Function to execute
         *args: Positional arguments
         timeout_seconds: Timeout in seconds
         **kwargs: Keyword arguments
-    
+
     Returns:
         Result from func
-    
+
     Raises:
         StatementParseTimeoutError: If timeout exceeded
-    
+
     Notes:
         - More overhead than signal-based approach
         - Works on Windows
         - Requires func to be picklable
         - Result passed via multiprocessing.Queue
-    
+
     TODO: Make this the default implementation for cross-platform compatibility
     """
     from multiprocessing import Process, Queue
-    
+
     def _worker(queue: Queue, func: Callable, args: tuple, kwargs: dict) -> None:
         """Worker function that puts result in queue."""
         try:
@@ -179,19 +178,19 @@ def parse_with_timeout_multiprocessing(
             queue.put(("success", result))
         except Exception as exc:
             queue.put(("error", exc))
-    
+
     result_queue: Queue = Queue()
     process = Process(target=_worker, args=(result_queue, func, args, kwargs))
-    
+
     process.start()
     process.join(timeout=timeout_seconds)
-    
+
     if process.is_alive():
         # Timeout occurred
         process.terminate()
         process.join()
         raise StatementParseTimeoutError(timeout_seconds)
-    
+
     # Get result from queue
     if not result_queue.empty():
         status, value = result_queue.get()
@@ -199,5 +198,5 @@ def parse_with_timeout_multiprocessing(
             return value
         else:
             raise value
-    
+
     raise RuntimeError("Worker process completed but no result available")

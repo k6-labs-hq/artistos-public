@@ -250,8 +250,9 @@ def test_scheduled_chain_verification_detects_tampering(db_session, artist_and_a
 
     Regulatory: SOC 2 Type II observation period requires continuous monitoring evidence.
     """
-    from XR7.models.claim import Claim
     from XR7.tasks.chain_verification import verify_all_tenants_chain_integrity_task
+
+    from XR7.models.claim import Claim
 
     # Create two artists with valid evidence packets
     artist_a, anomaly_a = artist_and_anomaly

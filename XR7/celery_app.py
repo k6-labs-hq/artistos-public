@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+
 from celery import Celery
 from celery.signals import worker_shutting_down
 
@@ -14,22 +15,21 @@ celery_app = Celery(
     backend=settings.celery_result_backend,
 )
 
+
 # ── Graceful Shutdown Configuration (Issue #78) ─────────────────────────
 @worker_shutting_down.connect
 def on_worker_shutting_down(**kwargs):
     """
     Signal handler for graceful worker shutdown.
-    
+
     Triggered when SIGTERM is received (K8s pod termination).
     Allows in-flight tasks to complete within terminationGracePeriodSeconds.
     """
     logger.warning(
         "celery.worker.shutting_down",
-        extra={
-            "msg": "Worker received shutdown signal. Completing in-flight tasks.",
-            **kwargs
-        }
+        extra={"msg": "Worker received shutdown signal. Completing in-flight tasks.", **kwargs},
     )
+
 
 celery_app.conf.update(
     task_serializer="json",

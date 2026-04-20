@@ -33,24 +33,24 @@ def earnings_trend_chart(
 ):
     """
     Get earnings trend over time for line chart visualization.
-    
+
     Feature #7: Dashboard Charts
-    
+
     Returns daily aggregated earnings for the specified lookback period.
-    
+
     Args:
         artist_id: Artist identifier
         days: Lookback period in days (1-365, default: 90)
-    
+
     Returns:
         Chart.js compatible dataset:
         - labels: Date strings (YYYY-MM-DD)
         - datasets: Single dataset with daily earnings
         - metadata: Summary statistics
-    
+
     Example:
         GET /artists/art_123/charts/earnings-trend?days=90
-        
+
         Response:
         {
             "labels": ["2026-01-01", "2026-01-02", ...],
@@ -64,18 +64,18 @@ def earnings_trend_chart(
                 "data_points": 45
             }
         }
-    
+
     Performance:
         - p95 < 200ms for typical artist (90 days)
         - Cached queries recommended for production
         - Uses date truncation and aggregation
-    
+
     Responsive:
         - Works on mobile (reduced data points if needed)
         - Desktop shows full granularity
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     return get_earnings_trend(db, artist_id, days)
 
 
@@ -86,25 +86,25 @@ def leakage_by_category_chart(
 ):
     """
     Get leakage breakdown by anomaly category for pie/bar chart.
-    
+
     Feature #7: Dashboard Charts
-    
+
     Shows estimated recoverable amounts grouped by anomaly category.
     Only includes open/investigating anomalies.
-    
+
     Args:
         artist_id: Artist identifier
-    
+
     Returns:
         Chart.js compatible dataset:
         - labels: Category names (ROYALTY, PLATFORM, SYNC, etc.)
         - datasets: Single dataset with recoverable amounts
         - backgroundColor: Category-specific colors
         - metadata: Summary statistics
-    
+
     Example:
         GET /artists/art_123/charts/leakage-by-category
-        
+
         Response:
         {
             "labels": ["ROYALTY", "PLATFORM", "SYNC"],
@@ -118,17 +118,17 @@ def leakage_by_category_chart(
                 "category_count": 3
             }
         }
-    
+
     Performance:
         - p95 < 100ms (simple GROUP BY)
         - Indexed on (artist_id, category, status)
-    
+
     Visualization:
         - Mobile: Pie chart (compact)
         - Desktop: Bar chart (more detail)
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     return get_leakage_by_category(db, artist_id)
 
 
@@ -140,26 +140,26 @@ def recovery_trajectory_chart(
 ):
     """
     Get recoverable vs recovered trajectory over time for line chart.
-    
+
     Feature #7: Dashboard Charts
-    
+
     Shows two cumulative trend lines:
     - Total recoverable (from anomalies detected)
     - Total recovered (from claims paid out)
-    
+
     Args:
         artist_id: Artist identifier
         days: Lookback period in days (1-730, default: 180)
-    
+
     Returns:
         Chart.js compatible dataset:
         - labels: Month strings (YYYY-MM)
         - datasets: Two datasets (recoverable, recovered)
         - metadata: Summary with recovery rate
-    
+
     Example:
         GET /artists/art_123/charts/recovery-trajectory?days=180
-        
+
         Response:
         {
             "labels": ["2026-01", "2026-02", "2026-03"],
@@ -182,16 +182,16 @@ def recovery_trajectory_chart(
                 "recovery_rate": 0.44
             }
         }
-    
+
     Performance:
         - p95 < 300ms (two queries with monthly bucketing)
         - Cumulative calculation done in Python
-    
+
     Business value:
         - Shows recovery team effectiveness
         - Highlights gap between detected and recovered
         - Recovery rate trend visible over time
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     return get_recovery_trajectory(db, artist_id, days)

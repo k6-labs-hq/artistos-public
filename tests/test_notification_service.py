@@ -1,17 +1,15 @@
 """Tests for notification service."""
 
-import pytest
-from datetime import time
 from sqlalchemy.orm import Session
 
-from XR7.models.notification_preference import NotificationPreference
 from XR7.models.notification_delivery_log import NotificationDeliveryLog
+from XR7.models.notification_preference import NotificationPreference
 from XR7.services.notification_service import (
     NotificationService,
     send_anomaly_detected_notification,
-    send_urgent_sol_notification,
-    send_deposit_received_notification,
     send_claim_advanced_notification,
+    send_deposit_received_notification,
+    send_urgent_sol_notification,
 )
 
 

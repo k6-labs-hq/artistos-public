@@ -27,18 +27,20 @@ class PlatformOAuthStatus(str, enum.Enum):
 
 class PlatformOAuthCredential(Base):
     """OAuth credentials for platform API access with token rotation."""
-    
+
     __tablename__ = "platform_oauth_credentials"
-    
+
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
-    platform: Mapped[str] = mapped_column(String, nullable=False, index=True)  # spotify, youtube, soundcloud
-    
+    platform: Mapped[str] = mapped_column(
+        String, nullable=False, index=True
+    )  # spotify, youtube, soundcloud
+
     # OAuth tokens (encrypted at rest in production)
     access_token: Mapped[str] = mapped_column(String, nullable=False)
     refresh_token: Mapped[str | None] = mapped_column(String, nullable=True)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    
+
     # Scope and metadata
     scopes: Mapped[list] = mapped_column(String, nullable=False, default="[]")  # JSON array
     status: Mapped[str] = mapped_column(
@@ -46,7 +48,7 @@ class PlatformOAuthCredential(Base):
         nullable=False,
         default=PlatformOAuthStatus.ACTIVE,
     )
-    
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
@@ -59,7 +61,7 @@ class PlatformOAuthCredential(Base):
 
 class PlatformOAuthCredentialSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: str
     artist_id: str
     platform: str

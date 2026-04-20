@@ -19,14 +19,13 @@ Value: Scale recovery operations by automating legal escalation.
 
 from __future__ import annotations
 
+import enum
 import uuid
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, Session
-
-import enum
+from sqlalchemy import DateTime, Enum, String, Text
+from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from XR7.models.base import Base
 
@@ -47,39 +46,39 @@ class AuditWorkflowStatus(str, enum.Enum):
 
 class AuditRightsWorkflow(Base):
     """Audit rights workflow tracker."""
-    
+
     __tablename__ = "audit_rights_workflows"
-    
+
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     artist_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     contract_id: Mapped[str | None] = mapped_column(String, nullable=True)
-    
+
     # Counterparty information
     counterparty_name: Mapped[str] = mapped_column(String, nullable=False)
     counterparty_address: Mapped[str | None] = mapped_column(Text, nullable=True)
     counterparty_contact: Mapped[str | None] = mapped_column(String, nullable=True)
-    
+
     # Workflow state
     status: Mapped[str] = mapped_column(
         Enum(AuditWorkflowStatus),
         default=AuditWorkflowStatus.IDENTIFIED,
         nullable=False,
     )
-    
+
     # Demand letter details
     letter_generated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     letter_sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     letter_template_version: Mapped[str | None] = mapped_column(String, nullable=True)
-    
+
     # Audit details
     audit_period_start: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     audit_period_end: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     audit_scheduled_date: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    
+
     # Findings
     discrepancies_found: Mapped[str | None] = mapped_column(Text, nullable=True)
     settlement_amount: Mapped[float | None] = mapped_column(String, nullable=True)
-    
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
@@ -137,7 +136,7 @@ def generate_audit_demand_letter(
 ) -> str:
     """
     Generate formal audit demand letter from template.
-    
+
     Args:
         db: Database session
         workflow_id: AuditRightsWorkflow ID
@@ -148,19 +147,15 @@ def generate_audit_demand_letter(
         proposed_audit_date: Proposed date for audit inspection
         attorney_name: Attorney representing artist
         auditor_name: CPA firm conducting audit
-    
+
     Returns:
         Formatted demand letter text
     """
-    workflow = (
-        db.query(AuditRightsWorkflow)
-        .filter(AuditRightsWorkflow.id == workflow_id)
-        .first()
-    )
-    
+    workflow = db.query(AuditRightsWorkflow).filter(AuditRightsWorkflow.id == workflow_id).first()
+
     if not workflow:
         raise ValueError(f"Audit workflow {workflow_id} not found")
-    
+
     # Format letter
     letter_text = AUDIT_DEMAND_LETTER_TEMPLATE.format(
         date=datetime.now(timezone.utc).strftime("%B %d, %Y"),
@@ -171,17 +166,21 @@ def generate_audit_demand_letter(
         audit_clause_reference=audit_clause_reference,
         contract_name=contract_name,
         contract_date=contract_date,
-        audit_period_start=(workflow.audit_period_start or datetime.now(timezone.utc) - timedelta(days=365*3)).strftime("%B %d, %Y"),
-        audit_period_end=(workflow.audit_period_end or datetime.now(timezone.utc)).strftime("%B %d, %Y"),
+        audit_period_start=(
+            workflow.audit_period_start or datetime.now(timezone.utc) - timedelta(days=365 * 3)
+        ).strftime("%B %d, %Y"),
+        audit_period_end=(workflow.audit_period_end or datetime.now(timezone.utc)).strftime(
+            "%B %d, %Y"
+        ),
         proposed_audit_date=proposed_audit_date.strftime("%B %d, %Y"),
         auditor_name=auditor_name,
         attorney_name=attorney_name,
     )
-    
+
     # Update workflow state
     workflow.status = AuditWorkflowStatus.LETTER_DRAFTED
     workflow.letter_generated_at = datetime.now(timezone.utc)
     workflow.letter_template_version = "v1.0"
     db.commit()
-    
+
     return letter_text

@@ -8,7 +8,7 @@ import uuid
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Boolean, DateTime, Integer, JSON, String
+from sqlalchemy import JSON, Boolean, DateTime, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -22,18 +22,16 @@ class FeatureFlag(Base):
 
     __tablename__ = "feature_flags"
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
-    )
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     key: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
 
     # Configuration
     description: Mapped[str | None] = mapped_column(String, nullable=True)
     enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    
+
     # Gradual rollout (0-100)
     rollout_percentage: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    
+
     # Targeting
     target_user_ids: Mapped[list] = mapped_column(JSON, default=list, nullable=False)
     conditions: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)

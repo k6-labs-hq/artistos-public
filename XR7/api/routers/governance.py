@@ -1,1 +1,3 @@
-from fastapi import APIRouter; router = APIRouter(tags=['governance'])
+from fastapi import APIRouter
+
+router = APIRouter(tags=["governance"])

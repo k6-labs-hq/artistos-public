@@ -29,17 +29,17 @@ if TYPE_CHECKING:
 def get_earnings_trend(db: Session, artist_id: str, days: int = 90) -> dict:
     """
     Get earnings trend over time for line chart visualization.
-    
+
     Args:
         db: Database session
         artist_id: Artist identifier
         days: Number of days to look back (default: 90)
-    
+
     Returns:
         Dict with:
         - labels: List of date strings (YYYY-MM-DD)
         - datasets: List with single dataset containing daily earnings
-    
+
     Example response:
         {
             "labels": ["2026-01-01", "2026-01-02", ...],
@@ -48,11 +48,11 @@ def get_earnings_trend(db: Session, artist_id: str, days: int = 90) -> dict:
                 "data": [1250.50, 980.25, ...]
             }]
         }
-    
+
     Performance: Uses date truncation and aggregation (p95 < 200ms typical).
     """
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
-    
+
     # Aggregate payments by date
     results = (
         db.query(
@@ -67,15 +67,15 @@ def get_earnings_trend(db: Session, artist_id: str, days: int = 90) -> dict:
         .order_by(func.date(Payment.received_at))
         .all()
     )
-    
+
     # Format for chart.js compatible structure
     labels = []
     data = []
-    
+
     for row in results:
         labels.append(row.payment_date.isoformat() if row.payment_date else "")
         data.append(float(row.total_amount or 0))
-    
+
     return {
         "labels": labels,
         "datasets": [
@@ -98,16 +98,16 @@ def get_earnings_trend(db: Session, artist_id: str, days: int = 90) -> dict:
 def get_leakage_by_category(db: Session, artist_id: str) -> dict:
     """
     Get leakage breakdown by anomaly category for pie/bar chart.
-    
+
     Args:
         db: Database session
         artist_id: Artist identifier
-    
+
     Returns:
         Dict with:
         - labels: List of category names
         - datasets: List with single dataset containing estimated recoverable amounts
-    
+
     Example response:
         {
             "labels": ["ROYALTY", "PLATFORM", "SYNC"],
@@ -117,7 +117,7 @@ def get_leakage_by_category(db: Session, artist_id: str) -> dict:
                 "backgroundColor": ["#FF6384", "#36A2EB", "#FFCE56"]
             }]
         }
-    
+
     Performance: Simple GROUP BY with index on (artist_id, category).
     """
     # Aggregate open anomalies by category
@@ -135,7 +135,7 @@ def get_leakage_by_category(db: Session, artist_id: str) -> dict:
         .group_by(Anomaly.category)
         .all()
     )
-    
+
     # Color palette for categories
     category_colors = {
         AnomalyCategory.ROYALTY: "#FF6384",
@@ -146,17 +146,17 @@ def get_leakage_by_category(db: Session, artist_id: str) -> dict:
         AnomalyCategory.BRAND: "#FF9F40",
         AnomalyCategory.GRANT: "#C9CBCF",
     }
-    
+
     labels = []
     data = []
     colors = []
-    
+
     for row in results:
         category_name = row.category
         labels.append(category_name)
         data.append(float(row.total_recoverable or 0))
         colors.append(category_colors.get(AnomalyCategory(category_name), "#CCCCCC"))
-    
+
     return {
         "labels": labels,
         "datasets": [
@@ -177,21 +177,21 @@ def get_leakage_by_category(db: Session, artist_id: str) -> dict:
 def get_recovery_trajectory(db: Session, artist_id: str, days: int = 180) -> dict:
     """
     Get recoverable vs recovered trajectory over time for line chart.
-    
+
     Shows two lines:
     - Total potential recovery (cumulative)
     - Total recovered (cumulative)
-    
+
     Args:
         db: Database session
         artist_id: Artist identifier
         days: Number of days to look back (default: 180)
-    
+
     Returns:
         Dict with:
         - labels: List of date strings
         - datasets: Two datasets (recoverable, recovered)
-    
+
     Example response:
         {
             "labels": ["2026-01-01", "2026-02-01", ...],
@@ -200,11 +200,11 @@ def get_recovery_trajectory(db: Session, artist_id: str, days: int = 180) -> dic
                 {"label": "Recovered", "data": [2000, 8500, ...]}
             ]
         }
-    
+
     Performance: Two queries with date bucketing (monthly aggregation).
     """
     cutoff_date = datetime.now(timezone.utc) - timedelta(days=days)
-    
+
     # Query 1: Anomalies detected over time (potential recovery)
     anomaly_results = (
         db.query(
@@ -220,7 +220,7 @@ def get_recovery_trajectory(db: Session, artist_id: str, days: int = 180) -> dic
         .order_by(func.date_trunc("month", Anomaly.created_at))
         .all()
     )
-    
+
     # Query 2: Claims recovered over time (actual recovery)
     claim_results = (
         db.query(
@@ -236,34 +236,34 @@ def get_recovery_trajectory(db: Session, artist_id: str, days: int = 180) -> dic
         .order_by(func.date_trunc("month", Claim.updated_at))
         .all()
     )
-    
+
     # Build cumulative time series
     recoverable_by_month = {}
     for row in anomaly_results:
         month_str = row.month.strftime("%Y-%m") if row.month else ""
         recoverable_by_month[month_str] = float(row.total_recoverable or 0)
-    
+
     recovered_by_month = {}
     for row in claim_results:
         month_str = row.month.strftime("%Y-%m") if row.month else ""
         recovered_by_month[month_str] = float(row.total_recovered or 0)
-    
+
     # Merge and sort months
     all_months = sorted(set(recoverable_by_month.keys()) | set(recovered_by_month.keys()))
-    
+
     # Calculate cumulative sums
     cumulative_recoverable = 0
     cumulative_recovered = 0
-    
+
     recoverable_data = []
     recovered_data = []
-    
+
     for month in all_months:
         cumulative_recoverable += recoverable_by_month.get(month, 0)
         cumulative_recovered += recovered_by_month.get(month, 0)
         recoverable_data.append(cumulative_recoverable)
         recovered_data.append(cumulative_recovered)
-    
+
     return {
         "labels": all_months,
         "datasets": [

@@ -1,4 +1,3 @@
 from fastapi import APIRouter
 
-router = APIRouter(tags=['gdpr'])
-
+router = APIRouter(tags=["gdpr"])

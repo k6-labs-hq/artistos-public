@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, time, timezone
-from typing import Dict, Any
+from typing import Any, Dict
 
 from sqlalchemy.orm import Session
 
@@ -43,7 +43,7 @@ class NotificationService:
     ) -> bool:
         """
         Send notification via email/SMS based on artist preferences.
-        
+
         Args:
             artist_id: Target artist ID
             event_key: Event type (anomaly_detected, urgent_sol, deposit_received, claim_advanced)
@@ -51,7 +51,7 @@ class NotificationService:
             body: Notification body
             org_id: Optional organization ID
             metadata: Additional context for logging
-            
+
         Returns:
             True if at least one notification was sent, False otherwise
         """
@@ -78,16 +78,12 @@ class NotificationService:
         # Check if event type is enabled
         pref_field = self.EVENT_PREFERENCE_MAP.get(event_key)
         if pref_field and not getattr(prefs, pref_field, True):
-            self._log_skip(
-                artist_id, event_key, "event_disabled", title, body, org_id
-            )
+            self._log_skip(artist_id, event_key, "event_disabled", title, body, org_id)
             return False
 
         # Check quiet hours
         if self._is_quiet_hours(prefs):
-            self._log_skip(
-                artist_id, event_key, "quiet_hours", title, body, org_id
-            )
+            self._log_skip(artist_id, event_key, "quiet_hours", title, body, org_id)
             return False
 
         # Send notifications
@@ -126,12 +122,14 @@ class NotificationService:
             else:  # Quiet hours span midnight
                 return now >= start or now <= end
         except (ValueError, TypeError):
-            logger.warning(f"Invalid quiet hours format: {prefs.quiet_hours_start} - {prefs.quiet_hours_end}")
+            logger.warning(
+                f"Invalid quiet hours format: {prefs.quiet_hours_start} - {prefs.quiet_hours_end}"
+            )
             return False
 
     def _send_email(self, email: str, title: str, body: str) -> bool:
         """Send email notification.
-        
+
         IMPLEMENTATION STATUS:
         - Stub mode: Returns success when no credentials configured
         - Production requires SENDGRID_API_KEY or AWS_SES_REGION environment variables
@@ -152,7 +150,7 @@ class NotificationService:
 
     def _send_sms(self, phone: str, title: str, body: str) -> bool:
         """Send SMS notification.
-        
+
         IMPLEMENTATION STATUS:
         - Stub mode: Returns success when no credentials configured
         - Production requires TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables

@@ -12,7 +12,7 @@ from XR7.models.feature_flag import FeatureFlag
 
 class FeatureFlagService:
     """Feature flag service for dynamic feature toggling.
-    
+
     Supports:
     - Global enable/disable
     - Percentage-based rollouts
@@ -73,12 +73,12 @@ class FeatureFlagService:
         attributes: dict | None = None,
     ) -> bool:
         """Evaluate whether a feature flag is enabled for a subject.
-        
+
         Args:
             flag_key: Feature flag key
             subject_id: User/artist ID for targeting
             attributes: Additional context for condition matching
-        
+
         Returns:
             True if feature is enabled for this subject
         """
@@ -116,7 +116,7 @@ class FeatureFlagService:
 
     def delete_flag(self, key: str) -> bool:
         """Delete a feature flag by key.
-        
+
         Returns:
             True if flag was deleted, False if not found
         """

@@ -1,11 +1,13 @@
-from sqlalchemy import Column, String, Float, DateTime, Integer, Text
-from pydantic import BaseModel, ConfigDict
-from XR7.models.base import Base
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import Column, DateTime, Float, Integer, String, Text
+
+from XR7.models.base import Base
 
 
 class SloMetric(Base):
-    __tablename__ = 'slo_metrics'
+    __tablename__ = "slo_metrics"
     id = Column(String, primary_key=True)
     metric_name = Column(String)
     value = Column(Float)
@@ -14,19 +16,22 @@ class SloMetric(Base):
 
 class SloMetricCreate(BaseModel):
     """Schema for creating SLO metric."""
+
     metric_name: str
     value: float
 
 
 class SloMetricUpdate(BaseModel):
     """Schema for updating SLO metric."""
+
     value: float | None = None
 
 
 class SloMetricSchema(BaseModel):
     """Schema for SLO metric response."""
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: str
     metric_name: str
     value: float
@@ -35,7 +40,8 @@ class SloMetricSchema(BaseModel):
 
 class TenantCostLedger(Base):
     """Model for tracking per-tenant infrastructure costs."""
-    __tablename__ = 'tenant_cost_ledger'
+
+    __tablename__ = "tenant_cost_ledger"
     id = Column(Integer, primary_key=True)
     tenant_id = Column(String, nullable=False)
     cost_usd = Column(Float, nullable=False)
@@ -46,6 +52,7 @@ class TenantCostLedger(Base):
 
 class TenantCostLedgerCreate(BaseModel):
     """Schema for creating tenant cost entry."""
+
     tenant_id: str
     cost_usd: float
     cost_type: str
@@ -54,8 +61,9 @@ class TenantCostLedgerCreate(BaseModel):
 
 class TenantCostLedgerSchema(BaseModel):
     """Schema for tenant cost response."""
+
     model_config = ConfigDict(from_attributes=True)
-    
+
     id: int
     tenant_id: str
     cost_usd: float

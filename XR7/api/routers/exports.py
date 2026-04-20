@@ -26,29 +26,30 @@ _router_service = router_service_for("exports")
 def export_summary_csv(artist_id: str, db: Session = Depends(get_db)):
     """
     Export comprehensive artist recovery summary as CSV.
-    
+
     Includes:
     - Leakage summary (total detected, anomaly count)
     - Recovery summary (recovered, potential, in-flight)
     - Claim pipeline breakdown by status
     - Catalog health (statements, events, payments)
-    
+
     CSV format is machine-readable with UTF-8 BOM for Excel compatibility.
     Schema version included for forward compatibility.
-    
+
     **Acceptance criteria**:
     - Generation time < 5 seconds for typical artist portfolio
     - Includes generation timestamp
     - CSV schema version in metadata section
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     csv_bytes = generate_artist_summary_csv(db, artist_id)
-    
+
     from datetime import datetime, timezone
+
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     filename = f"xr7_summary_{artist_id}_{timestamp}.csv"
-    
+
     return Response(
         content=csv_bytes,
         media_type="text/csv",
@@ -60,18 +61,18 @@ def export_summary_csv(artist_id: str, db: Session = Depends(get_db)):
 def export_summary_pdf(artist_id: str, db: Session = Depends(get_db)):
     """
     Export comprehensive artist recovery summary as PDF.
-    
+
     Formatted for board/legal sharing with clear section headers.
-    
+
     Includes:
     - Leakage summary (total detected, anomaly count)
     - Recovery summary (recovered, potential, recovery rate)
     - Claim pipeline breakdown by status
     - Catalog health metrics
     - Confidentiality statement
-    
+
     PDF format is human-readable and suitable for printing/sharing.
-    
+
     **Acceptance criteria**:
     - Readable on both 1-page and multi-page reports
     - Generation time < 5 seconds for typical portfolio
@@ -79,13 +80,14 @@ def export_summary_pdf(artist_id: str, db: Session = Depends(get_db)):
     - Report schema version in footer
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     pdf_bytes = generate_artist_summary_pdf(db, artist_id)
-    
+
     from datetime import datetime, timezone
+
     timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     filename = f"xr7_summary_{artist_id}_{timestamp}.pdf"
-    
+
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",

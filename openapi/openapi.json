@@ -81,6 +81,24 @@
         "title": "AddMemberRequest",
         "type": "object"
       },
+      "AddTeamMemberRequest": {
+        "properties": {
+          "role": {
+            "$ref": "#/components/schemas/TeamRole"
+          },
+          "user_email": {
+            "format": "email",
+            "title": "User Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_email",
+          "role"
+        ],
+        "title": "AddTeamMemberRequest",
+        "type": "object"
+      },
       "AdminAuditLogSchema": {
         "properties": {
           "action": {
@@ -1981,6 +1999,198 @@
         },
         "title": "AttorneyEvidenceRequest",
         "type": "object"
+      },
+      "AuditWorkflowResponse": {
+        "description": "Response model for audit workflow.",
+        "properties": {
+          "artist_id": {
+            "title": "Artist Id",
+            "type": "string"
+          },
+          "audit_period_end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Period End"
+          },
+          "audit_period_start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Period Start"
+          },
+          "audit_scheduled_date": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audit Scheduled Date"
+          },
+          "contract_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Id"
+          },
+          "counterparty_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Address"
+          },
+          "counterparty_contact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Counterparty Contact"
+          },
+          "counterparty_name": {
+            "title": "Counterparty Name",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "discrepancies_found": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discrepancies Found"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "letter_generated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Letter Generated At"
+          },
+          "letter_sent_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Letter Sent At"
+          },
+          "letter_template_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Letter Template Version"
+          },
+          "settlement_amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Settlement Amount"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "artist_id",
+          "contract_id",
+          "counterparty_name",
+          "counterparty_address",
+          "counterparty_contact",
+          "status",
+          "letter_generated_at",
+          "letter_sent_at",
+          "letter_template_version",
+          "audit_period_start",
+          "audit_period_end",
+          "audit_scheduled_date",
+          "discrepancies_found",
+          "settlement_amount",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "AuditWorkflowResponse",
+        "type": "object"
+      },
+      "AuditWorkflowStatus": {
+        "enum": [
+          "IDENTIFIED",
+          "LETTER_DRAFTED",
+          "LETTER_SENT",
+          "RESPONSE_RECEIVED",
+          "AUDIT_SCHEDULED",
+          "AUDIT_COMPLETED",
+          "SETTLEMENT_NEGOTIATED",
+          "CLOSED"
+        ],
+        "title": "AuditWorkflowStatus",
+        "type": "string"
       },
       "AuthConnectResponse": {
         "properties": {
@@ -4172,6 +4382,24 @@
         "title": "ChatRequest",
         "type": "object"
       },
+      "CheckPermissionRequest": {
+        "properties": {
+          "permission": {
+            "$ref": "#/components/schemas/Permission"
+          },
+          "user_email": {
+            "format": "email",
+            "title": "User Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_email",
+          "permission"
+        ],
+        "title": "CheckPermissionRequest",
+        "type": "object"
+      },
       "CircuitBreakerStatusResponse": {
         "properties": {
           "failure_count": {
@@ -5208,18 +5436,40 @@
         "title": "ConciergeMessageSender",
         "type": "string"
       },
-      "ConnectorSyncCursorSchema": {
+      "ConfidenceTierRouteRequest": {
         "properties": {
           "artist_id": {
             "title": "Artist Id",
             "type": "string"
           },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
+          "confidence_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Score"
+          },
+          "payload": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload"
+          },
+          "reason": {
+            "title": "Reason",
             "type": "string"
           },
-          "cursor_value": {
+          "source_id": {
             "anyOf": [
               {
                 "type": "string"
@@ -5228,49 +5478,18 @@
                 "type": "null"
               }
             ],
-            "title": "Cursor Value"
+            "title": "Source Id"
           },
-          "fetch_count": {
-            "title": "Fetch Count",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "integration": {
-            "title": "Integration",
-            "type": "string"
-          },
-          "last_successful_fetch_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Successful Fetch At"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "title": "Updated At",
-            "type": "string"
+          "source_type": {
+            "$ref": "#/components/schemas/ReviewSourceType"
           }
         },
         "required": [
-          "id",
           "artist_id",
-          "integration",
-          "cursor_value",
-          "last_successful_fetch_at",
-          "fetch_count",
-          "created_at",
-          "updated_at"
+          "source_type",
+          "reason"
         ],
-        "title": "ConnectorSyncCursorSchema",
+        "title": "ConfidenceTierRouteRequest",
         "type": "object"
       },
       "ContractExtractRequest": {
@@ -5523,6 +5742,89 @@
           "created_at"
         ],
         "title": "CopilotQuerySchema",
+        "type": "object"
+      },
+      "CreateAuditWorkflowRequest": {
+        "description": "Request body for creating a new audit workflow.",
+        "properties": {
+          "artist_id": {
+            "description": "Artist ID",
+            "title": "Artist Id",
+            "type": "string"
+          },
+          "audit_period_end": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Audit period end date",
+            "title": "Audit Period End"
+          },
+          "audit_period_start": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Audit period start date",
+            "title": "Audit Period Start"
+          },
+          "contract_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Contract ID if available",
+            "title": "Contract Id"
+          },
+          "counterparty_address": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Counterparty mailing address",
+            "title": "Counterparty Address"
+          },
+          "counterparty_contact": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Counterparty contact person",
+            "title": "Counterparty Contact"
+          },
+          "counterparty_name": {
+            "description": "Counterparty legal name",
+            "title": "Counterparty Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artist_id",
+          "counterparty_name"
+        ],
+        "title": "CreateAuditWorkflowRequest",
         "type": "object"
       },
       "CreateReviewItemRequest": {
@@ -5961,23 +6263,6 @@
           "detected"
         ],
         "title": "DetectAnomaliesResponseSchema",
-        "type": "object"
-      },
-      "DriftDisputeRequest": {
-        "properties": {
-          "reason": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Reason"
-          }
-        },
-        "title": "DriftDisputeRequest",
         "type": "object"
       },
       "EmailTriggeredInviteRequest": {
@@ -6987,6 +7272,58 @@
           "invite_links"
         ],
         "title": "GenerateInviteCodesResponse",
+        "type": "object"
+      },
+      "GenerateLetterRequest": {
+        "description": "Request body for generating audit demand letter.",
+        "properties": {
+          "artist_name": {
+            "description": "Artist legal name",
+            "title": "Artist Name",
+            "type": "string"
+          },
+          "attorney_name": {
+            "description": "Attorney representing artist",
+            "title": "Attorney Name",
+            "type": "string"
+          },
+          "audit_clause_reference": {
+            "description": "Audit clause section reference (e.g., 'Section 12.3')",
+            "title": "Audit Clause Reference",
+            "type": "string"
+          },
+          "auditor_name": {
+            "default": "Independent Certified Public Accountant",
+            "description": "CPA firm",
+            "title": "Auditor Name",
+            "type": "string"
+          },
+          "contract_date": {
+            "description": "Contract execution date",
+            "title": "Contract Date",
+            "type": "string"
+          },
+          "contract_name": {
+            "description": "Contract title",
+            "title": "Contract Name",
+            "type": "string"
+          },
+          "proposed_audit_date": {
+            "description": "Proposed audit inspection date",
+            "format": "date-time",
+            "title": "Proposed Audit Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artist_name",
+          "contract_name",
+          "contract_date",
+          "audit_clause_reference",
+          "proposed_audit_date",
+          "attorney_name"
+        ],
+        "title": "GenerateLetterRequest",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -8480,6 +8817,52 @@
         "title": "NotificationPreferenceUpsert",
         "type": "object"
       },
+      "OAuthCallbackRequest": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "redirect_uri": {
+            "title": "Redirect Uri",
+            "type": "string"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform",
+          "code",
+          "state",
+          "redirect_uri"
+        ],
+        "title": "OAuthCallbackRequest",
+        "type": "object"
+      },
+      "OAuthInitRequest": {
+        "properties": {
+          "platform": {
+            "title": "Platform",
+            "type": "string"
+          },
+          "redirect_uri": {
+            "title": "Redirect Uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform",
+          "redirect_uri"
+        ],
+        "title": "OAuthInitRequest",
+        "type": "object"
+      },
       "OAuthSessionCreateRequest": {
         "properties": {
           "provider": {
@@ -8842,6 +9225,17 @@
         ],
         "title": "PercentileResult",
         "type": "object"
+      },
+      "Permission": {
+        "enum": [
+          "view_dashboard",
+          "view_claims",
+          "upload_statements",
+          "manage_team",
+          "delete_data"
+        ],
+        "title": "Permission",
+        "type": "string"
       },
       "PersonaProfileSchema": {
         "properties": {
@@ -10118,151 +10512,58 @@
         "type": "object"
       },
       "SloMetricCreate": {
+        "description": "Schema for creating SLO metric.",
         "properties": {
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
           "metric_name": {
             "title": "Metric Name",
             "type": "string"
           },
-          "threshold_ms": {
-            "default": 2000.0,
-            "title": "Threshold Ms",
+          "value": {
+            "title": "Value",
             "type": "number"
-          },
-          "window_seconds": {
-            "default": 3600,
-            "title": "Window Seconds",
-            "type": "integer"
           }
         },
         "required": [
-          "metric_name"
+          "metric_name",
+          "value"
         ],
         "title": "SloMetricCreate",
         "type": "object"
       },
       "SloMetricSchema": {
+        "description": "Schema for SLO metric response.",
         "properties": {
-          "breached": {
-            "title": "Breached",
-            "type": "boolean"
-          },
-          "burn_rate": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Burn Rate"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "current_p95_ms": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Current P95 Ms"
-          },
-          "description": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Description"
-          },
-          "error_budget_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Budget Pct"
-          },
           "id": {
             "title": "Id",
-            "type": "string"
-          },
-          "measured_at": {
-            "format": "date-time",
-            "title": "Measured At",
             "type": "string"
           },
           "metric_name": {
             "title": "Metric Name",
             "type": "string"
           },
-          "org_id": {
-            "title": "Org Id",
+          "timestamp": {
+            "format": "date-time",
+            "title": "Timestamp",
             "type": "string"
           },
-          "threshold_ms": {
-            "title": "Threshold Ms",
+          "value": {
+            "title": "Value",
             "type": "number"
-          },
-          "window_seconds": {
-            "title": "Window Seconds",
-            "type": "integer"
           }
         },
         "required": [
           "id",
-          "org_id",
           "metric_name",
-          "window_seconds",
-          "threshold_ms",
-          "current_p95_ms",
-          "error_budget_pct",
-          "burn_rate",
-          "breached",
-          "description",
-          "measured_at",
-          "created_at"
+          "value",
+          "timestamp"
         ],
         "title": "SloMetricSchema",
         "type": "object"
       },
       "SloMetricUpdate": {
+        "description": "Schema for updating SLO metric.",
         "properties": {
-          "breached": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Breached"
-          },
-          "burn_rate": {
+          "value": {
             "anyOf": [
               {
                 "type": "number"
@@ -10271,29 +10572,7 @@
                 "type": "null"
               }
             ],
-            "title": "Burn Rate"
-          },
-          "current_p95_ms": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Current P95 Ms"
-          },
-          "error_budget_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Budget Pct"
+            "title": "Value"
           }
         },
         "title": "SloMetricUpdate",
@@ -10844,19 +11123,6 @@
           "suggestions"
         ],
         "title": "SupportSuggestionResponse",
-        "type": "object"
-      },
-      "SyncCursorUpdateRequest": {
-        "properties": {
-          "cursor_value": {
-            "title": "Cursor Value",
-            "type": "string"
-          }
-        },
-        "required": [
-          "cursor_value"
-        ],
-        "title": "SyncCursorUpdateRequest",
         "type": "object"
       },
       "SyncJobCreateRequest": {
@@ -11461,39 +11727,17 @@
         "type": "string"
       },
       "TenantCostLedgerCreate": {
+        "description": "Schema for creating tenant cost entry.",
         "properties": {
-          "budget_alert_pct": {
-            "default": 80.0,
-            "title": "Budget Alert Pct",
+          "cost_type": {
+            "title": "Cost Type",
+            "type": "string"
+          },
+          "cost_usd": {
+            "title": "Cost Usd",
             "type": "number"
           },
-          "budget_limit_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Budget Limit Usd"
-          },
-          "compute_cost_usd": {
-            "default": 0.0,
-            "title": "Compute Cost Usd",
-            "type": "number"
-          },
-          "llm_cost_usd": {
-            "default": 0.0,
-            "title": "Llm Cost Usd",
-            "type": "number"
-          },
-          "llm_tokens_used": {
-            "default": 0,
-            "title": "Llm Tokens Used",
-            "type": "integer"
-          },
-          "notes": {
+          "metadata": {
             "anyOf": [
               {
                 "type": "string"
@@ -11502,75 +11746,37 @@
                 "type": "null"
               }
             ],
-            "title": "Notes"
+            "title": "Metadata"
           },
-          "period_end": {
-            "format": "date-time",
-            "title": "Period End",
+          "tenant_id": {
+            "title": "Tenant Id",
             "type": "string"
-          },
-          "period_start": {
-            "format": "date-time",
-            "title": "Period Start",
-            "type": "string"
-          },
-          "pipeline_cost_usd": {
-            "default": 0.0,
-            "title": "Pipeline Cost Usd",
-            "type": "number"
-          },
-          "storage_cost_usd": {
-            "default": 0.0,
-            "title": "Storage Cost Usd",
-            "type": "number"
           }
         },
         "required": [
-          "period_start",
-          "period_end"
+          "tenant_id",
+          "cost_usd",
+          "cost_type"
         ],
         "title": "TenantCostLedgerCreate",
         "type": "object"
       },
       "TenantCostLedgerSchema": {
+        "description": "Schema for tenant cost response.",
         "properties": {
-          "budget_alert_pct": {
-            "title": "Budget Alert Pct",
-            "type": "number"
-          },
-          "budget_limit_usd": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Budget Limit Usd"
-          },
-          "compute_cost_usd": {
-            "title": "Compute Cost Usd",
-            "type": "number"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
+          "cost_type": {
+            "title": "Cost Type",
             "type": "string"
+          },
+          "cost_usd": {
+            "title": "Cost Usd",
+            "type": "number"
           },
           "id": {
             "title": "Id",
-            "type": "string"
-          },
-          "llm_cost_usd": {
-            "title": "Llm Cost Usd",
-            "type": "number"
-          },
-          "llm_tokens_used": {
-            "title": "Llm Tokens Used",
             "type": "integer"
           },
-          "notes": {
+          "metadata": {
             "anyOf": [
               {
                 "type": "string"
@@ -11579,56 +11785,24 @@
                 "type": "null"
               }
             ],
-            "title": "Notes"
+            "title": "Metadata"
           },
-          "org_id": {
-            "title": "Org Id",
+          "tenant_id": {
+            "title": "Tenant Id",
             "type": "string"
           },
-          "period_end": {
+          "timestamp": {
             "format": "date-time",
-            "title": "Period End",
-            "type": "string"
-          },
-          "period_start": {
-            "format": "date-time",
-            "title": "Period Start",
-            "type": "string"
-          },
-          "pipeline_cost_usd": {
-            "title": "Pipeline Cost Usd",
-            "type": "number"
-          },
-          "storage_cost_usd": {
-            "title": "Storage Cost Usd",
-            "type": "number"
-          },
-          "total_cost_usd": {
-            "title": "Total Cost Usd",
-            "type": "number"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "title": "Updated At",
+            "title": "Timestamp",
             "type": "string"
           }
         },
         "required": [
           "id",
-          "org_id",
-          "period_start",
-          "period_end",
-          "pipeline_cost_usd",
-          "compute_cost_usd",
-          "storage_cost_usd",
-          "llm_tokens_used",
-          "llm_cost_usd",
-          "total_cost_usd",
-          "budget_limit_usd",
-          "budget_alert_pct",
-          "notes",
-          "created_at",
-          "updated_at"
+          "tenant_id",
+          "cost_usd",
+          "cost_type",
+          "timestamp"
         ],
         "title": "TenantCostLedgerSchema",
         "type": "object"
@@ -12319,6 +12493,32 @@
         "title": "UGCSignalIngestRequest",
         "type": "object"
       },
+      "UpdateWorkflowStatusRequest": {
+        "description": "Request body for updating workflow status.",
+        "properties": {
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Update notes",
+            "title": "Notes"
+          },
+          "status": {
+            "$ref": "#/components/schemas/AuditWorkflowStatus",
+            "description": "New workflow status"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "UpdateWorkflowStatusRequest",
+        "type": "object"
+      },
       "UtilityRankRequest": {
         "properties": {
           "analyst_hourly_cost": {
@@ -12722,132 +12922,6 @@
         ],
         "title": "VipTierLevel",
         "type": "string"
-      },
-      "WebhookEventSchema": {
-        "properties": {
-          "attempts": {
-            "title": "Attempts",
-            "type": "integer"
-          },
-          "created_at": {
-            "format": "date-time",
-            "title": "Created At",
-            "type": "string"
-          },
-          "event_type": {
-            "title": "Event Type",
-            "type": "string"
-          },
-          "id": {
-            "title": "Id",
-            "type": "string"
-          },
-          "processed_at": {
-            "anyOf": [
-              {
-                "format": "date-time",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Processed At"
-          },
-          "processing_error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Processing Error"
-          },
-          "raw_payload": {
-            "title": "Raw Payload",
-            "type": "string"
-          },
-          "signature": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Signature"
-          },
-          "signature_verified": {
-            "title": "Signature Verified",
-            "type": "boolean"
-          },
-          "source": {
-            "title": "Source",
-            "type": "string"
-          },
-          "status": {
-            "title": "Status",
-            "type": "string"
-          },
-          "updated_at": {
-            "format": "date-time",
-            "title": "Updated At",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "source",
-          "event_type",
-          "raw_payload",
-          "signature",
-          "signature_verified",
-          "status",
-          "processing_error",
-          "attempts",
-          "processed_at",
-          "created_at",
-          "updated_at"
-        ],
-        "title": "WebhookEventSchema",
-        "type": "object"
-      },
-      "WebhookIngestRequest": {
-        "properties": {
-          "event_type": {
-            "title": "Event Type",
-            "type": "string"
-          },
-          "raw_payload": {
-            "title": "Raw Payload",
-            "type": "string"
-          },
-          "signature": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Signature"
-          },
-          "source": {
-            "title": "Source",
-            "type": "string"
-          }
-        },
-        "required": [
-          "source",
-          "event_type",
-          "raw_payload"
-        ],
-        "title": "WebhookIngestRequest",
-        "type": "object"
       },
       "WeeklyBriefSchema": {
         "properties": {
@@ -14378,58 +14452,6 @@
         ]
       }
     },
-    "/admin/audit/events": {
-      "get": {
-        "operationId": "list_admin_audit_events_admin_audit_events_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "default": 100,
-              "maximum": 500,
-              "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Admin Audit Events Admin Audit Events Get",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "List Admin Audit Events",
-        "tags": [
-          "governance"
-        ]
-      }
-    },
     "/admin/claims": {
       "get": {
         "operationId": "list_claims_admin_claims_get",
@@ -14624,135 +14646,6 @@
         "summary": "List Class Action Signals",
         "tags": [
           "class_action"
-        ]
-      }
-    },
-    "/admin/connectors/webhook/queue": {
-      "get": {
-        "description": "List failed webhook events (DLQ).",
-        "operationId": "get_dlq_admin_connectors_webhook_queue_get",
-        "parameters": [
-          {
-            "in": "query",
-            "name": "source",
-            "required": false,
-            "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Source"
-            }
-          },
-          {
-            "in": "query",
-            "name": "limit",
-            "required": false,
-            "schema": {
-              "default": 50,
-              "maximum": 200,
-              "minimum": 1,
-              "title": "Limit",
-              "type": "integer"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Admin-Key",
-            "required": false,
-            "schema": {
-              "default": "",
-              "title": "X-Admin-Key",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/WebhookEventSchema"
-                  },
-                  "title": "Response Get Dlq Admin Connectors Webhook Queue Get",
-                  "type": "array"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Dlq",
-        "tags": [
-          "connector-reliability"
-        ]
-      }
-    },
-    "/admin/connectors/webhook/{event_id}/replay": {
-      "post": {
-        "description": "Reset a FAILED event to REPLAYING for re-processing.",
-        "operationId": "replay_webhook_event_admin_connectors_webhook__event_id__replay_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "event_id",
-            "required": true,
-            "schema": {
-              "title": "Event Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "header",
-            "name": "X-Admin-Key",
-            "required": false,
-            "schema": {
-              "default": "",
-              "title": "X-Admin-Key",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebhookEventSchema"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Replay Webhook Event",
-        "tags": [
-          "connector-reliability"
         ]
       }
     },
@@ -17387,6 +17280,292 @@
         ]
       }
     },
+    "/artists/{artist_id}/audit-workflows": {
+      "get": {
+        "description": "List audit rights workflows for an artist.\n\n**Query parameters:**\n- status: Filter by workflow status (optional)\n\n**Returns:**\n- List of audit workflows ordered by created_at desc\n\n**Use cases:**\n- Attorney dashboard showing active audit workflows\n- Analyst review of settlement outcomes\n- Historical audit tracking",
+        "operationId": "list_audit_workflows_artists__artist_id__audit_workflows_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/AuditWorkflowStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuditWorkflowResponse"
+                  },
+                  "title": "Response List Audit Workflows Artists  Artist Id  Audit Workflows Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Audit Workflows",
+        "tags": [
+          "audit-rights"
+        ]
+      },
+      "post": {
+        "description": "Create a new audit rights workflow.\n\n**Use case:**\n- Attorney or analyst identifies audit rights clause in contract\n- System creates workflow tracking record\n- Status initialized to IDENTIFIED\n\n**Acceptance criteria:**\n- Validates artist_id exists\n- Creates workflow with IDENTIFIED status\n- Returns workflow ID for subsequent operations",
+        "operationId": "create_audit_workflow_artists__artist_id__audit_workflows_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAuditWorkflowRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditWorkflowResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Create Audit Workflow",
+        "tags": [
+          "audit-rights"
+        ]
+      }
+    },
+    "/artists/{artist_id}/audit-workflows/{workflow_id}": {
+      "get": {
+        "description": "Get detailed audit workflow information.\n\n**Returns:**\n- Complete workflow state including all dates and notes\n- Current status\n- Letter generation history\n- Settlement information if applicable",
+        "operationId": "get_audit_workflow_artists__artist_id__audit_workflows__workflow_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflow_id",
+            "required": true,
+            "schema": {
+              "title": "Workflow Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditWorkflowResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Audit Workflow",
+        "tags": [
+          "audit-rights"
+        ]
+      },
+      "patch": {
+        "description": "Update audit workflow status.\n\n**Use cases:**\n- Mark letter as sent (LETTER_SENT)\n- Record counterparty response (RESPONSE_RECEIVED)\n- Schedule audit date (AUDIT_SCHEDULED)\n- Document audit completion (AUDIT_COMPLETED)\n- Record settlement (SETTLEMENT_NEGOTIATED)\n- Close workflow (CLOSED)\n\n**Acceptance criteria:**\n- Validates workflow exists\n- Updates status and updated_at timestamp\n- Returns updated workflow state",
+        "operationId": "update_workflow_status_artists__artist_id__audit_workflows__workflow_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflow_id",
+            "required": true,
+            "schema": {
+              "title": "Workflow Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateWorkflowStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditWorkflowResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Update Workflow Status",
+        "tags": [
+          "audit-rights"
+        ]
+      }
+    },
+    "/artists/{artist_id}/audit-workflows/{workflow_id}/generate-letter": {
+      "post": {
+        "description": "Generate formal audit demand letter from template.\n\n**Use case:**\n- Attorney ready to exercise audit rights\n- System generates formal demand letter with legal language\n- Updates workflow status to LETTER_DRAFTED\n- Returns plain text letter for review\n\n**Letter includes:**\n- Audit clause reference\n- Proposed audit dates\n- Required records list\n- Attorney signature block\n- 30-day response deadline\n\n**Acceptance criteria:**\n- Validates workflow exists and is in appropriate state\n- Generates letter from template\n- Returns plain text for attorney review/editing\n- Updates workflow state",
+        "operationId": "generate_letter_artists__artist_id__audit_workflows__workflow_id__generate_letter_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "workflow_id",
+            "required": true,
+            "schema": {
+              "title": "Workflow Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateLetterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Generate Letter",
+        "tags": [
+          "audit-rights"
+        ]
+      }
+    },
     "/artists/{artist_id}/benchmarking": {
       "get": {
         "operationId": "artist_benchmarking_artists__artist_id__benchmarking_get",
@@ -17908,165 +18087,6 @@
         ]
       }
     },
-    "/artists/{artist_id}/catalog/ghost-scan": {
-      "post": {
-        "description": "Trigger Ghost Catalog Detector scan for this artist.",
-        "operationId": "trigger_ghost_scan_artists__artist_id__catalog_ghost_scan_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Trigger Ghost Scan Artists  Artist Id  Catalog Ghost Scan Post",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Trigger Ghost Scan",
-        "tags": [
-          "ghost_catalog_detector"
-        ]
-      }
-    },
-    "/artists/{artist_id}/catalog/ghosts": {
-      "get": {
-        "description": "Retrieve detected ghost works for this artist.",
-        "operationId": "list_ghost_works_artists__artist_id__catalog_ghosts_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response List Ghost Works Artists  Artist Id  Catalog Ghosts Get",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "List Ghost Works",
-        "tags": [
-          "ghost_catalog_detector"
-        ]
-      }
-    },
-    "/artists/{artist_id}/catalog/ghosts/{work_id}": {
-      "get": {
-        "description": "Detail for a specific ghost work.",
-        "operationId": "get_ghost_work_artists__artist_id__catalog_ghosts__work_id__get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "work_id",
-            "required": true,
-            "schema": {
-              "title": "Work Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Ghost Work Artists  Artist Id  Catalog Ghosts  Work Id  Get",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get Ghost Work",
-        "tags": [
-          "ghost_catalog_detector"
-        ]
-      }
-    },
     "/artists/{artist_id}/catalog/graph/build": {
       "post": {
         "operationId": "build_catalog_work_graph_artists__artist_id__catalog_graph_build_post",
@@ -18471,6 +18491,157 @@
         "summary": "Get Appraisal Result",
         "tags": [
           "catalog_value_appraiser"
+        ]
+      }
+    },
+    "/artists/{artist_id}/charts/earnings-trend": {
+      "get": {
+        "description": "Get earnings trend over time for line chart visualization.\n\nFeature #7: Dashboard Charts\n\nReturns daily aggregated earnings for the specified lookback period.\n\nArgs:\n    artist_id: Artist identifier\n    days: Lookback period in days (1-365, default: 90)\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Date strings (YYYY-MM-DD)\n    - datasets: Single dataset with daily earnings\n    - metadata: Summary statistics\n\nExample:\n    GET /artists/art_123/charts/earnings-trend?days=90\n    \n    Response:\n    {\n        \"labels\": [\"2026-01-01\", \"2026-01-02\", ...],\n        \"datasets\": [{\n            \"label\": \"Earnings\",\n            \"data\": [1250.50, 980.25, ...]\n        }],\n        \"metadata\": {\n            \"period_days\": 90,\n            \"total_earnings\": 125000.50,\n            \"data_points\": 45\n        }\n    }\n\nPerformance:\n    - p95 < 200ms for typical artist (90 days)\n    - Cached queries recommended for production\n    - Uses date truncation and aggregation\n\nResponsive:\n    - Works on mobile (reduced data points if needed)\n    - Desktop shows full granularity",
+        "operationId": "earnings_trend_chart_artists__artist_id__charts_earnings_trend_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of days to look back",
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 90,
+              "description": "Number of days to look back",
+              "maximum": 365,
+              "minimum": 1,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Earnings Trend Chart",
+        "tags": [
+          "charts"
+        ]
+      }
+    },
+    "/artists/{artist_id}/charts/leakage-by-category": {
+      "get": {
+        "description": "Get leakage breakdown by anomaly category for pie/bar chart.\n\nFeature #7: Dashboard Charts\n\nShows estimated recoverable amounts grouped by anomaly category.\nOnly includes open/investigating anomalies.\n\nArgs:\n    artist_id: Artist identifier\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Category names (ROYALTY, PLATFORM, SYNC, etc.)\n    - datasets: Single dataset with recoverable amounts\n    - backgroundColor: Category-specific colors\n    - metadata: Summary statistics\n\nExample:\n    GET /artists/art_123/charts/leakage-by-category\n    \n    Response:\n    {\n        \"labels\": [\"ROYALTY\", \"PLATFORM\", \"SYNC\"],\n        \"datasets\": [{\n            \"label\": \"Estimated Recoverable\",\n            \"data\": [15000, 8500, 3200],\n            \"backgroundColor\": [\"#FF6384\", \"#36A2EB\", \"#FFCE56\"]\n        }],\n        \"metadata\": {\n            \"total_recoverable\": 26700,\n            \"category_count\": 3\n        }\n    }\n\nPerformance:\n    - p95 < 100ms (simple GROUP BY)\n    - Indexed on (artist_id, category, status)\n\nVisualization:\n    - Mobile: Pie chart (compact)\n    - Desktop: Bar chart (more detail)",
+        "operationId": "leakage_by_category_chart_artists__artist_id__charts_leakage_by_category_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Leakage By Category Chart",
+        "tags": [
+          "charts"
+        ]
+      }
+    },
+    "/artists/{artist_id}/charts/recovery-trajectory": {
+      "get": {
+        "description": "Get recoverable vs recovered trajectory over time for line chart.\n\nFeature #7: Dashboard Charts\n\nShows two cumulative trend lines:\n- Total recoverable (from anomalies detected)\n- Total recovered (from claims paid out)\n\nArgs:\n    artist_id: Artist identifier\n    days: Lookback period in days (1-730, default: 180)\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Month strings (YYYY-MM)\n    - datasets: Two datasets (recoverable, recovered)\n    - metadata: Summary with recovery rate\n\nExample:\n    GET /artists/art_123/charts/recovery-trajectory?days=180\n    \n    Response:\n    {\n        \"labels\": [\"2026-01\", \"2026-02\", \"2026-03\"],\n        \"datasets\": [\n            {\n                \"label\": \"Total Recoverable\",\n                \"data\": [10000, 25000, 42000],\n                \"borderColor\": \"rgb(255, 99, 132)\"\n            },\n            {\n                \"label\": \"Total Recovered\",\n                \"data\": [2000, 8500, 18500],\n                \"borderColor\": \"rgb(75, 192, 192)\"\n            }\n        ],\n        \"metadata\": {\n            \"period_days\": 180,\n            \"total_recoverable\": 42000,\n            \"total_recovered\": 18500,\n            \"recovery_rate\": 0.44\n        }\n    }\n\nPerformance:\n    - p95 < 300ms (two queries with monthly bucketing)\n    - Cumulative calculation done in Python\n\nBusiness value:\n    - Shows recovery team effectiveness\n    - Highlights gap between detected and recovered\n    - Recovery rate trend visible over time",
+        "operationId": "recovery_trajectory_chart_artists__artist_id__charts_recovery_trajectory_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Number of days to look back",
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 180,
+              "description": "Number of days to look back",
+              "maximum": 730,
+              "minimum": 1,
+              "title": "Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Recovery Trajectory Chart",
+        "tags": [
+          "charts"
         ]
       }
     },
@@ -20358,296 +20529,6 @@
         "summary": "Provider Connection Status",
         "tags": [
           "artists"
-        ]
-      }
-    },
-    "/artists/{artist_id}/connectors/{integration}/sync-cursor": {
-      "get": {
-        "description": "Return the current sync cursor for an artist/integration pair.",
-        "operationId": "get_sync_cursor_artists__artist_id__connectors__integration__sync_cursor_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "integration",
-            "required": true,
-            "schema": {
-              "title": "Integration",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectorSyncCursorSchema"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Get Sync Cursor",
-        "tags": [
-          "connector-reliability"
-        ]
-      },
-      "put": {
-        "description": "Advance the sync cursor after a successful fetch.",
-        "operationId": "update_sync_cursor_artists__artist_id__connectors__integration__sync_cursor_put",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "integration",
-            "required": true,
-            "schema": {
-              "title": "Integration",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SyncCursorUpdateRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ConnectorSyncCursorSchema"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Update Sync Cursor",
-        "tags": [
-          "connector-reliability"
-        ]
-      }
-    },
-    "/artists/{artist_id}/contracts/drift": {
-      "get": {
-        "description": "All contract drift data for this artist.",
-        "operationId": "get_all_contract_drift_artists__artist_id__contracts_drift_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get All Contract Drift Artists  Artist Id  Contracts Drift Get",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get All Contract Drift",
-        "tags": [
-          "contract_drift_monitor"
-        ]
-      }
-    },
-    "/artists/{artist_id}/contracts/{contract_id}/drift": {
-      "get": {
-        "description": "Drift timeline for a specific contract.",
-        "operationId": "get_contract_drift_artists__artist_id__contracts__contract_id__drift_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "contract_id",
-            "required": true,
-            "schema": {
-              "title": "Contract Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Get Contract Drift Artists  Artist Id  Contracts  Contract Id  Drift Get",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Get Contract Drift",
-        "tags": [
-          "contract_drift_monitor"
-        ]
-      }
-    },
-    "/artists/{artist_id}/contracts/{contract_id}/drift/dispute": {
-      "post": {
-        "description": "Initiate a dispute workflow from a contract drift finding.",
-        "operationId": "initiate_drift_dispute_artists__artist_id__contracts__contract_id__drift_dispute_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          },
-          {
-            "in": "path",
-            "name": "contract_id",
-            "required": true,
-            "schema": {
-              "title": "Contract Id",
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DriftDisputeRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Initiate Drift Dispute Artists  Artist Id  Contracts  Contract Id  Drift Dispute Post",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Initiate Drift Dispute",
-        "tags": [
-          "contract_drift_monitor"
         ]
       }
     },
@@ -22549,10 +22430,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Get Calibration Health",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Get Calibration Health"
       }
     },
     "/artists/{artist_id}/intelligence/contracts/extract": {
@@ -22599,10 +22477,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Extract Contract Terms",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Extract Contract Terms"
       }
     },
     "/artists/{artist_id}/intelligence/contracts/extract-upload": {
@@ -22649,10 +22524,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Extract Contract Terms Upload",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Extract Contract Terms Upload"
       }
     },
     "/artists/{artist_id}/intelligence/contracts/pre-signature-review": {
@@ -22699,10 +22571,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Pre Signature Contract Review",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Pre Signature Contract Review"
       }
     },
     "/artists/{artist_id}/intelligence/feedback": {
@@ -22751,10 +22620,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Create Outcome Feedback",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Create Outcome Feedback"
       }
     },
     "/artists/{artist_id}/intelligence/feedback/events": {
@@ -22797,10 +22663,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "List Feedback Events",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "List Feedback Events"
       }
     },
     "/artists/{artist_id}/intelligence/ledger/ingest": {
@@ -22847,10 +22710,70 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Ingest Royalty Ledger",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Ingest Royalty Ledger"
+      }
+    },
+    "/artists/{artist_id}/intelligence/model-drift": {
+      "get": {
+        "operationId": "get_model_drift_status_artists__artist_id__intelligence_model_drift_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "model_version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Model Version"
+            }
+          },
+          {
+            "in": "query",
+            "name": "psi_threshold",
+            "required": false,
+            "schema": {
+              "default": 0.2,
+              "title": "Psi Threshold",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Model Drift Status"
       }
     },
     "/artists/{artist_id}/intelligence/rank-utility": {
@@ -22897,10 +22820,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Rank By Expected Utility",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Rank By Expected Utility"
       }
     },
     "/artists/{artist_id}/intelligence/simulate-expected-payout": {
@@ -22947,10 +22867,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Simulate Expected Payout",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Simulate Expected Payout"
       }
     },
     "/artists/{artist_id}/intelligence/tax-optimizer": {
@@ -22997,10 +22914,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Run Tax Optimizer",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Run Tax Optimizer"
       }
     },
     "/artists/{artist_id}/intelligence/withholding-estimate": {
@@ -23746,10 +23660,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Run Catalog Audit On Demand",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Run Catalog Audit On Demand"
       }
     },
     "/artists/{artist_id}/ml/catalog-health": {
@@ -23827,10 +23738,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Catalog Valuation",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Catalog Valuation"
       }
     },
     "/artists/{artist_id}/ml/explain": {
@@ -23916,10 +23824,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Financing Matches",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Financing Matches"
       }
     },
     "/artists/{artist_id}/ml/forecast": {
@@ -24075,10 +23980,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Simulate Optimization",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Simulate Optimization"
       }
     },
     "/artists/{artist_id}/network/invite": {
@@ -24683,6 +24585,199 @@
         "summary": "Voice Query",
         "tags": [
           "notifications"
+        ]
+      }
+    },
+    "/artists/{artist_id}/oauth/callback": {
+      "post": {
+        "description": "Handle OAuth callback and exchange code for tokens.\n\nFeature #7: Semi-automated pull fallbacks\n\nExchanges authorization code for access/refresh tokens.\nStores encrypted tokens with automatic refresh scheduling.\n\nArgs:\n    artist_id: Artist identifier\n    payload: OAuth callback data (code, state, redirect_uri)\n\nReturns:\n    PlatformOAuthCredential with connection status\n\nSecurity:\n    - Verifies state token to prevent CSRF\n    - Tokens encrypted at rest\n    - Refresh tokens rotated on each use\n    - Access tokens auto-refreshed before expiration\n\nSECURITY GAP - CSRF Protection:\n    State token verification is currently disabled for MVP.\n    Production deployment requires implementing session-based state validation:\n    \n    1. Generate cryptographically random state token on /oauth/authorize\n    2. Store state in user session (Redis/encrypted cookie)\n    3. Verify state matches session value on callback\n    4. Reject mismatched state tokens (CSRF attack indicator)\n    \n    See: https://tools.ietf.org/html/rfc6749#section-10.12\n    See: docs/security/oauth_csrf_mitigation.md",
+        "operationId": "oauth_callback_artists__artist_id__oauth_callback_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthCallbackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Oauth Callback",
+        "tags": [
+          "oauth-connectors"
+        ]
+      }
+    },
+    "/artists/{artist_id}/oauth/connections": {
+      "get": {
+        "description": "List all OAuth platform connections for an artist.\n\nReturns active, expired, and revoked credentials.\nDoes not return actual tokens (security).",
+        "operationId": "list_oauth_connections_artists__artist_id__oauth_connections_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Oauth Connections",
+        "tags": [
+          "oauth-connectors"
+        ]
+      }
+    },
+    "/artists/{artist_id}/oauth/connections/{credential_id}": {
+      "delete": {
+        "description": "Revoke OAuth connection and delete tokens.\n\nCalls platform revocation endpoint to invalidate tokens server-side.\nRemoves tokens from database.\n\nArgs:\n    artist_id: Artist identifier\n    credential_id: PlatformOAuthCredential ID\n\nReturns:\n    Confirmation of revocation",
+        "operationId": "revoke_oauth_connection_artists__artist_id__oauth_connections__credential_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "credential_id",
+            "required": true,
+            "schema": {
+              "title": "Credential Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Revoke Oauth Connection",
+        "tags": [
+          "oauth-connectors"
+        ]
+      }
+    },
+    "/artists/{artist_id}/oauth/init": {
+      "post": {
+        "description": "Initiate OAuth flow for platform connection.\n\nFeature #7: Semi-automated pull fallbacks\n\nGenerates authorization URL with CSRF state token.\nUser should be redirected to authorization_url to grant permissions.\n\nSupported platforms:\n- spotify: Spotify for Artists API\n- youtube: YouTube Analytics API\n- soundcloud: SoundCloud API (where available)\n\nReturns:\n    - authorization_url: URL to redirect user for OAuth consent\n    - state: CSRF token to verify callback\n\nSecurity:\n    - State token prevents CSRF attacks\n    - Redirect URI must be pre-registered with platform\n    - Credentials are artist-scoped (strict isolation)",
+        "operationId": "init_oauth_flow_artists__artist_id__oauth_init_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OAuthInitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Init Oauth Flow",
+        "tags": [
+          "oauth-connectors"
         ]
       }
     },
@@ -25312,104 +25407,6 @@
         "summary": "Update Artist Preferences",
         "tags": [
           "artists"
-        ]
-      }
-    },
-    "/artists/{artist_id}/privacy/erase": {
-      "post": {
-        "operationId": "erase_artist_data_artists__artist_id__privacy_erase_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Erase Artist Data Artists  Artist Id  Privacy Erase Post",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Erase Artist Data",
-        "tags": [
-          "governance"
-        ]
-      }
-    },
-    "/artists/{artist_id}/privacy/export": {
-      "post": {
-        "operationId": "export_artist_data_artists__artist_id__privacy_export_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "artist_id",
-            "required": true,
-            "schema": {
-              "title": "Artist Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "title": "Response Export Artist Data Artists  Artist Id  Privacy Export Post",
-                  "type": "object"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ],
-        "summary": "Export Artist Data",
-        "tags": [
-          "governance"
         ]
       }
     },
@@ -27130,10 +27127,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Registration Auto Fix",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Registration Auto Fix"
       }
     },
     "/artists/{artist_id}/registration/status": {
@@ -27170,10 +27164,7 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Registration Status",
-        "tags": [
-          "intelligence"
-        ]
+        "summary": "Registration Status"
       }
     },
     "/artists/{artist_id}/reports/summary": {
@@ -27256,6 +27247,88 @@
         "summary": "Export Summary Report",
         "tags": [
           "expansion"
+        ]
+      }
+    },
+    "/artists/{artist_id}/reports/summary.csv": {
+      "get": {
+        "description": "Export comprehensive artist recovery summary as CSV.\n\nIncludes:\n- Leakage summary (total detected, anomaly count)\n- Recovery summary (recovered, potential, in-flight)\n- Claim pipeline breakdown by status\n- Catalog health (statements, events, payments)\n\nCSV format is machine-readable with UTF-8 BOM for Excel compatibility.\nSchema version included for forward compatibility.\n\n**Acceptance criteria**:\n- Generation time < 5 seconds for typical artist portfolio\n- Includes generation timestamp\n- CSV schema version in metadata section",
+        "operationId": "export_summary_csv_artists__artist_id__reports_summary_csv_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Summary Csv",
+        "tags": [
+          "exports"
+        ]
+      }
+    },
+    "/artists/{artist_id}/reports/summary.pdf": {
+      "get": {
+        "description": "Export comprehensive artist recovery summary as PDF.\n\nFormatted for board/legal sharing with clear section headers.\n\nIncludes:\n- Leakage summary (total detected, anomaly count)\n- Recovery summary (recovered, potential, recovery rate)\n- Claim pipeline breakdown by status\n- Catalog health metrics\n- Confidentiality statement\n\nPDF format is human-readable and suitable for printing/sharing.\n\n**Acceptance criteria**:\n- Readable on both 1-page and multi-page reports\n- Generation time < 5 seconds for typical portfolio\n- Includes generation timestamp\n- Report schema version in footer",
+        "operationId": "export_summary_pdf_artists__artist_id__reports_summary_pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Summary Pdf",
+        "tags": [
+          "exports"
         ]
       }
     },
@@ -28669,6 +28742,165 @@
         ]
       }
     },
+    "/artists/{artist_id}/team": {
+      "get": {
+        "description": "List all team members for an artist.\n\nFeature #8: Collaborative RBAC\n\nRequires VIEW_TEAM permission (MANAGER, ANALYST roles).\n\nReturns:\n    List of team members with roles",
+        "operationId": "list_team_members_artists__artist_id__team_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_email",
+            "required": true,
+            "schema": {
+              "title": "User Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Team Members",
+        "tags": [
+          "teams"
+        ]
+      },
+      "post": {
+        "description": "Add team member to artist with specific role.\n\nFeature #8: Collaborative RBAC\n\nRequires INVITE_TEAM permission (MANAGER role).\n\nRoles:\n- ARTIST: Owner with basic permissions\n- MANAGER: Team management + export permissions\n- ATTORNEY: Legal-specific permissions\n\nReturns:\n    Created team member\n\nSecurity:\n    - Audit logged with added_by user\n    - Email validation prevents typos\n    - Duplicate detection",
+        "operationId": "add_team_member_artists__artist_id__team_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_email",
+            "required": true,
+            "schema": {
+              "title": "User Email",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddTeamMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Team Member",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/artists/{artist_id}/team/check-permission": {
+      "post": {
+        "description": "Check if user has specific permission for artist.\n\nFeature #8: Collaborative RBAC\n\nUsed for frontend UI authorization (e.g., show/hide buttons).\n\nArgs:\n    artist_id: Artist identifier\n    payload: User email and permission to check\n\nReturns:\n    Boolean indicating whether user has permission\n\nExample:\n    >>> POST /artists/art_123/team/check-permission\n    >>> {\"user_email\": \"lawyer@example.com\", \"permission\": \"update_claims\"}\n    >>> {\"has_permission\": true, \"role\": \"attorney\"}",
+        "operationId": "check_user_permission_artists__artist_id__team_check_permission_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckPermissionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check User Permission",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
     "/artists/{artist_id}/team/members": {
       "get": {
         "operationId": "list_team_members_artists__artist_id__team_members_get",
@@ -28907,6 +29139,115 @@
         "summary": "Remove Team Member",
         "tags": [
           "expansion"
+        ]
+      }
+    },
+    "/artists/{artist_id}/team/{member_email}": {
+      "delete": {
+        "description": "Remove team member from artist.\n\nFeature #8: Collaborative RBAC\n\nRequires INVITE_TEAM permission (MANAGER role).\n\nArgs:\n    artist_id: Artist identifier\n    member_email: Email of team member to remove\n    user_email: Email of user performing removal (from auth)\n\nReturns:\n    Confirmation of removal\n\nSecurity:\n    - Audit logged with removed_by user\n    - Cannot remove last ARTIST role (prevents lockout)",
+        "operationId": "remove_team_member_artists__artist_id__team__member_email__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "member_email",
+            "required": true,
+            "schema": {
+              "title": "Member Email",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "user_email",
+            "required": true,
+            "schema": {
+              "title": "User Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Team Member",
+        "tags": [
+          "teams"
+        ]
+      }
+    },
+    "/artists/{artist_id}/team/{member_email}/permissions": {
+      "get": {
+        "description": "List all permissions for a specific team member.\n\nFeature #8: Collaborative RBAC\n\nReturns all permissions the user has based on their role.\n\nArgs:\n    artist_id: Artist identifier\n    member_email: Team member email\n\nReturns:\n    List of Permission enums",
+        "operationId": "list_user_permissions_artists__artist_id__team__member_email__permissions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artist_id",
+            "required": true,
+            "schema": {
+              "title": "Artist Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "member_email",
+            "required": true,
+            "schema": {
+              "title": "Member Email",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List User Permissions",
+        "tags": [
+          "teams"
         ]
       }
     },
@@ -31275,6 +31616,26 @@
         ]
       }
     },
+    "/audit-workflows/stats": {
+      "get": {
+        "description": "Get system-wide audit workflow statistics.\n\n**Use case:**\n- Admin dashboard showing audit activity\n- Platform health monitoring\n\n**Returns:**\n- Total workflows by status\n- Average time-to-settlement\n- Total settlement value",
+        "operationId": "get_audit_workflow_stats_audit_workflows_stats_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Audit Workflow Stats",
+        "tags": [
+          "audit-rights"
+        ]
+      }
+    },
     "/auth/connect/{provider}": {
       "post": {
         "operationId": "auth_connect_auth_connect__provider__post",
@@ -33197,6 +33558,7 @@
     },
     "/claims/{claim_id}/evidence": {
       "get": {
+        "description": "Retrieve evidence packet for a claim with SHA-256 chain integrity verification.\n\nSecurity: Evidence packets are served directly to attorneys and used in legal proceedings.\nEvery read path MUST verify chain integrity to detect tampering (database compromise,\ninsider threat, or bit rot). Without verification, modified evidence could be served\nas trustworthy, creating legal liability and destroying platform credibility.\n\nCompliance: SOC 2 CC7.2 - System monitoring must detect unauthorized data modifications\nRegulatory: Evidence tampering detection is required for attorney trust and audit integrity",
         "operationId": "get_evidence_claims__claim_id__evidence_get",
         "parameters": [
           {
@@ -33919,48 +34281,6 @@
         ]
       }
     },
-    "/connectors/webhook/ingest": {
-      "post": {
-        "description": "Receive and persist an inbound webhook payload.",
-        "operationId": "ingest_webhook_event_connectors_webhook_ingest_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebhookIngestRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/WebhookEventSchema"
-                }
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Ingest Webhook Event",
-        "tags": [
-          "connector-reliability"
-        ]
-      }
-    },
     "/dashboard/ui": {
       "get": {
         "description": "Serve the standalone artist recovery dashboard UI page.",
@@ -34264,6 +34584,23 @@
           }
         },
         "summary": "Readiness"
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "description": "Kubernetes readiness probe - checks all dependencies.\n\nReturns 200 if the service is ready to handle requests.\nReturns 503 if any critical dependencies are unhealthy.\n\nResults are cached for 30 seconds to prevent overwhelming dependencies.",
+        "operationId": "health_readiness_health_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Readiness"
       }
     },
     "/ingestion/supported-formats": {
@@ -36263,6 +36600,69 @@
           }
         },
         "summary": "Create Review Item",
+        "tags": [
+          "review_queue"
+        ]
+      }
+    },
+    "/review-queue/items/route-confidence": {
+      "post": {
+        "operationId": "route_review_item_by_confidence_review_queue_items_route_confidence_post",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-Analyst-Key",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "X-Analyst-Key",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Analyst-Email",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "X-Analyst-Email",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfidenceTierRouteRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewItemSchema"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Route Review Item By Confidence",
         "tags": [
           "review_queue"
         ]

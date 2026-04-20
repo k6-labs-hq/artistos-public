@@ -9,7 +9,7 @@ RESTful API for connecting artists to platform data sources via OAuth:
 - Revoke credentials on disconnect
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -42,30 +42,30 @@ def init_oauth_flow(
 ):
     """
     Initiate OAuth flow for platform connection.
-    
+
     Feature #7: Semi-automated pull fallbacks
-    
+
     Generates authorization URL with CSRF state token.
     User should be redirected to authorization_url to grant permissions.
-    
+
     Supported platforms:
     - spotify: Spotify for Artists API
     - youtube: YouTube Analytics API
     - soundcloud: SoundCloud API (where available)
-    
+
     Returns:
         - authorization_url: URL to redirect user for OAuth consent
         - state: CSRF token to verify callback
-    
+
     Security:
         - State token prevents CSRF attacks
         - Redirect URI must be pre-registered with platform
         - Credentials are artist-scoped (strict isolation)
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     service = OAuthConnectorService(db)
-    
+
     try:
         result = service.generate_authorization_url(
             artist_id=artist_id,
@@ -74,7 +74,7 @@ def init_oauth_flow(
         )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
-    
+
     return result
 
 
@@ -86,45 +86,45 @@ def oauth_callback(
 ):
     """
     Handle OAuth callback and exchange code for tokens.
-    
+
     Feature #7: Semi-automated pull fallbacks
-    
+
     Exchanges authorization code for access/refresh tokens.
     Stores encrypted tokens with automatic refresh scheduling.
-    
+
     Args:
         artist_id: Artist identifier
         payload: OAuth callback data (code, state, redirect_uri)
-    
+
     Returns:
         PlatformOAuthCredential with connection status
-    
+
     Security:
         - Verifies state token to prevent CSRF
         - Tokens encrypted at rest
         - Refresh tokens rotated on each use
         - Access tokens auto-refreshed before expiration
-    
+
     SECURITY GAP - CSRF Protection:
         State token verification is currently disabled for MVP.
         Production deployment requires implementing session-based state validation:
-        
+
         1. Generate cryptographically random state token on /oauth/authorize
         2. Store state in user session (Redis/encrypted cookie)
         3. Verify state matches session value on callback
         4. Reject mismatched state tokens (CSRF attack indicator)
-        
+
         See: https://tools.ietf.org/html/rfc6749#section-10.12
         See: docs/security/oauth_csrf_mitigation.md
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     # SECURITY: State token verification disabled for MVP
     # Production requirement: Validate state against session to prevent CSRF attacks
     # Implementation: Check payload.state against session['oauth_state_{platform}']
-    
+
     service = OAuthConnectorService(db)
-    
+
     try:
         credential = service.exchange_code_for_tokens(
             artist_id=artist_id,
@@ -137,7 +137,7 @@ def oauth_callback(
             status_code=400,
             detail=f"OAuth token exchange failed: {str(exc)}",
         ) from exc
-    
+
     return {
         "status": "connected",
         "credential": PlatformOAuthCredentialSchema.model_validate(credential).model_dump(),
@@ -151,20 +151,20 @@ def list_oauth_connections(
 ):
     """
     List all OAuth platform connections for an artist.
-    
+
     Returns active, expired, and revoked credentials.
     Does not return actual tokens (security).
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     from XR7.models.platform_oauth import PlatformOAuthCredential
-    
+
     credentials = (
         db.query(PlatformOAuthCredential)
         .filter(PlatformOAuthCredential.artist_id == artist_id)
         .all()
     )
-    
+
     return {
         "artist_id": artist_id,
         "connections": [
@@ -188,20 +188,20 @@ def revoke_oauth_connection(
 ):
     """
     Revoke OAuth connection and delete tokens.
-    
+
     Calls platform revocation endpoint to invalidate tokens server-side.
     Removes tokens from database.
-    
+
     Args:
         artist_id: Artist identifier
         credential_id: PlatformOAuthCredential ID
-    
+
     Returns:
         Confirmation of revocation
     """
     _router_service.get_artist_or_404(artist_id, db)
-    
+
     service = OAuthConnectorService(db)
     service.revoke_credential(credential_id)
-    
+
     return {"status": "revoked", "credential_id": credential_id}
