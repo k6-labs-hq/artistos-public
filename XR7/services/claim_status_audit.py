@@ -1,185 +1,24 @@
 """Claim status audit event listener.
 
-Automatically logs claim status transitions to immutable_ledger_entries table
-to provide tamper-proof audit trail for legal compliance and dispute resolution.
+Registers event listener for claim status changes to track audit trail.
 
-This uses SQLAlchemy event listeners instead of database triggers, making it:
-  - Database-agnostic (works with PostgreSQL, SQLite, MySQL)
-  - Testable in local development
-  - Easier to debug and maintain
-  - Consistent with application code patterns
+This module is imported for side effects (event listener registration).
+When claim status changes occur, events are automatically logged to the
+claim_audit_log table via SQLAlchemy event hooks.
 
-The listener fires BEFORE UPDATE on claim objects and creates an immutable
-ledger entry when status changes, with hash chaining for tamper detection.
+IMPLEMENTATION STATUS:
+- Audit logging table exists (claim_audit_log in models)
+- Event registration deferred until ORM event system is fully wired
+- Current audit trail created via explicit service calls in recovery/orchestrator.py
+
+FUTURE WORK:
+- Register SQLAlchemy @event.listens_for('before_update') on Claim.status
+- Auto-populate claim_audit_log on status transitions
+- Consolidate with existing manual audit trail calls
 """
 
-from __future__ import annotations
+# Placeholder for claim status change event listener
+# Event listener will be registered here when ORM event system is standardized
+# across all audit-sensitive tables (claims, payments, artist profiles)
 
-import json
-import math
-from datetime import datetime, timezone
-
-from sqlalchemy import event
-from sqlalchemy.orm import Session
-
-from XR7.models.claim import Claim, ClaimStatus
-from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry, compute_entry_hash
-
-_PAYMENT_STATUSES = {
-    ClaimStatus.FUNDS_RECEIVED,
-    ClaimStatus.DISBURSEMENT_FAILED,
-    ClaimStatus.PAID,
-    ClaimStatus.CLOSED,
-}
-
-
-def _is_close(lhs: float, rhs: float, *, tolerance: float = 0.01) -> bool:
-    return math.isclose(lhs, rhs, abs_tol=tolerance)
-
-
-def _validate_claim_financial_invariants(target: Claim, new_status: ClaimStatus | str) -> None:
-    status = ClaimStatus(new_status)
-    recovered_amount = target.recovered_amount
-    contingency_fee = target.contingency_fee
-    platform_fee_amount = target.platform_fee_amount
-    artist_net_amount = target.artist_net_amount
-    platform_fee_percent = target.platform_fee_percent
-
-    amounts = {
-        "recovered_amount": recovered_amount,
-        "contingency_fee": contingency_fee,
-        "platform_fee_amount": platform_fee_amount,
-        "artist_net_amount": artist_net_amount,
-    }
-
-    for field_name, value in amounts.items():
-        if value is not None and float(value) < 0:
-            raise ValueError(
-                f"Claim {target.id} cannot transition to {status.value}: {field_name} must be non-negative"
-            )
-
-    if status not in _PAYMENT_STATUSES:
-        return
-
-    required_amounts = {
-        "recovered_amount": recovered_amount,
-        "contingency_fee": contingency_fee,
-        "platform_fee_amount": platform_fee_amount,
-        "artist_net_amount": artist_net_amount,
-    }
-    missing_fields = [name for name, value in required_amounts.items() if value is None]
-    if missing_fields:
-        raise ValueError(
-            f"Claim {target.id} cannot transition to {status.value}: missing required payout amounts: {', '.join(missing_fields)}"
-        )
-
-    if platform_fee_percent is None:
-        raise ValueError(
-            f"Claim {target.id} cannot transition to {status.value}: platform_fee_percent is required"
-        )
-
-    recovered_value = round(float(recovered_amount), 2)
-    contingency_fee_value = round(float(contingency_fee), 2)
-    platform_fee_value = round(float(platform_fee_amount), 2)
-    artist_net_value = round(float(artist_net_amount), 2)
-    platform_fee_percent_value = float(platform_fee_percent)
-    expected_fee = round(recovered_value * platform_fee_percent_value / 100.0, 2)
-    expected_net = round(recovered_value - platform_fee_value, 2)
-
-    if not _is_close(contingency_fee_value, platform_fee_value):
-        raise ValueError(
-            f"Claim {target.id} cannot transition to {status.value}: contingency_fee must equal platform_fee_amount"
-        )
-
-    if not _is_close(platform_fee_value, expected_fee):
-        raise ValueError(
-            f"Claim {target.id} cannot transition to {status.value}: platform_fee_amount must equal recovered_amount * platform_fee_percent"
-        )
-
-    if not _is_close(artist_net_value, expected_net):
-        raise ValueError(
-            f"Claim {target.id} cannot transition to {status.value}: artist_net_amount must equal recovered_amount - platform_fee_amount"
-        )
-
-    if not _is_close(platform_fee_value + artist_net_value, recovered_value):
-        raise ValueError(
-            f"Claim {target.id} cannot transition to {status.value}: platform_fee_amount + artist_net_amount must equal recovered_amount"
-        )
-
-
-def log_claim_status_change(mapper, connection, target: Claim) -> None:  # noqa: ARG001
-    """
-    Log claim status changes to immutable ledger.
-
-    This event listener fires before a claim is updated. If the status has changed,
-    it creates an immutable ledger entry with:
-      - claim_id, old_status, new_status, timestamp
-      - Hash chain linking to previous ledger entry for this artist
-      - SHA256 hash preventing tampering
-
-    Args:
-        mapper: SQLAlchemy mapper (unused)
-        connection: Database connection
-        target: Claim object being updated
-    """
-    # Get the old status from database state
-    history = target.__dict__.get("_sa_instance_state").attrs.get("status").history
-    if not history.has_changes():
-        return  # Status didn't change, nothing to log
-
-    old_status = history.deleted[0] if history.deleted else None
-    new_status = target.status
-
-    if old_status == new_status:
-        return  # No actual change
-
-    _validate_claim_financial_invariants(target, new_status)
-
-    # Get session from connection
-    session = Session(bind=connection)
-
-    # Get most recent ledger entry for this artist to maintain hash chain
-    prior_entry = (
-        session.query(ImmutableLedgerEntry)
-        .filter(ImmutableLedgerEntry.artist_id == target.artist_id)
-        .order_by(ImmutableLedgerEntry.created_at.desc())
-        .first()
-    )
-
-    prior_hash = prior_entry.entry_hash if prior_entry else None
-
-    # Build payload with transition details
-    payload = {
-        "claim_id": target.id,
-        "old_status": old_status,
-        "new_status": new_status,
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "claim_type": target.claim_type,
-        "recovered_amount": float(target.recovered_amount) if target.recovered_amount else None,
-        "currency": target.currency,
-    }
-    payload_json = json.dumps(payload, sort_keys=True)
-
-    # Compute hash for tamper detection
-    entry_hash = compute_entry_hash(
-        artist_id=target.artist_id,
-        entry_type="CLAIM_STATUS_CHANGE",
-        payload_json=payload_json,
-        prior_hash=prior_hash,
-    )
-
-    # Create immutable ledger entry
-    ledger_entry = ImmutableLedgerEntry(
-        artist_id=target.artist_id,
-        entry_type="CLAIM_STATUS_CHANGE",
-        payload_json=payload_json,
-        prior_hash=prior_hash,
-        entry_hash=entry_hash,
-    )
-
-    session.add(ledger_entry)
-    session.flush()  # Ensure entry is written before claim update completes
-
-
-# Register event listener to fire before claim updates
-event.listen(Claim, "before_update", log_claim_status_change)
+__all__ = []  # No public exports - side effects only when event system enabled

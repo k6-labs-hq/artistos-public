@@ -47,6 +47,18 @@ class XR7Settings:
     }
     xr7_env: str = os.getenv("XR7_ENV", "development").lower()
 
+    # Notification settings (Sprint 6 - email/SMS)
+    SENDGRID_API_KEY: str | None = os.getenv("SENDGRID_API_KEY")
+    AWS_SES_REGION: str | None = os.getenv("AWS_SES_REGION")
+    TWILIO_ACCOUNT_SID: str | None = os.getenv("TWILIO_ACCOUNT_SID")
+    TWILIO_AUTH_TOKEN: str | None = os.getenv("TWILIO_AUTH_TOKEN")
+    TWILIO_FROM_NUMBER: str | None = os.getenv("TWILIO_FROM_NUMBER")
+    SMTP_HOST: str | None = os.getenv("SMTP_HOST")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str | None = os.getenv("SMTP_USER")
+    SMTP_PASSWORD: str | None = os.getenv("SMTP_PASSWORD")
+    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "notifications@artistos.com")
+
     # DB connection pool settings
     db_pool_size: int = int(os.getenv("XR7_DB_POOL_SIZE", "10"))
     db_max_overflow: int = int(os.getenv("XR7_DB_MAX_OVERFLOW", "20"))

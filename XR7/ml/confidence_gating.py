@@ -1,29 +1,19 @@
-"""
-ML Confidence Gating Service for anomaly detection at scale.
+"""ML Confidence Gating Service for anomaly triage.
 
-Implements three-tier confidence-based routing to reduce analyst fatigue and
-enable automated processing of high-confidence detections.
+Provides tiered confidence-based filtering to automatically triage detected
+anomalies into:
+- REJECT: Too low confidence, don't create anomaly
+- REVIEW: Medium confidence, send to manual review queue
+- AUTO_ACCEPT: High confidence, bypass manual review
 
-Tiers:
-- REJECT (< 0.30): Discard low-confidence detections, log for calibration
-- REVIEW (0.30 - 0.89): Route to analyst queue with priority scoring
-- AUTO_ACCEPT (≥ 0.90): Bypass review, create claim seeds automatically
-
-Addresses ML-assisted ingestion intelligence scale target: filters noise,
-accelerates high-confidence workflows, prioritizes analyst time on ambiguous cases.
-
-Closes: XR7-407
-Domain: ml
-Scale-target: ML-assisted anomaly detection with confidence-gated workflows
-Compliance: SOC 2 CC7.2 — System monitoring (quality controls on automated decisions)
+This reduces analyst workload by filtering out noise and auto-approving
+high-confidence detections.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
 
 from sqlalchemy.orm import Session
 
@@ -32,12 +22,36 @@ from xr7_common.logging import get_logger
 logger = get_logger(__name__)
 
 
-class ConfidenceTier(str, Enum):
-    """Confidence tier classification for gating decisions."""
+# ---------------------------------------------------------------------------
+# Decision tiers
+# ---------------------------------------------------------------------------
 
-    REJECT = "reject"  # < 0.30: Too low to process
-    REVIEW = "review"  # 0.30 - 0.89: Analyst review required
-    AUTO_ACCEPT = "auto_accept"  # >= 0.90: Auto-process without review
+
+class ConfidenceTier(str, Enum):
+    """Confidence-based decision tiers for anomaly triage."""
+
+    REJECT = "REJECT"  # Below minimum threshold, don't create
+    REVIEW = "REVIEW"  # Medium confidence, needs manual review
+    AUTO_ACCEPT = "AUTO_ACCEPT"  # High confidence, bypass review
+
+
+# ---------------------------------------------------------------------------
+# Confidence thresholds
+# ---------------------------------------------------------------------------
+
+# Minimum confidence to create an anomaly at all
+MIN_CONFIDENCE = 0.50
+
+# High confidence threshold for auto-accept (bypass manual review)
+AUTO_ACCEPT_THRESHOLD = 0.90
+
+# Urgency boost: high-value or urgent anomalies get lower threshold
+URGENT_AUTO_ACCEPT_THRESHOLD = 0.75
+
+
+# ---------------------------------------------------------------------------
+# Gating decision
+# ---------------------------------------------------------------------------
 
 
 @dataclass
@@ -45,234 +59,164 @@ class GatingDecision:
     """Result of confidence gating evaluation."""
 
     tier: ConfidenceTier
-    confidence_score: float
-    should_create: bool  # Whether to create anomaly/claim
-    requires_review: bool  # Whether to enqueue for analyst
-    priority_score: float  # Priority for review queue (0-1, higher = more urgent)
-    reasoning: str  # Human-readable explanation
-    metadata: dict[str, Any]  # Additional context for logging/metrics
+    should_create: bool
+    requires_review: bool
+    priority_score: float
+    reasoning: str
+
+
+# ---------------------------------------------------------------------------
+# Service
+# ---------------------------------------------------------------------------
 
 
 class ConfidenceGatingService:
-    """Service for confidence-based anomaly gating and routing.
+    """Service for confidence-based anomaly triage.
 
-    Usage:
-        >>> gating = ConfidenceGatingService(db_session)
-        >>> decision = gating.evaluate(
-        ...     confidence=0.92,
-        ...     context={"anomaly_type": "RATE_DRIFT", "estimated_recoverable": 5000}
-        ... )
-        >>> if decision.should_create:
-        ...     # Create anomaly
-        ...     if decision.requires_review:
-        ...         # Enqueue for analyst
-        ...     else:
-        ...         # Auto-process (create claim seed)
+    Applies ML confidence thresholds to automatically filter and route
+    detected anomalies based on confidence scores and contextual factors.
+
+    Usage::
+
+        gating = ConfidenceGatingService(db)
+
+        decision = gating.evaluate(
+            confidence=0.87,
+            context={
+                "anomaly_type": "MISSING_PAYMENT",
+                "estimated_recoverable": 1250.0,
+                "artist_id": "art_xyz",
+                "urgency_flag": False,
+            }
+        )
+
+        if decision.should_create:
+            if decision.requires_review:
+                enqueue_for_review()
+            else:
+                auto_accept()
+
+        metrics = gating.get_metrics()
     """
 
-    # Tier thresholds
-    REJECT_THRESHOLD = 0.30
-    AUTO_ACCEPT_THRESHOLD = 0.90
+    def __init__(self, db: Session) -> None:
+        """Initialize gating service.
 
-    # Priority scoring weights
-    CONFIDENCE_WEIGHT = 0.40
-    AMOUNT_WEIGHT = 0.35
-    URGENCY_WEIGHT = 0.25
-
-    def __init__(self, db: Session):
+        Args:
+            db: SQLAlchemy database session
+        """
         self.db = db
-        self._metrics: dict[str, int] = {
-            "total_evaluations": 0,
-            "rejected": 0,
-            "routed_to_review": 0,
-            "auto_accepted": 0,
-        }
+
+        # Metrics tracking
+        self._total_evaluated = 0
+        self._rejected_count = 0
+        self._review_count = 0
+        self._auto_accept_count = 0
 
     def evaluate(
         self,
         confidence: float,
-        context: dict[str, Any] | None = None,
+        context: dict | None = None,
     ) -> GatingDecision:
-        """Evaluate confidence score and return gating decision.
+        """Evaluate whether to create/route an anomaly based on confidence.
 
         Args:
-            confidence: ML model confidence score (0-1)
-            context: Additional context for priority scoring:
-                - anomaly_type (str): Type of anomaly detected
-                - estimated_recoverable (float): Estimated dollar amount
-                - urgency_flag (bool): Whether detection is time-sensitive
-                - artist_id (str): Artist identifier
+            confidence: ML confidence score (0.0 to 1.0)
+            context: Optional context with:
+                - anomaly_type: str (e.g., "MISSING_PAYMENT")
+                - estimated_recoverable: float (dollar amount)
+                - artist_id: str
+                - urgency_flag: bool (whether anomaly is urgent/time-sensitive)
 
         Returns:
-            GatingDecision with tier, routing, and priority information
+            GatingDecision with tier, routing instructions, and reasoning
         """
         context = context or {}
-        self._metrics["total_evaluations"] += 1
+        self._total_evaluated += 1
 
-        # Validate confidence score
-        if not (0.0 <= confidence <= 1.0):
-            logger.warning(
-                "confidence_out_of_range",
-                extra={"confidence": confidence, "clamping_to_range": True},
-            )
-            confidence = max(0.0, min(1.0, confidence))
+        # Extract context
+        urgency_flag = context.get("urgency_flag", False)
+        estimated_recoverable = float(context.get("estimated_recoverable", 0.0))
 
-        # Classify tier
-        if confidence < self.REJECT_THRESHOLD:
-            tier = ConfidenceTier.REJECT
-            should_create = False
-            requires_review = False
-            priority_score = 0.0
-            reasoning = (
-                f"Confidence {confidence:.2f} below rejection threshold {self.REJECT_THRESHOLD}"
-            )
-            self._metrics["rejected"] += 1
 
-            logger.info(
-                "confidence_gating_rejection",
-                extra={
-                    "confidence": confidence,
-                    "threshold": self.REJECT_THRESHOLD,
-                    "anomaly_type": context.get("anomaly_type"),
-                    "estimated_recoverable": context.get("estimated_recoverable"),
-                },
-            )
+        # Compute priority score (0-100)
+        # Factors: confidence (70%), dollar amount (20%), urgency (10%)
+        priority_score = (
+            confidence * 70.0
+            + min(estimated_recoverable / 10000.0, 1.0) * 20.0
+            + (10.0 if urgency_flag else 0.0)
+        )
 
-        elif confidence < self.AUTO_ACCEPT_THRESHOLD:
-            tier = ConfidenceTier.REVIEW
-            should_create = True
-            requires_review = True
-            priority_score = self._calculate_priority(confidence, context)
-            reasoning = (
-                f"Confidence {confidence:.2f} requires analyst review "
-                f"(threshold: {self.AUTO_ACCEPT_THRESHOLD})"
-            )
-            self._metrics["routed_to_review"] += 1
+        # Decision logic
 
-            logger.info(
-                "confidence_gating_review",
-                extra={
-                    "confidence": confidence,
-                    "priority_score": priority_score,
-                    "anomaly_type": context.get("anomaly_type"),
-                    "estimated_recoverable": context.get("estimated_recoverable"),
-                },
+        # REJECT: Below minimum threshold
+        if confidence < MIN_CONFIDENCE:
+            self._rejected_count += 1
+            return GatingDecision(
+                tier=ConfidenceTier.REJECT,
+                should_create=False,
+                requires_review=False,
+                priority_score=priority_score,
+                reasoning=(
+                    f"Confidence {confidence:.2f} below minimum threshold " f"{MIN_CONFIDENCE:.2f}"
+                ),
             )
 
-        else:  # confidence >= AUTO_ACCEPT_THRESHOLD
-            tier = ConfidenceTier.AUTO_ACCEPT
-            should_create = True
-            requires_review = False
-            priority_score = 1.0  # Highest priority for auto-accepted items
-            reasoning = (
-                f"Confidence {confidence:.2f} meets auto-accept threshold "
-                f"{self.AUTO_ACCEPT_THRESHOLD} - bypassing manual review"
-            )
-            self._metrics["auto_accepted"] += 1
+        # AUTO_ACCEPT: High confidence
+        auto_threshold = URGENT_AUTO_ACCEPT_THRESHOLD if urgency_flag else AUTO_ACCEPT_THRESHOLD
 
-            logger.info(
-                "confidence_gating_auto_accept",
-                extra={
-                    "confidence": confidence,
-                    "anomaly_type": context.get("anomaly_type"),
-                    "estimated_recoverable": context.get("estimated_recoverable"),
-                    "artist_id": context.get("artist_id"),
-                },
+        if confidence >= auto_threshold:
+            self._auto_accept_count += 1
+            threshold_type = "urgent" if urgency_flag else "standard"
+            return GatingDecision(
+                tier=ConfidenceTier.AUTO_ACCEPT,
+                should_create=True,
+                requires_review=False,
+                priority_score=priority_score,
+                reasoning=(
+                    f"Confidence {confidence:.2f} meets {threshold_type} "
+                    f"auto-accept threshold {auto_threshold:.2f}"
+                ),
             )
 
+        # REVIEW: Medium confidence, needs manual review
+        self._review_count += 1
         return GatingDecision(
-            tier=tier,
-            confidence_score=confidence,
-            should_create=should_create,
-            requires_review=requires_review,
+            tier=ConfidenceTier.REVIEW,
+            should_create=True,
+            requires_review=True,
             priority_score=priority_score,
-            reasoning=reasoning,
-            metadata={
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-                "context": context,
-                "thresholds": {
-                    "reject": self.REJECT_THRESHOLD,
-                    "auto_accept": self.AUTO_ACCEPT_THRESHOLD,
-                },
-            },
+            reasoning=(
+                f"Confidence {confidence:.2f} in review range "
+                f"({MIN_CONFIDENCE:.2f} to {auto_threshold:.2f})"
+            ),
         )
 
-    def _calculate_priority(self, confidence: float, context: dict[str, Any]) -> float:
-        """Calculate priority score for review queue placement.
-
-        Higher priority (closer to 1.0) = more urgent for analyst attention.
-
-        Factors:
-        - Confidence: Higher confidence = higher priority (less ambiguous)
-        - Amount: Larger estimated_recoverable = higher priority
-        - Urgency: Time-sensitive flags boost priority
+    def get_metrics(self) -> dict:
+        """Get gating metrics for monitoring.
 
         Returns:
-            Priority score in [0, 1]
+            Dict with counts and rates for rejected/review/auto-accept tiers
         """
-        # Confidence component: normalize mid-range to [0, 1]
-        # 0.30 → 0.0, 0.89 → 1.0
-        confidence_range = self.AUTO_ACCEPT_THRESHOLD - self.REJECT_THRESHOLD
-        confidence_normalized = (confidence - self.REJECT_THRESHOLD) / confidence_range
-        confidence_component = max(0.0, min(1.0, confidence_normalized))
-
-        # Amount component: log scale for estimated_recoverable
-        # $1k → 0.2, $10k → 0.5, $50k+ → 1.0
-        estimated_recoverable = float(context.get("estimated_recoverable") or 0.0)
-        if estimated_recoverable <= 0:
-            amount_component = 0.0
-        elif estimated_recoverable < 1000:
-            amount_component = 0.1
-        elif estimated_recoverable < 10000:
-            amount_component = 0.5
-        elif estimated_recoverable < 50000:
-            amount_component = 0.8
-        else:
-            amount_component = 1.0
-
-        # Urgency component: boolean urgency flags
-        urgency_flag = bool(context.get("urgency_flag"))
-        urgency_component = 1.0 if urgency_flag else 0.3
-
-        # Weighted combination
-        priority = (
-            self.CONFIDENCE_WEIGHT * confidence_component
-            + self.AMOUNT_WEIGHT * amount_component
-            + self.URGENCY_WEIGHT * urgency_component
-        )
-
-        return round(min(1.0, max(0.0, priority)), 4)
-
-    def get_metrics(self) -> dict[str, Any]:
-        """Get current gating metrics for monitoring/calibration.
-
-        Returns:
-            Dict with counts and rates for each tier
-        """
-        total = self._metrics["total_evaluations"]
+        total = self._total_evaluated
 
         if total == 0:
             return {
-                "total_evaluations": 0,
-                "rejection_rate": 0.0,
+                "total_evaluated": 0,
+                "rejected_count": 0,
+                "review_count": 0,
+                "auto_accept_count": 0,
+                "reject_rate": 0.0,
                 "review_rate": 0.0,
                 "auto_accept_rate": 0.0,
-                "counts": self._metrics.copy(),
             }
 
         return {
-            "total_evaluations": total,
-            "rejection_rate": round(self._metrics["rejected"] / total, 4),
-            "review_rate": round(self._metrics["routed_to_review"] / total, 4),
-            "auto_accept_rate": round(self._metrics["auto_accepted"] / total, 4),
-            "counts": self._metrics.copy(),
-            "thresholds": {
-                "reject": self.REJECT_THRESHOLD,
-                "auto_accept": self.AUTO_ACCEPT_THRESHOLD,
-            },
+            "total_evaluated": total,
+            "rejected_count": self._rejected_count,
+            "review_count": self._review_count,
+            "auto_accept_count": self._auto_accept_count,
+            "reject_rate": self._rejected_count / total,
+            "review_rate": self._review_count / total,
+            "auto_accept_rate": self._auto_accept_count / total,
         }
-
-    def reset_metrics(self) -> None:
-        """Reset metrics counters (useful for testing/periodic reporting)."""
-        for key in self._metrics:
-            self._metrics[key] = 0

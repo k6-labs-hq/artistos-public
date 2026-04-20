@@ -1,161 +1,202 @@
-"""
-Statement parsing timeout enforcement for ingestion DoS protection.
+"""Statement parsing with timeout enforcement.
 
-Prevents malformed or maliciously crafted large statement files from hanging
-the ingestion worker indefinitely by enforcing a configurable hard timeout.
-
-Without timeout:
-- 50MB CSV with quadratic-complexity malformed records can hang parser indefinitely
-- Worker thread blocked forever, reducing throughput to zero
-- Subsequent uploads queued behind hung parser
-- No visibility into which file caused the hang
-
-With 60s timeout:
-- Parser killed after 60s regardless of file size
-- Worker thread released immediately
-- Clear 422 error to user with actionable message
-- Metrics track timeout frequency for capacity planning
-
-Configuration:
-- STATEMENT_PARSE_TIMEOUT_SECONDS: Hard timeout for parsing (default: 60)
-- STATEMENT_PARSE_TIMEOUT_LOG_THRESHOLD: Log warning if parse >N seconds (default: 30)
-
-Closes: XR7-402
-Domain: ingestion
-Scale-target: 10x ingestion volume with DoS protection
-Compliance: SOC 2 CC6.1 — Data integrity and availability controls
+Prevents DoS attacks from malformed or malicious statement files that could
+cause parser to hang or consume excessive CPU/memory.
 """
 
 from __future__ import annotations
 
-import os
-from concurrent.futures import ThreadPoolExecutor
-from concurrent.futures import TimeoutError as FuturesTimeoutError
-from dataclasses import dataclass
-from datetime import datetime
-from typing import Any
+import signal
+from typing import Any, Callable
 
 from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
 
-PARSE_TIMEOUT_SECONDS = int(os.environ.get("STATEMENT_PARSE_TIMEOUT_SECONDS", "60"))
-PARSE_TIMEOUT_LOG_THRESHOLD = int(os.environ.get("STATEMENT_PARSE_TIMEOUT_LOG_THRESHOLD", "30"))
+
+# Default timeout for statement parsing (seconds)
+DEFAULT_PARSE_TIMEOUT = 30
 
 
-@dataclass
 class TimeoutConfig:
-    """Timeout configuration for statement parsing."""
+    """Configuration for parse timeout settings."""
 
-    timeout_seconds: int = PARSE_TIMEOUT_SECONDS
-    log_threshold_seconds: int = PARSE_TIMEOUT_LOG_THRESHOLD
-    enabled: bool = True
+    def __init__(self, timeout_seconds: int = DEFAULT_PARSE_TIMEOUT) -> None:
+        """Initialize timeout configuration.
+
+        Args:
+            timeout_seconds: Timeout in seconds
+        """
+        self.timeout_seconds = timeout_seconds
 
 
 class StatementParseTimeoutError(Exception):
-    """Raised when statement parsing exceeds timeout threshold."""
+    """Raised when statement parsing exceeds timeout threshold.
 
-    def __init__(self, timeout_seconds: int, filename: str):
+    Attributes:
+        timeout_seconds: Timeout value that was exceeded
+        message: Error message
+    """
+
+    def __init__(self, timeout_seconds: int, message: str | None = None) -> None:
+        """Initialize timeout error.
+
+        Args:
+            timeout_seconds: Timeout that was exceeded
+            message: Optional custom error message
+        """
         self.timeout_seconds = timeout_seconds
-        self.filename = filename
-        super().__init__(
-            f"Statement parsing timed out after {timeout_seconds}s for file {filename}"
-        )
+        default_msg = f"Statement parsing timed out after {timeout_seconds} seconds"
+        super().__init__(message or default_msg)
+
+
+def _timeout_handler(signum, frame):
+    """Signal handler for SIGALRM timeout."""
+    raise StatementParseTimeoutError(
+        DEFAULT_PARSE_TIMEOUT,
+        f"Operation timed out after {DEFAULT_PARSE_TIMEOUT} seconds",
+    )
 
 
 def parse_with_timeout(
-    parse_fn: callable,
-    content: bytes,
-    artist_id: str,
-    filename: str = "statement.csv",
-    timeout_config: TimeoutConfig | None = None,
+    func: Callable,
+    *args,
+    timeout_seconds: int = DEFAULT_PARSE_TIMEOUT,
     **kwargs,
 ) -> Any:
-    """Execute statement parsing function with hard timeout.
+    """Execute a parsing function with timeout enforcement.
 
-    Uses ThreadPoolExecutor to isolate parsing in a separate thread and kill it
-    if it exceeds the timeout threshold. This prevents malformed files from
-    hanging the ingestion worker indefinitely.
+    Wraps the provided function in a timeout mechanism. If execution exceeds
+    the timeout, raises StatementParseTimeoutError to prevent resource exhaustion.
 
     Args:
-        parse_fn: The parsing function to execute (e.g., parse_statement_file)
-        content: Raw file bytes
-        artist_id: Artist ID for the statement
-        filename: Original filename for error messages
-        timeout_config: Timeout configuration (uses defaults if None)
-        **kwargs: Additional arguments to pass to parse_fn
+        func: Function to execute with timeout
+        *args: Positional arguments for func
+        timeout_seconds: Maximum execution time in seconds (default: 30)
+        **kwargs: Keyword arguments for func
 
     Returns:
-        ParseResult from the parsing function
+        Result from func execution
 
     Raises:
-        StatementParseTimeoutError: If parsing exceeds timeout threshold
+        StatementParseTimeoutError: If execution exceeds timeout
 
-    Example:
-        >>> from XR7.ingestion.statement_parser import parse_statement_file
-        >>> result = parse_with_timeout(
-        ...     parse_statement_file,
-        ...     file_bytes,
-        ...     "artist-123",
-        ...     "march_statement.csv"
-        ... )
-    """
-    if timeout_config is None:
-        timeout_config = TimeoutConfig()
-
-    if not timeout_config.enabled:
-        # Timeout enforcement disabled (e.g., for testing)
-        return parse_fn(content, artist_id, filename=filename, **kwargs)
-
-    start_time = datetime.now()
-
-    # Execute parse in thread pool with timeout
-    with ThreadPoolExecutor(max_workers=1, thread_name_prefix="parse_timeout_") as executor:
-        future = executor.submit(parse_fn, content, artist_id, filename=filename, **kwargs)
+    Example::
 
         try:
-            result = future.result(timeout=timeout_config.timeout_seconds)
-
-            # Log warning if parsing took significant time (but didn't timeout)
-            elapsed = (datetime.now() - start_time).total_seconds()
-            if elapsed > timeout_config.log_threshold_seconds:
-                logger.warning(
-                    "Statement parsing slow (near timeout)",
-                    extra={
-                        "artist_id": artist_id,
-                        "filename": filename,
-                        "elapsed_seconds": round(elapsed, 2),
-                        "threshold_seconds": timeout_config.log_threshold_seconds,
-                        "timeout_seconds": timeout_config.timeout_seconds,
-                        "file_size_bytes": len(content),
-                    },
-                )
-
-            return result
-
-        except FuturesTimeoutError:
-            elapsed = (datetime.now() - start_time).total_seconds()
-            logger.error(
-                "Statement parsing timeout",
-                extra={
-                    "artist_id": artist_id,
-                    "filename": filename,
-                    "timeout_seconds": timeout_config.timeout_seconds,
-                    "elapsed_seconds": round(elapsed, 2),
-                    "file_size_bytes": len(content),
-                },
+            result = parse_with_timeout(
+                parse_statement_file,
+                file_content,
+                artist_id,
+                filename="statement.csv",
+                timeout_seconds=30,
             )
-            raise StatementParseTimeoutError(timeout_config.timeout_seconds, filename)
+        except StatementParseTimeoutError as e:
+            logger.error(f"Parsing timed out: {e}")
+
+    Notes:
+        - Uses SIGALRM signal on Unix/Linux (not Windows compatible)
+        - For Windows, consider using threading.Timer or multiprocessing
+        - TODO: Replace with multiprocessing-based timeout for Windows support
+    """
+    # TODO: Add Windows-compatible timeout mechanism
+    # Current implementation uses SIGALRM which is Unix-only
+    # For production on Windows, use multiprocessing.Process with join(timeout)
+
+    try:
+        # Set up signal-based timeout (Unix only)
+        if hasattr(signal, "SIGALRM"):
+            old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
+            signal.alarm(timeout_seconds)
+
+            try:
+                result = func(*args, **kwargs)
+                signal.alarm(0)  # Cancel alarm
+                return result
+            finally:
+                # Restore original handler
+                signal.signal(signal.SIGALRM, old_handler)
+        else:
+            # Windows or no signal support: execute without timeout
+            # TODO: Implement multiprocessing-based timeout for Windows
+            logger.warning(
+                "parse_timeout_not_supported_on_platform",
+                extra={"timeout_seconds": timeout_seconds},
+            )
+            return func(*args, **kwargs)
+
+    except StatementParseTimeoutError:
+        # Re-raise timeout errors
+        raise
+
+    except Exception as exc:
+        # Log other errors
+        logger.error(
+            "parse_with_timeout_unexpected_error",
+            extra={"error": str(exc), "error_type": type(exc).__name__},
+        )
+        raise
 
 
-def get_timeout_config_from_env() -> TimeoutConfig:
-    """Get timeout configuration from environment variables.
+def parse_with_timeout_multiprocessing(
+    func: Callable,
+    *args,
+    timeout_seconds: int = DEFAULT_PARSE_TIMEOUT,
+    **kwargs,
+) -> Any:
+    """Execute parsing with timeout using multiprocessing (Windows-compatible).
+
+    Alternative to signal-based timeout that works on Windows.
+    Uses multiprocessing.Process with join(timeout) to enforce timeout.
+
+    Args:
+        func: Function to execute
+        *args: Positional arguments
+        timeout_seconds: Timeout in seconds
+        **kwargs: Keyword arguments
 
     Returns:
-        TimeoutConfig with values from environment or defaults
+        Result from func
+
+    Raises:
+        StatementParseTimeoutError: If timeout exceeded
+
+    Notes:
+        - More overhead than signal-based approach
+        - Works on Windows
+        - Requires func to be picklable
+        - Result passed via multiprocessing.Queue
+
+    TODO: Make this the default implementation for cross-platform compatibility
     """
-    return TimeoutConfig(
-        timeout_seconds=PARSE_TIMEOUT_SECONDS,
-        log_threshold_seconds=PARSE_TIMEOUT_LOG_THRESHOLD,
-        enabled=True,
-    )
+    from multiprocessing import Process, Queue
+
+    def _worker(queue: Queue, func: Callable, args: tuple, kwargs: dict) -> None:
+        """Worker function that puts result in queue."""
+        try:
+            result = func(*args, **kwargs)
+            queue.put(("success", result))
+        except Exception as exc:
+            queue.put(("error", exc))
+
+    result_queue: Queue = Queue()
+    process = Process(target=_worker, args=(result_queue, func, args, kwargs))
+
+    process.start()
+    process.join(timeout=timeout_seconds)
+
+    if process.is_alive():
+        # Timeout occurred
+        process.terminate()
+        process.join()
+        raise StatementParseTimeoutError(timeout_seconds)
+
+    # Get result from queue
+    if not result_queue.empty():
+        status, value = result_queue.get()
+        if status == "success":
+            return value
+        else:
+            raise value
+
+    raise RuntimeError("Worker process completed but no result available")

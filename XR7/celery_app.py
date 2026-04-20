@@ -1,14 +1,35 @@
 from __future__ import annotations
 
+import logging
+
 from celery import Celery
+from celery.signals import worker_shutting_down
 
 from xr7_common.settings import settings
+
+logger = logging.getLogger(__name__)
 
 celery_app = Celery(
     "xr7",
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
 )
+
+
+# ── Graceful Shutdown Configuration (Issue #78) ─────────────────────────
+@worker_shutting_down.connect
+def on_worker_shutting_down(**kwargs):
+    """
+    Signal handler for graceful worker shutdown.
+
+    Triggered when SIGTERM is received (K8s pod termination).
+    Allows in-flight tasks to complete within terminationGracePeriodSeconds.
+    """
+    logger.warning(
+        "celery.worker.shutting_down",
+        extra={"msg": "Worker received shutdown signal. Completing in-flight tasks.", **kwargs},
+    )
+
 
 celery_app.conf.update(
     task_serializer="json",
@@ -20,7 +41,10 @@ celery_app.conf.update(
     # ── Worker reliability: prevent task loss on pod restart ────────────
     task_acks_late=True,  # Acknowledge tasks AFTER completion, not on receipt
     task_reject_on_worker_lost=True,  # Return tasks to queue if worker dies
-    worker_prefetch_multiplier=4,  # Fetch 4 tasks at once for balanced throughput
+    worker_prefetch_multiplier=1,  # Fetch 1 task at a time for graceful shutdown
+    # ── Graceful shutdown task timeouts (Issue #78) ────────────────────
+    task_soft_time_limit=300,  # Soft limit: 5 minutes (SIGTERM to task)
+    task_time_limit=600,  # Hard limit: 10 minutes (SIGKILL to task)
     beat_schedule={
         "xr7-requeue-due-sync-jobs": {
             "task": "xr7.sync_jobs.requeue_due",

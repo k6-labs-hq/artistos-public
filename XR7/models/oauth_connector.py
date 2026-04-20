@@ -148,3 +148,7 @@ class OAuthTokenRefreshRequest(BaseModel):
     rotate_refresh_token: bool = False
     expires_in_seconds: int = 3600
     force: bool = False
+
+
+# Backward compatibility alias
+OAuthConnectorAccount = ConnectorAccountLink

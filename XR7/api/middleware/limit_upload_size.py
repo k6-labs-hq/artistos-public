@@ -1,77 +1,76 @@
-"""Middleware to limit request body size and prevent OOM from large uploads."""
+"""
+Request body size limit middleware to prevent OOM attacks.
 
-from __future__ import annotations
+CRITICAL SECURITY: Prevents resource exhaustion from oversized request bodies.
+
+Without body size limits:
+- Malicious clients can send multi-GB payloads
+- API workers run out of memory and crash
+- Service becomes unavailable for legitimate users
+- Cascading failures across pods/containers
+
+With body size limits (100MB default):
+- FastAPI rejects oversized payloads before reading into memory
+- Workers remain stable under attack
+- Predictable memory usage patterns
+- Fair resource allocation
+
+Issue #73: Add request body size limits to prevent OOM attacks
+"""
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response
+from starlette.responses import JSONResponse
 from starlette.types import ASGIApp
 
 
 class LimitUploadSizeMiddleware(BaseHTTPMiddleware):
     """
-    Middleware that enforces a maximum request body size to prevent OOM.
+    Middleware to enforce maximum request body size.
 
-    Checks the Content-Length header and rejects requests exceeding the limit
-    before reading the body into memory. This prevents malicious or accidental
-    large file uploads from exhausting server resources.
+    Checks Content-Length header before request body is read into memory.
+    Rejects requests exceeding max_upload_size with HTTP 413.
 
     Args:
-        app: The ASGI application.
-        max_upload_size: Maximum request body size in bytes (default: 100MB).
+        app: ASGI application
+        max_upload_size: Maximum allowed request body size in bytes (default: 100MB)
 
-    Returns:
-        JSONResponse with 413 status if Content-Length exceeds limit.
-
-    Note:
-        This middleware should be added early in the middleware stack, before
-        any middleware that reads the request body.
+    Example:
+        >>> app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=104857600)
     """
 
-    def __init__(self, app: ASGIApp, max_upload_size: int = 104857600) -> None:
-        """
-        Initialize the upload size limiter.
-
-        Args:
-            app: The ASGI application.
-            max_upload_size: Maximum size in bytes (default: 100MB = 104857600).
-        """
+    def __init__(self, app: ASGIApp, max_upload_size: int = 104857600):
         super().__init__(app)
-        self._max_upload_size = int(max_upload_size)
+        self.max_upload_size = max_upload_size
 
-    async def dispatch(self, request: Request, call_next) -> Response:  # type: ignore[override]
+    async def dispatch(self, request: Request, call_next):
         """
         Check Content-Length header and reject oversized requests.
 
-        Args:
-            request: The incoming request.
-            call_next: The next middleware or route handler.
-
         Returns:
-            Response from the next handler if size is acceptable,
-            or JSONResponse with 413 status if too large.
+            Response: 413 Payload Too Large if Content-Length exceeds limit,
+                     otherwise passes request to next middleware/handler.
         """
         content_length = request.headers.get("content-length")
 
-        if content_length is not None:
+        if content_length:
             try:
                 content_length_bytes = int(content_length)
-                if content_length_bytes > self._max_upload_size:
-                    max_mb = self._max_upload_size / (1024 * 1024)
-                    actual_mb = content_length_bytes / (1024 * 1024)
+                if content_length_bytes > self.max_upload_size:
                     return JSONResponse(
                         status_code=413,
                         content={
                             "detail": (
-                                f"Request body too large. Maximum allowed: {max_mb:.1f} MB, "
-                                f"received: {actual_mb:.1f} MB. For large files, use multipart "
-                                f"upload or contact support for alternatives."
+                                f"Request body too large. Maximum allowed: "
+                                f"{self.max_upload_size // (1024 * 1024)}MB, "
+                                f"received: {content_length_bytes // (1024 * 1024)}MB"
                             )
                         },
+                        headers={"Connection": "close"},
                     )
             except ValueError:
-                # Content-Length header is invalid, let request proceed
-                # and let validation/body parsing handle it
+                # Invalid Content-Length header - let FastAPI handle it
                 pass
 
-        return await call_next(request)
+        response = await call_next(request)
+        return response

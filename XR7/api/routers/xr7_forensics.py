@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from XR7.models.base import get_db
 from XR7.models.xr7_royalty import XR7ConnectorCredentialUpsert
 from XR7.services.branding import inject_branding_metadata
+from XR7.services.rate_limiter import check_upload_rate_limit
 from XR7.services.xr7_pipelines import (
     build_royalty_gap_report,
     create_sync_job,
@@ -123,6 +124,7 @@ async def run_file_ingestion(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
+    check_upload_rate_limit(artist_id)
     content = await file.read()
     out = run_file_ingestion_pipeline(
         db,
@@ -227,6 +229,7 @@ async def queue_file_ingestion(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ):
+    check_upload_rate_limit(artist_id)
     retry = RETRY_POLICIES["file_ingestion"]
     content = await file.read()
     payload = {

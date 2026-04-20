@@ -22,6 +22,7 @@ import XR7.models.advance_offer  # noqa: F401
 import XR7.models.advance_opportunity  # noqa: F401
 import XR7.models.advance_recovery_packet  # noqa: F401
 import XR7.models.agent_handoff  # noqa: F401
+import XR7.models.api_key  # noqa: F401
 import XR7.models.artist_message  # noqa: F401
 import XR7.models.artist_referral  # noqa: F401
 import XR7.models.batch_ingestion_job  # noqa: F401
@@ -164,3 +165,33 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
     for item in items:
         if item.get_closest_marker("integration"):
             item.add_marker(skip_marker)
+
+
+# ---------------------------------------------------------------------------
+# Test helper constants and functions
+# ---------------------------------------------------------------------------
+TEST_ARTIST_ID = "test-artist-123"
+
+
+def create_test_artist(session, artist_id: str = TEST_ARTIST_ID, name: str = "Test Artist"):
+    """Create a test artist in the database."""
+    from XR7.models.artist import Artist
+
+    artist = Artist(id=artist_id, name=name, email=f"{artist_id}@test.com")
+    session.add(artist)
+    session.commit()
+    return artist
+
+
+def create_test_terms(session, artist_id: str = TEST_ARTIST_ID):
+    """Create test terms acceptance for an artist."""
+    from datetime import datetime, timezone
+
+    from XR7.models.terms_acceptance import TermsAcceptance
+
+    terms = TermsAcceptance(
+        artist_id=artist_id, version="1.0", accepted_at=datetime.now(timezone.utc)
+    )
+    session.add(terms)
+    session.commit()
+    return terms

@@ -1,36 +1,49 @@
-from __future__ import annotations
+"""Router service helper that provides common API utilities.
 
-from dataclasses import dataclass
+Provides a lightweight wrapper around deps.py canonical functions
+for consistent error handling across all routers.
+"""
 
 from sqlalchemy.orm import Session
 
-from XR7.api.deps import get_artist_or_404
+from XR7.api.deps import get_artist_or_404 as _get_artist_or_404
 from XR7.models.artist import Artist
 
 
-@dataclass(frozen=True)
-class RouterPhase1Service:
-    """Thin service-layer seam for high-traffic router migration (v2.1 Phase 1)."""
+class RouterService:
+    """Service class providing common router utilities."""
 
-    router_name: str
+    def __init__(self, router_name: str):
+        self.router_name = router_name
 
     def get_artist_or_404(self, artist_id: str, db: Session) -> Artist:
-        return get_artist_or_404(artist_id, db)
+        """
+        Fetch artist or raise 404.
+
+        Delegates to canonical deps.get_artist_or_404.
+        """
+        return _get_artist_or_404(artist_id, db)
 
 
-_TOP_TRAFFIC_ROUTERS = {
-    "onboarding": RouterPhase1Service(router_name="onboarding"),
-    "recovery": RouterPhase1Service(router_name="recovery"),
-    "intelligence": RouterPhase1Service(router_name="intelligence"),
-    "ingestion": RouterPhase1Service(router_name="ingestion"),
-    "dashboard": RouterPhase1Service(router_name="dashboard"),
-    "anomalies": RouterPhase1Service(router_name="anomalies"),
-    "admin_console": RouterPhase1Service(router_name="admin_console"),
-    "artists": RouterPhase1Service(router_name="artists"),
-    "claims": RouterPhase1Service(router_name="claims"),
-    "advance_governance": RouterPhase1Service(router_name="advance_governance"),
-}
+def router_service_for(router_name: str) -> RouterService:
+    """
+    Factory function to create router service instance.
 
+    Usage:
+        ```python
+        router = APIRouter(tags=["exports"])
+        _router_service = router_service_for("exports")
 
-def router_service_for(router_name: str) -> RouterPhase1Service:
-    return _TOP_TRAFFIC_ROUTERS.get(router_name, RouterPhase1Service(router_name=router_name))
+        @router.get("/artists/{artist_id}/reports/summary")
+        def export_summary(artist_id: str, db: Session = Depends(get_db)):
+            _router_service.get_artist_or_404(artist_id, db)
+            # ... rest of endpoint
+        ```
+
+    Args:
+        router_name: Name of the router (for logging/debugging)
+
+    Returns:
+        RouterService instance
+    """
+    return RouterService(router_name)
