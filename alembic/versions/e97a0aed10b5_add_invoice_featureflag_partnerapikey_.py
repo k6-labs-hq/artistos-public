@@ -6,12 +6,17 @@ Create Date: 2026-04-20 10:07:57.273211
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import inspect
 
 
 revision = 'e97a0aed10b5'
 down_revision = 'fbec60e49504'
 branch_labels = None
 depends_on = None
+
+
+def _has_table(name: str) -> bool:
+    return inspect(op.get_bind()).has_table(name)
 
 
 def upgrade() -> None:
@@ -72,27 +77,34 @@ def upgrade() -> None:
     op.create_index(op.f('ix_partner_api_keys_key_prefix'), 'partner_api_keys', ['key_prefix'])
     
     # Create slo_metrics table
-    op.create_table(
-        'slo_metrics',
-        sa.Column('id', sa.String(), nullable=False),
-        sa.Column('metric_name', sa.String(), nullable=True),
-        sa.Column('value', sa.Float(), nullable=True),
-        sa.Column('timestamp', sa.DateTime(), nullable=True),
-        sa.PrimaryKeyConstraint('id')
-    )
-    
-    # Create tenant_cost_ledger table  
-    op.create_table(
-        'tenant_cost_ledger',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('tenant_id', sa.String(), nullable=False),
-        sa.Column('cost_usd', sa.Float(), nullable=False),
-        sa.Column('cost_type', sa.String(), nullable=False),
-        sa.Column('timestamp', sa.DateTime(), nullable=True),
-        sa.Column('cost_metadata', sa.Text(), nullable=True),
-        sa.PrimaryKeyConstraint('id')
-    )
-    op.create_index(op.f('ix_tenant_cost_ledger_tenant_id'), 'tenant_cost_ledger', ['tenant_id'])
+    if not _has_table('slo_metrics'):
+        op.create_table(
+            'slo_metrics',
+            sa.Column('id', sa.String(), nullable=False),
+            sa.Column('metric_name', sa.String(), nullable=True),
+            sa.Column('value', sa.Float(), nullable=True),
+            sa.Column('timestamp', sa.DateTime(), nullable=True),
+            sa.PrimaryKeyConstraint('id')
+        )
+
+    # Create tenant_cost_ledger table
+    if not _has_table('tenant_cost_ledger'):
+        op.create_table(
+            'tenant_cost_ledger',
+            sa.Column('id', sa.Integer(), nullable=False),
+            sa.Column('tenant_id', sa.String(), nullable=False),
+            sa.Column('cost_usd', sa.Float(), nullable=False),
+            sa.Column('cost_type', sa.String(), nullable=False),
+            sa.Column('timestamp', sa.DateTime(), nullable=True),
+            sa.Column('cost_metadata', sa.Text(), nullable=True),
+            sa.PrimaryKeyConstraint('id')
+        )
+    # Only add index if the tenant_id column exists
+    # (older schema uses org_id; skip if so to keep migration idempotent)
+    bind = op.get_bind()
+    cols = [c["name"] for c in inspect(bind).get_columns("tenant_cost_ledger")]
+    if "tenant_id" in cols:
+        op.create_index(op.f('ix_tenant_cost_ledger_tenant_id'), 'tenant_cost_ledger', ['tenant_id'])
 
 
 def downgrade() -> None:

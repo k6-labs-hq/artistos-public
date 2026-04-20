@@ -24,6 +24,7 @@ Create Date: 2026-04-19
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 
 
 revision = "fbec60e49504"
@@ -59,7 +60,7 @@ def upgrade() -> None:
         sa.Column("counterparty_contact", sa.String(), nullable=True),
         sa.Column(
             "status",
-            sa.Enum(
+            postgresql.ENUM(
                 "IDENTIFIED",
                 "LETTER_DRAFTED",
                 "LETTER_SENT",
@@ -69,6 +70,7 @@ def upgrade() -> None:
                 "SETTLEMENT_NEGOTIATED",
                 "CLOSED",
                 name="auditworkflowstatus",
+                create_type=False,
             ),
             nullable=False,
             server_default="IDENTIFIED",
