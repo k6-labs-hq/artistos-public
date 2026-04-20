@@ -25,7 +25,7 @@ from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
-from XR7.models.claim import Claim, ClaimSchema
+from XR7.models.claim import Claim, ClaimSchema, ClaimStatus
 from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorModel
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
@@ -418,6 +418,16 @@ def export_claims_csv(
 ):
     """Download all claims for an artist as a CSV file."""
     _router_service.get_artist_or_404(artist_id, db)
+    
+    # CRITICAL SECURITY: Validate status filter against ClaimStatus enum (Issue #75)
+    if status:
+        valid_statuses = {s.value for s in ClaimStatus}
+        if status not in valid_statuses:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid claim status '{status}'. Valid statuses: {', '.join(sorted(valid_statuses))}"
+            )
+    
     q = db.query(Claim).filter(Claim.artist_id == artist_id)
     if status:
         q = q.filter(Claim.status == status)
