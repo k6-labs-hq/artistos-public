@@ -47,7 +47,7 @@ spec:
               memory: "2Gi"
           readinessProbe:
             httpGet:
-              path: /health/readiness
+              path: /health/ready
               port: 8000
             initialDelaySeconds: 15
             periodSeconds: 10
@@ -76,6 +76,7 @@ spec:
         app: xr7-worker
     spec:
       serviceAccountName: xr7-workload
+      terminationGracePeriodSeconds: 600  # 10 minutes for graceful shutdown (Issue #78)
       containers:
         - name: worker
           image: ghcr.io/mkallberg21/artistos:latest
@@ -84,6 +85,13 @@ spec:
           envFrom:
             - secretRef:
                 name: xr7-runtime-secrets
+          lifecycle:
+            preStop:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - sleep 5  # Give time to finish current task
           livenessProbe:
             exec:
               command:
