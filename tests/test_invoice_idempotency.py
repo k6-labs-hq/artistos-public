@@ -19,6 +19,7 @@ from sqlalchemy.orm import sessionmaker
 from XR7.billing.engine import BillingEngine
 from XR7.models.artist import Artist
 from XR7.models.base import Base
+from XR7.models.claim import Claim, ClaimStatus
 
 
 @pytest.fixture
@@ -40,7 +41,6 @@ def test_artist(db_session):
         id="test-artist-1",
         email="artist@example.com",
         name="Test Artist",
-        tenant_id="test-tenant",
         contingency_fee_percent=12.0,
     )
     db_session.add(artist)
@@ -49,8 +49,37 @@ def test_artist(db_session):
     yield artist
 
 
+@pytest.fixture
+def test_claim(db_session, test_artist):
+    """Create test claim for invoice creation."""
+    claim = Claim(
+        id="claim-test-1",
+        artist_id=test_artist.id,
+        anomaly_id="anomaly-1",
+        claim_type="ROYALTY_DISPUTE",
+        status=ClaimStatus.IDENTIFIED,
+        currency="USD",
+    )
+    db_session.add(claim)
+    db_session.commit()
+    db_session.refresh(claim)
+    yield claim
+
+
 def test_create_invoice_standard_case(db_session, test_artist):
     """Creating an invoice should calculate correct contingency fee."""
+    # Create claim first (required by database-level implementation)
+    claim = Claim(
+        id="claim-1",
+        artist_id=test_artist.id,
+        anomaly_id="anomaly-1",
+        claim_type="ROYALTY_DISPUTE",
+        status=ClaimStatus.IDENTIFIED,
+        currency="USD",
+    )
+    db_session.add(claim)
+    db_session.commit()
+
     engine = BillingEngine(db_session)
 
     invoice = engine.create_invoice(
@@ -179,7 +208,6 @@ def test_invoice_contingency_fee_uses_artist_specific_rate(db_session):
         id="artist-vip",
         email="vip@example.com",
         name="VIP Artist",
-        tenant_id="test-tenant",
         contingency_fee_percent=15.0,  # Custom rate
     )
     db_session.add(artist_vip)
@@ -234,7 +262,6 @@ def test_concurrent_invoice_creation_idempotency():
         id="artist-concurrent",
         email="concurrent@example.com",
         name="Concurrent Test",
-        tenant_id="test-tenant",
         contingency_fee_percent=12.0,
     )
     session.add(artist)
@@ -265,6 +292,18 @@ def test_concurrent_invoice_creation_idempotency():
 
 def test_invoice_status_lifecycle(db_session, test_artist):
     """Invoice status should transition correctly."""
+    # Create claim first
+    claim = Claim(
+        id="claim-10",
+        artist_id=test_artist.id,
+        anomaly_id="anomaly-10",
+        claim_type="ROYALTY_DISPUTE",
+        status=ClaimStatus.IDENTIFIED,
+        currency="USD",
+    )
+    db_session.add(claim)
+    db_session.commit()
+
     engine = BillingEngine(db_session)
 
     invoice = engine.create_invoice(
@@ -281,3 +320,100 @@ def test_invoice_status_lifecycle(db_session, test_artist):
 
     assert paid_invoice["status"] == "PAID"
     assert paid_invoice["invoice_id"] == invoice["invoice_id"]
+
+
+def test_database_level_idempotency_survives_process_crash():
+    """
+    TDD-BILL-001: Database-level idempotency constraint prevents double-billing
+    after process crash + Celery retry.
+
+    Critical Scenario: Under Celery retry with process crash between invoice creation
+    and acknowledgment, in-memory idempotency dict is lost. Without database-level
+    constraint, duplicate invoices would be created → double-billing.
+
+    This test simulates process crash by creating a new BillingEngine instance
+    (losing all in-memory state) and verifies that database unique constraint
+    prevents duplicate invoice creation.
+
+    Compliance: SOC 2 CC6.1 - Logical access controls (revenue integrity)
+    Severity: CRITICAL - Revenue correctness failure risk
+    """
+    # Setup: Create database and commit artist + claim
+    engine_db = create_engine("sqlite:///:memory:")
+    Base.metadata.create_all(engine_db)
+    Session = sessionmaker(bind=engine_db)
+
+    # Create artist and claim in initial session
+    session1 = Session()
+    artist = Artist(
+        id="artist-crash-test",
+        email="crash@example.com",
+        name="Crash Test Artist",
+        contingency_fee_percent=12.0,
+    )
+    claim = Claim(
+        id="claim-crash-test",
+        artist_id=artist.id,
+        anomaly_id="anomaly-crash",
+        claim_type="ROYALTY_DISPUTE",
+        status=ClaimStatus.IDENTIFIED,
+        currency="USD",
+    )
+    session1.add(artist)
+    session1.add(claim)
+    session1.commit()
+    artist_id = artist.id  # Store ID before closing session
+    session1.close()
+
+    # STEP 1: Create invoice with first BillingEngine instance
+    session2 = Session()
+    billing_engine_1 = BillingEngine(session2)
+
+    invoice1 = billing_engine_1.create_invoice(
+        claim_id="claim-crash-test",
+        recovered_amount=10000.0,
+        currency="USD",
+        artist_id=artist_id,
+    )
+
+    assert invoice1["invoice_id"]
+    assert invoice1["recovered_amount"] == 10000.0
+    assert invoice1["contingency_fee"] == 1200.0
+
+    # Commit invoice to database
+    session2.commit()
+    invoice1_id = invoice1["invoice_id"]
+    session2.close()
+
+    # SIMULATE PROCESS CRASH: New session, new BillingEngine instance
+    # All in-memory state (_invoices dict) is lost
+    session3 = Session()
+    billing_engine_2 = BillingEngine(session3)
+
+    # STEP 2: Celery retry attempts to create invoice again
+    # Without database constraint, this would create DUPLICATE invoice
+    invoice2 = billing_engine_2.create_invoice(
+        claim_id="claim-crash-test",  # SAME claim_id
+        recovered_amount=10000.0,
+        currency="USD",
+        artist_id=artist_id,
+    )
+
+    # ASSERT: Database constraint prevented duplicate, returned existing invoice
+    assert invoice2["invoice_id"] == invoice1_id  # SAME invoice ID
+    assert invoice2["recovered_amount"] == 10000.0
+    assert invoice2["contingency_fee"] == 1200.0
+
+    # VERIFY: Only ONE invoice exists in database for this claim
+    from XR7.models.invoice import Invoice
+
+    invoices_in_db = session3.query(Invoice).filter(Invoice.claim_id == "claim-crash-test").all()
+    assert len(invoices_in_db) == 1  # Only one invoice persisted
+    assert invoices_in_db[0].id == invoice1_id
+
+    session3.close()
+    Base.metadata.drop_all(engine_db)
+
+    # SUCCESS: TDD-BILL-001 remediation works correctly
+    # Database constraint (uq_invoices_claim_id) prevented double-billing
+    # even after simulated process crash + in-memory state loss

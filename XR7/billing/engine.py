@@ -1,11 +1,13 @@
 import uuid
 from datetime import datetime, timezone
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
+from XR7.models.invoice import Invoice, InvoiceStatus
 from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
@@ -21,7 +23,6 @@ class BillingEngine:
 
     def __init__(self, db_session: Session):
         self.db_session = db_session
-        self._invoices: dict[str, dict] = {}
 
     def _artist_fee_percent(self, artist_id: str) -> float:
         artist = self.db_session.query(Artist).filter(Artist.id == artist_id).first()
@@ -48,13 +49,17 @@ class BillingEngine:
     def create_invoice(
         self, claim_id: str, recovered_amount: float, currency: str, artist_id: str | None = None
     ) -> dict:
-        """Create invoice for a claim with idempotency guarantee.
+        """Create invoice for a claim with database-level idempotency guarantee.
+
+        TDD-BILL-001 Remediation: Database-level unique constraint on claim_id ensures
+        that duplicate invoice creation (via Celery retry after process crash) is prevented
+        at the database layer, not relying on in-memory application state.
 
         IDEMPOTENCY: If an invoice already exists for this claim_id, returns the existing
         invoice instead of creating a duplicate. This prevents double-billing.
 
         Args:
-            claim_id: Claim identifier
+            claim_id: Claim identifier (used as natural idempotency key)
             recovered_amount: Amount recovered from the claim
             currency: Currency code (USD, EUR, etc.)
             artist_id: Optional artist identifier for fee calculation
@@ -63,53 +68,118 @@ class BillingEngine:
             Invoice dict with invoice_id, claim_id, recovered_amount, contingency_fee, etc.
 
         Raises:
-            ValueError: If recovered_amount is negative
+            ValueError: If recovered_amount is negative or claim not found
+
+        Compliance: SOC 2 CC6.1 - Logical access controls (revenue integrity)
         """
         if recovered_amount < 0:
             raise ValueError("recovered_amount must be non-negative")
 
-        # IDEMPOTENCY CHECK: Return existing invoice if one exists for this claim
-        existing_invoice = next(
-            (inv for inv in self._invoices.values() if inv["claim_id"] == claim_id),
-            None,
+        # Fetch claim to get artist_id if not provided
+        claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
+        if not claim:
+            raise ValueError(f"Claim {claim_id} not found")
+
+        artist_id = artist_id or claim.artist_id
+
+        # DATABASE-LEVEL IDEMPOTENCY CHECK: Query for existing invoice by claim_id
+        # If unique constraint uq_invoices_claim_id exists, this prevents duplicates
+        existing_invoice = (
+            self.db_session.query(Invoice).filter(Invoice.claim_id == claim_id).first()
         )
+
         if existing_invoice:
             logger.info(
-                "invoice_idempotency_hit",
+                "invoice_idempotency_hit_database",
                 extra={
                     "claim_id": claim_id,
-                    "existing_invoice_id": existing_invoice["invoice_id"],
+                    "existing_invoice_id": existing_invoice.id,
                     "recovered_amount": recovered_amount,
+                    "idempotency_source": "database_unique_constraint",
                 },
             )
-            return existing_invoice
+            # Return existing invoice as dict for backwards compatibility
+            return {
+                "invoice_id": existing_invoice.id,
+                "claim_id": existing_invoice.claim_id,
+                "recovered_amount": existing_invoice.recovered_amount,
+                "contingency_fee": existing_invoice.contingency_fee,
+                "currency": existing_invoice.currency,
+                "status": existing_invoice.status,
+                "created_at": existing_invoice.created_at.isoformat(),
+            }
 
-        # Create new invoice
-        invoice_id = str(uuid.uuid4())
+        # Create new invoice with database persistence
         contingency_fee = self.calculate_contingency_fee(recovered_amount, artist_id)
-        invoice = {
-            "invoice_id": invoice_id,
-            "claim_id": claim_id,
-            "recovered_amount": recovered_amount,
-            "contingency_fee": contingency_fee,
-            "currency": currency,
-            "status": "PENDING",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        self._invoices[invoice_id] = invoice
-
-        logger.info(
-            "invoice_created",
-            extra={
-                "invoice_id": invoice_id,
-                "claim_id": claim_id,
-                "recovered_amount": recovered_amount,
-                "contingency_fee": contingency_fee,
-                "currency": currency,
-            },
+        invoice = Invoice(
+            claim_id=claim_id,
+            artist_id=artist_id,
+            recovered_amount=recovered_amount,
+            contingency_fee=contingency_fee,
+            currency=currency,
+            status=InvoiceStatus.PENDING,
         )
 
-        return invoice
+        try:
+            self.db_session.add(invoice)
+            self.db_session.flush()  # Flush to trigger unique constraint check
+
+            logger.info(
+                "invoice_created_database",
+                extra={
+                    "invoice_id": invoice.id,
+                    "claim_id": claim_id,
+                    "artist_id": artist_id,
+                    "recovered_amount": recovered_amount,
+                    "contingency_fee": contingency_fee,
+                    "currency": currency,
+                    "idempotency_enforced_by": "database_constraint_uq_invoices_claim_id",
+                },
+            )
+
+            # Return invoice as dict for backwards compatibility
+            return {
+                "invoice_id": invoice.id,
+                "claim_id": invoice.claim_id,
+                "recovered_amount": invoice.recovered_amount,
+                "contingency_fee": invoice.contingency_fee,
+                "currency": invoice.currency,
+                "status": invoice.status,
+                "created_at": invoice.created_at.isoformat(),
+            }
+
+        except IntegrityError as e:
+            # Race condition: Another transaction created invoice for same claim_id
+            # Rollback and return the existing invoice
+            self.db_session.rollback()
+
+            existing_invoice = (
+                self.db_session.query(Invoice).filter(Invoice.claim_id == claim_id).first()
+            )
+
+            if existing_invoice:
+                logger.info(
+                    "invoice_idempotency_race_condition_caught",
+                    extra={
+                        "claim_id": claim_id,
+                        "existing_invoice_id": existing_invoice.id,
+                        "recovered_amount": recovered_amount,
+                        "idempotency_source": "database_integrity_error_catch",
+                        "error": str(e),
+                    },
+                )
+                return {
+                    "invoice_id": existing_invoice.id,
+                    "claim_id": existing_invoice.claim_id,
+                    "recovered_amount": existing_invoice.recovered_amount,
+                    "contingency_fee": existing_invoice.contingency_fee,
+                    "currency": existing_invoice.currency,
+                    "status": existing_invoice.status,
+                    "created_at": existing_invoice.created_at.isoformat(),
+                }
+
+            # If no existing invoice found, this is a different IntegrityError - re-raise
+            raise
 
     def get_artist_billing_summary(self, artist_id: str) -> dict:
         paid_claims = (
@@ -147,11 +217,21 @@ class BillingEngine:
         }
 
     def process_payment(self, invoice_id: str) -> dict:
-        invoice = self._invoices.get(invoice_id)
+        """Mark invoice as paid in database."""
+        invoice = self.db_session.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise ValueError(f"Invoice {invoice_id} not found")
-        invoice["status"] = "PAID"
-        return invoice
+
+        invoice.status = InvoiceStatus.PAID
+        invoice.paid_at = datetime.now(timezone.utc)
+        self.db_session.flush()
+
+        return {
+            "invoice_id": invoice.id,
+            "claim_id": invoice.claim_id,
+            "status": invoice.status,
+            "paid_at": invoice.paid_at.isoformat() if invoice.paid_at else None,
+        }
 
     def record_manual_remittance(
         self,
