@@ -170,7 +170,7 @@ async def lifespan(app: FastAPI):
 
     Base.metadata.create_all(bind=engine)
     configure_structured_logging()
-    configure_tracing()
+    configure_tracing(app)
     yield
 
 
