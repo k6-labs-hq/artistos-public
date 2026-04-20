@@ -52,12 +52,24 @@ def upgrade() -> None:
     op.create_table(
         'partner_api_keys',
         sa.Column('id', sa.String(), nullable=False),
-        sa.Column('key_hash', sa.String(), nullable=False),
         sa.Column('partner_id', sa.String(), nullable=False),
+        sa.Column('key_hash', sa.String(), nullable=False),
+        sa.Column('key_prefix', sa.String(), nullable=False),
+        sa.Column('name', sa.String(), nullable=True),
+        sa.Column('scopes', sa.Text(), nullable=True),
+        sa.Column('tier', sa.String(), nullable=False, server_default='sandbox'),
+        sa.Column('rate_limit_per_hour', sa.Integer(), nullable=False, server_default='100'),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default='1'),
+        sa.Column('is_revoked', sa.Boolean(), nullable=False, server_default='0'),
+        sa.Column('expires_at', sa.DateTime(), nullable=True),
+        sa.Column('last_used_at', sa.DateTime(), nullable=True),
+        sa.Column('usage_count', sa.Integer(), nullable=False, server_default='0'),
         sa.Column('created_at', sa.DateTime(), nullable=False),
+        sa.Column('updated_at', sa.DateTime(), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_partner_api_keys_partner_id'), 'partner_api_keys', ['partner_id'])
+    op.create_index(op.f('ix_partner_api_keys_key_prefix'), 'partner_api_keys', ['key_prefix'])
     
     # Create slo_metrics table
     op.create_table(
@@ -87,6 +99,7 @@ def downgrade() -> None:
     op.drop_index(op.f('ix_tenant_cost_ledger_tenant_id'), table_name='tenant_cost_ledger')
     op.drop_table('tenant_cost_ledger')
     op.drop_table('slo_metrics')
+    op.drop_index(op.f('ix_partner_api_keys_key_prefix'), table_name='partner_api_keys')
     op.drop_index(op.f('ix_partner_api_keys_partner_id'), table_name='partner_api_keys')
     op.drop_table('partner_api_keys')
     op.drop_table('feature_flags')
