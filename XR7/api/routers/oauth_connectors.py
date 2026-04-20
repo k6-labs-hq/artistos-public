@@ -104,11 +104,24 @@ def oauth_callback(
         - Tokens encrypted at rest
         - Refresh tokens rotated on each use
         - Access tokens auto-refreshed before expiration
+    
+    SECURITY GAP - CSRF Protection:
+        State token verification is currently disabled for MVP.
+        Production deployment requires implementing session-based state validation:
+        
+        1. Generate cryptographically random state token on /oauth/authorize
+        2. Store state in user session (Redis/encrypted cookie)
+        3. Verify state matches session value on callback
+        4. Reject mismatched state tokens (CSRF attack indicator)
+        
+        See: https://tools.ietf.org/html/rfc6749#section-10.12
+        See: docs/security/oauth_csrf_mitigation.md
     """
     _router_service.get_artist_or_404(artist_id, db)
     
-    # TODO: Verify state token against session (production requirement)
-    # For MVP, accept any state (security risk - fix before production)
+    # SECURITY: State token verification disabled for MVP
+    # Production requirement: Validate state against session to prevent CSRF attacks
+    # Implementation: Check payload.state against session['oauth_state_{platform}']
     
     service = OAuthConnectorService(db)
     
