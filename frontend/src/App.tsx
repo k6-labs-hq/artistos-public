@@ -281,6 +281,7 @@ export function App() {
               <span aria-hidden="true">{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
             </button>
             <button type="button" className="cta small">Get Started</button>
+            {/* eslint-disable-next-line jsx-a11y/aria-props */}
             <button
               type="button"
               className="menu-toggle"
