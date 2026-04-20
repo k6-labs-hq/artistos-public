@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**claim_id** | **str** |  | [optional] 
-**anomaly** | **Dict[str, object]** |  | [optional] 
-**evidence** | **Dict[str, object]** |  | [optional] 
+**claim_id** | **str** |  | [optional]
+**anomaly** | **Dict[str, object]** |  | [optional]
+**evidence** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -27,5 +27,3 @@ demand_letter_request_dict = demand_letter_request_instance.to_dict()
 demand_letter_request_from_dict = DemandLetterRequest.from_dict(demand_letter_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

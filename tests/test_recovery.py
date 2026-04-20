@@ -68,11 +68,13 @@ def test_advance_claim_transitions(db_session, artist_and_anomaly):
 def test_advance_claim_raises_at_terminal_state(db_session, artist_and_anomaly):
     orchestrator = ClaimsOrchestrator(db_session)
     claim = orchestrator.create_claim("anomaly-1", "ROYALTY_DISPUTE")
-    # Advance all the way to CLOSED without hard-coding the number of
-    # intermediate states in the workflow.
+    # Advance to the state just before PAID, then reconcile payout amounts
+    # (required by the payout invariant) before continuing to CLOSED.
     for _ in range(10):
         if claim.status == ClaimStatus.CLOSED:
             break
+        if claim.status == ClaimStatus.ACCEPTED:
+            orchestrator.reconcile_recovered_amount(claim.id, 1000.0, "USD")
         claim = orchestrator.advance_claim(claim.id)
     assert claim.status == ClaimStatus.CLOSED
     with pytest.raises(ValueError):
@@ -185,6 +187,133 @@ def test_generate_evidence_packet_integrity_chain_advances(db_session, artist_an
     )
     assert second_packet["integrity"]["chain_hash"] != first_packet["integrity"]["chain_hash"]
     assert second_packet["metadata"]["revision"] == 2
+
+
+def test_evidence_packet_verification_detects_tampering(db_session, artist_and_anomaly):
+    """
+    P0 Security Test: Evidence tampering detection on read.
+
+    Scenario: Database compromise or insider threat tampers with evidence.integrity.packet_hash.
+    Expected: verify_packet_integrity() must detect tampering and return valid=False.
+
+    Business Context: Evidence packets are served to attorneys for legal proceedings.
+    Tampered evidence that passes as valid would destroy platform credibility and create
+    legal liability. The get_evidence() endpoint uses this verification before serving evidence.
+
+    Compliance: SOC 2 CC7.2 - System monitoring must detect unauthorized data modifications
+    Regulatory: Evidence integrity is required for attorney trust and audit compliance
+    """
+    orchestrator = ClaimsOrchestrator(db_session)
+    claim = orchestrator.create_claim("anomaly-1", "ROYALTY_DISPUTE")
+
+    # Generate valid evidence packet
+    valid_packet = orchestrator.generate_evidence_packet(claim.id)
+    assert valid_packet["integrity"]["packet_hash"]
+
+    # Verify untampered packet passes
+    verification = orchestrator.verify_packet_integrity(valid_packet)
+    assert verification["valid"] is True
+    assert verification["checks"]["packet_hash_matches"] is True
+
+    # Tamper with evidence: modify packet_hash to simulate database tampering
+    tampered_packet = valid_packet.copy()
+    original_hash = tampered_packet["integrity"]["packet_hash"]
+    tampered_packet["integrity"]["packet_hash"] = "0" * 64  # Invalid hash
+    assert tampered_packet["integrity"]["packet_hash"] != original_hash
+
+    # Verify tampered packet is rejected
+    tampered_verification = orchestrator.verify_packet_integrity(tampered_packet)
+    assert tampered_verification["valid"] is False
+    assert tampered_verification["checks"]["packet_hash_matches"] is False
+
+    # This verification failure would trigger P0 alert in get_evidence() endpoint
+    # See XR7/api/routers/claims.py::get_evidence() for production usage
+
+
+def test_scheduled_chain_verification_detects_tampering(db_session, artist_and_anomaly):
+    """
+    TDD-DATA-001: Scheduled chain verification job detects tampering across all tenants.
+
+    SOC 2 CC7.2 Compliance Test: Daily verification job must detect unauthorized modifications
+    to evidence packets BEFORE evidence is served to attorneys. Reactive verification (on-read-only)
+    fails SOC 2 continuous monitoring requirement.
+
+    Scenario:
+    1. Two artists each have valid evidence packets
+    2. Artist B's evidence packet is tampered (simulating database compromise)
+    3. Scheduled verification job runs across all tenants
+    4. Job detects tampering in Artist B's packet, logs P0 alert
+    5. Verification report shows: 2 tenants checked, 2 packets verified, 1 tampering detected
+
+    Business Impact: Without scheduled verification, tampered evidence could sit undetected
+    for months until an attorney requests it. Forensic "when did tampering occur" is impossible.
+
+    Regulatory: SOC 2 Type II observation period requires continuous monitoring evidence.
+    """
+    from XR7.models.claim import Claim
+    from XR7.tasks.chain_verification import verify_all_tenants_chain_integrity_task
+
+    # Create two artists with valid evidence packets
+    artist_a, anomaly_a = artist_and_anomaly
+    artist_b = Artist(id="artist-b", name="Artist B")
+    db_session.add(artist_b)
+    db_session.commit()
+
+    anomaly_b = Anomaly(
+        id="anomaly-b",
+        artist_id=artist_b.id,
+        category=AnomalyCategory.ROYALTY,
+        subtype="MISSING_PAYMENT",
+        severity=AnomalySeverity.HIGH,
+        confidence_score=0.85,
+        status=AnomalyStatus.OPEN,
+    )
+    db_session.add(anomaly_b)
+    db_session.commit()
+
+    orchestrator = ClaimsOrchestrator(db_session)
+
+    # Generate valid evidence packets for both artists
+    claim_a = orchestrator.create_claim(anomaly_a.id, "ROYALTY_DISPUTE")
+    packet_a = orchestrator.generate_evidence_packet(claim_a.id)
+    claim_a.evidence = packet_a
+    db_session.commit()
+
+    claim_b = orchestrator.create_claim(anomaly_b.id, "ROYALTY_DISPUTE")
+    packet_b = orchestrator.generate_evidence_packet(claim_b.id)
+    claim_b.evidence = packet_b
+    db_session.commit()
+
+    # Verify both packets are valid before tampering
+    assert orchestrator.verify_packet_integrity(packet_a)["valid"] is True
+    assert orchestrator.verify_packet_integrity(packet_b)["valid"] is True
+
+    # Simulate database tampering: modify Artist B's evidence packet_hash
+    # Deep copy required because evidence is a nested dict
+    import copy
+
+    claim_b_record = db_session.query(Claim).filter(Claim.id == claim_b.id).first()
+    tampered_evidence = copy.deepcopy(claim_b_record.evidence)
+    tampered_evidence["integrity"]["packet_hash"] = "0" * 64  # Invalid hash
+    claim_b_record.evidence = tampered_evidence
+    db_session.commit()
+
+    # Run scheduled verification job (as would happen daily in production)
+    # This simulates: celery beat → xr7.chain_verification.verify_all_tenants
+    # For testing, we pass the test db_session directly
+    result = verify_all_tenants_chain_integrity_task(db=db_session)
+
+    # Assert verification job detected the tampering
+    assert result["tenants_checked"] == 2  # Both artists checked
+    assert result["packets_verified"] == 2  # Both packets examined
+    assert result["tampering_detected_count"] == 1  # Artist B's tampering detected
+
+    # In production, this would:
+    # 1. Log ERROR with severity=P0 and security_event=scheduled_chain_verification_failure
+    # 2. Include claim_id, artist_id, failed checks, packet_hash in structured log
+    # 3. Reference runbook: docs/operations/runbooks/chain-integrity-failure.md
+    # 4. Ops team receives PagerDuty alert within 2 minutes
+    # 5. Evidence serving blocked for affected artist until integrity restored
 
 
 def test_claim_evidence_export_zip_and_pdf():

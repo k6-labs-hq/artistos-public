@@ -92,5 +92,3 @@ class ApprovalRequest(BaseModel):
             "notes": obj.get("notes")
         })
         return _obj
-
-

@@ -1,7 +1,7 @@
 # XR7 Developer Handbook
 
-**Version:** 2.0  
-**Project:** XR7 Engine — Artist Earnings Accuracy Platform  
+**Version:** 2.0
+**Project:** XR7 Engine — Artist Earnings Accuracy Platform
 **Stack:** Python 3.12 · FastAPI · SQLAlchemy 2.0 · Pydantic v2 · Celery · PostgreSQL · Redis
 
 > **This handbook** is the engineering reference for contributors building, reviewing, or operating XR7. It is deeper and more comprehensive than [developer_onboarding.md](developer_onboarding.md) (which covers setup steps). Start with onboarding, then return here.
@@ -148,7 +148,7 @@ All new code must be fully type-annotated.
 def compute_delta(expected: float, actual: float) -> float:
     return expected - actual
 
-# WRONG  
+# WRONG
 def compute_delta(expected, actual):
     return expected - actual
 ```
@@ -311,7 +311,7 @@ pytest tests/ -q
 uvicorn XR7.api.app:app --reload --port 8000
 ```
 
-Swagger UI is at `http://localhost:8000/docs`.  
+Swagger UI is at `http://localhost:8000/docs`.
 ReDoc is at `http://localhost:8000/redoc`.
 
 ### C.3 Running Tests

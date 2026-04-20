@@ -89,5 +89,3 @@ class AdviceResponse(BaseModel):
             "conversation_history": obj.get("conversation_history")
         })
         return _obj
-
-

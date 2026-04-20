@@ -1,8 +1,8 @@
 # XR7 Monitoring & Observability Handbook
 
-**Version:** 1.0  
-**Stack:** Prometheus + Grafana + Loki + Jaeger + OpenTelemetry + PagerDuty  
-**Scope:** Application, infrastructure, domain business metrics, data-quality drift, n8n workflows  
+**Version:** 1.0
+**Stack:** Prometheus + Grafana + Loki + Jaeger + OpenTelemetry + PagerDuty
+**Scope:** Application, infrastructure, domain business metrics, data-quality drift, n8n workflows
 **Principle:** Every alert must be actionable. No alert fires without a documented response action.
 
 ---

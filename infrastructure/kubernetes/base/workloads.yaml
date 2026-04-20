@@ -84,6 +84,26 @@ spec:
           envFrom:
             - secretRef:
                 name: xr7-runtime-secrets
+          livenessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - celery -A XR7.celery_app:celery_app inspect ping --timeout=5
+            initialDelaySeconds: 30
+            periodSeconds: 60
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - celery -A XR7.celery_app:celery_app inspect ping --timeout=5
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 2
           resources:
             requests:
               cpu: "500m"
@@ -118,6 +138,26 @@ spec:
           envFrom:
             - secretRef:
                 name: xr7-runtime-secrets
+          livenessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - "test -f /tmp/celerybeat.pid && kill -0 $(cat /tmp/celerybeat.pid) 2>/dev/null"
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - bash
+                - -c
+                - "test -f /tmp/celerybeat.pid"
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 2
           resources:
             requests:
               cpu: "250m"

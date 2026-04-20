@@ -6,8 +6,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tenant_id** | **str** |  | [optional] [default to 'default']
-**platform** | **str** |  | 
-**detections** | **List[Dict[str, object]]** |  | [optional] 
+**platform** | **str** |  |
+**detections** | **List[Dict[str, object]]** |  | [optional]
 **queue_backend** | **str** |  | [optional] [default to 'celery']
 
 ## Example
@@ -28,5 +28,3 @@ fingerprinting_request_dict = fingerprinting_request_instance.to_dict()
 fingerprinting_request_from_dict = FingerprintingRequest.from_dict(fingerprinting_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

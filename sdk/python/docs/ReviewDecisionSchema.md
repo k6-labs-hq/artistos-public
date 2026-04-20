@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**review_item_id** | **str** |  | 
-**analyst_email** | **str** |  | 
-**decision** | [**ReviewDecisionType**](ReviewDecisionType.md) |  | 
-**notes** | **str** |  | [optional] 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**review_item_id** | **str** |  |
+**analyst_email** | **str** |  |
+**decision** | [**ReviewDecisionType**](ReviewDecisionType.md) |  |
+**notes** | **str** |  | [optional]
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -30,5 +30,3 @@ review_decision_schema_dict = review_decision_schema_instance.to_dict()
 review_decision_schema_from_dict = ReviewDecisionSchema.from_dict(review_decision_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -27,5 +27,3 @@ xr7_api_routers_earnings_forecast_request_dict = xr7_api_routers_earnings_foreca
 xr7_api_routers_earnings_forecast_request_from_dict = XR7ApiRoutersEarningsForecastRequest.from_dict(xr7_api_routers_earnings_forecast_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

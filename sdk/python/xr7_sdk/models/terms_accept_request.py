@@ -87,5 +87,3 @@ class TermsAcceptRequest(BaseModel):
             "agreed": obj.get("agreed")
         })
         return _obj
-
-

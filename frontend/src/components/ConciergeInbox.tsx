@@ -280,9 +280,11 @@ export function ConciergeInbox({
         {/* Escalate */}
         {!escalated && (
           <button
+            type="button"
             onClick={requestHumanAnalyst}
             disabled={escalating}
             className="concierge-escalate-btn"
+            aria-label="Request a human analyst response"
             title="Request a human analyst response"
           >
             {escalating ? "…" : "👤 Analyst"}

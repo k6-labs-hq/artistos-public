@@ -1,6 +1,6 @@
 # XR7 Senior Engineer Code Review Checklist
 
-**Version:** 2.0  
+**Version:** 2.0
 **Use:** Apply to every PR before approving. All CRITICAL items are blockers.
 
 Copy this checklist into the PR review or use it as a mental model when reviewing.
@@ -9,7 +9,7 @@ Copy this checklist into the PR review or use it as a mental model when reviewin
 
 ## Section 1: Architecture & Domain Boundaries
 
-> **Reference:** [handbook.md §A.3](handbook.md#a3-layer-boundaries-critical),  
+> **Reference:** [handbook.md §A.3](handbook.md#a3-layer-boundaries-critical),
 > `scripts/check_domain_boundaries.py`
 
 | # | Check | Severity |
@@ -25,7 +25,7 @@ Copy this checklist into the PR review or use it as a mental model when reviewin
 
 ## Section 2: Naming Conventions
 
-> **Reference:** [handbook.md §B.1](handbook.md#b1-naming-conventions),  
+> **Reference:** [handbook.md §B.1](handbook.md#b1-naming-conventions),
 > `scripts/check_naming_conventions.py`
 
 | # | Check | Severity |

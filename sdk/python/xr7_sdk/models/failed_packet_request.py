@@ -85,5 +85,3 @@ class FailedPacketRequest(BaseModel):
             "failure_reason": obj.get("failure_reason")
         })
         return _obj
-
-

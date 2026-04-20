@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**email** | **str** |  | 
-**password** | **str** |  | 
+**email** | **str** |  |
+**password** | **str** |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ admin_login_request_dict = admin_login_request_instance.to_dict()
 admin_login_request_from_dict = AdminLoginRequest.from_dict(admin_login_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

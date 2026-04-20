@@ -107,5 +107,3 @@ class XR7ConnectorCredentialUpsert(BaseModel):
             "tenant_id": obj.get("tenant_id") if obj.get("tenant_id") is not None else 'default'
         })
         return _obj
-
-

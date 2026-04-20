@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_dashboard** | **Dict[str, object]** |  | [optional] 
-**user_message** | **str** |  | [optional] 
+**artist_dashboard** | **Dict[str, object]** |  | [optional]
+**user_message** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ advice_request_dict = advice_request_instance.to_dict()
 advice_request_from_dict = AdviceRequest.from_dict(advice_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**provider** | **str** |  | 
-**redirect_uri** | **str** |  | 
-**scopes** | **List[str]** |  | [optional] 
+**provider** | **str** |  |
+**redirect_uri** | **str** |  |
+**scopes** | **List[str]** |  | [optional]
 **tenant_id** | **str** |  | [optional] [default to 'default']
 
 ## Example
@@ -28,5 +28,3 @@ o_auth_session_create_request_dict = o_auth_session_create_request_instance.to_d
 o_auth_session_create_request_from_dict = OAuthSessionCreateRequest.from_dict(o_auth_session_create_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

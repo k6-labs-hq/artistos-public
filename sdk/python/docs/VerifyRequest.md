@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**session_id** | **str** |  | 
-**phone_otp** | **str** |  | 
-**email_otp** | **str** |  | 
+**session_id** | **str** |  |
+**phone_otp** | **str** |  |
+**email_otp** | **str** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ verify_request_dict = verify_request_instance.to_dict()
 verify_request_from_dict = VerifyRequest.from_dict(verify_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

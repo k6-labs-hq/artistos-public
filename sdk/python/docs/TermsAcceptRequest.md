@@ -6,8 +6,8 @@ Body for POST /artists/{artist_id}/terms/accept.  ``terms_version`` must match t
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**terms_version** | **str** |  | 
-**agreed** | **bool** |  | 
+**terms_version** | **str** |  |
+**agreed** | **bool** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ terms_accept_request_dict = terms_accept_request_instance.to_dict()
 terms_accept_request_from_dict = TermsAcceptRequest.from_dict(terms_accept_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -5,24 +5,24 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**category** | [**AnomalyCategory**](AnomalyCategory.md) |  | 
-**subtype** | **str** |  | 
-**severity** | [**AnomalySeverity**](AnomalySeverity.md) |  | 
-**expected_amount** | **float** |  | [optional] 
-**actual_amount** | **float** |  | [optional] 
-**estimated_recoverable** | **float** |  | [optional] 
-**confidence_score** | **float** |  | 
-**time_window_start** | **datetime** |  | [optional] 
-**time_window_end** | **datetime** |  | [optional] 
-**territory** | **str** |  | [optional] 
-**status** | [**AnomalyStatus**](AnomalyStatus.md) |  | 
-**description** | **str** |  | [optional] 
-**anomaly_score** | **float** |  | [optional] 
-**model_version** | **str** |  | [optional] 
-**feature_snapshot** | **str** |  | [optional] 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**category** | [**AnomalyCategory**](AnomalyCategory.md) |  |
+**subtype** | **str** |  |
+**severity** | [**AnomalySeverity**](AnomalySeverity.md) |  |
+**expected_amount** | **float** |  | [optional]
+**actual_amount** | **float** |  | [optional]
+**estimated_recoverable** | **float** |  | [optional]
+**confidence_score** | **float** |  |
+**time_window_start** | **datetime** |  | [optional]
+**time_window_end** | **datetime** |  | [optional]
+**territory** | **str** |  | [optional]
+**status** | [**AnomalyStatus**](AnomalyStatus.md) |  |
+**description** | **str** |  | [optional]
+**anomaly_score** | **float** |  | [optional]
+**model_version** | **str** |  | [optional]
+**feature_snapshot** | **str** |  | [optional]
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -42,5 +42,3 @@ anomaly_schema_dict = anomaly_schema_instance.to_dict()
 anomaly_schema_from_dict = AnomalySchema.from_dict(anomaly_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

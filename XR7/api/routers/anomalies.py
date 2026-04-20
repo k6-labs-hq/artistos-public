@@ -4,10 +4,10 @@ from sqlalchemy.orm import Session
 from XR7.ai_music.influence_detector import InfluenceDetector
 from XR7.anomaly.engine import AnomalyEngine
 from XR7.anomaly.fraud_inflation_detector import FraudInflationDetector
-from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import get_optional_auth_payload
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
+from XR7.ml.confidence_gating import ConfidenceGatingService
 from XR7.models.anomaly import (
     Anomaly,
     AnomalyRecoveryProbabilityResponseSchema,
@@ -29,15 +29,49 @@ from XR7.services.branding import (
     get_branding_for_artist,
     inject_branding_metadata,
 )
+from XR7.services.cache import cached_response
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["anomalies"])
+_router_service = router_service_for("anomalies")
 logger = get_logger(__name__)
 
 
-@router.get("/artists/{artist_id}/anomalies", response_model=list[AnomalyWithRecoverabilitySchema])
+@router.get(
+    "/artists/{artist_id}/anomalies",
+    response_model=list[AnomalyWithRecoverabilitySchema],
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "List of detected anomalies with recoverability metadata",
+                "content": {
+                    "application/json": {
+                        "example": [
+                            {
+                                "id": "anm_abc123",
+                                "artist_id": "art_xyz789",
+                                "category": "ROYALTY",
+                                "severity": "HIGH",
+                                "status": "OPEN",
+                                "estimated_recoverable": 1200.50,
+                                "confidence_score": 0.87,
+                                "description": "Underreported streaming royalties Q3 2023",
+                                "recovery_probability": 0.74,
+                                "trust_score": 0.81,
+                                "urgent_flag": False,
+                            }
+                        ]
+                    }
+                },
+            },
+            "404": {"description": "Artist not found"},
+        }
+    },
+)
+@cached_response("anomalies_list", ttl_seconds=90)
 def list_anomalies(
     artist_id: str,
     status: str | None = None,
@@ -152,38 +186,93 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
 
 @router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
 def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     rg = RightsGraph()
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
 
+    gating = ConfidenceGatingService(db)
     enriched: list[dict] = []
+    rejected_count = 0
+    auto_accepted_count = 0
+
     for row in anomaly_dicts:
+        # Apply confidence gating
+        confidence = float(row.get("confidence_score") or 0.0)
+        decision = gating.evaluate(
+            confidence=confidence,
+            context={
+                "anomaly_type": row.get("subtype") or row.get("category"),
+                "estimated_recoverable": float(row.get("estimated_recoverable") or 0.0),
+                "artist_id": artist_id,
+                "urgency_flag": bool(row.get("urgent_flag")),
+            },
+        )
+
+        # Skip rejected anomalies (too low confidence)
+        if not decision.should_create:
+            rejected_count += 1
+            logger.debug(
+                "anomaly_rejected_by_gating",
+                extra={
+                    "artist_id": artist_id,
+                    "confidence": confidence,
+                    "tier": decision.tier.value,
+                    "reasoning": decision.reasoning,
+                },
+            )
+            continue
+
+        # Enrich anomaly metadata
         row_payload = dict(row)
         row_payload.update(build_recoverability_payload(row_payload))
+        row_payload["gating_decision"] = {
+            "tier": decision.tier.value,
+            "priority_score": decision.priority_score,
+            "reasoning": decision.reasoning,
+        }
         enriched.append(row_payload)
+
         anomaly_id = row.get("id")
-        priority = float(row.get("estimated_recoverable") or 0.0)
         reason = f"Anomaly detected: {row.get('subtype') or row.get('category') or 'UNKNOWN'}"
-        enqueue_review_item(
-            db,
-            artist_id=artist_id,
-            source_type=ReviewSourceType.ANOMALY,
-            source_id=str(anomaly_id) if anomaly_id else None,
-            reason=reason,
-            priority_score=priority,
-            payload=row_payload,
-        )
-        if float(row.get("confidence_score") or 1.0) < 0.55:
+
+        # Route to review queue if required (REVIEW tier)
+        if decision.requires_review:
             enqueue_review_item(
                 db,
                 artist_id=artist_id,
                 source_type=ReviewSourceType.ML_CONFIDENCE,
                 source_id=str(anomaly_id) if anomaly_id else None,
-                reason="Low rule confidence anomaly requires analyst review",
-                priority_score=priority,
+                reason=f"{reason} (confidence: {confidence:.2f})",
+                priority_score=decision.priority_score,
                 payload=row_payload,
             )
+        else:
+            # AUTO_ACCEPT tier: log for auditing, bypass manual review
+            auto_accepted_count += 1
+            logger.info(
+                "anomaly_auto_accepted",
+                extra={
+                    "artist_id": artist_id,
+                    "anomaly_id": anomaly_id,
+                    "confidence": confidence,
+                    "estimated_recoverable": row.get("estimated_recoverable"),
+                },
+            )
+
+    # Log gating metrics
+    gating_metrics = gating.get_metrics()
+    logger.info(
+        "anomaly_detection_gating_complete",
+        extra={
+            "artist_id": artist_id,
+            "total_detected": len(anomaly_dicts),
+            "enriched_count": len(enriched),
+            "rejected_count": rejected_count,
+            "auto_accepted_count": auto_accepted_count,
+            "gating_metrics": gating_metrics,
+        },
+    )
 
     try:
         hubspot_sync_recovery_update.delay(artist_id, event="anomalies_detected")
@@ -195,7 +284,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ai-music/scan-influence")
 async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     detector = InfluenceDetector(db)
     matches = await detector.scan_new_ai_releases(artist_id)
@@ -220,7 +309,7 @@ async def scan_ai_influence(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/anomalies/fraud-scan")
 def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     result = FraudInflationDetector().flag_anomalies_for_report(artist_id)
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})

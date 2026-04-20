@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**decision** | [**ReviewDecisionType**](ReviewDecisionType.md) |  | 
-**notes** | **str** |  | [optional] 
+**decision** | [**ReviewDecisionType**](ReviewDecisionType.md) |  |
+**notes** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ decide_review_item_request_dict = decide_review_item_request_instance.to_dict()
 decide_review_item_request_from_dict = DecideReviewItemRequest.from_dict(decide_review_item_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

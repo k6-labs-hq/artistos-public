@@ -1,7 +1,7 @@
 # XR7 Architecture Acceptance Checklist
 
-> **Date:** 2026-04-08  
-> **Status:** In Progress — see open items below  
+> **Date:** 2026-04-08
+> **Status:** In Progress — see open items below
 > **Definition of Done:** All items marked ✅ PASS. No items marked ❌ FAIL remaining.
 
 ---
@@ -88,7 +88,7 @@
 | 5.11 | `shared/utils/text.py` | `tests/shared/utils/test_text.py` | ~54 | ✅ PASS |
 | 5.12 | `XR7/ml/anomaly_detector.py` | `test_ml.py` | (existing) | ✅ PASS |
 
-**Total new tests added in this phase: 221**  
+**Total new tests added in this phase: 221**
 **Total tests passing in full suite: 1,348**
 
 ---

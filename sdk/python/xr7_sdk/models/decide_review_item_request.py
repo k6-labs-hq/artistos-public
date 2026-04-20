@@ -94,5 +94,3 @@ class DecideReviewItemRequest(BaseModel):
             "notes": obj.get("notes")
         })
         return _obj
-
-

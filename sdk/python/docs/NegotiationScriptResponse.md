@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**claim_id** | **str** |  | [optional] 
-**script** | **Dict[str, object]** |  | 
+**artist_id** | **str** |  |
+**claim_id** | **str** |  | [optional]
+**script** | **Dict[str, object]** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ negotiation_script_response_dict = negotiation_script_response_instance.to_dict(
 negotiation_script_response_from_dict = NegotiationScriptResponse.from_dict(negotiation_script_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

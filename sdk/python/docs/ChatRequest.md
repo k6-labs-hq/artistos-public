@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**message** | **str** |  | 
+**message** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ chat_request_dict = chat_request_instance.to_dict()
 chat_request_from_dict = ChatRequest.from_dict(chat_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

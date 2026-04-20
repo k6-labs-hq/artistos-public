@@ -18,22 +18,49 @@ spec:
           type: Utilization
           averageUtilization: 70
 ---
-apiVersion: autoscaling/v2
-kind: HorizontalPodAutoscaler
+# KEDA ScaledObject — scales xr7-worker based on the Celery Redis queue length.
+# Replaces the basic CPU HPA for the worker deployment.
+# Requires KEDA operator to be installed in the cluster:
+#   helm repo add kedacore https://kedacore.github.io/charts
+#   helm install keda kedacore/keda --namespace keda --create-namespace
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
 metadata:
-  name: xr7-worker
+  name: xr7-worker-scaledobject
   namespace: xr7
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: xr7-worker
-  minReplicas: 3
-  maxReplicas: 30
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 70
+  pollingInterval: 15      # seconds between queue-length polls
+  cooldownPeriod: 60       # seconds to wait before scaling down
+  minReplicaCount: 2
+  maxReplicaCount: 30
+  advanced:
+    restoreToOriginalReplicaCount: false
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleDown:
+          stabilizationWindowSeconds: 120
+  triggers:
+    - type: redis
+      metadata:
+        # Address of the Redis broker used by Celery
+        address: redis:6379
+        listName: celery          # default Celery queue
+        listLength: "10"          # scale up when >10 tasks are queued per replica
+      authenticationRef:
+        name: keda-redis-auth
+---
+# TriggerAuthentication — references the Redis password from the runtime secret.
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-redis-auth
+  namespace: xr7
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: xr7-runtime-secrets
+      key: REDIS_PASSWORD

@@ -92,5 +92,3 @@ class TVFilmForecastRequest(BaseModel):
             "confidence_override": obj.get("confidence_override")
         })
         return _obj
-
-

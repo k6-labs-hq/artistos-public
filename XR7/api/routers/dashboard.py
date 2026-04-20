@@ -35,7 +35,7 @@ from fastapi.responses import FileResponse, HTMLResponse, Response
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import get_latest_artist_state, get_run_trace, list_handoffs_for_artist
-from XR7.api.deps import get_artist_or_404
+from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.api.routers.auth import require_artist_access
 from XR7.earnings.dashboard import DashboardEngine
 from XR7.llm.claim_drafter import royalty_chat_agent
@@ -49,11 +49,14 @@ from XR7.services.branding import (
     get_branding_profile,
     inject_branding_metadata,
 )
+from XR7.services.cache import cached_response
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.transparency.data_flow_visualizer import DataFlowVisualizer
 from XR7.transparency.immutable_ledger_viewer import ImmutableLedgerViewer
 from XR7.transparency.industry_benchmarks import IndustryBenchmarkEngine
 
-router = APIRouter(tags=["dashboard"])
+router = APIRouter(tags=["dashboard"], route_class=TimeoutRoute)
+_router_service = router_service_for("dashboard")
 
 _DASHBOARD_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "recovery_dashboard.html"
 _MOBILE_UI_PATH = Path(__file__).resolve().parents[2] / "dashboard" / "ui" / "mobile.html"
@@ -174,7 +177,51 @@ def get_dashboard_ui(org_id: str | None = Query(default=None), db: Session = Dep
     return FileResponse(str(_DASHBOARD_UI_PATH), media_type="text/html")
 
 
-@router.get("/artists/{artist_id}/dashboard")
+@router.get(
+    "/artists/{artist_id}/dashboard",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Artist recovery dashboard",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "leakage_discovered": {
+                                "total_anomalies": 14,
+                                "total_estimated_recoverable": 42500.00,
+                                "by_category": {"ROYALTY": 8, "TOURING": 4, "SYNC": 2},
+                                "by_severity": {"HIGH": 5, "MEDIUM": 6, "LOW": 3},
+                                "recent_discoveries": [],
+                            },
+                            "in_pursuit": {
+                                "active_claim_count": 7,
+                                "total_amount_in_pursuit": 31200.00,
+                                "total_gross_recovered": 8900.00,
+                                "total_net_recovered": 7565.00,
+                            },
+                            "recovered_and_deposited": {
+                                "total_deposited": 7565.00,
+                                "deposits": [],
+                            },
+                            "balance_still_pursuing": {
+                                "balance_still_pursuing": 22300.00,
+                                "total_pending_deposit": 2000.00,
+                            },
+                            "catalog_health": {
+                                "health_score": 72,
+                                "grade": "B",
+                                "signals": {},
+                                "recommendations": [],
+                            },
+                        }
+                    }
+                },
+            },
+            "404": {"description": "Artist not found"},
+        }
+    },
+)
+@cached_response("dashboard_payload", ttl_seconds=60)
 def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     """
     Return the artist's full recovery dashboard.
@@ -225,7 +272,7 @@ def get_artist_dashboard(artist_id: str, db: Session = Depends(get_db)):
     - Up to 50 timestamped events: leakage discoveries, claim updates,
       and payment deposits, newest first.
     """
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
 
     engine = DashboardEngine(db)
     dashboard = engine.compute(artist_id)
@@ -368,7 +415,7 @@ def get_agents_status(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     state = get_latest_artist_state(artist_id) or {}
     run_id = str(state.get("run_id") or "")
@@ -460,8 +507,9 @@ def export_guidance(artist_id: str, platform: str = "youtube", db: Session = Dep
 
 
 @router.post("/artists/{artist_id}/chat/royalties")
+@with_timeout(90)
 async def chat_royalties(artist_id: str, question: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     dashboard = DashboardEngine(db).compute(artist_id)
     result = await royalty_chat_agent.handle_query(artist_id, question, context=dashboard)
     if isinstance(result, dict):
@@ -470,8 +518,9 @@ async def chat_royalties(artist_id: str, question: str, db: Session = Depends(ge
 
 
 @router.get("/artists/{artist_id}/export/full-transparency")
+@with_timeout(120)
 async def export_full_transparency(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     dashboard = DashboardEngine(db).compute(artist_id)
     brand = get_branding_for_artist(db, artist_id)

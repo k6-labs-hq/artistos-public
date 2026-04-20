@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**contract_text** | **str** |  | 
+**contract_text** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ pre_signature_contract_review_request_dict = pre_signature_contract_review_reque
 pre_signature_contract_review_request_from_dict = PreSignatureContractReviewRequest.from_dict(pre_signature_contract_review_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

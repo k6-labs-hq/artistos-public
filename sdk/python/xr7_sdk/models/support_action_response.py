@@ -91,5 +91,3 @@ class SupportActionResponse(BaseModel):
             "formatted_message": obj.get("formatted_message")
         })
         return _obj
-
-

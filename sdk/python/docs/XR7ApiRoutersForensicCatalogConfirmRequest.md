@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**works** | **List[Dict[str, object]]** |  | [optional] 
+**artist_id** | **str** |  |
+**works** | **List[Dict[str, object]]** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ xr7_api_routers_forensic_catalog_confirm_request_dict = xr7_api_routers_forensic
 xr7_api_routers_forensic_catalog_confirm_request_from_dict = XR7ApiRoutersForensicCatalogConfirmRequest.from_dict(xr7_api_routers_forensic_catalog_confirm_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

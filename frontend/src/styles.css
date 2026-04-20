@@ -583,29 +583,13 @@ section {
   animation: riseIn 0.8s ease both;
 }
 
-.chart-bars span:nth-child(2) {
-  animation-delay: 0.05s;
-}
-
-.chart-bars span:nth-child(3) {
-  animation-delay: 0.1s;
-}
-
-.chart-bars span:nth-child(4) {
-  animation-delay: 0.15s;
-}
-
-.chart-bars span:nth-child(5) {
-  animation-delay: 0.2s;
-}
-
-.chart-bars span:nth-child(6) {
-  animation-delay: 0.25s;
-}
-
-.chart-bars span:nth-child(7) {
-  animation-delay: 0.3s;
-}
+.chart-bars span:nth-child(1) { height: 42%; }
+.chart-bars span:nth-child(2) { height: 65%; animation-delay: 0.05s; }
+.chart-bars span:nth-child(3) { height: 76%; animation-delay: 0.1s; }
+.chart-bars span:nth-child(4) { height: 58%; animation-delay: 0.15s; }
+.chart-bars span:nth-child(5) { height: 83%; animation-delay: 0.2s; }
+.chart-bars span:nth-child(6) { height: 91%; animation-delay: 0.25s; }
+.chart-bars span:nth-child(7) { height: 72%; animation-delay: 0.3s; }
 
 .chart-caption {
   margin-top: 0.5rem;
@@ -1281,5 +1265,212 @@ input:focus-visible {
   .recoverability-timeline,
   .recoverability-class-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Mobile-first responsive enhancements
+   Target: 480px (small phones) and 640px (large phones/small tablets)
+   Touch targets ≥ 44px, readable font sizes, single-column layouts
+   ============================================================ */
+
+/* Ensure all interactive elements have minimum touch target size */
+button,
+[role="button"],
+a[href],
+input,
+select,
+textarea {
+  min-height: 44px;
+}
+
+/* Prevent font scaling issues and overflow on narrow viewports */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Horizontal scroll containment for tables */
+.table-scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  min-width: 480px;
+}
+
+/* Dashboard card grid — responsive columns */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  gap: 1rem;
+}
+
+/* Feature flag admin, copilot chat, and other panel layouts */
+.panel-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  /* Typography scale */
+  body {
+    font-size: 0.95rem;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 7vw, 2.4rem);
+  }
+
+  h2 {
+    font-size: clamp(1.2rem, 5.5vw, 1.8rem);
+  }
+
+  h3 {
+    font-size: clamp(1rem, 4.5vw, 1.3rem);
+  }
+
+  /* Collapse two-column panels */
+  .panel-two-col,
+  .viz-two-col {
+    grid-template-columns: 1fr;
+  }
+
+  /* Nav: hide brand text, keep logo */
+  .brand-text {
+    display: none;
+  }
+
+  /* Card padding reduction */
+  .tvfilm-card,
+  .sovereignty-card,
+  .recoverability-card,
+  .recoverability-explainer {
+    padding: 0.75rem;
+  }
+
+  /* Table horizontal scroll on small phones */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Waterfall chart: stack label/bar/value vertically */
+  .waterfall li {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  /* Sol heatmap: 2 cols on phone */
+  .sol-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Recoverability grids: full width */
+  .recoverability-grid,
+  .recoverability-timeline,
+  .recoverability-class-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Modal: full-width, no margin */
+  .modal-card,
+  .recoverability-modal {
+    width: 100%;
+    border-radius: 12px;
+    padding: 0.85rem;
+  }
+
+  /* Hero actions: full-width stacked buttons */
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .cta,
+  .hero-actions .ghost {
+    text-align: center;
+    justify-content: center;
+  }
+
+  /* Feature flag admin table */
+  .flag-admin-table th:nth-child(3),
+  .flag-admin-table td:nth-child(3) {
+    display: none;
+  }
+
+  /* Chip rows wrap more aggressively */
+  .chip-row {
+    gap: 0.3rem;
+  }
+
+  /* Footer: stack vertically */
+  .site-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .site-footer div {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Extra small phones */
+  .xr7-app {
+    padding: 0.5rem 0.45rem 1.2rem;
+  }
+
+  section {
+    padding: 0.7rem;
+    border-radius: 14px;
+  }
+
+  /* Trust / feature grids: always single column */
+  .trust-grid,
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Timeline: single column */
+  .timeline {
+    grid-template-columns: 1fr;
+  }
+
+  /* Metric grid: single column */
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Mini metrics: single column */
+  .mini-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  /* Sovereignty: single column */
+  .sovereignty-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Sol grid: single column */
+  .sol-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stat values: smaller font */
+  .stat-value {
+    font-size: 1.1rem;
+  }
+
+  /* Nav actions: minimal */
+  .nav-actions .ghost {
+    display: none;
   }
 }

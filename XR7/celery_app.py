@@ -17,6 +17,10 @@ celery_app.conf.update(
     timezone="UTC",
     task_track_started=True,
     broker_connection_retry_on_startup=True,
+    # ── Worker reliability: prevent task loss on pod restart ────────────
+    task_acks_late=True,  # Acknowledge tasks AFTER completion, not on receipt
+    task_reject_on_worker_lost=True,  # Return tasks to queue if worker dies
+    worker_prefetch_multiplier=4,  # Fetch 4 tasks at once for balanced throughput
     beat_schedule={
         "xr7-requeue-due-sync-jobs": {
             "task": "xr7.sync_jobs.requeue_due",
@@ -81,6 +85,23 @@ celery_app.conf.update(
             "task": "xr7.tasks.ops.validate_backup_restore",
             "schedule": 604800,  # weekly
         },
+        "xr7-ops-backup-database-to-s3-daily": {
+            "task": "xr7.tasks.ops.backup_database_to_s3",
+            "schedule": 86400,  # daily
+        },
+        "xr7-pipeline-monthly-recovery-report": {
+            "task": "xr7.pipeline.monthly_recovery_report",
+            "schedule": 2592000,  # ~30 days
+        },
+        "xr7-webhooks-redeliver-failed": {
+            "task": "xr7.webhooks.redeliver_failed",
+            "schedule": 300,
+        },
+        # ── Billing / Payouts ──────────────────────────────────────────────
+        "xr7-billing-scan-stuck-disbursements": {
+            "task": "xr7.billing.scan_stuck_disbursements",
+            "schedule": 900,  # every 15 minutes
+        },
         # ── XR7 Engine 2 — new modules ────────────────────────────────────
         "xr7-black-box-countdown-hourly": {
             "task": "xr7.modules.black_box_countdown.refresh_countdowns_all",
@@ -97,6 +118,11 @@ celery_app.conf.update(
         "xr7-recovery-score-daily": {
             "task": "xr7.modules.recovery_score.recalculate_all",
             "schedule": 86400,  # daily
+        },
+        # ── Evidence Chain Integrity (SOC 2 CC7.2 continuous monitoring) ──
+        "xr7-chain-verification-daily": {
+            "task": "xr7.chain_verification.verify_all_tenants",
+            "schedule": 86400,  # daily - scheduled verification for all tenants
         },
     },
 )

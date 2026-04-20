@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**recovered_amount** | **float** |  | 
-**currency** | **str** |  | 
+**recovered_amount** | **float** |  |
+**currency** | **str** |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ reconcile_request_dict = reconcile_request_instance.to_dict()
 reconcile_request_from_dict = ReconcileRequest.from_dict(reconcile_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -85,5 +85,3 @@ class InviteRequest(BaseModel):
             "email": obj.get("email")
         })
         return _obj
-
-

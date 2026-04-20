@@ -94,7 +94,7 @@ def test_governance_export_erase_and_admin_audit_listing():
 
     erase_resp = client.post(f"/artists/{artist_id}/privacy/erase", headers=artist_headers)
     assert erase_resp.status_code == 200
-    assert erase_resp.json()["status"] == "anonymized"
+    assert erase_resp.json()["status"] == "erased"
 
     admin_resp = client.get("/admin/audit/events", headers=_admin_headers())
     assert admin_resp.status_code == 200

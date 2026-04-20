@@ -1,8 +1,8 @@
 # XR7 Commercialization & Go-To-Market Technical Plan
 
-**Version:** 1.0  
-**Date:** 2026-04-09  
-**Audience:** Engineering, Product, Revenue, GTM teams  
+**Version:** 1.0
+**Date:** 2026-04-09
+**Audience:** Engineering, Product, Revenue, GTM teams
 **Principle:** Every commercial capability has a corresponding engineering deliverable. No revenue commitment is made without a technical plan to support it.
 
 ---
@@ -95,9 +95,9 @@
 
 ### Core (Free / Contingency-Only)
 
-**Who:** Independent artists, small managers, solo songwriters  
-**Works limit:** 500  
-**Onboarding:** Self-serve  
+**Who:** Independent artists, small managers, solo songwriters
+**Works limit:** 500
+**Onboarding:** Self-serve
 **Billing:** Contingency fee only (15–30% of recovery; no upfront cost)
 
 | Feature | Available |
@@ -212,11 +212,11 @@ Billing event pipeline:
 
 **Profile:** 100 artists, ~500 works each, 5 DSPs, monthly ingestion
 
-**Database:** Single PostgreSQL 16 instance (32 vCPU, 128 GB RAM)  
-**App:** 3 pods per service × 8 services = 24 pods  
-**Redis:** Single Redis Sentinel cluster (16 GB)  
-**Storage:** S3, ~5 TB statement files  
-**Ingestion volume:** ~50M rows/month  
+**Database:** Single PostgreSQL 16 instance (32 vCPU, 128 GB RAM)
+**App:** 3 pods per service × 8 services = 24 pods
+**Redis:** Single Redis Sentinel cluster (16 GB)
+**Storage:** S3, ~5 TB statement files
+**Ingestion volume:** ~50M rows/month
 **Cost estimate:** ~$3,500/month cloud infra
 
 ```
@@ -233,11 +233,11 @@ Celery workers: 10 workers
 
 **Profile:** 1,000 tenants, ~2,000 works average, 18 DSPs, daily ingestion
 
-**Database:** PostgreSQL primary + 2 read replicas (r6g.8xlarge each)  
-**App:** 5 pods per service × 10 services = 50 pods; KEDA autoscaling to 150  
-**Redis:** Redis Cluster (3 shards × 2 replicas)  
-**Storage:** S3, ~200 TB  
-**Ingestion volume:** ~2B rows/month  
+**Database:** PostgreSQL primary + 2 read replicas (r6g.8xlarge each)
+**App:** 5 pods per service × 10 services = 50 pods; KEDA autoscaling to 150
+**Redis:** Redis Cluster (3 shards × 2 replicas)
+**Storage:** S3, ~200 TB
+**Ingestion volume:** ~2B rows/month
 **Cost estimate:** ~$22,000/month cloud infra
 
 ```
@@ -257,11 +257,11 @@ CDN: CloudFront for static assets + API response caching
 
 **Architecture:** Multi-region (US-East, EU-West, APAC); read replicas per region; Kafka for event bus
 
-**Database:** Citus (distributed PostgreSQL) or Aurora Global for write sharding  
-**App:** 20 pods base per service; KEDA scales to 500 per service  
-**Redis:** Redis Enterprise Cluster per region  
-**Storage:** S3, ~2 PB (Glacier for >1 year data)  
-**Ingestion volume:** ~50B rows/month  
+**Database:** Citus (distributed PostgreSQL) or Aurora Global for write sharding
+**App:** 20 pods base per service; KEDA scales to 500 per service
+**Redis:** Redis Enterprise Cluster per region
+**Storage:** S3, ~2 PB (Glacier for >1 year data)
+**Ingestion volume:** ~50B rows/month
 **Cost estimate:** ~$180,000/month cloud infra
 
 ```
@@ -295,7 +295,7 @@ Ingestion service: detect format, calculate chunk boundaries
 
 **Worker scaling:**
 - Core: 1 concurrent file per tenant
-- Pro: 5 concurrent files per tenant  
+- Pro: 5 concurrent files per tenant
 - Enterprise: dedicated ingestion pod with unlimited concurrency
 
 **Database writes:** Batch INSERT 1,000 rows per transaction. Never row-at-a-time inserts for statement data.
@@ -568,7 +568,7 @@ VALUES (
 
 ### 9.1 Public Documentation Site
 
-**Stack:** Mintlify or Redocly (OpenAPI auto-generated) + custom MDX for guides.  
+**Stack:** Mintlify or Redocly (OpenAPI auto-generated) + custom MDX for guides.
 **URL:** `https://docs.xr7.artistos.io`
 
 **Sections:**
@@ -735,8 +735,8 @@ SDKs are published to PyPI (`xr7-client`) and npm (`@xr7/client`) on each API ve
 - Check: Celery queue depth (target: <100)
 - Check: support ticket volume (target: < 20)
 
-**Hour 4 decision gate:**  
-If any P0/P1 active → evaluate reverting `public_signup_enabled` flag  
+**Hour 4 decision gate:**
+If any P0/P1 active → evaluate reverting `public_signup_enabled` flag
 Otherwise → declare launch successful, reduce war room to on-call
 
 ---

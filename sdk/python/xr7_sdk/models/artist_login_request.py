@@ -92,5 +92,3 @@ class ArtistLoginRequest(BaseModel):
             "email": obj.get("email")
         })
         return _obj
-
-

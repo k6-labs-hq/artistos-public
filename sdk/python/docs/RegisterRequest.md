@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_name** | **str** |  | 
-**phone** | **str** |  | 
-**email** | **str** |  | 
+**artist_name** | **str** |  |
+**phone** | **str** |  |
+**email** | **str** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ register_request_dict = register_request_instance.to_dict()
 register_request_from_dict = RegisterRequest.from_dict(register_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -5,6 +5,7 @@ import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
 import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
 import { AnomalyDetailPage } from "./components/AnomalyDetailPage";
 import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPanel";
+import { NotFoundPage } from "./components/NotFoundPage";
 
 type ThemeMode = "dark" | "light";
 
@@ -202,7 +203,11 @@ export function App() {
           return;
         }
 
-        const nextId = visible[0].target.id;
+        const firstVisible = visible[0];
+        if (!firstVisible) {
+          return;
+        }
+        const nextId = firstVisible.target.id;
         setActiveSectionId((current) => (current === nextId ? current : nextId));
       },
       {
@@ -224,13 +229,20 @@ export function App() {
 
   const anomalyMatch = useMemo(() => window.location.pathname.match(/^\/anomalies\/([^/]+)$/), []);
   const adminHandoffsRoute = useMemo(() => window.location.pathname === "/admin/workflow/handoffs/ui", []);
+  const normalizedPath = useMemo(() => window.location.pathname.replace(/\/+$/, "") || "/", []);
+  const homeRoute = normalizedPath === "/";
 
-  if (anomalyMatch) {
-    return <AnomalyDetailPage anomalyId={decodeURIComponent(anomalyMatch[1])} />;
+  const anomalyId = anomalyMatch?.[1];
+  if (anomalyId) {
+    return <AnomalyDetailPage anomalyId={decodeURIComponent(anomalyId)} />;
   }
 
   if (adminHandoffsRoute) {
     return <AdminWorkflowHandoffsPanel />;
+  }
+
+  if (!homeRoute) {
+    return <NotFoundPage />;
   }
 
   return (
@@ -272,7 +284,7 @@ export function App() {
             <button
               type="button"
               className="menu-toggle"
-              aria-expanded={mobileMenuOpen}
+              aria-expanded={mobileMenuOpen ? "true" : "false"}
               aria-controls="mobile-menu"
               onClick={() => setMobileMenuOpen((prev) => !prev)}
             >
@@ -380,7 +392,7 @@ export function App() {
             <p>A premium, data-dense workspace designed for real legal and royalty operations.</p>
           </div>
 
-          <div className="app-mock" role="img" aria-label="XR7 dashboard preview with metrics, chart, and case table">
+          <div className="app-mock" aria-label="XR7 dashboard preview with metrics, chart, and case table">
             <aside className="mock-sidebar">
               <img src="/xr7-logo-mark.png" alt="" aria-hidden="true" />
               <a href="#">Overview</a>
@@ -426,13 +438,13 @@ export function App() {
 
               <div className="chart-panel">
                 <div className="chart-bars" aria-hidden="true">
-                  <span style={{ height: "42%" }} />
-                  <span style={{ height: "65%" }} />
-                  <span style={{ height: "76%" }} />
-                  <span style={{ height: "58%" }} />
-                  <span style={{ height: "83%" }} />
-                  <span style={{ height: "91%" }} />
-                  <span style={{ height: "72%" }} />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
+                  <span />
                 </div>
                 <div className="chart-caption">
                   Leakage Heatmap: Risk concentration is highest in US recording + neighboring rights lanes this week.

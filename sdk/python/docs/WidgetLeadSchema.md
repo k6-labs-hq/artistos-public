@@ -5,21 +5,21 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_name** | **str** |  | 
-**email** | **str** |  | 
-**career_stage** | **str** |  | 
-**genre** | **str** |  | 
-**years_active** | **int** |  | 
-**territory** | **str** |  | 
-**estimate_conservative** | **float** |  | 
-**estimate_likely** | **float** |  | 
-**estimate_optimistic** | **float** |  | 
-**currency** | **str** |  | 
-**results_emailed** | **bool** |  | 
-**claimed** | **bool** |  | 
-**claim_submitted_at** | **datetime** |  | 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**artist_name** | **str** |  |
+**email** | **str** |  |
+**career_stage** | **str** |  |
+**genre** | **str** |  |
+**years_active** | **int** |  |
+**territory** | **str** |  |
+**estimate_conservative** | **float** |  |
+**estimate_likely** | **float** |  |
+**estimate_optimistic** | **float** |  |
+**currency** | **str** |  |
+**results_emailed** | **bool** |  |
+**claimed** | **bool** |  |
+**claim_submitted_at** | **datetime** |  |
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -39,5 +39,3 @@ widget_lead_schema_dict = widget_lead_schema_instance.to_dict()
 widget_lead_schema_from_dict = WidgetLeadSchema.from_dict(widget_lead_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

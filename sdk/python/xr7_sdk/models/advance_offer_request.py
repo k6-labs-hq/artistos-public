@@ -89,5 +89,3 @@ class AdvanceOfferRequest(BaseModel):
             "advance_fee_pct": obj.get("advance_fee_pct") if obj.get("advance_fee_pct") is not None else 3.0
         })
         return _obj
-
-

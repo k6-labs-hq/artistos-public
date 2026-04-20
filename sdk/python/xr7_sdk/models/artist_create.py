@@ -158,5 +158,3 @@ class ArtistCreate(BaseModel):
             "enterprise_mode_enabled": obj.get("enterprise_mode_enabled") if obj.get("enterprise_mode_enabled") is not None else False
         })
         return _obj
-
-

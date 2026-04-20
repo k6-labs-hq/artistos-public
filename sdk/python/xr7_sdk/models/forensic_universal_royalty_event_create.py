@@ -190,5 +190,3 @@ class ForensicUniversalRoyaltyEventCreate(BaseModel):
             "metadata_flags": obj.get("metadata_flags")
         })
         return _obj
-
-

@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**estimate_token** | **str** |  | 
+**estimate_token** | **str** |  |
 **career_stage** | **str** |  | [optional] [default to 'DEVELOPING']
 **genre** | **str** |  | [optional] [default to 'OTHER']
 **years_active** | **int** |  | [optional] [default to 5]
@@ -29,5 +29,3 @@ estimate_request_dict = estimate_request_instance.to_dict()
 estimate_request_from_dict = EstimateRequest.from_dict(estimate_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

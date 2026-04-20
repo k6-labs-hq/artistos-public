@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**subtype** | **str** |  | 
-**counterparty_name** | **str** |  | 
-**amount_claimed** | **float** |  | 
-**evidence_summary** | **str** |  | [optional] 
+**subtype** | **str** |  |
+**counterparty_name** | **str** |  |
+**amount_claimed** | **float** |  |
+**evidence_summary** | **str** |  | [optional]
 
 ## Example
 
@@ -28,5 +28,3 @@ claim_template_request_dict = claim_template_request_instance.to_dict()
 claim_template_request_from_dict = ClaimTemplateRequest.from_dict(claim_template_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

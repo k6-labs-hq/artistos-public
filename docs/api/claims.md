@@ -1,7 +1,7 @@
 # Claims API
 
-Base path: `/claims`  
-Tag: `claims`  
+Base path: `/claims`
+Tag: `claims`
 Auth required: Varies per endpoint (see table below)
 
 The Claims API manages the full lifecycle of rights recovery claims — from creation through evidence generation, analyst review, and legal export.
@@ -124,7 +124,7 @@ Triggers asynchronous evidence package generation. Evidence includes:
 
 Downloads the sealed evidence package as a JSON document.
 
-**Auth:** Bearer  
+**Auth:** Bearer
 **Response 200** — `EvidencePacket`:
 ```json
 {
@@ -190,7 +190,7 @@ Returns all claims in the caller's tenant scope, with pagination.
 
 Creates a new draft claim.
 
-**Auth:** Bearer  
+**Auth:** Bearer
 **Request body** — `CreateClaimRequest`:
 ```json
 {

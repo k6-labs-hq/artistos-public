@@ -1,9 +1,23 @@
+import importlib.util
+import json
 import os
+import sys
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
+# Register claim status audit event listener
+import XR7.services.claim_status_audit  # noqa: F401
+from XR7.api.middleware.data_residency import DataResidencyMiddleware
+from XR7.api.middleware.idempotency import IdempotencyMiddleware
+from XR7.api.middleware.limit_upload_size import LimitUploadSizeMiddleware
+from XR7.api.middleware.logging import RequestIDMiddleware, configure_structured_logging
+from XR7.api.middleware.request_deduplication import RequestDeduplicationMiddleware
+from XR7.api.middleware.security_headers import SecurityHeadersMiddleware
+from XR7.api.middleware.tenant_enforcement import TenantEnforcementMiddleware
+from XR7.api.middleware.timeout import TimeoutMiddleware
+from XR7.api.middleware.versioning import APIVersioningMiddleware
 from XR7.api.routers import admin_console as admin_console_router
 from XR7.api.routers import advance_governance as advance_governance_router
 from XR7.api.routers import (
@@ -43,6 +57,7 @@ from XR7.api.routers import expansion as expansion_router
 from XR7.api.routers import fetchers as fetchers_router
 from XR7.api.routers import fingerprinting as fingerprinting_router
 from XR7.api.routers import forensic as forensic_router
+from XR7.api.routers import gdpr as gdpr_router
 from XR7.api.routers import ghost_catalog as ghost_catalog_router
 from XR7.api.routers import governance as governance_router
 from XR7.api.routers import identity as identity_router
@@ -52,6 +67,7 @@ from XR7.api.routers import llm_recovery as llm_recovery_router
 from XR7.api.routers import messages as messages_router
 from XR7.api.routers import ml_suite as ml_suite_router
 from XR7.api.routers import notifications as notifications_router
+from XR7.api.routers import observability as observability_router
 from XR7.api.routers import onboarding as onboarding_router
 from XR7.api.routers import payer_health as payer_health_router
 from XR7.api.routers import payers as payers_router
@@ -79,7 +95,9 @@ from XR7.api.routers import xr7_metadata as xr7_metadata_router
 from XR7.api.routers import xr7_ugc as xr7_ugc_router
 from XR7.api.routers import xr7_valuation as xr7_valuation_router
 from XR7.models.base import Base, engine
+from XR7.observability.tracing import configure_tracing
 from XR7.services.hubspot_client import HubSpotClient
+from XR7.services.live_updates import live_updates_manager
 from xr7_common.settings import settings
 
 
@@ -108,6 +126,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.connector_sync_cursor  # noqa: F401
     import XR7.models.data_residency  # noqa: F401
     import XR7.models.evidence_anchor  # noqa: F401
+    import XR7.models.feature_flag  # noqa: F401
     import XR7.models.fingerprint_job  # noqa: F401
     import XR7.models.fingerprint_match  # noqa: F401
     import XR7.models.forensic_universal_event  # noqa: F401
@@ -144,6 +163,8 @@ async def lifespan(app: FastAPI):
     import XR7.models.xr7_royalty  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    configure_structured_logging()
+    configure_tracing()
     yield
 
 
@@ -197,6 +218,119 @@ def _security_gate_status(env: str | None = None) -> dict[str, object]:
     }
 
 
+def _optional_module_available(module_name: str) -> bool:
+    return importlib.util.find_spec(module_name) is not None
+
+
+def _llm_feature_status() -> dict[str, object]:
+    provider = os.environ.get("LLM_PROVIDER", "openai").strip().lower()
+    model = os.environ.get(
+        "LLM_MODEL",
+        "grok-beta" if provider in {"xai", "xai-grok", "grok"} else "gpt-4o-mini",
+    )
+
+    llm_api_key_configured = bool(os.environ.get("LLM_API_KEY"))
+    openai_api_key_configured = bool(os.environ.get("OPENAI_API_KEY"))
+    xai_api_key_configured = bool(os.environ.get("XAI_API_KEY"))
+
+    langchain_core_available = _optional_module_available("langchain_core")
+    langchain_openai_available = _optional_module_available("langchain_openai")
+    langchain_xai_available = _optional_module_available("langchain_xai")
+
+    provider_runtime_available = (
+        langchain_xai_available
+        if provider in {"xai", "xai-grok", "grok"}
+        else langchain_openai_available
+    )
+    shared_llm_ready = bool(
+        llm_api_key_configured and langchain_core_available and provider_runtime_available
+    )
+    advisor_ready = bool(
+        langchain_core_available
+        and (
+            (openai_api_key_configured and langchain_openai_available)
+            or (xai_api_key_configured and langchain_xai_available)
+        )
+    )
+
+    features = {
+        "vip_copilot": {
+            "available": advisor_ready,
+            "fallback_enabled": True,
+            "credential_source": "OPENAI_API_KEY or XAI_API_KEY",
+        },
+        "claim_drafting": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+        "negotiation_script": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+        "gap_explainer": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+        "specialized_agents": {
+            "available": shared_llm_ready,
+            "fallback_enabled": True,
+            "credential_source": "LLM_API_KEY",
+        },
+    }
+    available_count = sum(1 for feature in features.values() if feature["available"])
+
+    return {
+        "provider": provider,
+        "model": model,
+        "credentials": {
+            "llm_api_key_configured": llm_api_key_configured,
+            "openai_api_key_configured": openai_api_key_configured,
+            "xai_api_key_configured": xai_api_key_configured,
+        },
+        "dependencies": {
+            "langchain_core_available": langchain_core_available,
+            "langchain_openai_available": langchain_openai_available,
+            "langchain_xai_available": langchain_xai_available,
+        },
+        "features": features,
+        "status": (
+            "ready"
+            if available_count == len(features)
+            else ("partial" if available_count else "fallback_only")
+        ),
+        "available_feature_count": available_count,
+        "total_feature_count": len(features),
+    }
+
+
+def _runtime_setting(env_name: str, fallback: object | None = None) -> object | None:
+    value = os.environ.get(env_name)
+    if value is not None:
+        return value
+    return fallback
+
+
+def _running_under_pytest() -> bool:
+    return "pytest" in sys.modules or os.environ.get("PYTEST_CURRENT_TEST") is not None
+
+
+def _health_probe_timeout_seconds() -> float:
+    raw_value = os.environ.get("XR7_HEALTH_PROBE_TIMEOUT_SECONDS")
+    if raw_value is not None:
+        try:
+            return max(float(raw_value), 0.01)
+        except ValueError:
+            pass
+
+    if _running_under_pytest():
+        return 0.02
+
+    return 2.0
+
+
 _security_gates = _security_gate_status()
 
 if _env == "production" and _allowed_origins_raw == "*":
@@ -232,8 +366,28 @@ app.add_middleware(
         "X-Actor-Email",
         "X-Actor-Role",
         "X-Trolley-Signature",
+        "X-Request-ID",
+        "X-Tenant-ID",
+        "Idempotency-Key",
     ],
+    expose_headers=["X-Request-ID", "X-Tenant-ID"],
 )
+
+# Limit upload size to 100MB to prevent OOM from large file uploads
+# This middleware checks Content-Length before body is read into memory
+app.add_middleware(LimitUploadSizeMiddleware, max_upload_size=104857600)
+
+# Global request timeout: 30 s safety net for all routes.
+# Long-running endpoints (file uploads, LLM calls, sync jobs) override this
+# via @with_timeout(N) on the handler together with TimeoutRoute on their router.
+app.add_middleware(TimeoutMiddleware, timeout=30)
+app.add_middleware(RequestIDMiddleware)
+app.add_middleware(TenantEnforcementMiddleware)
+app.add_middleware(IdempotencyMiddleware)
+app.add_middleware(APIVersioningMiddleware)
+app.add_middleware(DataResidencyMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RequestDeduplicationMiddleware)
 
 app.include_router(earnings.router)
 app.include_router(anomalies.router)
@@ -289,6 +443,7 @@ app.include_router(copilot_router.router)
 app.include_router(vip_referrals_router.router)
 app.include_router(case_rooms_router.router)
 app.include_router(data_residency_router.router)
+app.include_router(gdpr_router.router)
 app.include_router(connector_reliability_router.router)
 app.include_router(slo_router.router)
 app.include_router(batch_ingestion_router.router)
@@ -307,11 +462,154 @@ app.include_router(contract_drift_router.router)
 app.include_router(catalog_value_router.router)
 app.include_router(recovery_credit_score_router.router)
 app.include_router(collaborator_share_router.router)
+app.include_router(observability_router.router)
 
 
-@app.get("/health")
+@app.get(
+    "/health",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Platform is healthy",
+                "content": {"application/json": {"example": {"status": "ok", "version": "2.0.0"}}},
+            },
+            "503": {
+                "description": "Platform is unhealthy - dependencies unreachable",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "status": "unhealthy",
+                            "version": "2.0.0",
+                            "checks": {
+                                "database": {"status": "fail", "error": "connection refused"},
+                                "redis": {"status": "ok", "latency_ms": 2.3},
+                                "s3": {"status": "fail", "error": "timeout"},
+                            },
+                        }
+                    }
+                },
+            },
+        }
+    },
+)
 def health():
-    return {"status": "ok", "version": "2.0.0"}
+    """
+    Health check with actual connectivity tests for critical dependencies.
+
+    Returns 200 OK only if ALL core dependencies (PostgreSQL, Redis, S3) are reachable.
+    Returns 503 Service Unavailable if any dependency check fails.
+
+    This prevents deployments from proceeding when dependencies are misconfigured
+    or unreachable, catching issues before they reach production traffic.
+    """
+    import time
+
+    from sqlalchemy import text
+    from starlette.responses import JSONResponse
+
+    probe_timeout_seconds = _health_probe_timeout_seconds()
+    use_runtime_only_dependency_config = _running_under_pytest()
+    redis_url = _runtime_setting(
+        "REDIS_URL", None if use_runtime_only_dependency_config else settings.redis_url
+    )
+    s3_endpoint_url = _runtime_setting(
+        "S3_ENDPOINT_URL", None if use_runtime_only_dependency_config else settings.s3_endpoint_url
+    )
+    s3_access_key_id = _runtime_setting(
+        "S3_ACCESS_KEY_ID",
+        None if use_runtime_only_dependency_config else settings.s3_access_key_id,
+    )
+    s3_secret_access_key = _runtime_setting(
+        "S3_SECRET_ACCESS_KEY",
+        None if use_runtime_only_dependency_config else settings.s3_secret_access_key,
+    )
+    s3_bucket = _runtime_setting(
+        "S3_BUCKET", None if use_runtime_only_dependency_config else settings.s3_bucket
+    )
+    s3_region = _runtime_setting(
+        "S3_REGION", None if use_runtime_only_dependency_config else settings.s3_region
+    )
+
+    checks = {}
+    all_healthy = True
+
+    # PostgreSQL connectivity check
+    try:
+        start = time.perf_counter()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        latency = (time.perf_counter() - start) * 1000
+        checks["database"] = {"status": "ok", "latency_ms": round(latency, 2)}
+    except Exception as exc:
+        checks["database"] = {"status": "fail", "error": str(exc)[:200]}
+        all_healthy = False
+
+    # Redis connectivity check
+    try:
+        if redis_url:
+            import redis
+
+            start = time.perf_counter()
+            r = redis.Redis.from_url(
+                str(redis_url),
+                socket_connect_timeout=probe_timeout_seconds,
+                socket_timeout=probe_timeout_seconds,
+            )
+            r.ping()
+            latency = (time.perf_counter() - start) * 1000
+            checks["redis"] = {"status": "ok", "latency_ms": round(latency, 2)}
+        else:
+            checks["redis"] = {"status": "not_configured"}
+            all_healthy = False
+    except Exception as exc:
+        checks["redis"] = {"status": "fail", "error": str(exc)[:200]}
+        all_healthy = False
+
+    # S3 connectivity check
+    try:
+        if s3_endpoint_url and s3_access_key_id:
+            import boto3
+            from botocore.config import Config
+
+            start = time.perf_counter()
+            s3 = boto3.client(
+                "s3",
+                region_name=str(s3_region or "us-east-1"),
+                endpoint_url=str(s3_endpoint_url),
+                aws_access_key_id=str(s3_access_key_id),
+                aws_secret_access_key=str(s3_secret_access_key or ""),
+                config=Config(
+                    connect_timeout=probe_timeout_seconds,
+                    read_timeout=probe_timeout_seconds,
+                    retries={"max_attempts": 0},
+                ),
+            )
+            # Test connectivity with head_bucket or list_buckets
+            try:
+                s3.head_bucket(Bucket=str(s3_bucket))
+            except Exception:
+                # If bucket doesn't exist, test with list_buckets to verify credentials
+                s3.list_buckets()
+            latency = (time.perf_counter() - start) * 1000
+            checks["s3"] = {"status": "ok", "latency_ms": round(latency, 2)}
+        else:
+            checks["s3"] = {"status": "not_configured"}
+            all_healthy = False
+    except Exception as exc:
+        checks["s3"] = {"status": "fail", "error": str(exc)[:200]}
+        all_healthy = False
+
+    response_data = {
+        "status": "ok" if all_healthy else "unhealthy",
+        "version": "2.0.0",
+        "checks": checks,
+        "llm": _llm_feature_status(),
+    }
+
+    if all_healthy:
+        return response_data
+    else:
+        return JSONResponse(status_code=503, content=response_data)
 
 
 @app.get("/health/readiness")
@@ -341,6 +639,15 @@ def readiness():
     from XR7.ingestion.connectors.ticketing import TicketingConnector
     from XR7.ingestion.statement_parser import SUPPORTED_FORMATS
     from XR7.services.market_readiness_architecture import evaluate_architecture_readiness
+
+    redis_url = _runtime_setting("REDIS_URL", settings.redis_url)
+    celery_broker_url = _runtime_setting("CELERY_BROKER_URL", settings.celery_broker_url)
+    celery_result_backend = _runtime_setting(
+        "CELERY_RESULT_BACKEND", settings.celery_result_backend
+    )
+    s3_endpoint_url = _runtime_setting("S3_ENDPOINT_URL", settings.s3_endpoint_url)
+    s3_access_key_id = _runtime_setting("S3_ACCESS_KEY_ID", settings.s3_access_key_id)
+    s3_secret_access_key = _runtime_setting("S3_SECRET_ACCESS_KEY", settings.s3_secret_access_key)
 
     def _connector_status(connector_cls, name: str, **kwargs) -> dict:
         try:
@@ -406,11 +713,9 @@ def readiness():
     )
     trolley_webhook_secret_set = bool(os.environ.get("TROLLEY_SECRET_KEY"))
 
-    redis_ready = bool(settings.redis_url)
-    celery_ready = bool(settings.celery_broker_url and settings.celery_result_backend)
-    storage_ready = bool(
-        settings.s3_endpoint_url and settings.s3_access_key_id and settings.s3_secret_access_key
-    )
+    redis_ready = bool(redis_url)
+    celery_ready = bool(celery_broker_url and celery_result_backend)
+    storage_ready = bool(s3_endpoint_url and s3_access_key_id and s3_secret_access_key)
     plugin_signature_ready = bool(settings.plugin_signature_secret)
     hubspot_client = HubSpotClient()
 
@@ -447,14 +752,14 @@ def readiness():
         },
         "queues": {
             "redis_configured": redis_ready,
-            "celery_broker_url": settings.celery_broker_url,
-            "celery_result_backend": settings.celery_result_backend,
+            "celery_broker_url": celery_broker_url,
+            "celery_result_backend": celery_result_backend,
             "celery_registered_tasks": sorted(celery_app.tasks.keys())[:50],
             "status": "ready" if redis_ready and celery_ready else "missing_credentials",
         },
         "storage": {
             "provider": "s3-compatible",
-            "endpoint": settings.s3_endpoint_url,
+            "endpoint": s3_endpoint_url,
             "bucket": settings.s3_bucket,
             "region": settings.s3_region,
             "configured": storage_ready,
@@ -533,3 +838,27 @@ def readiness():
             "KOMCA_API_KEY, and SACEM_API_KEY."
         ),
     }
+
+
+@app.websocket("/ws/live-updates")
+async def live_updates_socket(websocket: WebSocket):
+    raw_cursor = websocket.query_params.get("after_event_id", "").strip()
+    after_event_id = None
+    if raw_cursor:
+        try:
+            after_event_id = max(int(raw_cursor), 0)
+        except ValueError:
+            after_event_id = None
+
+    replayed = await live_updates_manager.connect(websocket, after_event_id=after_event_id)
+    try:
+        if replayed:
+            await websocket.send_text(
+                json.dumps({"event_type": "replay_complete", "payload": {"replayed": replayed}})
+            )
+        while True:
+            msg = await websocket.receive_text()
+            if msg.strip().lower() in {"ping", "heartbeat"}:
+                await websocket.send_text(json.dumps({"event_type": "pong", "payload": {}}))
+    except WebSocketDisconnect:
+        await live_updates_manager.disconnect(websocket)

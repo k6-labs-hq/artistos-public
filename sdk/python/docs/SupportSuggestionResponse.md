@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**suggestions** | **List[str]** |  | 
+**artist_id** | **str** |  |
+**suggestions** | **List[str]** |  |
 
 ## Example
 
@@ -26,5 +26,3 @@ support_suggestion_response_dict = support_suggestion_response_instance.to_dict(
 support_suggestion_response_from_dict = SupportSuggestionResponse.from_dict(support_suggestion_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -112,5 +112,3 @@ class BrandingProfileUpsertRequest(BaseModel):
             "white_label_enabled": obj.get("white_label_enabled") if obj.get("white_label_enabled") is not None else False
         })
         return _obj
-
-

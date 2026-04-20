@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**anomaly_id** | **str** |  | 
+**anomaly_id** | **str** |  |
 **claim_type** | **str** |  | [optional] [default to 'RECOVERY']
 
 ## Example
@@ -26,5 +26,3 @@ claim_create_request_dict = claim_create_request_instance.to_dict()
 claim_create_request_from_dict = ClaimCreateRequest.from_dict(claim_create_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

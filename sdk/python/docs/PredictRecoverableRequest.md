@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**catalog_size** | **int** |  | [optional] 
-**genre** | **str** |  | [optional] 
+**catalog_size** | **int** |  | [optional]
+**genre** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ predict_recoverable_request_dict = predict_recoverable_request_instance.to_dict(
 predict_recoverable_request_from_dict = PredictRecoverableRequest.from_dict(predict_recoverable_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -41,7 +41,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.WidgetApi(api_client)
-    claim_request = xr7_sdk.ClaimRequest() # ClaimRequest | 
+    claim_request = xr7_sdk.ClaimRequest() # ClaimRequest |
 
     try:
         # Claim
@@ -59,7 +59,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_request** | [**ClaimRequest**](ClaimRequest.md)|  | 
+ **claim_request** | [**ClaimRequest**](ClaimRequest.md)|  |
 
 ### Return type
 
@@ -115,7 +115,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.WidgetApi(api_client)
-    estimate_request = xr7_sdk.EstimateRequest() # EstimateRequest | 
+    estimate_request = xr7_sdk.EstimateRequest() # EstimateRequest |
 
     try:
         # Estimate
@@ -133,7 +133,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **estimate_request** | [**EstimateRequest**](EstimateRequest.md)|  | 
+ **estimate_request** | [**EstimateRequest**](EstimateRequest.md)|  |
 
 ### Return type
 
@@ -266,7 +266,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.WidgetApi(api_client)
-    register_request = xr7_sdk.RegisterRequest() # RegisterRequest | 
+    register_request = xr7_sdk.RegisterRequest() # RegisterRequest |
 
     try:
         # Register
@@ -284,7 +284,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **register_request** | [**RegisterRequest**](RegisterRequest.md)|  | 
+ **register_request** | [**RegisterRequest**](RegisterRequest.md)|  |
 
 ### Return type
 
@@ -340,7 +340,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.WidgetApi(api_client)
-    verify_request = xr7_sdk.VerifyRequest() # VerifyRequest | 
+    verify_request = xr7_sdk.VerifyRequest() # VerifyRequest |
 
     try:
         # Verify
@@ -358,7 +358,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **verify_request** | [**VerifyRequest**](VerifyRequest.md)|  | 
+ **verify_request** | [**VerifyRequest**](VerifyRequest.md)|  |
 
 ### Return type
 
@@ -381,4 +381,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

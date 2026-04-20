@@ -91,5 +91,3 @@ class AuthConnectResponse(BaseModel):
             "state": obj.get("state")
         })
         return _obj
-
-

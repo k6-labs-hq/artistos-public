@@ -6,7 +6,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tenant_id** | **str** |  | [optional] [default to 'default']
-**suggestion_ids** | **List[str]** |  | [optional] 
+**suggestion_ids** | **List[str]** |  | [optional]
 **dry_run** | **bool** |  | [optional] [default to False]
 
 ## Example
@@ -27,5 +27,3 @@ metadata_repair_apply_request_dict = metadata_repair_apply_request_instance.to_d
 metadata_repair_apply_request_from_dict = MetadataRepairApplyRequest.from_dict(metadata_repair_apply_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

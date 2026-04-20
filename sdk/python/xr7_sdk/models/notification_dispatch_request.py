@@ -89,5 +89,3 @@ class NotificationDispatchRequest(BaseModel):
             "body": obj.get("body")
         })
         return _obj
-
-

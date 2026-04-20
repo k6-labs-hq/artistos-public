@@ -41,8 +41,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.EarningsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    xr7_api_routers_earnings_forecast_request = xr7_sdk.XR7ApiRoutersEarningsForecastRequest() # XR7ApiRoutersEarningsForecastRequest | 
+    artist_id = 'artist_id_example' # str |
+    xr7_api_routers_earnings_forecast_request = xr7_sdk.XR7ApiRoutersEarningsForecastRequest() # XR7ApiRoutersEarningsForecastRequest |
 
     try:
         # Forecast Earnings
@@ -60,8 +60,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **xr7_api_routers_earnings_forecast_request** | [**XR7ApiRoutersEarningsForecastRequest**](XR7ApiRoutersEarningsForecastRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **xr7_api_routers_earnings_forecast_request** | [**XR7ApiRoutersEarningsForecastRequest**](XR7ApiRoutersEarningsForecastRequest.md)|  |
 
 ### Return type
 
@@ -119,7 +119,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.EarningsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Earnings History
@@ -137,7 +137,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -195,7 +195,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.EarningsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Earnings Summary
@@ -213,7 +213,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -261,7 +261,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.EarningsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Post Repair Forecast
@@ -279,7 +279,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -328,8 +328,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.EarningsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    reconstruct_request = xr7_sdk.ReconstructRequest() # ReconstructRequest | 
+    artist_id = 'artist_id_example' # str |
+    reconstruct_request = xr7_sdk.ReconstructRequest() # ReconstructRequest |
 
     try:
         # Reconstruct Earnings
@@ -347,8 +347,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **reconstruct_request** | [**ReconstructRequest**](ReconstructRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **reconstruct_request** | [**ReconstructRequest**](ReconstructRequest.md)|  |
 
 ### Return type
 
@@ -371,4 +371,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

@@ -261,6 +261,38 @@ def test_idempotency_service_duplicate_request() -> None:
         db.close()
 
 
+def test_idempotency_service_same_key_different_artist_not_duplicate() -> None:
+    """Same idempotency key should be isolated per artist."""
+    db = TestSession()
+    try:
+        service = IdempotencyService(db)
+
+        service.check_and_record(
+            idempotency_key="shared-key-001",
+            tenant_id="default",
+            artist_id="artist-A",
+            request_path="/api/test",
+            request_method="POST",
+            response_status=201,
+            response_body={"status": "created", "id": "A"},
+        )
+
+        is_duplicate, cached = service.check_and_record(
+            idempotency_key="shared-key-001",
+            tenant_id="default",
+            artist_id="artist-B",
+            request_path="/api/test",
+            request_method="POST",
+            response_status=201,
+            response_body={"status": "created", "id": "B"},
+        )
+
+        assert is_duplicate is False
+        assert cached is None
+    finally:
+        db.close()
+
+
 def test_idempotency_service_get_by_key() -> None:
     """Test retrieving idempotency record by key."""
     db = TestSession()

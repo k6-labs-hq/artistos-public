@@ -12,7 +12,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.variance_detection_engine import run_variance_scan
-from XR7.api.deps import get_artist_or_404
+from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.graph.catalog_graph_builder import build_catalog_graph
 from XR7.ingestion.fetchers import get_fetcher
 from XR7.ingestion.file_ingestion_pipeline import FileIngestionPipeline
@@ -31,7 +31,7 @@ from XR7.models.base import get_db
 from XR7.models.catalog_confirmation import CatalogConfirmation, CatalogConfirmationSchema
 from XR7.models.claim import Claim
 from XR7.models.event import Event
-from XR7.models.immutable_ledger_entry import ImmutableLedgerEntrySchema
+from XR7.models.immutable_ledger_entry import ImmutableLedgerEntry, ImmutableLedgerEntrySchema
 from XR7.models.oauth_connector import ConnectorAccountLink
 from XR7.models.parser_plugin import ParserPlugin, ParserPluginSchema
 from XR7.models.statement import Statement
@@ -48,12 +48,42 @@ from XR7.services.branding import (
 )
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.parser_plugins import ParserPluginError, parse_with_plugin
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.services.split_rights_repair_engine import SplitRightsRepairEngine
 from XR7.services.workflow_orchestrator import XR7WorkflowService
 
-router = APIRouter(tags=["onboarding"])
+router = APIRouter(tags=["onboarding"], route_class=TimeoutRoute)
+_router_service = router_service_for("onboarding")
+
+_MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+_ALLOWED_UPLOAD_MIME_TYPES = {
+    "application/pdf",
+    "text/plain",
+    "text/csv",
+    "application/vnd.ms-excel",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+}
 
 _PERMISSIONS_UI_PATH = Path(__file__).resolve().parents[2] / "widget" / "permissions_dashboard.html"
+
+
+def _validate_upload(file: UploadFile, content: bytes, *, context: str) -> None:
+    if len(content) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"{context} exceeds max file size of {_MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
+        )
+
+    content_type = (file.content_type or "").lower().strip()
+    if content_type and content_type not in _ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail={
+                "message": "Unsupported file content type",
+                "content_type": content_type,
+                "allowed": sorted(_ALLOWED_UPLOAD_MIME_TYPES),
+            },
+        )
 
 
 class CatalogConfirmRequest(BaseModel):
@@ -99,8 +129,17 @@ class SplitRepairRequest(BaseModel):
     apply_threshold: float = 0.85
 
 
+_VALID_CHECKPOINTS = frozenset(
+    ["terms_accepted", "statement_uploaded", "connector_linked", "claim_drafted"]
+)
+
+
+class OnboardingCheckpointRequest(BaseModel):
+    checkpoint: str
+
+
 def _artist_or_404(artist_id: str, db: Session) -> Artist:
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
     return artist
 
 
@@ -109,7 +148,12 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
     artist = _artist_or_404(artist_id, db)
 
     terms_accepted = (
-        db.query(TermsAcceptance.id).filter(TermsAcceptance.artist_id == artist_id).first()
+        db.query(TermsAcceptance.id)
+        .filter(
+            TermsAcceptance.artist_id == artist_id,
+            TermsAcceptance.deleted_at.is_(None),
+        )
+        .first()
         is not None
     )
     statement_count = (
@@ -161,6 +205,130 @@ def onboarding_status(artist_id: str, db: Session = Depends(get_db)):
         },
         "expected_status_flow": ["NEW", "ONBOARDED", "ACTIVE"],
     }
+
+
+@router.get("/artists/{artist_id}/onboarding/resume")
+def onboarding_resume(artist_id: str, db: Session = Depends(get_db)):
+    """Return resumable onboarding state from persisted checkpoints."""
+    _artist_or_404(artist_id, db)
+
+    checkpoint_rows = (
+        db.query(ImmutableLedgerEntry)
+        .filter(
+            ImmutableLedgerEntry.artist_id == artist_id,
+            ImmutableLedgerEntry.entry_type == "onboarding_checkpoint",
+        )
+        .order_by(ImmutableLedgerEntry.created_at.asc())
+        .all()
+    )
+
+    completed: list[str] = []
+    for row in checkpoint_rows:
+        try:
+            payload = json.loads(row.payload_json or "{}")
+        except json.JSONDecodeError:
+            continue
+        checkpoint = str(payload.get("checkpoint") or "").strip().lower()
+        if checkpoint in _VALID_CHECKPOINTS and checkpoint not in completed:
+            completed.append(checkpoint)
+
+    gates = {name: (name in completed) for name in sorted(_VALID_CHECKPOINTS)}
+    next_checkpoint = next((name for name in sorted(_VALID_CHECKPOINTS) if not gates[name]), None)
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "resume": {
+                "completed_checkpoints": completed,
+                "next_checkpoint": next_checkpoint,
+                "progress_percent": round((len(completed) / len(_VALID_CHECKPOINTS)) * 100, 2),
+            },
+            "gates": gates,
+            "checkpoint_events": [
+                {
+                    "id": row.id,
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                    "payload": row.payload_json,
+                }
+                for row in checkpoint_rows
+            ],
+        },
+    )
+
+
+@router.post("/artists/{artist_id}/onboarding/checkpoints")
+def record_onboarding_checkpoint(
+    artist_id: str,
+    payload: OnboardingCheckpointRequest,
+    db: Session = Depends(get_db),
+):
+    """Record a named onboarding checkpoint for an artist.
+
+    Accepted checkpoints: ``terms_accepted``, ``statement_uploaded``,
+    ``connector_linked``, ``claim_drafted``.
+
+    Returns the updated ``gates`` dict so the caller can drive UI progress.
+    """
+    _artist_or_404(artist_id, db)
+
+    checkpoint = payload.checkpoint.strip().lower()
+    if checkpoint not in _VALID_CHECKPOINTS:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Unknown checkpoint",
+                "valid_checkpoints": sorted(_VALID_CHECKPOINTS),
+            },
+        )
+
+    ImmutableLedgerService(db).append(
+        artist_id,
+        "onboarding_checkpoint",
+        {"checkpoint": checkpoint, "recorded_at": datetime.now(timezone.utc).isoformat()},
+    )
+
+    # Re-compute and return updated gates (same logic as onboarding_status)
+    terms_accepted = (
+        db.query(TermsAcceptance.id)
+        .filter(
+            TermsAcceptance.artist_id == artist_id,
+            TermsAcceptance.deleted_at.is_(None),
+        )
+        .first()
+        is not None
+    )
+    statement_count = (
+        db.query(func.count(Statement.id)).filter(Statement.artist_id == artist_id).scalar() or 0
+    )
+    anomaly_count = (
+        db.query(func.count(Anomaly.id)).filter(Anomaly.artist_id == artist_id).scalar() or 0
+    )
+    claim_count = db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
+    connector_count = (
+        db.query(func.count(ConnectorAccountLink.id))
+        .filter(
+            ConnectorAccountLink.artist_id == artist_id,
+            ConnectorAccountLink.is_active.is_(True),
+        )
+        .scalar()
+        or 0
+    )
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "checkpoint_recorded": checkpoint,
+            "gates": {
+                "terms_accepted": bool(terms_accepted),
+                "statement_uploaded": int(statement_count) > 0,
+                "first_anomaly_detected": int(anomaly_count) > 0,
+                "first_claim_drafted": int(claim_count) > 0,
+                "connector_linked": int(connector_count) > 0,
+            },
+        },
+    )
 
 
 @router.post("/artists/{artist_id}/onboarding/auto")
@@ -300,6 +468,7 @@ def run_data_fetcher(
 
 
 @router.post("/artists/{artist_id}/ingestion/upload-any")
+@with_timeout(120)
 async def upload_any_statement(
     artist_id: str,
     files: list[UploadFile] = File(...),
@@ -313,7 +482,9 @@ async def upload_any_statement(
 
     uploads: list[tuple[str, bytes]] = []
     for f in files:
-        uploads.append((f.filename or "upload.bin", await f.read()))
+        content = await f.read()
+        _validate_upload(f, content, context=f"Upload {f.filename or 'upload.bin'}")
+        uploads.append((f.filename or "upload.bin", content))
 
     report = FileIngestionPipeline().process(uploads, strict_validation=strict_validation)
     if not report.virus_scan_passed:
@@ -365,6 +536,7 @@ async def upload_any_statement(
 
 
 @router.post("/artists/{artist_id}/parsers/{parser_type}")
+@with_timeout(120)
 async def parse_statement_with_engine(
     artist_id: str,
     parser_type: str,
@@ -392,6 +564,7 @@ async def parse_statement_with_engine(
         plugin_entrypoint = plugin.plugin_entrypoint
 
     content = await file.read()
+    _validate_upload(file, content, context=file.filename or "statement upload")
     if parser_type.lower() in builtins:
         parser = get_statement_parser(parser_type)
         parsed = parser.parse(content, artist_id, file.filename or "statement.csv")
@@ -530,6 +703,7 @@ def get_sync_job(artist_id: str, job_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/artists/{artist_id}/sync/jobs/{job_id}/run", response_model=SyncJobSchema)
+@with_timeout(90)
 def run_sync_job_now(
     artist_id: str,
     job_id: str,
@@ -749,6 +923,7 @@ def apply_split_repairs(
 
 
 @router.post("/artists/{artist_id}/variance/scan")
+@with_timeout(60)
 def variance_scan(
     artist_id: str,
     payload: VarianceScanRequest,

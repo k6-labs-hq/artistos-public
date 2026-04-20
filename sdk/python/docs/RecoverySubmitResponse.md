@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**claim_id** | **str** |  | 
-**status** | **str** |  | 
-**queued** | **bool** |  | 
-**task_id** | **str** |  | [optional] 
+**claim_id** | **str** |  |
+**status** | **str** |  |
+**queued** | **bool** |  |
+**task_id** | **str** |  | [optional]
 
 ## Example
 
@@ -28,5 +28,3 @@ recovery_submit_response_dict = recovery_submit_response_instance.to_dict()
 recovery_submit_response_from_dict = RecoverySubmitResponse.from_dict(recovery_submit_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

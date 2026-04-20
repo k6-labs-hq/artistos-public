@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timezone
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import String
+from sqlalchemy import String, UniqueConstraint
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from XR7.models.base import Base
@@ -17,9 +17,17 @@ class XR7IdempotencyRecord(Base):
     """Record of idempotent operations keyed by Idempotency-Key header value."""
 
     __tablename__ = "xr7_idempotency_records"
+    __table_args__ = (
+        # request_id in product/security docs is represented by idempotency_key in storage.
+        UniqueConstraint(
+            "idempotency_key",
+            "artist_id",
+            name="uq_xr7_idempotency_request_id_artist_id",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
-    idempotency_key: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    idempotency_key: Mapped[str] = mapped_column(String, nullable=False, index=True)
     tenant_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     artist_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     request_path: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -79,7 +87,10 @@ class IdempotencyService:
         # Check if we've seen this key before
         existing = (
             self.db.query(XR7IdempotencyRecord)
-            .filter(XR7IdempotencyRecord.idempotency_key == idempotency_key)
+            .filter(
+                XR7IdempotencyRecord.idempotency_key == idempotency_key,
+                XR7IdempotencyRecord.artist_id == artist_id,
+            )
             .first()
         )
 

@@ -27,5 +27,3 @@ o_auth_token_refresh_request_dict = o_auth_token_refresh_request_instance.to_dic
 o_auth_token_refresh_request_from_dict = OAuthTokenRefreshRequest.from_dict(o_auth_token_refresh_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

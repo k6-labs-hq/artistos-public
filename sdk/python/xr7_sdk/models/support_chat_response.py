@@ -95,5 +95,3 @@ class SupportChatResponse(BaseModel):
             "escalate_recommended": obj.get("escalate_recommended")
         })
         return _obj
-
-

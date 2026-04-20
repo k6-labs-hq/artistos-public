@@ -96,5 +96,3 @@ class TVFilmPortfolioAnalysisRequest(BaseModel):
             "uploaded_filename": obj.get("uploaded_filename")
         })
         return _obj
-
-

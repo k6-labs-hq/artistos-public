@@ -53,6 +53,7 @@ import XR7.models.trust_trace  # noqa: F401
 import XR7.models.tvfilm_portfolio_job  # noqa: F401
 import XR7.models.vip  # noqa: F401
 import XR7.models.webhook_event  # noqa: F401
+import XR7.models.work  # noqa: F401
 import XR7.models.xr7_idempotency  # noqa: F401
 import XR7.models.xr7_royalty  # noqa: F401
 from XR7.api.app import app
@@ -90,6 +91,32 @@ app.dependency_overrides[get_db] = override_get_db
 import XR7.agents.two_agent_orchestrator_graph as _two_agent_graph  # noqa: E402
 
 _two_agent_graph.SessionLocal = TestSession
+
+
+# Patch SessionLocal in agent modules so they use the test DB.
+import XR7.agents.onboarding.catalog_agents as _catalog_agents  # noqa: E402
+import XR7.agents.onboarding.core as _onboarding_core  # noqa: E402
+import XR7.agents.onboarding.enrichment_agents as _enrichment_agents  # noqa: E402
+import XR7.agents.specialized_agents as _specialized_agents  # noqa: E402
+import XR7.agents.vip_persona_agent as _vip_persona_agent  # noqa: E402
+
+_specialized_agents.SessionLocal = TestSession
+_vip_persona_agent.SessionLocal = TestSession
+_catalog_agents.SessionLocal = TestSession
+_enrichment_agents.SessionLocal = TestSession
+_onboarding_core.SessionLocal = TestSession
+# Patch the base module SessionLocal so ALL code that imports it gets TestSession.
+import XR7.models.base as _base_module  # noqa: E402
+
+_base_module.SessionLocal = TestSession  # type: ignore[assignment]
+
+# Bulk-patch SessionLocal across every XR7 module that has already imported it.
+# This must run AFTER `from XR7.api.app import app` so all modules are loaded.
+import sys as _sys  # noqa: E402
+
+for _mod_name, _mod in list(_sys.modules.items()):
+    if _mod_name.startswith("XR7") and hasattr(_mod, "SessionLocal"):
+        setattr(_mod, "SessionLocal", TestSession)
 
 # Configure Celery to run tasks synchronously in-process so tests don't
 # attempt real Redis/broker connections (which cause ~20-second retry loops).

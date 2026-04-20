@@ -5,18 +5,18 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**email** | **str** |  | [optional] 
-**phone** | **str** |  | [optional] 
-**notify_anomaly_detected** | **bool** |  | 
-**notify_urgent_sol** | **bool** |  | 
-**notify_deposit_received** | **bool** |  | 
-**notify_claim_advanced** | **bool** |  | 
-**quiet_hours_start** | **str** |  | [optional] 
-**quiet_hours_end** | **str** |  | [optional] 
-**created_at** | **datetime** |  | 
-**updated_at** | **datetime** |  | 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**email** | **str** |  | [optional]
+**phone** | **str** |  | [optional]
+**notify_anomaly_detected** | **bool** |  |
+**notify_urgent_sol** | **bool** |  |
+**notify_deposit_received** | **bool** |  |
+**notify_claim_advanced** | **bool** |  |
+**quiet_hours_start** | **str** |  | [optional]
+**quiet_hours_end** | **str** |  | [optional]
+**created_at** | **datetime** |  |
+**updated_at** | **datetime** |  |
 
 ## Example
 
@@ -36,5 +36,3 @@ notification_preference_schema_dict = notification_preference_schema_instance.to
 notification_preference_schema_from_dict = NotificationPreferenceSchema.from_dict(notification_preference_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -989,5 +989,3 @@ class RecoveryIntelligenceLLMApi:
             _host=_host,
             _request_auth=_request_auth
         )
-
-

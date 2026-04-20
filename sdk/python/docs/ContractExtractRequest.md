@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**contract_id** | **str** |  | [optional] 
-**contract_text** | **str** |  | 
-**effective_start** | **date** |  | [optional] 
-**effective_end** | **date** |  | [optional] 
-**extracted_from** | **str** |  | [optional] 
+**contract_id** | **str** |  | [optional]
+**contract_text** | **str** |  |
+**effective_start** | **date** |  | [optional]
+**effective_end** | **date** |  | [optional]
+**extracted_from** | **str** |  | [optional]
 
 ## Example
 
@@ -29,5 +29,3 @@ contract_extract_request_dict = contract_extract_request_instance.to_dict()
 contract_extract_request_from_dict = ContractExtractRequest.from_dict(contract_extract_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

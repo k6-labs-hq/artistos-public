@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**access_token** | **str** |  | 
+**access_token** | **str** |  |
 **token_type** | **str** |  | [optional] [default to 'bearer']
-**expires_in_seconds** | **int** |  | 
+**expires_in_seconds** | **int** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ token_response_dict = token_response_instance.to_dict()
 token_response_from_dict = TokenResponse.from_dict(token_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -35,8 +35,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryIntelligenceLLMApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    demand_letter_request = xr7_sdk.DemandLetterRequest() # DemandLetterRequest | 
+    artist_id = 'artist_id_example' # str |
+    demand_letter_request = xr7_sdk.DemandLetterRequest() # DemandLetterRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -56,10 +56,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **demand_letter_request** | [**DemandLetterRequest**](DemandLetterRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **demand_letter_request** | [**DemandLetterRequest**](DemandLetterRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -109,8 +109,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryIntelligenceLLMApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    negotiation_script_request = xr7_sdk.NegotiationScriptRequest() # NegotiationScriptRequest | 
+    artist_id = 'artist_id_example' # str |
+    negotiation_script_request = xr7_sdk.NegotiationScriptRequest() # NegotiationScriptRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -130,10 +130,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **negotiation_script_request** | [**NegotiationScriptRequest**](NegotiationScriptRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **negotiation_script_request** | [**NegotiationScriptRequest**](NegotiationScriptRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -183,8 +183,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.RecoveryIntelligenceLLMApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    advice_request = xr7_sdk.AdviceRequest() # AdviceRequest | 
+    artist_id = 'artist_id_example' # str |
+    advice_request = xr7_sdk.AdviceRequest() # AdviceRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -204,10 +204,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **advice_request** | [**AdviceRequest**](AdviceRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **advice_request** | [**AdviceRequest**](AdviceRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -230,4 +230,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

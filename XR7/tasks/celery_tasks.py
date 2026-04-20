@@ -17,6 +17,38 @@ from xr7_common.logging import get_logger
 
 logger = get_logger(__name__)
 
+# ---------------------------------------------------------------------------
+# Shared retry / failure configuration
+# ---------------------------------------------------------------------------
+# All schedule-triggered scan tasks use these defaults so they are:
+#  - retried up to 3 times with exponential backoff (2s → 4s → 8s)
+#  - routed to a dead-letter queue via Celery's built-in task_reject_on_worker_lost
+#    and a dedicated "failed_tasks" queue configured in celery_app.py
+#  - logged (and optionally alerted) by _on_task_failure when all retries are exhausted.
+_SCAN_RETRY_KWARGS = {
+    "autoretry_for": (Exception,),
+    "retry_backoff": 2,  # base delay in seconds; doubles each retry
+    "retry_backoff_max": 60,  # cap at 60 s
+    "retry_jitter": True,  # randomise ±50 % to avoid thundering herd
+    "max_retries": 3,
+}
+
+
+def _on_task_failure(task_name: str, exc: Exception, task_id: str) -> None:
+    """Called after all retries are exhausted.  Logs a CRITICAL message so it
+    surfaces in any log-aggregation alert rule (e.g., CloudWatch / Sentry).
+    Replace the body to integrate with your alerting backend (PagerDuty, etc.).
+    """
+    logger.critical(
+        "celery.task.permanent_failure",
+        extra={
+            "task": task_name,
+            "task_id": task_id,
+            "exc_type": type(exc).__name__,
+            "exc_msg": str(exc),
+        },
+    )
+
 
 def _ledger(db, artist_id: str, entry_type: str, payload: dict) -> None:
     ImmutableLedgerService(db).append(artist_id, entry_type, payload)
@@ -65,49 +97,76 @@ def run_recovery_for_new_data(self) -> dict:  # noqa: ANN001
     return run_daily_recovery_scan()
 
 
-@celery_app.task(name="xr7.workflow.run_nightly_preparation_scan", bind=True)
-def run_nightly_preparation_scan(self=None) -> dict:  # noqa: ANN001
-    db = SessionLocal()
+@celery_app.task(
+    name="xr7.workflow.run_nightly_preparation_scan",
+    bind=True,
+    **_SCAN_RETRY_KWARGS,
+)
+def run_nightly_preparation_scan(self, *_args) -> dict:  # noqa: ANN001
     try:
-        artist_ids = artists_pending_onboarding(db)
-    finally:
-        db.close()
-    for artist_id in artist_ids:
-        run_artist_workflow.delay(artist_id)
-    return {
-        "triggered": len(artist_ids),
-        "scope": "nightly_preparation_scan",
-        "agent": "onboarding_preparation",
-    }
+        db = SessionLocal()
+        try:
+            artist_ids = artists_pending_onboarding(db)
+        finally:
+            db.close()
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {
+            "triggered": len(artist_ids),
+            "scope": "nightly_preparation_scan",
+            "agent": "onboarding_preparation",
+        }
+    except Exception as exc:
+        if self.request.retries >= self.max_retries:
+            _on_task_failure(self.name, exc, self.request.id or "")
+        raise
 
 
-@celery_app.task(name="xr7.workflow.run_daily_recovery_scan", bind=True)
-def run_daily_recovery_scan(self=None) -> dict:  # noqa: ANN001
-    since = datetime.now(timezone.utc) - timedelta(hours=6)
-    db = SessionLocal()
+@celery_app.task(
+    name="xr7.workflow.run_daily_recovery_scan",
+    bind=True,
+    **_SCAN_RETRY_KWARGS,
+)
+def run_daily_recovery_scan(self, *_args) -> dict:  # noqa: ANN001
     try:
-        artist_ids = artist_ids_with_new_statements(db, since)
-    finally:
-        db.close()
-    for artist_id in artist_ids:
-        run_artist_workflow.delay(artist_id)
-    return {
-        "triggered": len(artist_ids),
-        "scope": "daily_recovery_scan",
-        "agent": "recovery_execution",
-    }
+        since = datetime.now(timezone.utc) - timedelta(hours=6)
+        db = SessionLocal()
+        try:
+            artist_ids = artist_ids_with_new_statements(db, since)
+        finally:
+            db.close()
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {
+            "triggered": len(artist_ids),
+            "scope": "daily_recovery_scan",
+            "agent": "recovery_execution",
+        }
+    except Exception as exc:
+        if self.request.retries >= self.max_retries:
+            _on_task_failure(self.name, exc, self.request.id or "")
+        raise
 
 
-@celery_app.task(name="xr7.workflow.run_follow_up_and_readiness", bind=True)
+@celery_app.task(
+    name="xr7.workflow.run_follow_up_and_readiness",
+    bind=True,
+    **_SCAN_RETRY_KWARGS,
+)
 def run_follow_up_and_readiness(self) -> dict:  # noqa: ANN001
-    db = SessionLocal()
     try:
-        artist_ids = all_artist_ids(db)
-    finally:
-        db.close()
-    for artist_id in artist_ids:
-        run_artist_workflow.delay(artist_id)
-    return {"triggered": len(artist_ids), "scope": "follow_up_readiness"}
+        db = SessionLocal()
+        try:
+            artist_ids = all_artist_ids(db)
+        finally:
+            db.close()
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {"triggered": len(artist_ids), "scope": "follow_up_readiness"}
+    except Exception as exc:
+        if self.request.retries >= self.max_retries:
+            _on_task_failure(self.name, exc, self.request.id or "")
+        raise
 
 
 @celery_app.task(name="xr7.workflow.on_statement_upload", bind=True)
@@ -134,26 +193,44 @@ def on_soundcloud_statement_upload(
     }
 
 
-@celery_app.task(name="xr7.workflow.run_soundcloud_sync_daily", bind=True)
+@celery_app.task(
+    name="xr7.workflow.run_soundcloud_sync_daily",
+    bind=True,
+    **_SCAN_RETRY_KWARGS,
+)
 def run_soundcloud_sync_daily(self) -> dict:  # noqa: ANN001
-    db = SessionLocal()
     try:
-        artist_ids = artist_ids_with_soundcloud_statements(db)
-    finally:
-        db.close()
-    for artist_id in artist_ids:
-        run_artist_workflow.delay(artist_id)
-    return {"triggered": len(artist_ids), "scope": "soundcloud_daily_sync"}
+        db = SessionLocal()
+        try:
+            artist_ids = artist_ids_with_soundcloud_statements(db)
+        finally:
+            db.close()
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {"triggered": len(artist_ids), "scope": "soundcloud_daily_sync"}
+    except Exception as exc:
+        if self.request.retries >= self.max_retries:
+            _on_task_failure(self.name, exc, self.request.id or "")
+        raise
 
 
-@celery_app.task(name="xr7.workflow.run_soundcloud_healthcheck_hourly", bind=True)
+@celery_app.task(
+    name="xr7.workflow.run_soundcloud_healthcheck_hourly",
+    bind=True,
+    **_SCAN_RETRY_KWARGS,
+)
 def run_soundcloud_healthcheck_hourly(self) -> dict:  # noqa: ANN001
-    since = datetime.now(timezone.utc) - timedelta(days=30)
-    db = SessionLocal()
     try:
-        artist_ids = active_soundcloud_artist_ids_since(db, since)
-    finally:
-        db.close()
-    for artist_id in artist_ids:
-        run_artist_workflow.delay(artist_id)
-    return {"triggered": len(artist_ids), "scope": "soundcloud_hourly_healthcheck"}
+        since = datetime.now(timezone.utc) - timedelta(days=30)
+        db = SessionLocal()
+        try:
+            artist_ids = active_soundcloud_artist_ids_since(db, since)
+        finally:
+            db.close()
+        for artist_id in artist_ids:
+            run_artist_workflow.delay(artist_id)
+        return {"triggered": len(artist_ids), "scope": "soundcloud_hourly_healthcheck"}
+    except Exception as exc:
+        if self.request.retries >= self.max_retries:
+            _on_task_failure(self.name, exc, self.request.id or "")
+        raise

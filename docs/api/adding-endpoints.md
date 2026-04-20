@@ -190,7 +190,7 @@ Add an entry to the appropriate file in `docs/api/` following the format used in
 
 Brief description.
 
-**Auth:** Bearer  
+**Auth:** Bearer
 **Request body** — `MyResourceRequest`:
 ...
 **Response 201** — `MyResourceResponse`:

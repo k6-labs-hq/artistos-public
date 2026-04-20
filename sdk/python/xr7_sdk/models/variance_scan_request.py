@@ -85,5 +85,3 @@ class VarianceScanRequest(BaseModel):
             "rows": obj.get("rows")
         })
         return _obj
-
-

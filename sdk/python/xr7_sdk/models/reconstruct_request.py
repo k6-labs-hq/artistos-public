@@ -88,5 +88,3 @@ class ReconstructRequest(BaseModel):
             "end_date": obj.get("end_date")
         })
         return _obj
-
-

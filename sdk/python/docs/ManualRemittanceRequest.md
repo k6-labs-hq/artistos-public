@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**gross_amount** | **float** |  | 
-**remittance_method** | **str** |  | 
-**received_date** | **datetime** |  | 
-**reference_number** | **str** |  | 
+**gross_amount** | **float** |  |
+**remittance_method** | **str** |  |
+**received_date** | **datetime** |  |
+**reference_number** | **str** |  |
 
 ## Example
 
@@ -28,5 +28,3 @@ manual_remittance_request_dict = manual_remittance_request_instance.to_dict()
 manual_remittance_request_from_dict = ManualRemittanceRequest.from_dict(manual_remittance_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**total** | **int** |  | 
-**page** | **int** |  | 
-**page_size** | **int** |  | 
-**next_cursor** | **str** |  | [optional] 
-**items** | [**List[SupportMessageView]**](SupportMessageView.md) |  | 
+**total** | **int** |  |
+**page** | **int** |  |
+**page_size** | **int** |  |
+**next_cursor** | **str** |  | [optional]
+**items** | [**List[SupportMessageView]**](SupportMessageView.md) |  |
 
 ## Example
 
@@ -29,5 +29,3 @@ support_history_response_dict = support_history_response_instance.to_dict()
 support_history_response_from_dict = SupportHistoryResponse.from_dict(support_history_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

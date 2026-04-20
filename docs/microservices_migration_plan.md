@@ -1,8 +1,8 @@
 # XR7 Microservices Migration Plan
 
-**Version:** 1.0  
-**Date:** April 2026  
-**Scope:** Full strategy for evolving XR7 from a structured monolith to a domain-aligned microservices architecture.  
+**Version:** 1.0
+**Date:** April 2026
+**Scope:** Full strategy for evolving XR7 from a structured monolith to a domain-aligned microservices architecture.
 **Principle:** The monolith is well-structured. Migration extracts services one at a time — never a "big bang." Zero downtime is non-negotiable.
 
 ---
@@ -97,7 +97,7 @@ POST /ingest/webhook       — DSP push delivery (Spotify, etc.)
 }
 ```
 
-**Database:** PostgreSQL — `ingestion_jobs`, `raw_statement_rows` tables (ingestion schema).  
+**Database:** PostgreSQL — `ingestion_jobs`, `raw_statement_rows` tables (ingestion schema).
 **Storage:** S3/GCS for raw file archival.
 
 ---
@@ -273,7 +273,7 @@ GET  /tenants/{id}
 POST /tenants
 ```
 
-**Database:** PostgreSQL — `users`, `tenants`, `roles`, `permissions` (identity schema).  
+**Database:** PostgreSQL — `users`, `tenants`, `roles`, `permissions` (identity schema).
 **No event publishing** — identity is synchronously queried by the gateway for token validation.
 
 ---
@@ -282,7 +282,7 @@ POST /tenants
 
 **Responsibility:** Single ingress point. Validates JWTs (by calling xr7-identity token introspection or verifying JWT signature locally with cached public key). Routes requests to internal services. Rate limiting. Request tracing.
 
-**Does NOT own any business logic.**  
+**Does NOT own any business logic.**
 **Implements:** rate limiting, auth header injection downstream, correlation ID injection, circuit breakers.
 
 ---

@@ -89,5 +89,3 @@ class ReconciliationRequest(BaseModel):
             "queue_backend": obj.get("queue_backend") if obj.get("queue_backend") is not None else 'celery'
         })
         return _obj
-
-

@@ -125,12 +125,14 @@ export function FoundersCircleBanner({
       {/* Bottom row: quick actions */}
       <div className="flex items-center gap-2 px-5 py-3 flex-wrap">
         <button
+          type="button"
           onClick={onReferralClick}
           className="fc-cta-btn flex items-center gap-1.5"
           disabled={referralSlotsRemaining === 0}
+          aria-label={`Invite a creator (${referralSlotsRemaining} slots remaining)`}
           title="Invite another elite creator"
         >
-          <span>✉</span>
+          <span aria-hidden="true">✉</span>
           <span>Invite a Creator</span>
           <span className="text-purple-400 text-[10px]">({referralSlotsRemaining} left)</span>
         </button>

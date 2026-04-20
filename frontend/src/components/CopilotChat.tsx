@@ -220,11 +220,13 @@ export function CopilotChat({
           disabled={loading}
         />
         <button
+          type="button"
           className="cc-send-btn"
+          aria-label="Send message"
           onClick={sendMessage}
           disabled={loading || !input.trim()}
         >
-          {loading ? <span className="cc-spinner" /> : "↑"}
+          {loading ? <span className="cc-spinner" aria-hidden="true" /> : "↑"}
         </button>
       </div>
 

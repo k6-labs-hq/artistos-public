@@ -123,7 +123,14 @@ class Invite(Base):
 
     def is_expired(self) -> bool:
         """Check if invite token has expired."""
-        return datetime.now(timezone.utc).replace(tzinfo=None) > self.token_expiration
+        # Always compare timezone-aware datetimes
+        now = datetime.now(timezone.utc)
+        # Ensure token_expiration is timezone-aware
+        if self.token_expiration.tzinfo is None:
+            expiration = self.token_expiration.replace(tzinfo=timezone.utc)
+        else:
+            expiration = self.token_expiration
+        return now > expiration
 
     def is_valid(self) -> bool:
         """Check if invite is valid for redemption."""

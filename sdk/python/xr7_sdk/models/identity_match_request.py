@@ -92,5 +92,3 @@ class IdentityMatchRequest(BaseModel):
             "statement_signals": obj.get("statement_signals")
         })
         return _obj
-
-

@@ -94,5 +94,3 @@ class NegotiationScriptResponse(BaseModel):
             "script": obj.get("script")
         })
         return _obj
-
-

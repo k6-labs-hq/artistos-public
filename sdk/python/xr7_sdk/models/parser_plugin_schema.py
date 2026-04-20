@@ -107,5 +107,3 @@ class ParserPluginSchema(BaseModel):
             "updated_at": obj.get("updated_at")
         })
         return _obj
-
-

@@ -15,6 +15,10 @@ name: Integration Tests — External Credentials
 on:
   workflow_dispatch:
     inputs:
+      smoke_profile:
+        description: "Optional smoke suite to run after credential onboarding"
+        required: false
+        default: ""
       test_filter:
         description: "Optional pytest -k filter expression (leave blank to run all integration tests)"
         required: false
@@ -66,8 +70,57 @@ jobs:
       # Tests that require a credential they don't have will still be skipped
       # individually via monkeypatch; the presence of INTEGRATION_CREDS_AVAILABLE
       # only lifts the blanket @pytest.mark.integration skip.
+      - name: Run connector credential smoke suite
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.smoke_profile == 'credentials' }}
+        run: |
+          pytest \
+            tests/test_ingestion.py::TestConnectorCredentials \
+            tests/test_ingestion.py::TestReadinessEndpoint \
+            --run-integration \
+            --tb=short \
+            -v
+        env:
+          # PRO connectors
+          ASCAP_API_KEY: ${{ secrets.ASCAP_API_KEY }}
+          BMI_API_KEY: ${{ secrets.BMI_API_KEY }}
+          SESAC_API_KEY: ${{ secrets.SESAC_API_KEY }}
+          APRA_AMCOS_API_KEY: ${{ secrets.APRA_AMCOS_API_KEY }}
+          JASRAC_API_KEY: ${{ secrets.JASRAC_API_KEY }}
+          KOMCA_API_KEY: ${{ secrets.KOMCA_API_KEY }}
+          SACEM_API_KEY: ${{ secrets.SACEM_API_KEY }}
+          MLC_API_KEY: ${{ secrets.MLC_API_KEY }}
+          # DSP connectors
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          TICKETMASTER_API_KEY: ${{ secrets.TICKETMASTER_API_KEY }}
+
+      - name: Run Trolley smoke suite
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.smoke_profile == 'trolley' }}
+        run: |
+          pytest tests/test_trolley.py \
+            --run-integration \
+            --tb=short \
+            -v
+        env:
+          TROLLEY_API_KEY: ${{ secrets.TROLLEY_SANDBOX_API_KEY }}
+          TROLLEY_SECRET_KEY: ${{ secrets.TROLLEY_SANDBOX_SECRET_KEY }}
+          TROLLEY_ENVIRONMENT: "sandbox"
+
+      - name: Run platform OAuth smoke suite
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.smoke_profile == 'oauth' }}
+        run: |
+          pytest \
+            tests/test_oauth_prefill_metadata.py \
+            tests/test_expansion.py::test_oauth_connector_flow_scope_refresh_and_multitenant_linking \
+            --tb=short \
+            -v
+        env:
+          SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+          SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+
       - name: Run integration tests (all)
-        if: ${{ !github.event.inputs.test_filter }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.smoke_profile == '') && !github.event.inputs.test_filter }}
         run: |
           pytest tests/ \
             -m integration \
@@ -95,7 +148,7 @@ jobs:
           TROLLEY_ENVIRONMENT: "sandbox"
 
       - name: Run integration tests (filtered)
-        if: ${{ github.event.inputs.test_filter }}
+        if: ${{ (github.event_name != 'workflow_dispatch' || github.event.inputs.smoke_profile == '') && github.event.inputs.test_filter }}
         run: |
           pytest tests/ \
             -m integration \

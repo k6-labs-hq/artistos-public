@@ -57,8 +57,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    team_member_create = xr7_sdk.TeamMemberCreate() # TeamMemberCreate | 
+    artist_id = 'artist_id_example' # str |
+    team_member_create = xr7_sdk.TeamMemberCreate() # TeamMemberCreate |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -78,10 +78,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **team_member_create** | [**TeamMemberCreate**](TeamMemberCreate.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **team_member_create** | [**TeamMemberCreate**](TeamMemberCreate.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -130,7 +130,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    claim_id = 'claim_id_example' # str | 
+    claim_id = 'claim_id_example' # str |
 
     try:
         # Anchor Evidence Packet
@@ -148,7 +148,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **claim_id** | **str**|  | 
+ **claim_id** | **str**|  |
 
 ### Return type
 
@@ -196,7 +196,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -216,9 +216,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -267,8 +267,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    o_auth_session_create_request = xr7_sdk.OAuthSessionCreateRequest() # OAuthSessionCreateRequest | 
+    artist_id = 'artist_id_example' # str |
+    o_auth_session_create_request = xr7_sdk.OAuthSessionCreateRequest() # OAuthSessionCreateRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -288,10 +288,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **o_auth_session_create_request** | [**OAuthSessionCreateRequest**](OAuthSessionCreateRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **o_auth_session_create_request** | [**OAuthSessionCreateRequest**](OAuthSessionCreateRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -339,7 +339,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     days = 180 # int |  (optional) (default to 180)
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
@@ -360,10 +360,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **days** | **int**|  | [optional] [default to 180]
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -411,8 +411,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    account_id = 'account_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    account_id = 'account_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -432,10 +432,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **account_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **account_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -483,7 +483,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    guide_id = 'guide_id_example' # str | 
+    guide_id = 'guide_id_example' # str |
 
     try:
         # Education Guide Detail
@@ -501,7 +501,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **guide_id** | **str**|  | 
+ **guide_id** | **str**|  |
 
 ### Return type
 
@@ -611,8 +611,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    currency_tax_estimate_request = xr7_sdk.CurrencyTaxEstimateRequest() # CurrencyTaxEstimateRequest | 
+    artist_id = 'artist_id_example' # str |
+    currency_tax_estimate_request = xr7_sdk.CurrencyTaxEstimateRequest() # CurrencyTaxEstimateRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -632,10 +632,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **currency_tax_estimate_request** | [**CurrencyTaxEstimateRequest**](CurrencyTaxEstimateRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **currency_tax_estimate_request** | [**CurrencyTaxEstimateRequest**](CurrencyTaxEstimateRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -684,9 +684,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    session_id = 'session_id_example' # str | 
-    o_auth_token_exchange_request = xr7_sdk.OAuthTokenExchangeRequest() # OAuthTokenExchangeRequest | 
+    artist_id = 'artist_id_example' # str |
+    session_id = 'session_id_example' # str |
+    o_auth_token_exchange_request = xr7_sdk.OAuthTokenExchangeRequest() # OAuthTokenExchangeRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -706,11 +706,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **session_id** | **str**|  | 
- **o_auth_token_exchange_request** | [**OAuthTokenExchangeRequest**](OAuthTokenExchangeRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **session_id** | **str**|  |
+ **o_auth_token_exchange_request** | [**OAuthTokenExchangeRequest**](OAuthTokenExchangeRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -758,7 +758,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     format = 'json' # str |  (optional) (default to 'json')
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
@@ -779,10 +779,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **format** | **str**|  | [optional] [default to &#39;json&#39;]
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -830,7 +830,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -850,9 +850,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -901,8 +901,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    claim_template_request = xr7_sdk.ClaimTemplateRequest() # ClaimTemplateRequest | 
+    artist_id = 'artist_id_example' # str |
+    claim_template_request = xr7_sdk.ClaimTemplateRequest() # ClaimTemplateRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -922,10 +922,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **claim_template_request** | [**ClaimTemplateRequest**](ClaimTemplateRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **claim_template_request** | [**ClaimTemplateRequest**](ClaimTemplateRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -974,7 +974,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -994,9 +994,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1044,7 +1044,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1064,9 +1064,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1114,7 +1114,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     provider = 'provider_example' # str |  (optional)
     tenant_id = 'tenant_id_example' # str |  (optional)
     include_inactive = False # bool |  (optional) (default to False)
@@ -1137,12 +1137,12 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **provider** | **str**|  | [optional] 
- **tenant_id** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **provider** | **str**|  | [optional]
+ **tenant_id** | **str**|  | [optional]
  **include_inactive** | **bool**|  | [optional] [default to False]
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1191,7 +1191,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1211,9 +1211,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1323,8 +1323,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    predict_recoverable_request = xr7_sdk.PredictRecoverableRequest() # PredictRecoverableRequest | 
+    artist_id = 'artist_id_example' # str |
+    predict_recoverable_request = xr7_sdk.PredictRecoverableRequest() # PredictRecoverableRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1344,10 +1344,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **predict_recoverable_request** | [**PredictRecoverableRequest**](PredictRecoverableRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **predict_recoverable_request** | [**PredictRecoverableRequest**](PredictRecoverableRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1457,9 +1457,9 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    account_id = 'account_id_example' # str | 
-    o_auth_token_refresh_request = xr7_sdk.OAuthTokenRefreshRequest() # OAuthTokenRefreshRequest | 
+    artist_id = 'artist_id_example' # str |
+    account_id = 'account_id_example' # str |
+    o_auth_token_refresh_request = xr7_sdk.OAuthTokenRefreshRequest() # OAuthTokenRefreshRequest |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1479,11 +1479,11 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **account_id** | **str**|  | 
- **o_auth_token_refresh_request** | [**OAuthTokenRefreshRequest**](OAuthTokenRefreshRequest.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **account_id** | **str**|  |
+ **o_auth_token_refresh_request** | [**OAuthTokenRefreshRequest**](OAuthTokenRefreshRequest.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1531,8 +1531,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    member_id = 'member_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    member_id = 'member_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1552,10 +1552,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **member_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **member_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1605,8 +1605,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    notification_preference_upsert = xr7_sdk.NotificationPreferenceUpsert() # NotificationPreferenceUpsert | 
+    artist_id = 'artist_id_example' # str |
+    notification_preference_upsert = xr7_sdk.NotificationPreferenceUpsert() # NotificationPreferenceUpsert |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1626,10 +1626,10 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **notification_preference_upsert** | [**NotificationPreferenceUpsert**](NotificationPreferenceUpsert.md)|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **notification_preference_upsert** | [**NotificationPreferenceUpsert**](NotificationPreferenceUpsert.md)|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1677,7 +1677,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     x_actor_email = 'x_actor_email_example' # str |  (optional)
     x_actor_role = 'x_actor_role_example' # str |  (optional)
 
@@ -1697,9 +1697,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **x_actor_email** | **str**|  | [optional] 
- **x_actor_role** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **x_actor_email** | **str**|  | [optional]
+ **x_actor_role** | **str**|  | [optional]
 
 ### Return type
 
@@ -1747,7 +1747,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ExpansionApi(api_client)
-    org_id = 'org_id_example' # str | 
+    org_id = 'org_id_example' # str |
 
     try:
         # White Label Portfolio
@@ -1765,7 +1765,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **org_id** | **str**|  | 
+ **org_id** | **str**|  |
 
 ### Return type
 
@@ -1788,4 +1788,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

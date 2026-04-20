@@ -89,5 +89,3 @@ class TokenResponse(BaseModel):
             "expires_in_seconds": obj.get("expires_in_seconds")
         })
         return _obj
-
-

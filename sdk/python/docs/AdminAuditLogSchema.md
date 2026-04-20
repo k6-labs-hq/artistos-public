@@ -5,13 +5,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**actor** | **str** |  | 
-**action** | **str** |  | 
-**resource_type** | **str** |  | 
-**resource_id** | **str** |  | [optional] 
-**details** | **Dict[str, object]** |  | [optional] 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**actor** | **str** |  |
+**action** | **str** |  |
+**resource_type** | **str** |  |
+**resource_id** | **str** |  | [optional]
+**details** | **Dict[str, object]** |  | [optional]
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -31,5 +31,3 @@ admin_audit_log_schema_dict = admin_audit_log_schema_instance.to_dict()
 admin_audit_log_schema_from_dict = AdminAuditLogSchema.from_dict(admin_audit_log_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

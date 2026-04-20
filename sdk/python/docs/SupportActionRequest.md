@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**action** | **str** | one_of_safe_actions | 
-**payload** | **Dict[str, object]** |  | [optional] 
+**action** | **str** | one_of_safe_actions |
+**payload** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ support_action_request_dict = support_action_request_instance.to_dict()
 support_action_request_from_dict = SupportActionRequest.from_dict(support_action_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

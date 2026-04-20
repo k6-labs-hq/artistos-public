@@ -51,8 +51,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    offer_id = 'offer_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    offer_id = 'offer_id_example' # str |
 
     try:
         # Accept Artist Offer
@@ -70,8 +70,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **offer_id** | **str**|  | 
+ **artist_id** | **str**|  |
+ **offer_id** | **str**|  |
 
 ### Return type
 
@@ -201,8 +201,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    opportunity_id = 'opportunity_id_example' # str | 
-    approval_request = xr7_sdk.ApprovalRequest() # ApprovalRequest | 
+    opportunity_id = 'opportunity_id_example' # str |
+    approval_request = xr7_sdk.ApprovalRequest() # ApprovalRequest |
 
     try:
         # Approve Analyst
@@ -220,8 +220,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **opportunity_id** | **str**|  | 
- **approval_request** | [**ApprovalRequest**](ApprovalRequest.md)|  | 
+ **opportunity_id** | **str**|  |
+ **approval_request** | [**ApprovalRequest**](ApprovalRequest.md)|  |
 
 ### Return type
 
@@ -280,8 +280,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    opportunity_id = 'opportunity_id_example' # str | 
-    approval_request = xr7_sdk.ApprovalRequest() # ApprovalRequest | 
+    opportunity_id = 'opportunity_id_example' # str |
+    approval_request = xr7_sdk.ApprovalRequest() # ApprovalRequest |
 
     try:
         # Approve Executive
@@ -299,8 +299,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **opportunity_id** | **str**|  | 
- **approval_request** | [**ApprovalRequest**](ApprovalRequest.md)|  | 
+ **opportunity_id** | **str**|  |
+ **approval_request** | [**ApprovalRequest**](ApprovalRequest.md)|  |
 
 ### Return type
 
@@ -358,7 +358,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    packet_id = 'packet_id_example' # str | 
+    packet_id = 'packet_id_example' # str |
 
     try:
         # Complete Packet
@@ -376,7 +376,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **packet_id** | **str**|  | 
+ **packet_id** | **str**|  |
 
 ### Return type
 
@@ -435,8 +435,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    offer_id = 'offer_id_example' # str | 
-    failed_packet_request = xr7_sdk.FailedPacketRequest() # FailedPacketRequest | 
+    offer_id = 'offer_id_example' # str |
+    failed_packet_request = xr7_sdk.FailedPacketRequest() # FailedPacketRequest |
 
     try:
         # Create Failed Packet
@@ -454,8 +454,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **offer_id** | **str**|  | 
- **failed_packet_request** | [**FailedPacketRequest**](FailedPacketRequest.md)|  | 
+ **offer_id** | **str**|  |
+ **failed_packet_request** | [**FailedPacketRequest**](FailedPacketRequest.md)|  |
 
 ### Return type
 
@@ -584,7 +584,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Artist Offers
@@ -602,7 +602,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -660,7 +660,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    opportunity_id = 'opportunity_id_example' # str | 
+    opportunity_id = 'opportunity_id_example' # str |
 
     try:
         # Publish Offer
@@ -678,7 +678,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **opportunity_id** | **str**|  | 
+ **opportunity_id** | **str**|  |
 
 ### Return type
 
@@ -808,8 +808,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AdvanceGovernanceApi(api_client)
-    packet_id = 'packet_id_example' # str | 
-    packet_sign_request = xr7_sdk.PacketSignRequest() # PacketSignRequest | 
+    packet_id = 'packet_id_example' # str |
+    packet_sign_request = xr7_sdk.PacketSignRequest() # PacketSignRequest |
 
     try:
         # Sign Failed Packet
@@ -827,8 +827,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **packet_id** | **str**|  | 
- **packet_sign_request** | [**PacketSignRequest**](PacketSignRequest.md)|  | 
+ **packet_id** | **str**|  |
+ **packet_sign_request** | [**PacketSignRequest**](PacketSignRequest.md)|  |
 
 ### Return type
 
@@ -851,4 +851,3 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

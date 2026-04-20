@@ -5,26 +5,26 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**claim_id** | **str** |  | 
-**type** | [**TrolleyTxnType**](TrolleyTxnType.md) |  | 
-**status** | [**TrolleyTxnStatus**](TrolleyTxnStatus.md) |  | 
-**gross_amount** | **float** |  | [optional] 
-**platform_fee_amount** | **float** |  | [optional] 
-**net_amount** | **float** |  | [optional] 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**claim_id** | **str** |  |
+**type** | [**TrolleyTxnType**](TrolleyTxnType.md) |  |
+**status** | [**TrolleyTxnStatus**](TrolleyTxnStatus.md) |  |
+**gross_amount** | **float** |  | [optional]
+**platform_fee_amount** | **float** |  | [optional]
+**net_amount** | **float** |  | [optional]
 **source_currency** | **str** |  | [optional] [default to 'USD']
-**local_amount** | **float** |  | [optional] 
-**local_currency** | **str** |  | [optional] 
-**exchange_rate** | **float** |  | [optional] 
-**trolley_payment_id** | **str** |  | [optional] 
-**trolley_batch_id** | **str** |  | [optional] 
-**external_id** | **str** |  | [optional] 
-**failure_reason** | **str** |  | [optional] 
+**local_amount** | **float** |  | [optional]
+**local_currency** | **str** |  | [optional]
+**exchange_rate** | **float** |  | [optional]
+**trolley_payment_id** | **str** |  | [optional]
+**trolley_batch_id** | **str** |  | [optional]
+**external_id** | **str** |  | [optional]
+**failure_reason** | **str** |  | [optional]
 **retry_count** | **int** |  | [optional] [default to 0]
-**description** | **str** |  | [optional] 
-**created_at** | **datetime** |  | 
-**updated_at** | **datetime** |  | 
+**description** | **str** |  | [optional]
+**created_at** | **datetime** |  |
+**updated_at** | **datetime** |  |
 
 ## Example
 
@@ -44,5 +44,3 @@ trolley_transaction_schema_dict = trolley_transaction_schema_instance.to_dict()
 trolley_transaction_schema_from_dict = TrolleyTransactionSchema.from_dict(trolley_transaction_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

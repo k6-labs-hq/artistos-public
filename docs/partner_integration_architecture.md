@@ -1,8 +1,8 @@
 # XR7 Partner Integration Architecture
 
-**Version:** 1.0  
-**Date:** 2026-04-09  
-**Scope:** Technical integration strategy for labels, publishers, PROs, DSPs, MLC, CCLI, foreign societies, and TV/film metadata providers  
+**Version:** 1.0
+**Date:** 2026-04-09
+**Scope:** Technical integration strategy for labels, publishers, PROs, DSPs, MLC, CCLI, foreign societies, and TV/film metadata providers
 **Principle:** Every partner integration is idempotent, retry-safe, and independently deployable. A failure in one partner integration never cascades.
 
 ---
@@ -61,8 +61,8 @@
 
 ### 2.1 DSPs (Digital Service Providers)
 
-**Integration type:** Pull (XR7 pulls statements from DSPs)  
-**Primary method:** SFTP pickup or authenticated REST/GraphQL API  
+**Integration type:** Pull (XR7 pulls statements from DSPs)
+**Primary method:** SFTP pickup or authenticated REST/GraphQL API
 **Data flow direction:** DSP → XR7 (one-way; XR7 does not write back to DSPs except claim submissions)
 
 | DSP | Method | Format | Auth | Frequency |
@@ -86,7 +86,7 @@
 
 ### 2.2 Labels & Distributors
 
-**Integration type:** Push (labels push catalog + statements to XR7) or Pull (XR7 pulls via label API)  
+**Integration type:** Push (labels push catalog + statements to XR7) or Pull (XR7 pulls via label API)
 **Data types:** Catalog (works, recordings, splits), historical statements, rights configuration
 
 | Partner type | Integration method | Auth | Data pushed |
@@ -114,7 +114,7 @@ Each artist sees only their own data in the XR7 artist portal.
 
 ### 2.3 PROs (Performing Rights Organizations)
 
-**Integration type:** Pull (XR7 downloads statements from PROs)  
+**Integration type:** Pull (XR7 downloads statements from PROs)
 **Direction:** PRO → XR7 (read-only; XR7 submits claims back via web portal or email for now)
 
 | PRO | Region | Format | Auth | Frequency |
@@ -133,8 +133,8 @@ Each artist sees only their own data in the XR7 artist portal.
 
 ### 2.4 MLC (Mechanical Licensing Collective)
 
-**Integration type:** Pull + submission  
-**MLC provides:** Mechanical royalty statements for US streaming  
+**Integration type:** Pull + submission
+**MLC provides:** Mechanical royalty statements for US streaming
 **XR7 submits:** Claim filings for unmatched works
 
 ```
@@ -153,7 +153,7 @@ XR7 → MLC API: GET /statements (pull unmatched royalty pools)
 
 ### 2.5 CCLI (Christian Copyright Licensing International)
 
-**Integration type:** Pull  
+**Integration type:** Pull
 **Scope:** Worship music licensing; XR7 ingests CCLI license reports
 
 ```
@@ -194,7 +194,7 @@ Key foreign societies supported:
 
 ### 2.7 TV/Film Metadata Providers (Cue Sheet Sources)
 
-**Integration type:** Pull + contribution  
+**Integration type:** Pull + contribution
 **Purpose:** Match music used in TV/film to Works in XR7 for sync + performance royalty recovery
 
 | Source | Data type | XR7 use |
@@ -479,7 +479,7 @@ async def reconcile_statement_import(statement_id: str):
     if abs(reported_row_count - imported_row_count) > (reported_row_count * 0.001):
         # >0.1% row count discrepancy → re-import
         await schedule_reimport(statement_id, reason="row_count_mismatch")
-    
+
     if not checksum_match:
         await schedule_reimport(statement_id, reason="checksum_mismatch")
 ```
@@ -590,10 +590,10 @@ Before a partner integration goes live in production, it must complete certifica
 
 ### Integrating as a Label or Distributor
 
-**Step 1: Request an API key**  
+**Step 1: Request an API key**
 Contact your XR7 account manager or sign up at `https://partners.xr7.artistos.io`. API keys are issued with the minimum permissions required for your use case.
 
-**Step 2: Catalog Import**  
+**Step 2: Catalog Import**
 Push your work and recording catalog via the bulk import API:
 ```bash
 curl -X POST https://api.xr7.artistos.io/v2/catalog/import/bulk \
@@ -613,7 +613,7 @@ Response:
 }
 ```
 
-**Step 3: Statement Push (Webhook)**  
+**Step 3: Statement Push (Webhook)**
 Configure your system to push statement files to:
 ```
 POST https://api.xr7.artistos.io/webhooks/ingest/statement
@@ -631,7 +631,7 @@ Content-Type: application/json
 }
 ```
 
-**Step 4: Subscribe to Webhooks**  
+**Step 4: Subscribe to Webhooks**
 Register your endpoint to receive XR7 events:
 ```bash
 curl -X POST https://api.xr7.artistos.io/v2/webhooks \

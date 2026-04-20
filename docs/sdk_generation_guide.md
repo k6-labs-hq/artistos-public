@@ -234,7 +234,7 @@ class AdminLoginRequest(BaseModel):
             }
         }
     }
-    
+
     email: str = Field(example="admin@xr7.example.com")
     password: str = Field(example="SuperSecurePassword123!")
 ```

@@ -5,11 +5,10 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, HTTPExcepti
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.deps import get_artist_or_404
+from XR7.api.middleware.timeout import TimeoutRoute, with_timeout
 from XR7.intelligence.withholding_estimate import tax_optimizer
 from XR7.ml.catalog_auditor import AutomatedRegistrationFixer, CatalogAuditor
 from XR7.ml.catalog_valuation import CatalogValuationEngine
-from XR7.ml.contract_document_ingestion import ContractDocumentIngestion
 from XR7.ml.contract_term_extractor import ContractTermExtractor
 from XR7.ml.expected_payout_simulator import ExpectedPayoutSimulator
 from XR7.ml.recovery_utility_ranker import RecoveryUtilityRanker
@@ -34,13 +33,45 @@ from XR7.services.branding import (
     get_branding_for_artist,
     inject_branding_metadata,
 )
+from XR7.services.contract_nlp_pipeline import ContractNLPPipeline
 from XR7.services.ml_feedback import ingest_feedback_event
+from XR7.services.model_drift_monitor import detect_prediction_drift
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.router_v21_phase1 import router_service_for
 from XR7.tasks.pipeline import aggregate_feedback_calibration, run_catalog_audit
 from xr7_common.logging import get_logger
 
-router = APIRouter(tags=["intelligence"])
+router = APIRouter(route_class=TimeoutRoute)
+
+_router_service = router_service_for("intelligence")
 logger = get_logger(__name__)
+
+_MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB
+_ALLOWED_UPLOAD_MIME_TYPES = {
+    "application/pdf",
+    "text/plain",
+    "text/csv",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+}
+
+
+def _validate_upload(file: UploadFile, content: bytes, *, context: str) -> None:
+    if len(content) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"{context} exceeds max file size of {_MAX_UPLOAD_BYTES // (1024 * 1024)}MB",
+        )
+    content_type = (file.content_type or "").lower().strip()
+    if content_type and content_type not in _ALLOWED_UPLOAD_MIME_TYPES:
+        raise HTTPException(
+            status_code=415,
+            detail={
+                "message": "Unsupported file content type",
+                "content_type": content_type,
+                "allowed": sorted(_ALLOWED_UPLOAD_MIME_TYPES),
+            },
+        )
 
 
 def _safe_enqueue_calibration(artist_id: str) -> None:
@@ -122,7 +153,7 @@ def get_calibration_health(
     artist_id: str,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     calibrator = SuccessProbabilityCalibrator()
     summary = calibrator.calibration_summary(artist_id, db)
@@ -133,13 +164,39 @@ def get_calibration_health(
     }
 
 
+@router.get("/artists/{artist_id}/intelligence/model-drift")
+def get_model_drift_status(
+    artist_id: str,
+    model_version: str | None = None,
+    psi_threshold: float = 0.2,
+    db: Session = Depends(get_db),
+):
+    _router_service.get_artist_or_404(artist_id, db)
+    drift = detect_prediction_drift(
+        db,
+        artist_id=artist_id,
+        model_version=model_version,
+        psi_threshold=psi_threshold,
+    )
+    return {
+        "artist_id": artist_id,
+        "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
+        "model_version": model_version,
+        "psi_score": drift.psi_score,
+        "psi_threshold": drift.threshold,
+        "baseline_count": drift.baseline_count,
+        "current_count": drift.current_count,
+        "drift_detected": drift.drift_detected,
+    }
+
+
 @router.post("/artists/{artist_id}/intelligence/ledger/ingest")
 def ingest_royalty_ledger(
     artist_id: str,
     payload: LedgerIngestRequest,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     created: list[RoyaltyLedgerEntry] = []
     for entry in payload.entries:
@@ -178,12 +235,13 @@ def ingest_royalty_ledger(
 
 
 @router.post("/artists/{artist_id}/intelligence/contracts/extract")
+@with_timeout(90)
 def extract_contract_terms(
     artist_id: str,
     payload: ContractExtractRequest,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     extractor = ContractTermExtractor()
     terms, highlights = extractor.extract_with_highlights(
@@ -249,6 +307,7 @@ def extract_contract_terms(
 
 
 @router.post("/artists/{artist_id}/intelligence/contracts/extract-upload")
+@with_timeout(120)
 async def extract_contract_terms_upload(
     artist_id: str,
     file: UploadFile = File(...),
@@ -258,7 +317,7 @@ async def extract_contract_terms_upload(
     extracted_from: str | None = Form(None),
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     if not file.filename:
         raise HTTPException(status_code=400, detail="No contract file provided")
@@ -266,18 +325,9 @@ async def extract_contract_terms_upload(
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded contract file is empty")
+    _validate_upload(file, content, context="Contract upload")
 
-    ingestion = ContractDocumentIngestion()
-    extracted = ingestion.extract_text(file.filename, content)
-    contract_text = extracted.get("text", "")
-    if not contract_text:
-        raise HTTPException(
-            status_code=422,
-            detail={
-                "message": "Unable to extract contract text from upload.",
-                "warnings": extracted.get("warnings", []),
-            },
-        )
+    pipeline = ContractNLPPipeline()
 
     try:
         start_dt = date.fromisoformat(effective_start) if effective_start else None
@@ -288,15 +338,23 @@ async def extract_contract_terms_upload(
             detail=f"Invalid date format in effective_start/effective_end: {exc}",
         ) from exc
 
-    extractor = ContractTermExtractor()
-    terms, highlights = extractor.extract_with_highlights(
-        contract_text=contract_text,
+    extraction = pipeline.parse_uploaded_contract(
+        filename=file.filename,
+        content=content,
         effective_start=start_dt,
         effective_end=end_dt,
     )
+    if not extraction.text:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": "Unable to extract contract text from upload.",
+                "warnings": extraction.warnings,
+            },
+        )
 
     created = []
-    for term in terms:
+    for term in extraction.terms:
         model = ContractTermSnapshot(
             id=str(uuid.uuid4()),
             artist_id=artist_id,
@@ -336,9 +394,9 @@ async def extract_contract_terms_upload(
         "artist_id": artist_id,
         "branding": branding_metadata(get_branding_for_artist(db, artist_id)),
         "term_count": len(created),
-        "extraction_method": extracted.get("method"),
-        "warnings": extracted.get("warnings", []),
-        "highlights": highlights,
+        "extraction_method": extraction.method,
+        "warnings": extraction.warnings,
+        "highlights": extraction.highlights,
         "terms": [
             {
                 "id": t.id,
@@ -357,7 +415,7 @@ def simulate_expected_payout(
     payload: SimulatePayoutRequest,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     simulator = ExpectedPayoutSimulator()
     result = simulator.simulate(
@@ -400,7 +458,7 @@ def create_outcome_feedback(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     outcome_value = payload.outcome or "DISMISSED"
     feedback = RecoveryOutcomeFeedback(
@@ -445,8 +503,33 @@ def create_outcome_feedback(
         outcome=payload.outcome,
         estimated_amount=payload.estimated_amount,
         actual_amount=payload.actual_amount,
-        payload=payload.payload,
+        payload={
+            **(payload.payload or {}),
+            "active_learning_candidate": True,
+        },
     )
+
+    drift = detect_prediction_drift(
+        db,
+        artist_id=artist_id,
+        model_version=payload.model_version,
+    )
+    if drift.drift_detected:
+        enqueue_review_item(
+            db,
+            artist_id=artist_id,
+            source_type=ReviewSourceType.ML_CONFIDENCE,
+            source_id=None,
+            reason="PSI drift threshold exceeded; analyst calibration review required",
+            priority_score=min(1.0, drift.psi_score),
+            payload={
+                "psi_score": drift.psi_score,
+                "psi_threshold": drift.threshold,
+                "baseline_count": drift.baseline_count,
+                "current_count": drift.current_count,
+                "model_version": payload.model_version,
+            },
+        )
 
     # Keep calibration_health warm for downstream reads.
     background_tasks.add_task(_safe_enqueue_calibration, artist_id)
@@ -460,7 +543,7 @@ def list_feedback_events(
     artist_id: str,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     return (
         db.query(MLFeedbackEvent)
         .filter(MLFeedbackEvent.artist_id == artist_id)
@@ -476,7 +559,7 @@ def rank_by_expected_utility(
     payload: UtilityRankRequest,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     ranker = RecoveryUtilityRanker()
     calibrator = SuccessProbabilityCalibrator()
@@ -504,7 +587,7 @@ def pre_signature_contract_review(
     payload: PreSignatureContractReviewRequest,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     extractor = ContractTermExtractor()
     review = extractor.pre_signature_review(payload.contract_text)
@@ -516,11 +599,12 @@ def pre_signature_contract_review(
 
 
 @router.post("/artists/{artist_id}/ml/catalog-audit")
+@with_timeout(120)
 async def run_catalog_audit_on_demand(
     artist_id: str,
     db: Session = Depends(get_db),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     audit = await CatalogAuditor(db).run(artist_id)
     db.add(
@@ -553,7 +637,7 @@ async def run_catalog_audit_on_demand(
 
 @router.post("/artists/{artist_id}/intelligence/tax-optimizer")
 def run_tax_optimizer(artist_id: str, payload: TaxOptimizerRequest, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     result = tax_optimizer(
         artist_id,
         gross_amount=payload.gross_amount,
@@ -570,7 +654,7 @@ def run_tax_optimizer(artist_id: str, payload: TaxOptimizerRequest, db: Session 
 
 @router.post("/artists/{artist_id}/registration/auto-fix")
 def registration_auto_fix(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     agent = AutoFixRegistrationAgent(db)
     issues = agent.scan_registration_gaps(artist_id)
     payload = agent.auto_register_or_prepare_submission(artist_id, issues)
@@ -579,7 +663,7 @@ def registration_auto_fix(artist_id: str, db: Session = Depends(get_db)):
 
 @router.get("/artists/{artist_id}/registration/status")
 def registration_status(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     issues = AutomatedRegistrationFixer(db).detect_missing_metadata(artist_id)
     return inject_branding_metadata(
         db,
@@ -593,7 +677,7 @@ def registration_status(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ml/catalog-valuation")
 async def catalog_valuation(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     engine = CatalogValuationEngine(db)
     value = engine.calculate_catalog_value(artist_id)
     report = await engine.export_valuation_report_with_anchor(artist_id)
@@ -609,7 +693,7 @@ async def catalog_valuation(artist_id: str, db: Session = Depends(get_db)):
 
 @router.post("/artists/{artist_id}/ml/financing-matches")
 def financing_matches(artist_id: str, db: Session = Depends(get_db)):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     engine = CatalogValuationEngine(db)
     value = engine.calculate_catalog_value(artist_id)
     matches = engine.generate_financing_matches(value)
@@ -627,7 +711,7 @@ def financing_matches(artist_id: str, db: Session = Depends(get_db)):
 def simulate_optimization(
     artist_id: str, payload: OptimizationSimulationRequest, db: Session = Depends(get_db)
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     opt = RoyaltyOptimizer()
     simulation = opt.simulate_scenario(artist_id, payload.changes)
     return inject_branding_metadata(

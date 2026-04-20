@@ -109,5 +109,3 @@ class NotificationPreferenceRequest(BaseModel):
             "quiet_hours_end": obj.get("quiet_hours_end") if obj.get("quiet_hours_end") is not None else 7
         })
         return _obj
-
-

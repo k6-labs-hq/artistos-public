@@ -1,0 +1,18 @@
+Hi {{ artist_name }},
+
+Here is your XR7 royalty estimate.
+
+Conservative: {{ currency }} {{ conservative }}
+Likely:       {{ currency }} {{ likely }}
+Optimistic:   {{ currency }} {{ optimistic }}
+
+{% if stream_lines %}Breakdown by stream:
+{% for line in stream_lines %}- {{ line }}
+{% endfor %}
+{% endif %}
+{{ disclaimer }}
+
+Manage notification preferences:
+{{ unsubscribe_url }}
+
+- The XR7 Team

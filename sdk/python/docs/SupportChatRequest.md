@@ -5,8 +5,8 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**message** | **str** |  | 
-**thread_id** | **str** |  | [optional] 
+**message** | **str** |  |
+**thread_id** | **str** |  | [optional]
 
 ## Example
 
@@ -26,5 +26,3 @@ support_chat_request_dict = support_chat_request_instance.to_dict()
 support_chat_request_from_dict = SupportChatRequest.from_dict(support_chat_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -85,5 +85,3 @@ class AdvanceAcceptRequest(BaseModel):
             "advance_id": obj.get("advance_id")
         })
         return _obj
-
-

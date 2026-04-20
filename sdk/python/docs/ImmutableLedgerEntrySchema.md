@@ -5,13 +5,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**entry_type** | **str** |  | 
-**payload_json** | **str** |  | 
-**prior_hash** | **str** |  | 
-**entry_hash** | **str** |  | 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**entry_type** | **str** |  |
+**payload_json** | **str** |  |
+**prior_hash** | **str** |  |
+**entry_hash** | **str** |  |
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -31,5 +31,3 @@ immutable_ledger_entry_schema_dict = immutable_ledger_entry_schema_instance.to_d
 immutable_ledger_entry_schema_from_dict = ImmutableLedgerEntrySchema.from_dict(immutable_ledger_entry_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

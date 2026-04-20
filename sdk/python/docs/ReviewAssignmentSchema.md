@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**review_item_id** | **str** |  | 
-**analyst_email** | **str** |  | 
-**assigned_at** | **datetime** |  | 
-**unassigned_at** | **datetime** |  | [optional] 
+**id** | **str** |  |
+**review_item_id** | **str** |  |
+**analyst_email** | **str** |  |
+**assigned_at** | **datetime** |  |
+**unassigned_at** | **datetime** |  | [optional]
 
 ## Example
 
@@ -29,5 +29,3 @@ review_assignment_schema_dict = review_assignment_schema_instance.to_dict()
 review_assignment_schema_from_dict = ReviewAssignmentSchema.from_dict(review_assignment_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -23,7 +23,12 @@ from XR7.models.review_queue import (
     ReviewSourceType,
 )
 from XR7.services.ml_feedback import ingest_feedback_event
-from XR7.services.review_queue import enqueue_review_item, queue_metrics
+from XR7.services.review_queue import (
+    enqueue_review_item,
+    increment_override_tracking,
+    queue_metrics,
+    route_confidence_tier_item,
+)
 
 router = APIRouter(prefix="/review-queue", tags=["review_queue"])
 
@@ -49,6 +54,15 @@ class CreateReviewItemRequest(BaseModel):
     source_id: str | None = None
     reason: str
     priority_score: float = 0.0
+    payload: dict | None = None
+
+
+class ConfidenceTierRouteRequest(BaseModel):
+    artist_id: str
+    source_type: ReviewSourceType
+    source_id: str | None = None
+    reason: str
+    confidence_score: float | None = None
     payload: dict | None = None
 
 
@@ -79,9 +93,26 @@ def create_review_item(
     return item
 
 
+@router.post("/items/route-confidence", response_model=ReviewItemSchema, status_code=201)
+def route_review_item_by_confidence(
+    payload: ConfidenceTierRouteRequest,
+    _: str = Depends(_require_analyst),
+    db: Session = Depends(get_db),
+):
+    return route_confidence_tier_item(
+        db,
+        artist_id=payload.artist_id,
+        source_type=payload.source_type,
+        source_id=payload.source_id,
+        reason=payload.reason,
+        confidence_score=payload.confidence_score,
+        payload=payload.payload,
+    )
+
+
 @router.get("/items", response_model=list[ReviewItemSchema])
 def list_review_items(
-    status: str | None = Query(default=None),
+    status: ReviewItemStatus | None = Query(default=None),
     artist_id: str | None = Query(default=None),
     assigned_analyst_email: str | None = Query(default=None),
     limit: int = Query(default=100, ge=1, le=500),
@@ -91,7 +122,7 @@ def list_review_items(
 ):
     query = db.query(ReviewItem)
     if status:
-        query = query.filter(ReviewItem.status == status)
+        query = query.filter(ReviewItem.status == status.value)
     if artist_id:
         query = query.filter(ReviewItem.artist_id == artist_id)
     if assigned_analyst_email:
@@ -174,6 +205,13 @@ def decide_review_item(
         item.status = ReviewItemStatus.IN_REVIEW.value
     item.updated_at = datetime.now(timezone.utc)
 
+    if payload.decision in {ReviewDecisionType.ESCALATE, ReviewDecisionType.REJECT}:
+        item = increment_override_tracking(
+            db,
+            item=item,
+            override_reason=payload.decision.value,
+        )
+
     db.commit()
     db.refresh(decision)
 
@@ -193,7 +231,14 @@ def decide_review_item(
         outcome=payload.decision.value,
         estimated_amount=(item.payload or {}).get("estimated_amount") or item.priority_score,
         actual_amount=(item.payload or {}).get("actual_amount"),
-        payload={"notes": payload.notes, "review_item_id": item.id},
+        payload={
+            "notes": payload.notes,
+            "review_item_id": item.id,
+            "active_learning_candidate": bool(
+                (item.payload or {}).get("active_learning_candidate")
+            ),
+            "override_count": int((item.payload or {}).get("override_count") or 0),
+        },
     )
     return decision
 

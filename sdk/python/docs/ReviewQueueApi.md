@@ -39,8 +39,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ReviewQueueApi(api_client)
-    item_id = 'item_id_example' # str | 
-    assign_review_item_request = xr7_sdk.AssignReviewItemRequest() # AssignReviewItemRequest | 
+    item_id = 'item_id_example' # str |
+    assign_review_item_request = xr7_sdk.AssignReviewItemRequest() # AssignReviewItemRequest |
     x_analyst_key = '' # str |  (optional) (default to '')
     x_analyst_email = '' # str |  (optional) (default to '')
 
@@ -60,8 +60,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **item_id** | **str**|  | 
- **assign_review_item_request** | [**AssignReviewItemRequest**](AssignReviewItemRequest.md)|  | 
+ **item_id** | **str**|  |
+ **assign_review_item_request** | [**AssignReviewItemRequest**](AssignReviewItemRequest.md)|  |
  **x_analyst_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_analyst_email** | **str**|  | [optional] [default to &#39;&#39;]
 
@@ -181,7 +181,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ReviewQueueApi(api_client)
-    create_review_item_request = xr7_sdk.CreateReviewItemRequest() # CreateReviewItemRequest | 
+    create_review_item_request = xr7_sdk.CreateReviewItemRequest() # CreateReviewItemRequest |
     x_analyst_key = '' # str |  (optional) (default to '')
     x_analyst_email = '' # str |  (optional) (default to '')
 
@@ -201,7 +201,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **create_review_item_request** | [**CreateReviewItemRequest**](CreateReviewItemRequest.md)|  | 
+ **create_review_item_request** | [**CreateReviewItemRequest**](CreateReviewItemRequest.md)|  |
  **x_analyst_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_analyst_email** | **str**|  | [optional] [default to &#39;&#39;]
 
@@ -253,8 +253,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.ReviewQueueApi(api_client)
-    item_id = 'item_id_example' # str | 
-    decide_review_item_request = xr7_sdk.DecideReviewItemRequest() # DecideReviewItemRequest | 
+    item_id = 'item_id_example' # str |
+    decide_review_item_request = xr7_sdk.DecideReviewItemRequest() # DecideReviewItemRequest |
     x_analyst_key = '' # str |  (optional) (default to '')
     x_analyst_email = '' # str |  (optional) (default to '')
 
@@ -274,8 +274,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **item_id** | **str**|  | 
- **decide_review_item_request** | [**DecideReviewItemRequest**](DecideReviewItemRequest.md)|  | 
+ **item_id** | **str**|  |
+ **decide_review_item_request** | [**DecideReviewItemRequest**](DecideReviewItemRequest.md)|  |
  **x_analyst_key** | **str**|  | [optional] [default to &#39;&#39;]
  **x_analyst_email** | **str**|  | [optional] [default to &#39;&#39;]
 
@@ -348,7 +348,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **item_id** | **str**|  | [optional] 
+ **item_id** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 100]
  **offset** | **int**|  | [optional] [default to 0]
  **x_analyst_key** | **str**|  | [optional] [default to &#39;&#39;]
@@ -425,9 +425,9 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **status** | **str**|  | [optional] 
- **artist_id** | **str**|  | [optional] 
- **assigned_analyst_email** | **str**|  | [optional] 
+ **status** | **str**|  | [optional]
+ **artist_id** | **str**|  | [optional]
+ **assigned_analyst_email** | **str**|  | [optional]
  **limit** | **int**|  | [optional] [default to 100]
  **offset** | **int**|  | [optional] [default to 0]
  **x_analyst_key** | **str**|  | [optional] [default to &#39;&#39;]
@@ -522,4 +522,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

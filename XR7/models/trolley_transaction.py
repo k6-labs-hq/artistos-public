@@ -14,6 +14,8 @@ from XR7.models.base import Base
 class TrolleyTxnType(str, enum.Enum):
     REMITTANCE = "REMITTANCE"
     DISBURSEMENT = "DISBURSEMENT"
+    REFUND = "REFUND"
+    CHARGEBACK = "CHARGEBACK"
 
 
 class TrolleyTxnStatus(str, enum.Enum):

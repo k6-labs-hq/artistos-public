@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import (
     get_auth_payload,
     require_analyst,
@@ -27,8 +26,10 @@ from XR7.services.analyst_gated_advance import (
     run_nightly_advance_opportunity_scan,
 )
 from XR7.services.branding import inject_branding_metadata
+from XR7.services.router_v21_phase1 import router_service_for
 
 router = APIRouter(tags=["advance-governance"])
+_router_service = router_service_for("advance_governance")
 
 
 class ApprovalRequest(BaseModel):
@@ -275,7 +276,7 @@ def list_artist_offers(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> dict:
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     offers = list_visible_artist_offers(db, artist_id=artist_id)
     return inject_branding_metadata(

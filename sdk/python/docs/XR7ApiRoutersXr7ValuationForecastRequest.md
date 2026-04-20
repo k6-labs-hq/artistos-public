@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **tenant_id** | **str** |  | [optional] [default to 'default']
 **horizon_days** | **int** |  | [optional] [default to 90]
-**scenario_overrides** | **Dict[str, object]** |  | [optional] 
+**scenario_overrides** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -27,5 +27,3 @@ xr7_api_routers_xr7_valuation_forecast_request_dict = xr7_api_routers_xr7_valuat
 xr7_api_routers_xr7_valuation_forecast_request_from_dict = XR7ApiRoutersXr7ValuationForecastRequest.from_dict(xr7_api_routers_xr7_valuation_forecast_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

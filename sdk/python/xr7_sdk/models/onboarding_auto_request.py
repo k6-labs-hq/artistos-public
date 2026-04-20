@@ -85,5 +85,3 @@ class OnboardingAutoRequest(BaseModel):
             "run_due_sync_jobs_now": obj.get("run_due_sync_jobs_now") if obj.get("run_due_sync_jobs_now") is not None else True
         })
         return _obj
-
-

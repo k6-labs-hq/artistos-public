@@ -34,7 +34,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.NotificationsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Dispatch Notifications
@@ -52,7 +52,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -100,8 +100,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.NotificationsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    token = 'token_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    token = 'token_example' # str |
     platform = 'firebase' # str |  (optional) (default to 'firebase')
 
     try:
@@ -120,8 +120,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **token** | **str**|  | 
+ **artist_id** | **str**|  |
+ **token** | **str**|  |
  **platform** | **str**|  | [optional] [default to &#39;firebase&#39;]
 
 ### Return type
@@ -172,8 +172,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.NotificationsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    notification_preference_request = xr7_sdk.NotificationPreferenceRequest() # NotificationPreferenceRequest | 
+    artist_id = 'artist_id_example' # str |
+    notification_preference_request = xr7_sdk.NotificationPreferenceRequest() # NotificationPreferenceRequest |
 
     try:
         # Set Notification Preferences
@@ -191,8 +191,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **notification_preference_request** | [**NotificationPreferenceRequest**](NotificationPreferenceRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **notification_preference_request** | [**NotificationPreferenceRequest**](NotificationPreferenceRequest.md)|  |
 
 ### Return type
 
@@ -240,8 +240,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.NotificationsApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    question = 'question_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    question = 'question_example' # str |
 
     try:
         # Voice Query
@@ -259,8 +259,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **question** | **str**|  | 
+ **artist_id** | **str**|  |
+ **question** | **str**|  |
 
 ### Return type
 
@@ -283,4 +283,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

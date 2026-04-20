@@ -17,6 +17,7 @@ from XR7.services.branding import (
     get_branding_for_artist,
     inject_branding_metadata,
 )
+from XR7.services.cache import cached_response
 from XR7.services.metadata_repair_engine import MetadataRepairEngine
 from XR7.services.post_repair_forecast_pipeline import (
     FORECAST_DISCLAIMER,
@@ -36,6 +37,7 @@ def get_engine():
 
 
 @router.get("/artists/{artist_id}/earnings")
+@cached_response("earnings_summary", ttl_seconds=120)
 def get_earnings_summary(
     artist_id: str,
     db: Session = Depends(get_db),

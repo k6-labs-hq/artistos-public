@@ -79,12 +79,12 @@ describe("AnalysisProgressScreen", () => {
     it("cycles through messages over time", async () => {
       const customMessages = ["Message 1", "Message 2", "Message 3"];
       render(<AnalysisProgressScreen messages={customMessages} animationSpeed={1000} />);
-      
+
       expect(screen.getByText("Message 1")).toBeInTheDocument();
-      
+
       // Advance time past fade out + message update + fade in
       vi.advanceTimersByTime(1320); // 1000ms cadence + 320ms fade
-      
+
       await waitFor(() => {
         expect(screen.getByText("Message 2")).toBeInTheDocument();
       });
@@ -93,21 +93,21 @@ describe("AnalysisProgressScreen", () => {
 
   describe("Animation speed", () => {
     it("accepts custom animation speed", () => {
-      expect(() => 
+      expect(() =>
         render(<AnalysisProgressScreen animationSpeed={1500} />)
       ).not.toThrow();
     });
 
     it("clamps animation speed to minimum", () => {
       // Should not crash even with very low speed
-      expect(() => 
+      expect(() =>
         render(<AnalysisProgressScreen animationSpeed={100} />)
       ).not.toThrow();
     });
 
     it("clamps animation speed to maximum", () => {
       // Should not crash even with very high speed
-      expect(() => 
+      expect(() =>
         render(<AnalysisProgressScreen animationSpeed={10000} />)
       ).not.toThrow();
     });
@@ -137,7 +137,7 @@ describe("AnalysisProgressScreen", () => {
         textColor: "#ffffff",
         backgroundPrimary: "#000000",
       };
-      expect(() => 
+      expect(() =>
         render(<AnalysisProgressScreen themeOverrides={themeOverrides} />)
       ).not.toThrow();
     });
@@ -146,13 +146,13 @@ describe("AnalysisProgressScreen", () => {
   describe("Completion callback", () => {
     it("accepts onComplete callback", () => {
       const onComplete = vi.fn();
-      expect(() => 
+      expect(() =>
         render(<AnalysisProgressScreen onComplete={onComplete} />)
       ).not.toThrow();
     });
 
     it("does not crash when onComplete is undefined", () => {
-      expect(() => 
+      expect(() =>
         render(<AnalysisProgressScreen />)
       ).not.toThrow();
     });

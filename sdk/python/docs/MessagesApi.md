@@ -49,8 +49,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.MessagesApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    chat_request = xr7_sdk.ChatRequest() # ChatRequest | 
+    artist_id = 'artist_id_example' # str |
+    chat_request = xr7_sdk.ChatRequest() # ChatRequest |
 
     try:
         # Business Manager Chat
@@ -68,8 +68,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **chat_request** | [**ChatRequest**](ChatRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **chat_request** | [**ChatRequest**](ChatRequest.md)|  |
 
 ### Return type
 
@@ -130,8 +130,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.MessagesApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    weekly_story_request = xr7_sdk.WeeklyStoryRequest() # WeeklyStoryRequest | 
+    artist_id = 'artist_id_example' # str |
+    weekly_story_request = xr7_sdk.WeeklyStoryRequest() # WeeklyStoryRequest |
 
     try:
         # Create Weekly Story
@@ -149,8 +149,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **weekly_story_request** | [**WeeklyStoryRequest**](WeeklyStoryRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **weekly_story_request** | [**WeeklyStoryRequest**](WeeklyStoryRequest.md)|  |
 
 ### Return type
 
@@ -210,7 +210,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.MessagesApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
     limit = 50 # int |  (optional) (default to 50)
     unread_only = False # bool |  (optional) (default to False)
 
@@ -230,7 +230,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
  **limit** | **int**|  | [optional] [default to 50]
  **unread_only** | **bool**|  | [optional] [default to False]
 
@@ -255,4 +255,3 @@ Name | Type | Description  | Notes
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

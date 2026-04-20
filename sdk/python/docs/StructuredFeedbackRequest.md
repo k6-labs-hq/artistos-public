@@ -5,24 +5,24 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**anomaly_id** | **str** |  | [optional] 
-**claim_id** | **str** |  | [optional] 
-**outcome** | **str** |  | [optional] 
-**recovered_amount** | **float** |  | [optional] 
-**reason_code** | **str** |  | [optional] 
-**analyst_note** | **str** |  | [optional] 
-**feedback_type** | [**MLFeedbackType**](MLFeedbackType.md) |  | [optional] 
-**source_type** | **str** |  | [optional] 
-**source_id** | **str** |  | [optional] 
-**subtype** | **str** |  | [optional] 
-**category** | **str** |  | [optional] 
-**artist_profile_segment** | **str** |  | [optional] 
-**model_version** | **str** |  | [optional] 
-**model_prediction** | **float** |  | [optional] 
-**human_decision** | **str** |  | [optional] 
-**estimated_amount** | **float** |  | [optional] 
-**actual_amount** | **float** |  | [optional] 
-**payload** | **Dict[str, object]** |  | [optional] 
+**anomaly_id** | **str** |  | [optional]
+**claim_id** | **str** |  | [optional]
+**outcome** | **str** |  | [optional]
+**recovered_amount** | **float** |  | [optional]
+**reason_code** | **str** |  | [optional]
+**analyst_note** | **str** |  | [optional]
+**feedback_type** | [**MLFeedbackType**](MLFeedbackType.md) |  | [optional]
+**source_type** | **str** |  | [optional]
+**source_id** | **str** |  | [optional]
+**subtype** | **str** |  | [optional]
+**category** | **str** |  | [optional]
+**artist_profile_segment** | **str** |  | [optional]
+**model_version** | **str** |  | [optional]
+**model_prediction** | **float** |  | [optional]
+**human_decision** | **str** |  | [optional]
+**estimated_amount** | **float** |  | [optional]
+**actual_amount** | **float** |  | [optional]
+**payload** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -42,5 +42,3 @@ structured_feedback_request_dict = structured_feedback_request_instance.to_dict(
 structured_feedback_request_from_dict = StructuredFeedbackRequest.from_dict(structured_feedback_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

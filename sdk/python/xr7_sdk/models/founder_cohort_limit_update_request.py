@@ -85,5 +85,3 @@ class FounderCohortLimitUpdateRequest(BaseModel):
             "founder_cohort_limit": obj.get("founder_cohort_limit")
         })
         return _obj
-
-

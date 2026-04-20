@@ -38,7 +38,7 @@ describe("TVFilmWorkspace", () => {
     it("changes role when selecting from dropdown", () => {
       render(<TVFilmWorkspace />);
       const select = screen.getByRole("combobox", { name: /Role/i });
-      
+
       fireEvent.change(select, { target: { value: "Writer (TV/Film)" } });
       expect(select).toHaveValue("Writer (TV/Film)");
     });
@@ -46,7 +46,7 @@ describe("TVFilmWorkspace", () => {
     it("shows writer-specific explanation when writer role selected", () => {
       render(<TVFilmWorkspace />);
       const select = screen.getByRole("combobox", { name: /Role/i });
-      
+
       fireEvent.change(select, { target: { value: "Writer (TV/Film)" } });
       expect(screen.getByText(/residual windows, credited episode counts/i)).toBeInTheDocument();
     });
@@ -54,7 +54,7 @@ describe("TVFilmWorkspace", () => {
     it("shows stunt performer explanation when stunt role selected", () => {
       render(<TVFilmWorkspace />);
       const select = screen.getByRole("combobox", { name: /Role/i });
-      
+
       fireEvent.change(select, { target: { value: "Stunt Performer" } });
       expect(screen.getByText(/stunt adjustments, turnaround penalties/i)).toBeInTheDocument();
     });
@@ -62,7 +62,7 @@ describe("TVFilmWorkspace", () => {
     it("shows agency explanation when agency role selected", () => {
       render(<TVFilmWorkspace />);
       const select = screen.getByRole("combobox", { name: /Role/i });
-      
+
       fireEvent.change(select, { target: { value: "Talent Agency" } });
       expect(screen.getByText(/portfolio-wide historical analyses/i)).toBeInTheDocument();
     });
@@ -70,7 +70,7 @@ describe("TVFilmWorkspace", () => {
     it("shows default explanation for non-special roles", () => {
       render(<TVFilmWorkspace />);
       const select = screen.getByRole("combobox", { name: /Role/i });
-      
+
       fireEvent.change(select, { target: { value: "Editor" } });
       expect(screen.getByText(/XR7 maps every compensation line/i)).toBeInTheDocument();
     });
@@ -97,7 +97,7 @@ describe("TVFilmWorkspace", () => {
     it("toggles agency mode when checkbox clicked", () => {
       render(<TVFilmWorkspace />);
       const checkbox = screen.getByRole("checkbox", { name: /Enable enterprise agency mode/i });
-      
+
       fireEvent.click(checkbox);
       expect(checkbox).toBeChecked();
     });
@@ -105,7 +105,7 @@ describe("TVFilmWorkspace", () => {
     it("displays 'Portfolio Mode' chip when agency mode enabled", () => {
       render(<TVFilmWorkspace />);
       const checkbox = screen.getByRole("checkbox", { name: /Enable enterprise agency mode/i });
-      
+
       fireEvent.click(checkbox);
       expect(screen.getByText("Portfolio Mode")).toBeInTheDocument();
     });

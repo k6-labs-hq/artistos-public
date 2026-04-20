@@ -89,5 +89,3 @@ class OAuthTokenRefreshRequest(BaseModel):
             "force": obj.get("force") if obj.get("force") is not None else False
         })
         return _obj
-
-

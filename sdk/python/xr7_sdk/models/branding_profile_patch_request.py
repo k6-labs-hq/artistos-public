@@ -167,5 +167,3 @@ class BrandingProfilePatchRequest(BaseModel):
             "white_label_enabled": obj.get("white_label_enabled")
         })
         return _obj
-
-

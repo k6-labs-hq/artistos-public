@@ -30,10 +30,10 @@ from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import func
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.engine import AnomalyEngine
-from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.auth.event_notifications import send_event_notification
 from XR7.earnings.engine import EarningsEngine
@@ -41,6 +41,7 @@ from XR7.fingerprinting.matching.identity_matching import persist_identity_match
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
+from XR7.ingestion.parse_timeout import StatementParseTimeoutError, parse_with_timeout
 from XR7.ingestion.statement_parser import SUPPORTED_FORMATS, parse_csv, parse_statement_file
 from XR7.ingestion.statement_signal_extractor import (
     extract_statement_signals,
@@ -59,12 +60,18 @@ from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
 from XR7.services.branding import inject_branding_metadata
 from XR7.services.founder_program import handle_founder_notifications
+from XR7.services.live_updates import broadcast_live_update
+from XR7.services.rate_limiter import check_upload_rate_limit
+from XR7.services.router_v21_phase1 import router_service_for
+from XR7.services.webhook_delivery import OutboundWebhookService
 from XR7.tasks.celery_tasks import on_soundcloud_statement_upload
 from XR7.tasks.hubspot import hubspot_sync_recovery_update, hubspot_sync_statement_ingestion
+from XR7.tasks.webhooks import deliver_webhook_event
 from XR7.trolley.client import TrolleyClient, TrolleyException
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["ingestion"])
+_router_service = router_service_for("ingestion")
 logger = get_logger(__name__)
 
 # Maximum upload size: 50 MB (most statements are < 5 MB)
@@ -123,9 +130,23 @@ def supported_formats() -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _save_events(db: Session, events: list[dict]) -> int:
-    """Persist normalised event dicts to the DB, returning the count saved."""
-    count = 0
+def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
+    """Persist normalised event dicts to the DB with row-level deduplication.
+
+    Uses INSERT...ON CONFLICT DO NOTHING to skip duplicate events based on
+    the unique constraint (artist_id, event_type, platform, territory,
+    timestamp, quantity, unit_value, work_id).
+
+    Returns dict with counts: {"inserted": N, "skipped": M}
+
+    Commits in batches of 500 to limit memory pressure for large statements.
+    """
+    _CHUNK = 500
+    inserted = 0
+    skipped = 0
+
+    # Prepare event records
+    event_records = []
     for e in events:
         try:
             et_raw = str(e.get("event_type", "STREAM")).upper()
@@ -134,29 +155,73 @@ def _save_events(db: Session, events: list[dict]) -> int:
             except ValueError:
                 event_type = EventType.STREAM
 
-            event = Event(
-                id=str(uuid.uuid4()),
-                event_type=event_type,
-                artist_id=e["artist_id"],
-                platform=e.get("platform"),
-                territory=e.get("territory"),
-                timestamp=e.get("timestamp") or datetime.now(timezone.utc),
-                quantity=int(e.get("quantity", 1)),
-                unit_value=float(e.get("unit_value", 0.0)),
-                currency=e.get("currency", "USD"),
-                # work_id left None — future work: match by ISRC lookup
+            event_records.append(
+                {
+                    "id": str(uuid.uuid4()),
+                    "event_type": event_type.value,
+                    "artist_id": e["artist_id"],
+                    "platform": e.get("platform"),
+                    "territory": e.get("territory"),
+                    "timestamp": e.get("timestamp") or datetime.now(timezone.utc),
+                    "quantity": int(e.get("quantity", 1)),
+                    "unit_value": float(e.get("unit_value", 0.0)),
+                    "currency": e.get("currency", "USD"),
+                    "work_id": None,  # future: match by ISRC lookup
+                }
             )
-            db.add(event)
-            count += 1
         except Exception:  # noqa: BLE001
+            skipped += 1
             continue
-    db.commit()
-    return count
+
+    # Bulk insert with ON CONFLICT DO NOTHING for deduplication
+    total_attempted = len(event_records)
+    for i in range(0, total_attempted, _CHUNK):
+        chunk = event_records[i : i + _CHUNK]
+        if not chunk:
+            continue
+
+        # Use PostgreSQL INSERT...ON CONFLICT DO NOTHING
+        stmt = insert(Event.__table__).values(chunk)
+        stmt = stmt.on_conflict_do_nothing(
+            index_elements=[
+                "artist_id",
+                "event_type",
+                "platform",
+                "territory",
+                "timestamp",
+                "quantity",
+                "unit_value",
+            ]
+        )
+
+        result = db.execute(stmt)
+        db.commit()
+
+        # Track how many were actually inserted (excluding duplicates)
+        inserted += result.rowcount
+
+    skipped += total_attempted - inserted
+    logger.info(
+        "Event ingestion complete",
+        extra={
+            "total_events": len(events),
+            "inserted": inserted,
+            "skipped_duplicates": skipped,
+            "deduplication_rate": round(skipped / len(events) * 100, 1) if events else 0,
+        },
+    )
+
+    return {"inserted": inserted, "skipped": skipped}
 
 
 def _save_payments(db: Session, payments: list[dict]) -> int:
-    """Persist normalised payment dicts to the DB, returning the count saved."""
+    """Persist normalised payment dicts to the DB, returning the count saved.
+
+    Commits in batches of 500 to limit memory pressure for large statements.
+    """
+    _CHUNK = 500
     count = 0
+    created: list[Payment] = []
     for p in payments:
         try:
             pt_raw = str(p.get("payment_type", "ROYALTY")).upper()
@@ -178,10 +243,35 @@ def _save_payments(db: Session, payments: list[dict]) -> int:
                 received_at=datetime.now(timezone.utc),
             )
             db.add(payment)
+            created.append(payment)
             count += 1
+            if count % _CHUNK == 0:
+                db.commit()
         except Exception:  # noqa: BLE001
             continue
     db.commit()
+    webhook_service = OutboundWebhookService(db)
+    for payment in created:
+        event = webhook_service.queue_event(
+            event_type="payment.received",
+            payload={
+                "payment_id": payment.id,
+                "artist_id": payment.artist_id,
+                "amount": float(payment.amount or 0.0),
+                "currency": payment.currency,
+                "source": payment.source,
+            },
+        )
+        deliver_webhook_event.delay(event.id)
+        broadcast_live_update(
+            "payment.received",
+            {
+                "payment_id": payment.id,
+                "artist_id": payment.artist_id,
+                "amount": float(payment.amount or 0.0),
+                "currency": payment.currency,
+            },
+        )
     return count
 
 
@@ -219,7 +309,10 @@ async def upload_statement(
     ``POST /artists/{artist_id}/terms/accept`` to accept it.  This endpoint
     returns HTTP 403 until the artist has agreed to the terms.
     """
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
+
+    # CRITICAL SECURITY: Rate limit uploads to prevent resource exhaustion
+    check_upload_rate_limit(artist_id)
 
     # Gate: artist must have accepted the current T&C before submitting data.
     require_terms_accepted(artist_id, db)
@@ -266,8 +359,24 @@ async def upload_statement(
         or 0
     )
 
-    # Parse
-    result = parse_statement_file(content, artist_id, filename=file.filename or "statement.csv")
+    # Parse with timeout enforcement (prevents DoS from malformed files)
+    try:
+        result = parse_with_timeout(
+            parse_statement_file,
+            content,
+            artist_id,
+            filename=file.filename or "statement.csv",
+        )
+    except StatementParseTimeoutError as timeout_err:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Statement parsing timed out after {timeout_err.timeout_seconds} seconds. "
+                "The file may be malformed or too complex to process. "
+                "Please check the file format and try uploading a smaller date range."
+            ),
+        )
+
     statement_signals = extract_statement_signals(
         content, file.filename or "statement.csv", format_detected=result.format_detected
     )
@@ -279,7 +388,8 @@ async def upload_statement(
         error_summary = "; ".join(result.errors[:5])
 
     # Persist
-    events_created = _save_events(db, result.events)
+    event_result = _save_events(db, result.events)
+    events_created = event_result["inserted"]
     payments_created = _save_payments(db, result.payments)
 
     # Run anomaly detection on newly ingested data
@@ -494,7 +604,10 @@ async def upload_statement_batch(
     db: Session = Depends(get_db),
 ):
     """Upload and process a batch of statement files (CSV/ZIP/PDF) with malware scanning and parallel parsing."""
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
+
+    # CRITICAL SECURITY: Rate limit uploads to prevent resource exhaustion
+    check_upload_rate_limit(artist_id)
 
     require_terms_accepted(artist_id, db)
 
@@ -563,11 +676,27 @@ async def upload_statement_batch(
                 ]
                 result.format_detected = "pdf"
             else:
-                result = parse_statement_file(content, artist_id, filename=filename)
+                try:
+                    result = parse_with_timeout(
+                        parse_statement_file, content, artist_id, filename=filename
+                    )
+                except StatementParseTimeoutError as timeout_err:
+                    # For batch upload, log timeout but continue with other files
+                    logger.error(
+                        f"Batch upload file parsing timeout: {filename}",
+                        extra={"artist_id": artist_id, "filename": filename},
+                    )
+                    result = parse_csv(b"", artist_id)
+                    result.errors = [
+                        f"Parsing timed out after {timeout_err.timeout_seconds}s (file may be malformed)"
+                    ]
+                    result.format_detected = "timeout"
+
             statement_signals = extract_statement_signals(
                 content, filename, format_detected=result.format_detected
             )
-            events_created = _save_events(db, result.events)
+            event_result = _save_events(db, result.events)
+            events_created = event_result["inserted"]
             payments_created = _save_payments(db, result.payments)
 
             statement = Statement(
@@ -684,7 +813,7 @@ async def upload_statement_batch(
 async def connect_soundexchange_mlc(
     artist_id: str, years_back: int = 10, db: Session = Depends(get_db)
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     connector = SoundExchangeMLCConnector()
     rows = await connector.fetch_royalty_statements(artist_id, years_back=years_back)
     anomalies = await connector.detect_unreported_uses(["USRC17607839", "USRC17607840"])
@@ -711,7 +840,7 @@ def soundexchange_mlc_status(artist_id: str, db: Session = Depends(get_db)):
 async def connect_regional_global(
     artist_id: str, genre: str = "latin", territory: str = "LATAM", db: Session = Depends(get_db)
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
     connector = RegionalGlobalConnector()
     rows = await connector.fetch_statements(artist_id, genre, territory)
     anomalies = await connector.auto_detect_genre_specific_anomalies(artist_id, genre, territory)
@@ -747,7 +876,7 @@ def list_statements(artist_id: str, db: Session = Depends(get_db)):
     """
     Return all statement uploads for an artist, newest first.
     """
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
 
     return (
         db.query(Statement)

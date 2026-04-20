@@ -137,5 +137,3 @@ class OAuthTokenExchangeRequest(BaseModel):
             "profile_metadata": obj.get("profile_metadata")
         })
         return _obj
-
-

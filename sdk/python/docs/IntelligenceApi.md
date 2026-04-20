@@ -46,7 +46,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Catalog Valuation
@@ -64,7 +64,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -114,8 +114,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    structured_feedback_request = xr7_sdk.StructuredFeedbackRequest() # StructuredFeedbackRequest | 
+    artist_id = 'artist_id_example' # str |
+    structured_feedback_request = xr7_sdk.StructuredFeedbackRequest() # StructuredFeedbackRequest |
 
     try:
         # Create Outcome Feedback
@@ -133,8 +133,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **structured_feedback_request** | [**StructuredFeedbackRequest**](StructuredFeedbackRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **structured_feedback_request** | [**StructuredFeedbackRequest**](StructuredFeedbackRequest.md)|  |
 
 ### Return type
 
@@ -183,8 +183,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    contract_extract_request = xr7_sdk.ContractExtractRequest() # ContractExtractRequest | 
+    artist_id = 'artist_id_example' # str |
+    contract_extract_request = xr7_sdk.ContractExtractRequest() # ContractExtractRequest |
 
     try:
         # Extract Contract Terms
@@ -202,8 +202,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **contract_extract_request** | [**ContractExtractRequest**](ContractExtractRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **contract_extract_request** | [**ContractExtractRequest**](ContractExtractRequest.md)|  |
 
 ### Return type
 
@@ -251,8 +251,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    file = 'file_example' # str | 
+    artist_id = 'artist_id_example' # str |
+    file = 'file_example' # str |
     contract_id = 'contract_id_example' # str |  (optional)
     effective_start = 'effective_start_example' # str |  (optional)
     effective_end = 'effective_end_example' # str |  (optional)
@@ -274,12 +274,12 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **file** | **str**|  | 
- **contract_id** | **str**|  | [optional] 
- **effective_start** | **str**|  | [optional] 
- **effective_end** | **str**|  | [optional] 
- **extracted_from** | **str**|  | [optional] 
+ **artist_id** | **str**|  |
+ **file** | **str**|  |
+ **contract_id** | **str**|  | [optional]
+ **effective_start** | **str**|  | [optional]
+ **effective_end** | **str**|  | [optional]
+ **extracted_from** | **str**|  | [optional]
 
 ### Return type
 
@@ -327,7 +327,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Financing Matches
@@ -345,7 +345,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -393,7 +393,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Get Calibration Health
@@ -411,7 +411,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -460,8 +460,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    ledger_ingest_request = xr7_sdk.LedgerIngestRequest() # LedgerIngestRequest | 
+    artist_id = 'artist_id_example' # str |
+    ledger_ingest_request = xr7_sdk.LedgerIngestRequest() # LedgerIngestRequest |
 
     try:
         # Ingest Royalty Ledger
@@ -479,8 +479,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **ledger_ingest_request** | [**LedgerIngestRequest**](LedgerIngestRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **ledger_ingest_request** | [**LedgerIngestRequest**](LedgerIngestRequest.md)|  |
 
 ### Return type
 
@@ -529,7 +529,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # List Feedback Events
@@ -547,7 +547,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -596,8 +596,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    pre_signature_contract_review_request = xr7_sdk.PreSignatureContractReviewRequest() # PreSignatureContractReviewRequest | 
+    artist_id = 'artist_id_example' # str |
+    pre_signature_contract_review_request = xr7_sdk.PreSignatureContractReviewRequest() # PreSignatureContractReviewRequest |
 
     try:
         # Pre Signature Contract Review
@@ -615,8 +615,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **pre_signature_contract_review_request** | [**PreSignatureContractReviewRequest**](PreSignatureContractReviewRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **pre_signature_contract_review_request** | [**PreSignatureContractReviewRequest**](PreSignatureContractReviewRequest.md)|  |
 
 ### Return type
 
@@ -665,8 +665,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    utility_rank_request = xr7_sdk.UtilityRankRequest() # UtilityRankRequest | 
+    artist_id = 'artist_id_example' # str |
+    utility_rank_request = xr7_sdk.UtilityRankRequest() # UtilityRankRequest |
 
     try:
         # Rank By Expected Utility
@@ -684,8 +684,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **utility_rank_request** | [**UtilityRankRequest**](UtilityRankRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **utility_rank_request** | [**UtilityRankRequest**](UtilityRankRequest.md)|  |
 
 ### Return type
 
@@ -733,7 +733,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Registration Auto Fix
@@ -751,7 +751,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -799,7 +799,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Registration Status
@@ -817,7 +817,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -865,7 +865,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
+    artist_id = 'artist_id_example' # str |
 
     try:
         # Run Catalog Audit On Demand
@@ -883,7 +883,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
+ **artist_id** | **str**|  |
 
 ### Return type
 
@@ -932,8 +932,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    tax_optimizer_request = xr7_sdk.TaxOptimizerRequest() # TaxOptimizerRequest | 
+    artist_id = 'artist_id_example' # str |
+    tax_optimizer_request = xr7_sdk.TaxOptimizerRequest() # TaxOptimizerRequest |
 
     try:
         # Run Tax Optimizer
@@ -951,8 +951,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **tax_optimizer_request** | [**TaxOptimizerRequest**](TaxOptimizerRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **tax_optimizer_request** | [**TaxOptimizerRequest**](TaxOptimizerRequest.md)|  |
 
 ### Return type
 
@@ -1001,8 +1001,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    simulate_payout_request = xr7_sdk.SimulatePayoutRequest() # SimulatePayoutRequest | 
+    artist_id = 'artist_id_example' # str |
+    simulate_payout_request = xr7_sdk.SimulatePayoutRequest() # SimulatePayoutRequest |
 
     try:
         # Simulate Expected Payout
@@ -1020,8 +1020,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **simulate_payout_request** | [**SimulatePayoutRequest**](SimulatePayoutRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **simulate_payout_request** | [**SimulatePayoutRequest**](SimulatePayoutRequest.md)|  |
 
 ### Return type
 
@@ -1070,8 +1070,8 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.IntelligenceApi(api_client)
-    artist_id = 'artist_id_example' # str | 
-    optimization_simulation_request = xr7_sdk.OptimizationSimulationRequest() # OptimizationSimulationRequest | 
+    artist_id = 'artist_id_example' # str |
+    optimization_simulation_request = xr7_sdk.OptimizationSimulationRequest() # OptimizationSimulationRequest |
 
     try:
         # Simulate Optimization
@@ -1089,8 +1089,8 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_id** | **str**|  | 
- **optimization_simulation_request** | [**OptimizationSimulationRequest**](OptimizationSimulationRequest.md)|  | 
+ **artist_id** | **str**|  |
+ **optimization_simulation_request** | [**OptimizationSimulationRequest**](OptimizationSimulationRequest.md)|  |
 
 ### Return type
 
@@ -1113,4 +1113,3 @@ No authorization required
 **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

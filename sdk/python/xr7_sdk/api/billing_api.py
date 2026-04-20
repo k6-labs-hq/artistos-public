@@ -549,5 +549,3 @@ class BillingApi:
             _host=_host,
             _request_auth=_request_auth
         )
-
-

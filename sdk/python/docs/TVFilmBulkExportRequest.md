@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**claim_ids** | **List[str]** |  | [optional] 
+**claim_ids** | **List[str]** |  | [optional]
 
 ## Example
 
@@ -25,5 +25,3 @@ tv_film_bulk_export_request_dict = tv_film_bulk_export_request_instance.to_dict(
 tv_film_bulk_export_request_from_dict = TVFilmBulkExportRequest.from_dict(tv_film_bulk_export_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

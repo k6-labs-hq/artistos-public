@@ -66,10 +66,10 @@ return [{ json: $json }];
 ---
 
 ### Node 02 — Ingest MLC Bulk File
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/upload`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/ingestion/upload`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -94,10 +94,10 @@ return [{ json: $json }];
 ---
 
 ### Node 03 — Run Metadata Alignment (Crosswalk)
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/normalization/crosswalk`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/normalization/crosswalk`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -115,16 +115,16 @@ return [{ json: $json }];
 - `gap_work_ids` — array of `work_id` values with gaps
 
 **Branching (IF node):**
-- `gap_count > 0` → Node 04a  
+- `gap_count > 0` → Node 04a
 - `gap_count == 0` → Node 05 directly
 
 ---
 
 ### Node 04a — Trigger Metadata Repair for Gap Works
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/normalization/repair`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/normalization/repair`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -146,10 +146,10 @@ return [{ json: $json }];
 ---
 
 ### Node 05 — Compute Expected Mechanical Royalties
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/compute-expected`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/compute-expected`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -169,10 +169,10 @@ return [{ json: $json }];
 ---
 
 ### Node 06 — Compare vs Reported MLC Amounts
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/compare`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/compare`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -196,10 +196,10 @@ return [{ json: $json }];
 ---
 
 ### Node 07 — Generate Claims
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/generate`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/claims/generate`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {
@@ -220,19 +220,19 @@ return [{ json: $json }];
 ---
 
 ### Node 08 — Mark MLC Period Clean
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/mlc-period/{{ $json.reporting_period }}/mark-clean`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/recovery/mlc-period/{{ $json.reporting_period }}/mark-clean`
+**Auth:** Header Auth — `XR7 API`
 **Body:** `{ "artist_id": "{{ $json.artist_id }}" }`
 
 ---
 
 ### Node 09 — Update Catalog with MLC IDs
-**Type:** HTTP Request  
-**Method:** `POST`  
-**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/catalog/update-identifiers`  
-**Auth:** Header Auth — `XR7 API`  
+**Type:** HTTP Request
+**Method:** `POST`
+**URL:** `{{ $vars.XR7_BASE_URL }}/api/v1/catalog/update-identifiers`
+**Auth:** Header Auth — `XR7 API`
 **Body (JSON):**
 ```json
 {

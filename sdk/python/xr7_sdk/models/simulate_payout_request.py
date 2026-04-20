@@ -107,5 +107,3 @@ class SimulatePayoutRequest(BaseModel):
             "contract_terms": obj.get("contract_terms")
         })
         return _obj
-
-

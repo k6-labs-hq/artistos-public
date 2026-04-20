@@ -6,12 +6,12 @@ import zipfile
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import run_export_prep_pipeline_sync
-from XR7.api.deps import get_artist_or_404
+from XR7.api.authz import authorize_advance_approval_access, authorize_claim_edit_access
 from XR7.api.routers.auth import (
     enforce_claim_access,
     get_auth_payload,
@@ -21,6 +21,7 @@ from XR7.api.routers.auth import (
 from XR7.auth.event_notifications import send_event_notification
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
 from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
+from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
@@ -50,14 +51,39 @@ from XR7.services.branding import (
     inject_branding_metadata,
     org_id_for_artist,
 )
+from XR7.services.live_updates import broadcast_live_update
 from XR7.services.pdf_builder import build_simple_pdf as _build_simple_pdf
 from XR7.services.pdf_builder import safe_pdf_text as _safe_pdf_text
 from XR7.services.review_queue import enqueue_review_item
+from XR7.services.router_v21_phase1 import router_service_for
+from XR7.services.webhook_delivery import OutboundWebhookService
 from XR7.tasks.hubspot import hubspot_sync_recovery_update
+from XR7.tasks.webhooks import deliver_webhook_event
 from xr7_common.logging import get_logger
 
 router = APIRouter(tags=["claims"])
+_router_service = router_service_for("claims")
 logger = get_logger(__name__)
+
+
+def _audit(
+    db: Session,
+    *,
+    actor: str,
+    action: str,
+    resource_type: str,
+    resource_id: str | None,
+    details: dict | None = None,
+) -> None:
+    db.add(
+        AdminAuditLog(
+            actor=actor,
+            action=action,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            details=details or {},
+        )
+    )
 
 
 def _export_agent_fields(state: dict | None) -> dict:
@@ -301,7 +327,32 @@ def _resolve_source_file(source_file: str | None) -> Path | None:
     return None
 
 
-@router.get("/artists/{artist_id}/claims")
+@router.get(
+    "/artists/{artist_id}/claims",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "List of claims with forecast and SOL metadata",
+                "content": {
+                    "application/json": {
+                        "example": [
+                            {
+                                "claim": {
+                                    "id": "clm_abc123",
+                                    "artist_id": "art_xyz",
+                                    "status": "submitted",
+                                    "amount_claimed": 1500.0,
+                                },
+                                "forecast": {"predicted_amount": 1350.0},
+                                "sol": {"status": "active", "days_remaining": 120},
+                            }
+                        ]
+                    }
+                },
+            }
+        }
+    },
+)
 def list_claims(
     artist_id: str,
     db: Session = Depends(get_db),
@@ -342,6 +393,142 @@ def list_claims(
             }
         )
     return payload
+
+
+@router.get(
+    "/artists/{artist_id}/claims/export.csv",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "CSV file of all claims for the artist",
+                "content": {
+                    "text/csv": {
+                        "example": "id,artist_id,status,...\nclm_abc123,art_xyz,submitted,..."
+                    }
+                },
+            }
+        }
+    },
+)
+def export_claims_csv(
+    artist_id: str,
+    status: str | None = Query(default=None, description="Filter by claim status"),
+    db: Session = Depends(get_db),
+    _auth: dict | None = Depends(get_optional_auth_payload),
+):
+    """Download all claims for an artist as a CSV file."""
+    _router_service.get_artist_or_404(artist_id, db)
+    q = db.query(Claim).filter(Claim.artist_id == artist_id)
+    if status:
+        q = q.filter(Claim.status == status)
+    claims = q.order_by(Claim.created_at.desc()).all()
+
+    fields = [
+        "id",
+        "artist_id",
+        "status",
+        "contract_type",
+        "governing_law_state",
+        "amount_claimed",
+        "amount_recovered",
+        "description",
+        "infringement_date",
+        "discovery_date",
+        "created_at",
+        "updated_at",
+    ]
+
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=fields, extrasaction="ignore")
+    writer.writeheader()
+    for claim in claims:
+        row = {f: getattr(claim, f, None) for f in fields}
+        # Normalize non-string values
+        for k, v in row.items():
+            if hasattr(v, "isoformat"):
+                row[k] = v.isoformat()
+            elif hasattr(v, "value"):
+                row[k] = v.value
+        writer.writerow(row)
+
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    filename = f"claims_{artist_id}_{timestamp}.csv"
+    return Response(
+        content=buf.getvalue().encode("utf-8"),
+        media_type="text/csv",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.get("/artists/{artist_id}/claims/search")
+def search_claims(
+    artist_id: str,
+    q: str = Query(..., min_length=2, description="Search query string"),
+    limit: int = Query(default=50, ge=1, le=200),
+    db: Session = Depends(get_db),
+    _auth: dict | None = Depends(get_optional_auth_payload),
+):
+    """Full-text search over claims for an artist.
+
+    Uses PostgreSQL ``to_tsvector`` / ``plainto_tsquery`` when available,
+    falling back to ILIKE pattern matching for SQLite (test environments).
+    Searches across ``description``, ``contract_type``, and ``governing_law_state``.
+    """
+    _router_service.get_artist_or_404(artist_id, db)
+
+    from sqlalchemy import text as sa_text
+
+    # Detect dialect
+    dialect = db.bind.dialect.name if db.bind else "sqlite"  # type: ignore[union-attr]
+
+    if dialect == "postgresql":
+        # PostgreSQL full-text search using tsvector/tsquery
+        stmt = sa_text(
+            """
+            SELECT id FROM claims
+            WHERE artist_id = :artist_id
+              AND to_tsvector('english',
+                  coalesce(description,'') || ' ' ||
+                  coalesce(contract_type,'') || ' ' ||
+                  coalesce(governing_law_state,'')
+              ) @@ plainto_tsquery('english', :query)
+            ORDER BY created_at DESC
+            LIMIT :limit
+            """
+        )
+        rows = db.execute(stmt, {"artist_id": artist_id, "query": q, "limit": limit}).fetchall()
+        claim_ids = [row[0] for row in rows]
+        claims = db.query(Claim).filter(Claim.id.in_(claim_ids)).all()
+        # Re-apply order
+        id_order = {cid: idx for idx, cid in enumerate(claim_ids)}
+        claims.sort(key=lambda c: id_order.get(c.id, 9999))
+    else:
+        # SQLite fallback: ILIKE via case-insensitive LIKE
+        pattern = f"%{q}%"
+        claims = (
+            db.query(Claim)
+            .filter(
+                Claim.artist_id == artist_id,
+                (
+                    Claim.description.ilike(pattern)
+                    | Claim.contract_type.ilike(pattern)
+                    | Claim.governing_law_state.ilike(pattern)
+                ),
+            )
+            .order_by(Claim.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+    return inject_branding_metadata(
+        db,
+        {
+            "artist_id": artist_id,
+            "query": q,
+            "total": len(claims),
+            "claims": [ClaimSchema.model_validate(c).model_dump(mode="json") for c in claims],
+        },
+    )
 
 
 def _anomaly_to_payload(anomaly: Anomaly) -> dict:
@@ -388,9 +575,17 @@ def create_claim_for_artist(
     artist_id: str,
     payload: ClaimCreateRequest,
     db: Session = Depends(get_db),
-    _: dict = Depends(require_artist_access),
+    auth_payload: dict = Depends(require_artist_access),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
 ):
-    get_artist_or_404(artist_id, db)
+    _router_service.get_artist_or_404(artist_id, db)
+    authorize_claim_edit_access(
+        artist_id,
+        db,
+        actor_email=x_actor_email,
+        actor_role=x_actor_role,
+    )
 
     anomaly = (
         db.query(Anomaly)
@@ -430,13 +625,32 @@ def create_claim_for_artist(
     claim.trust_score = float(trust.get("trust_score") or 0.0)
     claim.attorney_review_required = bool(trust.get("requires_attorney_review"))
     claim.claim_strength_rating = None
+    _audit(
+        db,
+        actor=str(auth_payload.get("sub") or f"artist:{artist_id}"),
+        action="claim_created",
+        resource_type="claim",
+        resource_id=claim.id,
+        details={
+            "artist_id": artist_id,
+            "anomaly_id": anomaly.id,
+            "claim_type": payload.claim_type,
+            "trust_score": claim.trust_score,
+            "attorney_review_required": claim.attorney_review_required,
+        },
+    )
     db.commit()
     db.refresh(claim)
     return claim
 
 
 @router.post("/claims/{claim_id}/advance", response_model=ClaimSchema)
-def advance_claim(claim_id: str, db: Session = Depends(get_db)):
+def advance_claim(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    x_actor_email: str | None = Header(default=None, alias="X-Actor-Email"),
+    x_actor_role: str | None = Header(default=None, alias="X-Actor-Role"),
+):
     orchestrator = ClaimsOrchestrator(db)
     try:
         existing = db.query(Claim).filter(Claim.id == claim_id).first()
@@ -467,6 +681,12 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
         status_value_before = (
             existing.status.value if hasattr(existing.status, "value") else str(existing.status)
         )
+        authorize_advance_approval_access(
+            existing.artist_id,
+            db,
+            actor_email=x_actor_email,
+            actor_role=x_actor_role,
+        )
         if status_value_before in {"PREPARED", "FILED"} and bool(existing.attorney_review_required):
             raise HTTPException(
                 status_code=422,
@@ -478,11 +698,24 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
             )
 
         updated = orchestrator.advance_claim(claim_id)
-        pref = (
-            db.query(NotificationPreference)
-            .filter(NotificationPreference.artist_id == updated.artist_id)
-            .first()
+        _audit(
+            db,
+            actor=f"artist:{updated.artist_id}",
+            action="claim_advanced",
+            resource_type="claim",
+            resource_id=updated.id,
+            details={
+                "artist_id": updated.artist_id,
+                "status_before": status_value_before,
+                "status_after": (
+                    updated.status.value
+                    if hasattr(updated.status, "value")
+                    else str(updated.status)
+                ),
+            },
         )
+        db.commit()
+        pref = db.query(NotificationPreference).first()
         send_event_notification(
             pref,
             "claim_advanced",
@@ -515,6 +748,25 @@ def advance_claim(claim_id: str, db: Session = Depends(get_db)):
                 reason="High-value claim filed; analyst priority review required",
                 priority_score=float(updated.recovered_amount or 0.0),
                 payload={"claim_id": updated.id, "status": status_value, "threshold": 10000},
+            )
+        if status_value in {"SUBMITTED", "FILED"}:
+            event = OutboundWebhookService(db).queue_event(
+                event_type="claim.submitted",
+                payload={
+                    "claim_id": updated.id,
+                    "artist_id": updated.artist_id,
+                    "status": status_value,
+                    "recovered_amount": float(updated.recovered_amount or 0.0),
+                },
+            )
+            deliver_webhook_event.delay(event.id)
+            broadcast_live_update(
+                "claim.status_changed",
+                {
+                    "claim_id": updated.id,
+                    "artist_id": updated.artist_id,
+                    "status": status_value,
+                },
             )
         if status_value in {"FILED", "IN_REVIEW", "PAID", "CLOSED"}:
             try:
@@ -597,6 +849,20 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
                 claim.claim_strength_rating = (
                     str(package.get("claim_strength_rating") or "") or None
                 )
+                _audit(
+                    db,
+                    actor=f"artist:{claim.artist_id}",
+                    action="evidence_packet_generated",
+                    resource_type="claim",
+                    resource_id=claim.id,
+                    details={
+                        "artist_id": claim.artist_id,
+                        "anomaly_id": claim.anomaly_id,
+                        "claim_strength_rating": claim.claim_strength_rating,
+                        "attorney_review_required": claim.attorney_review_required,
+                        "trust_score": claim.trust_score,
+                    },
+                )
                 db.commit()
         return packet
     except ValueError as e:
@@ -609,12 +875,50 @@ def get_evidence(
     db: Session = Depends(get_db),
     auth_payload: dict = Depends(get_auth_payload),
 ):
+    """
+    Retrieve evidence packet for a claim with SHA-256 chain integrity verification.
+
+    Security: Evidence packets are served directly to attorneys and used in legal proceedings.
+    Every read path MUST verify chain integrity to detect tampering (database compromise,
+    insider threat, or bit rot). Without verification, modified evidence could be served
+    as trustworthy, creating legal liability and destroying platform credibility.
+
+    Compliance: SOC 2 CC7.2 - System monitoring must detect unauthorized data modifications
+    Regulatory: Evidence tampering detection is required for attorney trust and audit integrity
+    """
     claim = db.query(Claim).filter(Claim.id == claim_id).first()
     if not claim:
         raise HTTPException(status_code=404, detail="Claim not found")
     enforce_claim_access(claim.artist_id, auth_payload)
+
     if isinstance(claim.evidence, dict) and claim.evidence:
+        # Verify packet integrity before serving to attorney/artist
+        # SOC 2 CC7.2: Detect unauthorized modifications before evidence is used
+        orchestrator = ClaimsOrchestrator(db)
+        verification = orchestrator.verify_packet_integrity(claim.evidence)
+
+        if not verification.get("valid"):
+            # Evidence chain integrity failure - potential tampering detected
+            logger.error(
+                "evidence_packet_tampering_detected",
+                extra={
+                    "claim_id": claim_id,
+                    "artist_id": claim.artist_id,
+                    "checks": verification.get("checks"),
+                    "packet_hash": verification.get("packet_hash"),
+                    "prior_packet_hash": verification.get("prior_packet_hash"),
+                    "severity": "P0",
+                    "security_event": "evidence_integrity_failure",
+                },
+            )
+            raise HTTPException(
+                status_code=500,
+                detail="Evidence integrity verification failed. This incident has been logged for investigation.",
+            )
+
         return claim.evidence
+
+    # Generate fresh evidence packet if none exists
     return ClaimsOrchestrator(db).generate_evidence_packet(claim_id)
 
 

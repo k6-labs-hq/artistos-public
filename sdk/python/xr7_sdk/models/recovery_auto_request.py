@@ -85,5 +85,3 @@ class RecoveryAutoRequest(BaseModel):
             "include_rights_registration": obj.get("include_rights_registration") if obj.get("include_rights_registration") is not None else True
         })
         return _obj
-
-

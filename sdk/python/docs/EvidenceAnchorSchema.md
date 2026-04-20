@@ -5,16 +5,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**claim_id** | **str** |  | 
-**packet_hash** | **str** |  | 
-**chain_hash** | **str** |  | 
-**anchor_provider** | **str** |  | 
-**anchor_reference** | **str** |  | 
-**cid** | **str** |  | [optional] 
-**tx_hash** | **str** |  | [optional] 
-**blockchain_status** | **str** |  | 
-**created_at** | **datetime** |  | 
+**id** | **str** |  |
+**claim_id** | **str** |  |
+**packet_hash** | **str** |  |
+**chain_hash** | **str** |  |
+**anchor_provider** | **str** |  |
+**anchor_reference** | **str** |  |
+**cid** | **str** |  | [optional]
+**tx_hash** | **str** |  | [optional]
+**blockchain_status** | **str** |  |
+**created_at** | **datetime** |  |
 
 ## Example
 
@@ -34,5 +34,3 @@ evidence_anchor_schema_dict = evidence_anchor_schema_instance.to_dict()
 evidence_anchor_schema_from_dict = EvidenceAnchorSchema.from_dict(evidence_anchor_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

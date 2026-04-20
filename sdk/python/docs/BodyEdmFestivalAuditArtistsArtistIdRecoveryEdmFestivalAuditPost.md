@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**settlements** | **List[Dict[str, object]]** |  | [optional] 
-**merch** | **List[Dict[str, object]]** |  | [optional] 
-**packages** | **List[Dict[str, object]]** |  | [optional] 
+**settlements** | **List[Dict[str, object]]** |  | [optional]
+**merch** | **List[Dict[str, object]]** |  | [optional]
+**packages** | **List[Dict[str, object]]** |  | [optional]
 
 ## Example
 
@@ -27,5 +27,3 @@ body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post_dict 
 body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post_from_dict = BodyEdmFestivalAuditArtistsArtistIdRecoveryEdmFestivalAuditPost.from_dict(body_edm_festival_audit_artists_artist_id_recovery_edm_festival_audit_post_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

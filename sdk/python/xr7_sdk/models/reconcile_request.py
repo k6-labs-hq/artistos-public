@@ -87,5 +87,3 @@ class ReconcileRequest(BaseModel):
             "currency": obj.get("currency")
         })
         return _obj
-
-

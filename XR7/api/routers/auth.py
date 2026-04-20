@@ -21,6 +21,7 @@ _bearer_scheme = HTTPBearer(auto_error=False)
 
 # When XR7_ENFORCE_AUTH_GLOBALLY=1, soft-guarded endpoints reject unauthenticated requests.
 _ENFORCE_AUTH_GLOBALLY = os.environ.get("XR7_ENFORCE_AUTH_GLOBALLY", "0").strip() == "1"
+_DEFAULT_TENANT_ID = os.environ.get("XR7_DEFAULT_TENANT_ID", "default").strip() or "default"
 
 
 def get_auth_payload(
@@ -119,7 +120,28 @@ class TokenResponse(BaseModel):
     expires_in_seconds: int
 
 
-@router.post("/auth/login/artist", response_model=TokenResponse)
+@router.post(
+    "/auth/login/artist",
+    response_model=TokenResponse,
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "JWT access token for artist",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                            "token_type": "bearer",
+                            "expires_in_seconds": 3600,
+                        }
+                    }
+                },
+            },
+            "401": {"description": "Artist email mismatch"},
+            "404": {"description": "Artist not found"},
+        }
+    },
+)
 def artist_login(payload: ArtistLoginRequest, db: Session = Depends(get_db)) -> TokenResponse:
     artist = get_artist_or_404(payload.artist_id, db)
 
@@ -133,12 +155,37 @@ def artist_login(payload: ArtistLoginRequest, db: Session = Depends(get_db)) -> 
     token = jwt_service.issue_token(
         subject=artist.id,
         role="artist",
-        extra={"artist_id": artist.id, "artist_email": artist.email},
+        extra={
+            "artist_id": artist.id,
+            "artist_email": artist.email,
+            "tenant_id": _DEFAULT_TENANT_ID,
+        },
     )
     return TokenResponse(access_token=token, expires_in_seconds=jwt_service.access_ttl_minutes * 60)
 
 
-@router.post("/auth/login/admin", response_model=TokenResponse)
+@router.post(
+    "/auth/login/admin",
+    response_model=TokenResponse,
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "JWT access token for admin",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+                            "token_type": "bearer",
+                            "expires_in_seconds": 3600,
+                        }
+                    }
+                },
+            },
+            "401": {"description": "Invalid admin credentials"},
+            "503": {"description": "Admin login not configured"},
+        }
+    },
+)
 def admin_login(payload: AdminLoginRequest) -> TokenResponse:
     admin_email = os.getenv("XR7_ADMIN_EMAIL", "").strip().lower()
     admin_password = os.getenv("XR7_ADMIN_PASSWORD", "")
@@ -152,11 +199,38 @@ def admin_login(payload: AdminLoginRequest) -> TokenResponse:
     if payload.email.strip().lower() != admin_email or payload.password != admin_password:
         raise HTTPException(status_code=401, detail="Invalid admin credentials")
 
-    token = jwt_service.issue_token(subject=payload.email, role="admin")
+    token = jwt_service.issue_token(
+        subject=payload.email,
+        role="admin",
+        extra={"tenant_id": _DEFAULT_TENANT_ID},
+    )
     return TokenResponse(access_token=token, expires_in_seconds=jwt_service.access_ttl_minutes * 60)
 
 
-@router.get("/auth/me")
+@router.get(
+    "/auth/me",
+    openapi_extra={
+        "responses": {
+            "200": {
+                "description": "Decoded JWT claims for the authenticated caller",
+                "content": {
+                    "application/json": {
+                        "example": {
+                            "subject": "art_xyz789",
+                            "role": "artist",
+                            "artist_id": "art_xyz789",
+                            "artist_email": "artist@example.com",
+                            "tenant_id": "default",
+                            "issued_at": 1700000000,
+                            "expires_at": 1700003600,
+                        }
+                    }
+                },
+            },
+            "401": {"description": "Missing or invalid token"},
+        }
+    },
+)
 def auth_me(
     payload: dict[str, Any] = Depends(get_auth_payload), db: Session = Depends(get_db)
 ) -> dict:
@@ -168,6 +242,7 @@ def auth_me(
             "role": payload.get("role"),
             "artist_id": payload.get("artist_id"),
             "artist_email": payload.get("artist_email"),
+            "tenant_id": payload.get("tenant_id"),
             "issued_at": payload.get("iat"),
             "expires_at": payload.get("exp"),
         },

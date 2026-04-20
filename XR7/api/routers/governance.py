@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from XR7.api.deps import get_artist_or_404
 from XR7.api.routers.auth import require_admin, require_artist_access
 from XR7.models.admin_audit_log import AdminAuditLog
+from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
 from XR7.models.claim import Claim
 from XR7.models.work import Work
@@ -105,25 +106,43 @@ def erase_artist_data(
 ) -> dict:
     artist = get_artist_or_404(artist_id, db)
 
+    erased_at = datetime.now(timezone.utc)
+
+    # Anonymise PII fields
     artist.name = f"ERASED-{artist.id[:8]}"
     artist.email = None
-    db.commit()
+    # Soft-delete: preserves referential integrity for historical claims/anomalies
+    artist.deleted_at = erased_at
 
-    _log_admin_action(
-        db,
-        actor=str(auth_payload.get("sub") or "artist"),
-        action="privacy_erasure_applied",
-        resource_type="artist",
-        resource_id=artist_id,
-        details={"mode": "anonymize_identity_fields"},
+    # Soft-delete all works, claims, and anomalies for this artist so downstream
+    # aggregation queries can exclude them without losing audit history.
+    db.query(Work).filter(Work.artist_id == artist_id, Work.deleted_at.is_(None)).update(
+        {"deleted_at": erased_at}, synchronize_session=False
     )
+    db.query(Claim).filter(Claim.artist_id == artist_id, Claim.deleted_at.is_(None)).update(
+        {"deleted_at": erased_at}, synchronize_session=False
+    )
+    db.query(Anomaly).filter(Anomaly.artist_id == artist_id, Anomaly.deleted_at.is_(None)).update(
+        {"deleted_at": erased_at}, synchronize_session=False
+    )
+
+    db.add(
+        AdminAuditLog(
+            actor=str(auth_payload.get("sub") or "artist"),
+            action="privacy_erasure_applied",
+            resource_type="artist",
+            resource_id=artist_id,
+            details={"mode": "soft_delete_and_anonymize", "erased_at": erased_at.isoformat()},
+        )
+    )
+    db.commit()
 
     return inject_branding_metadata(
         db,
         {
             "artist_id": artist_id,
-            "status": "anonymized",
-            "message": "Artist profile identity fields have been anonymized.",
+            "status": "erased",
+            "message": "Artist profile anonymized and all associated records soft-deleted.",
         },
     )
 

@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**anomaly_ids** | **List[str]** |  | [optional] 
+**anomaly_ids** | **List[str]** |  | [optional]
 **union_template** | **str** |  | [optional] [default to 'SAG-AFTRA']
 
 ## Example
@@ -26,5 +26,3 @@ tv_film_claim_draft_request_dict = tv_film_claim_draft_request_instance.to_dict(
 tv_film_claim_draft_request_from_dict = TVFilmClaimDraftRequest.from_dict(tv_film_claim_draft_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

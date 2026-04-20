@@ -14,6 +14,7 @@ import os
 from datetime import datetime
 
 from XR7.ingestion.connectors.base import BaseConnector
+from XR7.ingestion.connectors.circuit_breaker import CircuitBreaker
 from XR7.ingestion.connectors.file_backfill import load_statement_rows
 
 _DSP_ENV_VARS = {
@@ -37,6 +38,7 @@ class DSPConnector(BaseConnector):
     def __init__(self, config: dict, dsp_name: str = "Spotify"):
         super().__init__(config)
         self.dsp_name = dsp_name
+        self._breaker = CircuitBreaker(failure_threshold=3, recovery_timeout_seconds=60)
 
     def _required_env_vars(self) -> tuple[str, ...]:
         return _DSP_ENV_VARS.get(
@@ -48,21 +50,27 @@ class DSPConnector(BaseConnector):
         Return ``True`` if all required credential environment variables are set,
         ``False`` otherwise.  Does NOT make a real network call.
         """
-        env_vars = self._required_env_vars()
-        return all(self.config.get(v.lower()) or os.environ.get(v, "") for v in env_vars)
+
+        def _check() -> bool:
+            env_vars = self._required_env_vars()
+            return all(self.config.get(v.lower()) or os.environ.get(v, "") for v in env_vars)
+
+        return self._breaker.run(_check, operation_name=f"{self.dsp_name}.connect")
 
     def fetch_historical(
         self, artist_id: str, start_date: datetime, end_date: datetime
     ) -> list[dict]:
-        rows = load_statement_rows(
-            config=self.config,
-            source_name=self.dsp_name,
-            env_name=f"{self.dsp_name.upper().replace(' ', '_')}_STATEMENT_FILES",
-            artist_id=artist_id,
-            start=start_date,
-            end=end_date,
-        )
-        return rows
+        def _fetch() -> list[dict]:
+            return load_statement_rows(
+                config=self.config,
+                source_name=self.dsp_name,
+                env_name=f"{self.dsp_name.upper().replace(' ', '_')}_STATEMENT_FILES",
+                artist_id=artist_id,
+                start=start_date,
+                end=end_date,
+            )
+
+        return self._breaker.run(_fetch, operation_name=f"{self.dsp_name}.fetch_historical")
 
     def fetch_recent(self, artist_id: str, since: datetime) -> list[dict]:
         return self.fetch_historical(artist_id, since, datetime.now(tz=since.tzinfo))

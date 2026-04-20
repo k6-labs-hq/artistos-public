@@ -5,20 +5,20 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**name** | **str** |  | 
-**email** | **str** |  | [optional] 
-**first_name** | **str** |  | [optional] 
-**last_name** | **str** |  | [optional] 
+**name** | **str** |  |
+**email** | **str** |  | [optional]
+**first_name** | **str** |  | [optional]
+**last_name** | **str** |  | [optional]
 **country_code** | **str** |  | [optional] [default to 'US']
-**role** | **str** |  | [optional] 
-**ipi_number** | **str** |  | [optional] 
-**stage_names** | **List[str]** |  | [optional] 
+**role** | **str** |  | [optional]
+**ipi_number** | **str** |  | [optional]
+**stage_names** | **List[str]** |  | [optional]
 **default_attorney_grace_period_days** | **int** |  | [optional] [default to 60]
 **primary_jurisdiction** | **str** |  | [optional] [default to 'USA']
 **preferred_contract_type** | **str** |  | [optional] [default to 'recording']
-**primary_vertical** | **str** |  | [optional] 
-**tvfilm_role** | **str** |  | [optional] 
-**organization_type** | **str** |  | [optional] 
+**primary_vertical** | **str** |  | [optional]
+**tvfilm_role** | **str** |  | [optional]
+**organization_type** | **str** |  | [optional]
 **enterprise_mode_enabled** | **bool** |  | [optional] [default to False]
 
 ## Example
@@ -39,5 +39,3 @@ artist_create_dict = artist_create_instance.to_dict()
 artist_create_from_dict = ArtistCreate.from_dict(artist_create_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artists** | **List[Dict[str, object]]** |  | 
+**artists** | **List[Dict[str, object]]** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ bulk_onboard_request_dict = bulk_onboard_request_instance.to_dict()
 bulk_onboard_request_from_dict = BulkOnboardRequest.from_dict(bulk_onboard_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

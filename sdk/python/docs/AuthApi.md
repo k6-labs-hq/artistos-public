@@ -35,7 +35,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AuthApi(api_client)
-    admin_login_request = xr7_sdk.AdminLoginRequest() # AdminLoginRequest | 
+    admin_login_request = xr7_sdk.AdminLoginRequest() # AdminLoginRequest |
 
     try:
         # Admin Login
@@ -53,7 +53,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **admin_login_request** | [**AdminLoginRequest**](AdminLoginRequest.md)|  | 
+ **admin_login_request** | [**AdminLoginRequest**](AdminLoginRequest.md)|  |
 
 ### Return type
 
@@ -103,7 +103,7 @@ configuration = xr7_sdk.Configuration(
 with xr7_sdk.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = xr7_sdk.AuthApi(api_client)
-    artist_login_request = xr7_sdk.ArtistLoginRequest() # ArtistLoginRequest | 
+    artist_login_request = xr7_sdk.ArtistLoginRequest() # ArtistLoginRequest |
 
     try:
         # Artist Login
@@ -121,7 +121,7 @@ with xr7_sdk.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **artist_login_request** | [**ArtistLoginRequest**](ArtistLoginRequest.md)|  | 
+ **artist_login_request** | [**ArtistLoginRequest**](ArtistLoginRequest.md)|  |
 
 ### Return type
 
@@ -215,4 +215,3 @@ This endpoint does not need any parameter.
 **200** | Successful Response |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-

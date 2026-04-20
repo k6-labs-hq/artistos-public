@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**note** | **str** |  | [optional] 
+**note** | **str** |  | [optional]
 
 ## Example
 
@@ -25,5 +25,3 @@ packet_sign_request_dict = packet_sign_request_instance.to_dict()
 packet_sign_request_from_dict = PacketSignRequest.from_dict(packet_sign_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

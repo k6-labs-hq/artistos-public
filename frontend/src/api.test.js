@@ -80,21 +80,26 @@ describe("api – correct client classes instantiated", () => {
     });
 });
 describe("api – Configuration", () => {
+    function firstConfigurationCall() {
+        const first = vi.mocked(Configuration).mock.calls[0];
+        expect(first).toBeDefined();
+        return (first?.[0] ?? {});
+    }
     it("Configuration is constructed once", () => {
         expect(Configuration).toHaveBeenCalledTimes(1);
     });
     it("Configuration receives a basePath", () => {
-        const call = vi.mocked(Configuration).mock.calls[0][0];
+        const call = firstConfigurationCall();
         expect(call).toHaveProperty("basePath");
         expect(typeof call.basePath).toBe("string");
     });
     it("Configuration receives an accessToken function", () => {
-        const call = vi.mocked(Configuration).mock.calls[0][0];
+        const call = firstConfigurationCall();
         expect(typeof call.accessToken).toBe("function");
     });
     it("basePath falls back to localhost:8000 when env var is absent", () => {
         // VITE_API_BASE_URL is not set in the test environment
-        const call = vi.mocked(Configuration).mock.calls[0][0];
+        const call = firstConfigurationCall();
         expect(call.basePath).toBe("http://localhost:8000");
     });
 });

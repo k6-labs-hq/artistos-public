@@ -13,18 +13,23 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import query_handoffs
-from XR7.api.deps import get_artist_or_404
 from XR7.models.admin_audit_log import AdminAuditLog, AdminAuditLogSchema
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist, ArtistSchema
 from XR7.models.base import get_db
 from XR7.models.claim import Claim, ClaimSchema
+from XR7.models.feature_flag import FeatureFlagSchema
 from XR7.models.review_queue import ReviewItem, ReviewItemSchema
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTransactionSchema
+from XR7.models.webhook_event import WebhookEvent, WebhookEventSchema, WebhookEventStatus
 from XR7.recovery.sol_calculator import SOL_DISCLAIMER, calculate_sol
+from XR7.services.feature_flags import FeatureFlagService
 from XR7.services.founder_program import founder_status_payload, get_or_create_platform_config
+from XR7.services.router_v21_phase1 import router_service_for
+from XR7.tasks.webhooks import deliver_webhook_event
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+_router_service = router_service_for("admin_console")
 
 
 class FounderAssignRequest(BaseModel):
@@ -34,6 +39,15 @@ class FounderAssignRequest(BaseModel):
 
 class FounderCohortLimitUpdateRequest(BaseModel):
     founder_cohort_limit: int
+
+
+class FeatureFlagUpsertRequest(BaseModel):
+    key: str
+    description: str | None = None
+    enabled: bool = False
+    rollout_percentage: int = 0
+    target_user_ids: list[str] = []
+    conditions: dict = {}
 
 
 def _require_admin(
@@ -531,36 +545,117 @@ def founder_roster(
 
 @router.get("/reports/founder-cohort")
 def founder_cohort_report(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
-    founders = db.query(Artist).filter(Artist.is_founder.is_(True)).all()
-    standard = db.query(Artist).filter(Artist.is_founder.is_(False)).all()
 
-    founder_ids = [a.id for a in founders]
-    standard_ids = [a.id for a in standard]
+    @router.get("/feature-flags")
+    def list_feature_flags(actor: str = Depends(_require_admin), db: Session = Depends(get_db)):
+        rows = FeatureFlagService(db).list_flags()
+        _log(db, actor, "list", "feature_flags", {"count": len(rows)})
+        return [FeatureFlagSchema.model_validate(row).model_dump() for row in rows]
 
-    founder_claims = (
-        db.query(Claim).filter(Claim.artist_id.in_(founder_ids)).all() if founder_ids else []
+    @router.put("/feature-flags/{flag_key}")
+    def upsert_feature_flag(
+        flag_key: str,
+        payload: FeatureFlagUpsertRequest,
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        row = FeatureFlagService(db).upsert_flag(
+            key=flag_key,
+            description=payload.description,
+            enabled=payload.enabled,
+            rollout_percentage=payload.rollout_percentage,
+            target_user_ids=payload.target_user_ids,
+            conditions=payload.conditions,
+        )
+        _log(db, actor, "upsert", "feature_flag", {"key": flag_key, "enabled": row.enabled})
+        return FeatureFlagSchema.model_validate(row).model_dump()
+
+    @router.get("/feature-flags/{flag_key}/evaluate")
+    def evaluate_feature_flag(
+        flag_key: str,
+        subject_id: str | None = Query(default=None),
+        environment: str | None = Query(default=None),
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        enabled = FeatureFlagService(db).is_enabled(
+            flag_key,
+            subject_id=subject_id,
+            attributes={"environment": environment},
+        )
+        _log(db, actor, "evaluate", "feature_flag", {"key": flag_key, "subject_id": subject_id})
+        return {"key": flag_key, "subject_id": subject_id, "enabled": enabled}
+
+    @router.get("/webhooks")
+    def list_webhook_events(
+        status: str | None = Query(default=None),
+        limit: int = Query(default=50, ge=1, le=200),
+        offset: int = Query(default=0, ge=0),
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        query = db.query(WebhookEvent)
+        if status:
+            query = query.filter(WebhookEvent.status == status)
+        total = query.count()
+        rows = query.order_by(WebhookEvent.created_at.desc()).offset(offset).limit(limit).all()
+        _log(db, actor, "list", "webhooks", {"status": status, "total": total})
+        return _paginated_response(
+            [WebhookEventSchema.model_validate(row).model_dump() for row in rows],
+            total,
+            limit,
+            offset,
+        )
+
+    @router.post("/webhooks/{event_id}/retry")
+    def retry_webhook_event(
+        event_id: str,
+        actor: str = Depends(_require_admin),
+        db: Session = Depends(get_db),
+    ):
+        row = db.query(WebhookEvent).filter(WebhookEvent.id == event_id).first()
+        if not row:
+            raise HTTPException(status_code=404, detail="Webhook event not found")
+        row.status = WebhookEventStatus.REPLAYING
+        row.processing_error = None
+        db.commit()
+        deliver_webhook_event.delay(row.id)
+        _log(db, actor, "retry", "webhook", {"event_id": row.id})
+        return {"event_id": row.id, "status": row.status, "queued": True}
+
+    total_founders: int = (
+        db.query(func.count(Artist.id)).filter(Artist.is_founder.is_(True)).scalar() or 0
     )
-    standard_claims = (
-        db.query(Claim).filter(Claim.artist_id.in_(standard_ids)).all() if standard_ids else []
+
+    # Single JOIN-aggregate for founder claims: avg recovered + total fees.
+    # func.avg excludes NULLs automatically, matching the original per-row filter.
+    founder_stats = (
+        db.query(
+            func.coalesce(func.avg(Claim.recovered_amount), 0.0),
+            func.coalesce(func.sum(func.coalesce(Claim.contingency_fee, 0.0)), 0.0),
+        )
+        .join(Artist, Claim.artist_id == Artist.id)
+        .filter(Artist.is_founder.is_(True))
+        .one()
     )
 
-    founder_recovered = [
-        float(c.recovered_amount or 0.0) for c in founder_claims if c.recovered_amount is not None
-    ]
-    standard_recovered = [
-        float(c.recovered_amount or 0.0) for c in standard_claims if c.recovered_amount is not None
-    ]
-    founder_fees = [float(c.contingency_fee or 0.0) for c in founder_claims]
+    standard_avg_recovery: float = float(
+        db.query(func.coalesce(func.avg(Claim.recovered_amount), 0.0))
+        .join(Artist, Claim.artist_id == Artist.id)
+        .filter(Artist.is_founder.is_(False))
+        .scalar()
+        or 0.0
+    )
 
     cohort = founder_status_payload(db)
     report = {
-        "total_founders_activated": len(founders),
+        "total_founders_activated": total_founders,
         "slots_remaining": cohort["slots_remaining"],
         "average_recovery_amount": {
-            "founder": round(sum(founder_recovered) / max(1, len(founder_recovered)), 2),
-            "standard": round(sum(standard_recovered) / max(1, len(standard_recovered)), 2),
+            "founder": round(float(founder_stats[0]), 2),
+            "standard": round(standard_avg_recovery, 2),
         },
-        "total_platform_fees_collected_from_founder_cohort": round(sum(founder_fees), 2),
+        "total_platform_fees_collected_from_founder_cohort": round(float(founder_stats[1]), 2),
     }
     _log(db, actor, "report", "founder_cohort", report)
     return report
@@ -573,7 +668,7 @@ def assign_founder_manually(
     actor: str = Depends(_require_admin),
     db: Session = Depends(get_db),
 ):
-    artist = get_artist_or_404(artist_id, db)
+    artist = _router_service.get_artist_or_404(artist_id, db)
 
     cfg = get_or_create_platform_config(db, for_update=True)
     if artist.is_founder and artist.founder_slot_number is not None:

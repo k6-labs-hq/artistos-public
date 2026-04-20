@@ -107,5 +107,3 @@ class CatalogConfirmationSchema(BaseModel):
             "confirmed_at": obj.get("confirmed_at")
         })
         return _obj
-
-

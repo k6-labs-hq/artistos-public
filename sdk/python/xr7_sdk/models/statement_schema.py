@@ -115,5 +115,3 @@ class StatementSchema(BaseModel):
             "uploaded_at": obj.get("uploaded_at")
         })
         return _obj
-
-

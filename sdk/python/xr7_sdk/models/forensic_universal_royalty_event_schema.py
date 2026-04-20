@@ -189,5 +189,3 @@ class ForensicUniversalRoyaltyEventSchema(BaseModel):
             "ingestion_timestamp": obj.get("ingestion_timestamp")
         })
         return _obj
-
-

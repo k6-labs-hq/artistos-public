@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**anomaly_ids** | **List[str]** |  | [optional] 
+**anomaly_ids** | **List[str]** |  | [optional]
 **group_by_template** | **bool** |  | [optional] [default to True]
 
 ## Example
@@ -26,5 +26,3 @@ tv_film_bulk_claim_draft_request_dict = tv_film_bulk_claim_draft_request_instanc
 tv_film_bulk_claim_draft_request_from_dict = TVFilmBulkClaimDraftRequest.from_dict(tv_film_bulk_claim_draft_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

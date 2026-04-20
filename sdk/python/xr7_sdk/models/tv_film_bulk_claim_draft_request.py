@@ -87,5 +87,3 @@ class TVFilmBulkClaimDraftRequest(BaseModel):
             "group_by_template": obj.get("group_by_template") if obj.get("group_by_template") is not None else True
         })
         return _obj
-
-

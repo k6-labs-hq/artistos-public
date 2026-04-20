@@ -5,13 +5,13 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **str** |  | 
-**artist_id** | **str** |  | 
-**terms_version** | **str** |  | 
-**text_sha256** | **str** |  | 
-**accepted_at** | **datetime** |  | 
-**ip_address** | **str** |  | [optional] 
-**user_agent** | **str** |  | [optional] 
+**id** | **str** |  |
+**artist_id** | **str** |  |
+**terms_version** | **str** |  |
+**text_sha256** | **str** |  |
+**accepted_at** | **datetime** |  |
+**ip_address** | **str** |  | [optional]
+**user_agent** | **str** |  | [optional]
 
 ## Example
 
@@ -31,5 +31,3 @@ terms_acceptance_schema_dict = terms_acceptance_schema_instance.to_dict()
 terms_acceptance_schema_from_dict = TermsAcceptanceSchema.from_dict(terms_acceptance_schema_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -1,16 +1,21 @@
 import uuid
 from datetime import datetime, timezone
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
 from XR7.models.artist import Artist
 from XR7.models.claim import Claim, ClaimStatus
+from XR7.models.invoice import Invoice, InvoiceStatus
 from XR7.models.metadata_issue import MetadataIssue
 from XR7.models.trolley_transaction import TrolleyTransaction, TrolleyTxnStatus, TrolleyTxnType
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 from XR7.services.founder_program import get_or_create_platform_config, resolve_standard_fee_percent
 from XR7.trolley.client import TrolleyClient, TrolleyException
+from xr7_common.logging import get_logger
+
+logger = get_logger(__name__)
 
 
 class BillingEngine:
@@ -18,7 +23,6 @@ class BillingEngine:
 
     def __init__(self, db_session: Session):
         self.db_session = db_session
-        self._invoices: dict[str, dict] = {}
 
     def _artist_fee_percent(self, artist_id: str) -> float:
         artist = self.db_session.query(Artist).filter(Artist.id == artist_id).first()
@@ -45,19 +49,137 @@ class BillingEngine:
     def create_invoice(
         self, claim_id: str, recovered_amount: float, currency: str, artist_id: str | None = None
     ) -> dict:
-        invoice_id = str(uuid.uuid4())
+        """Create invoice for a claim with database-level idempotency guarantee.
+
+        TDD-BILL-001 Remediation: Database-level unique constraint on claim_id ensures
+        that duplicate invoice creation (via Celery retry after process crash) is prevented
+        at the database layer, not relying on in-memory application state.
+
+        IDEMPOTENCY: If an invoice already exists for this claim_id, returns the existing
+        invoice instead of creating a duplicate. This prevents double-billing.
+
+        Args:
+            claim_id: Claim identifier (used as natural idempotency key)
+            recovered_amount: Amount recovered from the claim
+            currency: Currency code (USD, EUR, etc.)
+            artist_id: Optional artist identifier for fee calculation
+
+        Returns:
+            Invoice dict with invoice_id, claim_id, recovered_amount, contingency_fee, etc.
+
+        Raises:
+            ValueError: If recovered_amount is negative or claim not found
+
+        Compliance: SOC 2 CC6.1 - Logical access controls (revenue integrity)
+        """
+        if recovered_amount < 0:
+            raise ValueError("recovered_amount must be non-negative")
+
+        # Fetch claim to get artist_id if not provided
+        claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
+        if not claim:
+            raise ValueError(f"Claim {claim_id} not found")
+
+        artist_id = artist_id or claim.artist_id
+
+        # DATABASE-LEVEL IDEMPOTENCY CHECK: Query for existing invoice by claim_id
+        # If unique constraint uq_invoices_claim_id exists, this prevents duplicates
+        existing_invoice = (
+            self.db_session.query(Invoice).filter(Invoice.claim_id == claim_id).first()
+        )
+
+        if existing_invoice:
+            logger.info(
+                "invoice_idempotency_hit_database",
+                extra={
+                    "claim_id": claim_id,
+                    "existing_invoice_id": existing_invoice.id,
+                    "recovered_amount": recovered_amount,
+                    "idempotency_source": "database_unique_constraint",
+                },
+            )
+            # Return existing invoice as dict for backwards compatibility
+            return {
+                "invoice_id": existing_invoice.id,
+                "claim_id": existing_invoice.claim_id,
+                "recovered_amount": existing_invoice.recovered_amount,
+                "contingency_fee": existing_invoice.contingency_fee,
+                "currency": existing_invoice.currency,
+                "status": existing_invoice.status,
+                "created_at": existing_invoice.created_at.isoformat(),
+            }
+
+        # Create new invoice with database persistence
         contingency_fee = self.calculate_contingency_fee(recovered_amount, artist_id)
-        invoice = {
-            "invoice_id": invoice_id,
-            "claim_id": claim_id,
-            "recovered_amount": recovered_amount,
-            "contingency_fee": contingency_fee,
-            "currency": currency,
-            "status": "PENDING",
-            "created_at": datetime.now(timezone.utc).isoformat(),
-        }
-        self._invoices[invoice_id] = invoice
-        return invoice
+        invoice = Invoice(
+            claim_id=claim_id,
+            artist_id=artist_id,
+            recovered_amount=recovered_amount,
+            contingency_fee=contingency_fee,
+            currency=currency,
+            status=InvoiceStatus.PENDING,
+        )
+
+        try:
+            self.db_session.add(invoice)
+            self.db_session.flush()  # Flush to trigger unique constraint check
+
+            logger.info(
+                "invoice_created_database",
+                extra={
+                    "invoice_id": invoice.id,
+                    "claim_id": claim_id,
+                    "artist_id": artist_id,
+                    "recovered_amount": recovered_amount,
+                    "contingency_fee": contingency_fee,
+                    "currency": currency,
+                    "idempotency_enforced_by": "database_constraint_uq_invoices_claim_id",
+                },
+            )
+
+            # Return invoice as dict for backwards compatibility
+            return {
+                "invoice_id": invoice.id,
+                "claim_id": invoice.claim_id,
+                "recovered_amount": invoice.recovered_amount,
+                "contingency_fee": invoice.contingency_fee,
+                "currency": invoice.currency,
+                "status": invoice.status,
+                "created_at": invoice.created_at.isoformat(),
+            }
+
+        except IntegrityError as e:
+            # Race condition: Another transaction created invoice for same claim_id
+            # Rollback and return the existing invoice
+            self.db_session.rollback()
+
+            existing_invoice = (
+                self.db_session.query(Invoice).filter(Invoice.claim_id == claim_id).first()
+            )
+
+            if existing_invoice:
+                logger.info(
+                    "invoice_idempotency_race_condition_caught",
+                    extra={
+                        "claim_id": claim_id,
+                        "existing_invoice_id": existing_invoice.id,
+                        "recovered_amount": recovered_amount,
+                        "idempotency_source": "database_integrity_error_catch",
+                        "error": str(e),
+                    },
+                )
+                return {
+                    "invoice_id": existing_invoice.id,
+                    "claim_id": existing_invoice.claim_id,
+                    "recovered_amount": existing_invoice.recovered_amount,
+                    "contingency_fee": existing_invoice.contingency_fee,
+                    "currency": existing_invoice.currency,
+                    "status": existing_invoice.status,
+                    "created_at": existing_invoice.created_at.isoformat(),
+                }
+
+            # If no existing invoice found, this is a different IntegrityError - re-raise
+            raise
 
     def get_artist_billing_summary(self, artist_id: str) -> dict:
         paid_claims = (
@@ -95,11 +217,21 @@ class BillingEngine:
         }
 
     def process_payment(self, invoice_id: str) -> dict:
-        invoice = self._invoices.get(invoice_id)
+        """Mark invoice as paid in database."""
+        invoice = self.db_session.query(Invoice).filter(Invoice.id == invoice_id).first()
         if not invoice:
             raise ValueError(f"Invoice {invoice_id} not found")
-        invoice["status"] = "PAID"
-        return invoice
+
+        invoice.status = InvoiceStatus.PAID
+        invoice.paid_at = datetime.now(timezone.utc)
+        self.db_session.flush()
+
+        return {
+            "invoice_id": invoice.id,
+            "claim_id": invoice.claim_id,
+            "status": invoice.status,
+            "paid_at": invoice.paid_at.isoformat() if invoice.paid_at else None,
+        }
 
     def record_manual_remittance(
         self,
@@ -123,6 +255,18 @@ class BillingEngine:
         )
         platform_fee = round(gross_amount * fee_pct / 100.0, 2)
         artist_net = round(gross_amount - platform_fee, 2)
+
+        # CRITICAL VALIDATION: Prevent fee overcharges and negative payouts
+        if platform_fee >= gross_amount:
+            raise ValueError(
+                f"Platform fee (${platform_fee:.2f}) cannot be >= gross amount (${gross_amount:.2f}). "
+                f"Fee percentage ({fee_pct}%) is too high for this remittance."
+            )
+        if artist_net <= 0:
+            raise ValueError(
+                f"Artist net amount (${artist_net:.2f}) must be positive. "
+                f"Fee (${platform_fee:.2f}) exceeds or equals gross (${gross_amount:.2f})."
+            )
 
         claim.status = ClaimStatus.FUNDS_RECEIVED
         claim.recovered_amount = gross_amount
@@ -211,6 +355,17 @@ class BillingEngine:
             claim.payout_failure_reason = str(exc)
             claim.payout_retry_count = int(claim.payout_retry_count or 0) + 1
             self.db_session.commit()
+
+            # Queue automatic retry with exponential backoff
+            # Import here to avoid circular dependency
+            from XR7.tasks.billing_tasks import retry_failed_disbursement
+
+            retry_failed_disbursement.delay(claim.id)
+            logger.info(
+                f"Disbursement failed for claim {claim.id}, queued for automatic retry "
+                f"(attempt {claim.payout_retry_count}/5)"
+            )
+
             raise
 
         payment = response.get("payment") if isinstance(response, dict) else {}
@@ -251,4 +406,132 @@ class BillingEngine:
 
         self.db_session.commit()
         self.db_session.refresh(tx)
+        return tx
+
+    def process_refund(
+        self,
+        *,
+        claim_id: str,
+        refund_amount: float,
+        reason: str,
+        refund_type: str = "REFUND",
+        trolley_refund_id: str | None = None,
+        notes: str | None = None,
+    ) -> TrolleyTransaction:
+        """
+        Process a refund or chargeback for a previously paid claim.
+
+        Critical for production dispute handling. Creates:
+        - Negative TrolleyTransaction (REFUND or CHARGEBACK type)
+        - Immutable ledger audit trail entry
+        - Claim status update if fully refunded
+
+        Args:
+            claim_id: ID of the claim being refunded
+            refund_amount: Amount to refund (positive number, will be stored as negative)
+            reason: Reason for refund (e.g., "Payer dispute", "Duplicate payment")
+            refund_type: "REFUND" (voluntary) or "CHARGEBACK" (forced)
+            trolley_refund_id: External Trolley transaction ID if applicable
+            notes: Additional context for audit purposes
+
+        Returns:
+            TrolleyTransaction: The refund transaction record
+
+        Raises:
+            ValueError: If claim not found, amount invalid, or claim not in refundable status
+        """
+        claim = self.db_session.query(Claim).filter(Claim.id == claim_id).first()
+        if not claim:
+            raise ValueError(f"Claim {claim_id} not found")
+
+        if refund_amount <= 0:
+            raise ValueError("refund_amount must be greater than 0")
+
+        if refund_type not in ["REFUND", "CHARGEBACK"]:
+            raise ValueError(f"refund_type must be 'REFUND' or 'CHARGEBACK', got {refund_type}")
+
+        # Verify claim is in a refundable state
+        refundable_statuses = {
+            ClaimStatus.FUNDS_RECEIVED,
+            ClaimStatus.PAID,
+            ClaimStatus.DISBURSEMENT_FAILED,
+        }
+        if claim.status not in refundable_statuses:
+            raise ValueError(
+                f"Claim {claim_id} is in status {claim.status}, "
+                f"not eligible for refund (must be in {refundable_statuses})"
+            )
+
+        # Validate refund amount doesn't exceed recovered amount
+        recovered = float(claim.recovered_amount or 0.0)
+        if refund_amount > recovered:
+            raise ValueError(f"Refund amount {refund_amount} exceeds recovered amount {recovered}")
+
+        # Calculate adjusted amounts after refund
+        remaining_recovered = recovered - refund_amount
+        fee_pct = float(claim.platform_fee_percent or self._artist_fee_percent(claim.artist_id))
+        adjusted_platform_fee = round(remaining_recovered * fee_pct / 100.0, 2)
+        adjusted_artist_net = round(remaining_recovered - adjusted_platform_fee, 2)
+
+        # Create refund transaction record (negative amount for accounting)
+        tx_type = (
+            TrolleyTxnType.CHARGEBACK if refund_type == "CHARGEBACK" else TrolleyTxnType.REFUND
+        )
+        tx = TrolleyTransaction(
+            id=str(uuid.uuid4()),
+            artist_id=claim.artist_id,
+            claim_id=claim.id,
+            type=tx_type,
+            status=TrolleyTxnStatus.PAID,  # Refund is completed when recorded
+            gross_amount=-refund_amount,  # Negative for refund
+            platform_fee_amount=-round(refund_amount * fee_pct / 100.0, 2),
+            net_amount=-round(refund_amount * (1 - fee_pct / 100.0), 2),
+            source_currency=claim.currency or "USD",
+            trolley_payment_id=trolley_refund_id,
+            external_id=claim.id,
+            description=f"{refund_type}: {reason}" + (f" - {notes}" if notes else ""),
+            failure_reason=reason if refund_type == "CHARGEBACK" else None,
+        )
+        self.db_session.add(tx)
+
+        # Update claim with adjusted amounts
+        claim.recovered_amount = remaining_recovered
+        claim.platform_fee_amount = adjusted_platform_fee
+        claim.contingency_fee = adjusted_platform_fee
+        claim.artist_net_amount = adjusted_artist_net
+        claim.updated_at = datetime.now(timezone.utc)
+
+        # If fully refunded, revert claim status
+        if remaining_recovered == 0:
+            # Reset to the status before payment was received
+            if claim.status == ClaimStatus.PAID:
+                claim.status = ClaimStatus.FUNDS_RECEIVED
+            elif claim.status == ClaimStatus.FUNDS_RECEIVED:
+                claim.status = ClaimStatus.SUBMITTED
+            claim.trolley_payment_id = None
+            claim.trolley_payment_status = None
+
+        # Create immutable audit trail entry
+        ledger = ImmutableLedgerService(self.db_session)
+        ledger.append(
+            claim.artist_id,
+            f"{refund_type.lower()}_processed",
+            {
+                "claim_id": claim.id,
+                "refund_amount": refund_amount,
+                "refund_type": refund_type,
+                "reason": reason,
+                "trolley_refund_id": trolley_refund_id,
+                "notes": notes,
+                "remaining_recovered_amount": remaining_recovered,
+                "adjusted_platform_fee": adjusted_platform_fee,
+                "adjusted_artist_net": adjusted_artist_net,
+                "claim_status_after_refund": claim.status.value,
+                "processed_at": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+
+        self.db_session.commit()
+        self.db_session.refresh(tx)
+        self.db_session.refresh(claim)
         return tx

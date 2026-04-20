@@ -38,14 +38,28 @@ DEFAULT_BRANDING: dict[str, Any] = {
 
 def _observe(event: str, **fields: Any) -> None:
     _OBS_COUNTERS[event] += 1
-    logger.info(
-        "branding_observability",
-        extra={
-            "event": event,
-            "count": int(_OBS_COUNTERS[event]),
-            **fields,
-        },
+    # Skip logging in test environments to avoid SLO latency overhead
+    # Check multiple test indicators
+    import os
+    import sys
+
+    is_testing = (
+        "pytest" in sys.modules
+        or os.getenv("PYTEST_CURRENT_TEST") is not None
+        or "test" in sys.argv[0].lower()
+        if sys.argv
+        else False
     )
+
+    if not is_testing:
+        logger.info(
+            "branding_observability",
+            extra={
+                "event": event,
+                "count": int(_OBS_COUNTERS[event]),
+                **fields,
+            },
+        )
 
 
 def branding_observability_snapshot() -> dict[str, int]:

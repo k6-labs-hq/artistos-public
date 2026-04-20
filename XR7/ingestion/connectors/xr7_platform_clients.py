@@ -136,22 +136,22 @@ class XR7RateLimitScheduler:
 class XR7PlatformAPIClient:
     """
     Platform API client with persistent HTTP connection pooling.
-    
+
     Creates a reusable httpx.Client instance to leverage connection pooling,
     reducing overhead for multiple sequential requests to the same provider.
-    
+
     Usage:
         client = XR7PlatformAPIClient("spotify", token)
         try:
             data = client.fetch_all(scheduler, since=since, until=until)
         finally:
             client.close()
-    
+
     Or use as context manager:
         with XR7PlatformAPIClient("spotify", token) as client:
             data = client.fetch_all(scheduler, since=since, until=until)
     """
-    
+
     def __init__(self, provider: str, token: str, timeout_seconds: float = 20.0):
         provider_key = provider.strip().lower()
         cfg = PROVIDER_CONFIGS.get(provider_key)
@@ -161,7 +161,7 @@ class XR7PlatformAPIClient:
         self.config = cfg
         self.token = token
         self.timeout_seconds = timeout_seconds
-        
+
         # Connection pooling: reuse TCP connections across multiple requests
         # to the same provider, reducing latency and overhead
         self._client = httpx.Client(
@@ -173,15 +173,15 @@ class XR7PlatformAPIClient:
             ),
             http2=True,  # Enable HTTP/2 for multiplexing when supported
         )
-    
+
     def __enter__(self) -> "XR7PlatformAPIClient":
         """Context manager entry."""
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         """Context manager exit - ensures client cleanup."""
         self.close()
-    
+
     def close(self) -> None:
         """Close the underlying HTTP client and release connections."""
         if hasattr(self, "_client"):

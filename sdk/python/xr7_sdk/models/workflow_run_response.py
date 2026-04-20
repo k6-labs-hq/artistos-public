@@ -98,5 +98,3 @@ class WorkflowRunResponse(BaseModel):
             "branding": obj.get("branding")
         })
         return _obj
-
-

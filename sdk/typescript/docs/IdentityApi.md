@@ -28,7 +28,7 @@ import type { AutoMatchIdentityArtistsArtistIdIdentityAutoMatchPostRequest } fro
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -101,7 +101,7 @@ import type { DecideIdentityMatchArtistsArtistIdIdentityMatchesMatchIdDecisionPo
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -177,7 +177,7 @@ import type { GetIdentityMatchAuditArtistsArtistIdIdentityMatchesMatchIdAuditGet
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -250,7 +250,7 @@ import type { ListIdentityMatchesArtistsArtistIdIdentityMatchesGetRequest } from
 
 async function example() {
   console.log("🚀 Testing @xr7/sdk SDK...");
-  const config = new Configuration({ 
+  const config = new Configuration({
     // Configure HTTP bearer authorization: HTTPBearer
     accessToken: "YOUR BEARER TOKEN",
   });
@@ -301,4 +301,3 @@ example().catch(console.error);
 | **422** | Validation Error |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#api-endpoints) [[Back to Model list]](../README.md#models) [[Back to README]](../README.md)
-

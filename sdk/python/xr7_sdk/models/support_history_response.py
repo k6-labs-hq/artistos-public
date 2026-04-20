@@ -107,5 +107,3 @@ class SupportHistoryResponse(BaseModel):
             "items": [SupportMessageView.from_dict(_item) for _item in obj["items"]] if obj.get("items") is not None else None
         })
         return _obj
-
-

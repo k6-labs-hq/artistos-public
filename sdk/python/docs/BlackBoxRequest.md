@@ -27,5 +27,3 @@ black_box_request_dict = black_box_request_instance.to_dict()
 black_box_request_from_dict = BlackBoxRequest.from_dict(black_box_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

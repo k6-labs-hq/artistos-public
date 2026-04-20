@@ -1,7 +1,7 @@
 # XR7 — Founder-Grade Technical Overview for Investors
 
-**Classification:** Investor-Confidential  
-**Version:** 1.0 (2026)  
+**Classification:** Investor-Confidential
+**Version:** 1.0 (2026)
 **Audience:** Series A/B investors, strategic acquirers, board members, technical due-diligence teams
 
 ---

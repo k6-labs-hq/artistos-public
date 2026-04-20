@@ -9,6 +9,8 @@ from urllib.parse import urlencode
 
 import httpx
 
+from XR7.ingestion.connectors.circuit_breaker import CircuitBreaker
+
 
 @dataclass(frozen=True)
 class OAuthProviderConfig:
@@ -88,6 +90,7 @@ class OAuthProviderService:
         provider_key = provider.strip().lower()
         self.provider = provider_key
         self.config = PROVIDER_CONFIGS.get(provider_key)
+        self._breaker = CircuitBreaker(failure_threshold=3, recovery_timeout_seconds=90)
 
     def _credentials(self) -> tuple[str | None, str | None]:
         if not self.config:
@@ -214,25 +217,29 @@ class OAuthProviderService:
     def _post_token(self, payload: dict[str, str]) -> dict[str, Any]:
         if not self.config:
             raise OAuthProviderError("Unsupported OAuth provider")
-        try:
-            with httpx.Client(timeout=12.0) as client:
-                response = client.post(
-                    self.config.token_url,
-                    data=payload,
-                    headers={"Accept": "application/json"},
-                )
-            response.raise_for_status()
-        except Exception as exc:  # noqa: BLE001
-            raise OAuthProviderError(
-                f"Token request failed for provider '{self.provider}': {exc}"
-            ) from exc
 
-        data = response.json()
-        if not isinstance(data, dict):
-            raise OAuthProviderError("Token response payload is not a JSON object")
-        if "access_token" not in data:
-            raise OAuthProviderError("Token response missing access_token")
-        return data
+        def _call() -> dict[str, Any]:
+            try:
+                with httpx.Client(timeout=12.0) as client:
+                    response = client.post(
+                        self.config.token_url,
+                        data=payload,
+                        headers={"Accept": "application/json"},
+                    )
+                response.raise_for_status()
+            except Exception as exc:  # noqa: BLE001
+                raise OAuthProviderError(
+                    f"Token request failed for provider '{self.provider}': {exc}"
+                ) from exc
+
+            data = response.json()
+            if not isinstance(data, dict):
+                raise OAuthProviderError("Token response payload is not a JSON object")
+            if "access_token" not in data:
+                raise OAuthProviderError("Token response missing access_token")
+            return data
+
+        return self._breaker.run(_call, operation_name=f"oauth.{self.provider}.token")
 
 
 def parse_scope_string(value: str | None) -> list[str]:

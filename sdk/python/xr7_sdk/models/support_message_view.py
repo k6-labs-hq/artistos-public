@@ -102,5 +102,3 @@ class SupportMessageView(BaseModel):
             "created_at": obj.get("created_at")
         })
         return _obj
-
-

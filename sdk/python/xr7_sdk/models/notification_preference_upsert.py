@@ -119,5 +119,3 @@ class NotificationPreferenceUpsert(BaseModel):
             "quiet_hours_end": obj.get("quiet_hours_end")
         })
         return _obj
-
-

@@ -114,5 +114,3 @@ class ContractExtractRequest(BaseModel):
             "extracted_from": obj.get("extracted_from")
         })
         return _obj
-
-

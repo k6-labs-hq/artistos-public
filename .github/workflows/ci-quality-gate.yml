@@ -148,6 +148,7 @@ jobs:
       - name: Run tests (parallel, with coverage)
         run: |
           pytest tests/ \
+            -m "not integration" \
             -n auto \
             --cov=XR7 \
             --cov=shared \

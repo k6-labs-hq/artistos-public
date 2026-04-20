@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**lead_id** | **str** |  | 
+**lead_id** | **str** |  |
 
 ## Example
 
@@ -25,5 +25,3 @@ claim_request_dict = claim_request_instance.to_dict()
 claim_request_from_dict = ClaimRequest.from_dict(claim_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

@@ -98,5 +98,3 @@ class ParserPluginUpsertRequest(BaseModel):
             "enabled": obj.get("enabled") if obj.get("enabled") is not None else True
         })
         return _obj
-
-

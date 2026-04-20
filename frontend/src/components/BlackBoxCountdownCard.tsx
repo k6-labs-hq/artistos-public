@@ -119,6 +119,8 @@ export function BlackBoxCountdownCard({ artistId }: Props) {
             See exactly how much time remains before each royalty is redistributed and gone forever.
           </p>
           <button
+            type="button"
+            aria-label="Show black-box countdown deadlines"
             onClick={load}
             style={{ background: amber, color: "#000", border: "none", borderRadius: 8, padding: "10px 20px", fontWeight: 700, cursor: "pointer" }}
           >
@@ -184,6 +186,8 @@ export function BlackBoxCountdownCard({ artistId }: Props) {
                     ${c.estimated_at_risk_value.toLocaleString()} at risk
                   </span>
                   <button
+                    type="button"
+                    aria-label={`Draft claim for anomaly ${c.anomaly_id}`}
                     style={{
                       background: "transparent", border: `1px solid ${TIER_COLORS[c.urgency_tier]}`,
                       color: TIER_COLORS[c.urgency_tier], borderRadius: 6, padding: "3px 10px",

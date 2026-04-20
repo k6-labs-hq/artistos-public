@@ -93,5 +93,3 @@ class CurrencyTaxEstimateRequest(BaseModel):
             "withholding_rate": obj.get("withholding_rate") if obj.get("withholding_rate") is not None else 0.0
         })
         return _obj
-
-

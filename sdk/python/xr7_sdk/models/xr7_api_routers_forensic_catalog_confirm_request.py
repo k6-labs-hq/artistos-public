@@ -87,5 +87,3 @@ class XR7ApiRoutersForensicCatalogConfirmRequest(BaseModel):
             "works": obj.get("works")
         })
         return _obj
-
-

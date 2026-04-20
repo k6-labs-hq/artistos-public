@@ -1,6 +1,6 @@
 # XR7 Engine 2 — Artist Earnings Accuracy Platform
 
-> **Version 2.0.0** | Python 3.12 · FastAPI · SQLAlchemy 2.0 · Pydantic v2 · Celery · PostgreSQL · Redis  
+> **Version 2.0.0** | Python 3.12 · FastAPI · SQLAlchemy 2.0 · Pydantic v2 · Celery · PostgreSQL · Redis
 > Last updated: 2026-04-09
 
 <!-- COMPLETION_START -->

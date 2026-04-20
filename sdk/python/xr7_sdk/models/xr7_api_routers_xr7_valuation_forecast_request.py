@@ -89,5 +89,3 @@ class XR7ApiRoutersXr7ValuationForecastRequest(BaseModel):
             "scenario_overrides": obj.get("scenario_overrides")
         })
         return _obj
-
-

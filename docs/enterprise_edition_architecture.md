@@ -1,8 +1,8 @@
 # XR7 Enterprise Edition Architecture
 
-**Version:** 1.0  
-**Audience:** Enterprise sales, solutions architects, CTO-level buyers, technical evaluators  
-**Scope:** XR7 Enterprise features, architecture, compliance posture, and commercial differentiation  
+**Version:** 1.0
+**Audience:** Enterprise sales, solutions architects, CTO-level buyers, technical evaluators
+**Scope:** XR7 Enterprise features, architecture, compliance posture, and commercial differentiation
 **Compliance targets:** SOC 2 Type II, ISO 27001, GDPR, CCPA, MMA 2018
 
 ---

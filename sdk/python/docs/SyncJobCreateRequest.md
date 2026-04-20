@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**integration** | **str** |  | 
+**integration** | **str** |  |
 **max_attempts** | **int** |  | [optional] [default to 3]
-**payload** | **Dict[str, object]** |  | [optional] 
+**payload** | **Dict[str, object]** |  | [optional]
 **run_async** | **bool** |  | [optional] [default to True]
 **queue_backend** | **str** |  | [optional] [default to 'background']
 
@@ -29,5 +29,3 @@ sync_job_create_request_dict = sync_job_create_request_instance.to_dict()
 sync_job_create_request_from_dict = SyncJobCreateRequest.from_dict(sync_job_create_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

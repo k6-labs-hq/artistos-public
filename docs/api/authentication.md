@@ -1,6 +1,6 @@
 # Authentication & Authorization
 
-Base path: `/auth`  
+Base path: `/auth`
 Tags: `auth`, `forensic-api`
 
 ---
@@ -11,7 +11,7 @@ Tags: `auth`, `forensic-api`
 
 Returns the list of configured OAuth providers (Spotify, Apple Music, SoundCloud, etc.) available for DSP account linking.
 
-**Auth:** None  
+**Auth:** None
 **Response 200** — `ProvidersResponse`:
 ```json
 {
@@ -29,7 +29,7 @@ Returns the list of configured OAuth providers (Spotify, Apple Music, SoundCloud
 
 Initiates an OAuth2 authorization code flow for the specified DSP provider. Returns a redirect URL to the provider's OAuth consent screen.
 
-**Auth:** None  
+**Auth:** None
 **Path params:** `provider` (string) — provider ID from `/auth/providers`
 
 **Request body:**
@@ -48,7 +48,7 @@ Initiates an OAuth2 authorization code flow for the specified DSP provider. Retu
 
 Authenticates an artist. Returns a signed JWT for use as `Authorization: Bearer <token>`.
 
-**Auth:** None  
+**Auth:** None
 **Request body** — `ArtistLoginRequest`:
 ```json
 { "email": "artist@example.com", "password": "••••••••", "mfa_code": "123456" }
@@ -78,7 +78,7 @@ Authenticates an artist. Returns a signed JWT for use as `Authorization: Bearer 
 
 Authenticates an internal admin. Tokens expire after 8 hours.
 
-**Auth:** None  
+**Auth:** None
 **Request body** — `AdminLoginRequest`:
 ```json
 { "email": "admin@artistos.io", "password": "••••••••" }
@@ -95,7 +95,7 @@ Authenticates an internal admin. Tokens expire after 8 hours.
 
 Returns the authenticated user profile.
 
-**Auth:** Bearer  
+**Auth:** Bearer
 **Response 200:**
 ```json
 {

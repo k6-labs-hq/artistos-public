@@ -87,5 +87,3 @@ class TVFilmTrustExplainRequest(BaseModel):
             "agency_mode": obj.get("agency_mode") if obj.get("agency_mode") is not None else False
         })
         return _obj
-
-

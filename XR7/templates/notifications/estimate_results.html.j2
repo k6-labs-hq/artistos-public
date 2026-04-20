@@ -1,0 +1,28 @@
+<html>
+  <body style="font-family: Arial, sans-serif; color: #111;">
+    <h2>Your XR7 Royalty Estimate</h2>
+    <p>Hi {{ artist_name }},</p>
+    <table cellpadding="6" cellspacing="0" style="border-collapse: collapse;">
+      <tr><td><strong>Conservative</strong></td><td>{{ currency }} {{ conservative }}</td></tr>
+      <tr><td><strong>Likely</strong></td><td>{{ currency }} {{ likely }}</td></tr>
+      <tr><td><strong>Optimistic</strong></td><td>{{ currency }} {{ optimistic }}</td></tr>
+    </table>
+
+    {% if stream_lines %}
+    <h3>Breakdown by stream</h3>
+    <ul>
+      {% for line in stream_lines %}
+      <li>{{ line }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    <p>{{ disclaimer }}</p>
+
+    <hr />
+    <p style="font-size: 12px; color: #666;">
+      Manage notification preferences:
+      <a href="{{ unsubscribe_url }}">unsubscribe</a>
+    </p>
+  </body>
+</html>

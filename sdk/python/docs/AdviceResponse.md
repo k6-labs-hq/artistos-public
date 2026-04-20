@@ -5,9 +5,9 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**response** | **str** |  | 
-**conversation_history** | **List[Dict[str, str]]** |  | 
+**artist_id** | **str** |  |
+**response** | **str** |  |
+**conversation_history** | **List[Dict[str, str]]** |  |
 
 ## Example
 
@@ -27,5 +27,3 @@ advice_response_dict = advice_response_instance.to_dict()
 advice_response_from_dict = AdviceResponse.from_dict(advice_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

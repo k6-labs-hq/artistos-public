@@ -85,5 +85,3 @@ class PreSignatureContractReviewRequest(BaseModel):
             "contract_text": obj.get("contract_text")
         })
         return _obj
-
-

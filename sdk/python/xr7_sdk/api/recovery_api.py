@@ -8310,5 +8310,3 @@ class RecoveryApi:
             _host=_host,
             _request_auth=_request_auth
         )
-
-

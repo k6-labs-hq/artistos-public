@@ -5,12 +5,12 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**artist_id** | **str** |  | 
-**source_type** | [**ReviewSourceType**](ReviewSourceType.md) |  | 
-**source_id** | **str** |  | [optional] 
-**reason** | **str** |  | 
+**artist_id** | **str** |  |
+**source_type** | [**ReviewSourceType**](ReviewSourceType.md) |  |
+**source_id** | **str** |  | [optional]
+**reason** | **str** |  |
 **priority_score** | **float** |  | [optional] [default to 0.0]
-**payload** | **Dict[str, object]** |  | [optional] 
+**payload** | **Dict[str, object]** |  | [optional]
 
 ## Example
 
@@ -30,5 +30,3 @@ create_review_item_request_dict = create_review_item_request_instance.to_dict()
 create_review_item_request_from_dict = CreateReviewItemRequest.from_dict(create_review_item_request_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

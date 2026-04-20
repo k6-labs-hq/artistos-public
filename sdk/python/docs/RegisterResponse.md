@@ -5,11 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**session_id** | **str** |  | 
-**message** | **str** |  | 
-**expires_in_seconds** | **int** |  | 
-**dev_phone_otp** | **str** |  | [optional] 
-**dev_email_otp** | **str** |  | [optional] 
+**session_id** | **str** |  |
+**message** | **str** |  |
+**expires_in_seconds** | **int** |  |
+**dev_phone_otp** | **str** |  | [optional]
+**dev_email_otp** | **str** |  | [optional]
 
 ## Example
 
@@ -29,5 +29,3 @@ register_response_dict = register_response_instance.to_dict()
 register_response_from_dict = RegisterResponse.from_dict(register_response_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
-
-

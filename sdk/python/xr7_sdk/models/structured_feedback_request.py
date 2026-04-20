@@ -206,5 +206,3 @@ class StructuredFeedbackRequest(BaseModel):
             "payload": obj.get("payload")
         })
         return _obj
-
-
