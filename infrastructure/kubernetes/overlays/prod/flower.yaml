@@ -1,0 +1,205 @@
+---
+# Celery Flower: Real-time Celery task monitoring dashboard
+# Issue #11: Flower Deployment for Production
+#
+# What: Celery Flower provides visibility into task queue health:
+# - Task success/failure rates
+# - Worker pool utilization
+# - Active/scheduled/failed tasks
+# - Worker status and ping diagnostics
+#
+# Why: Operational transparency for debugging delayed jobs, stuck workers,
+# and recovery pipeline bottlenecks.
+#
+# Security:
+# - Protected by basic auth (FLOWER_BASIC_AUTH env var)
+# - Not exposed to internet (internal-only ingress or port-forward)
+# - Read-only access to task metadata
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xr7-flower
+  namespace: xr7
+  labels:
+    app: xr7-flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xr7-flower
+  template:
+    metadata:
+      labels:
+        app: xr7-flower
+    spec:
+      serviceAccountName: xr7-workload
+      containers:
+        - name: flower
+          image: ghcr.io/mkallberg21/artistos:latest
+          imagePullPolicy: Always
+          command: 
+            - celery
+            - -A
+            - XR7.celery_app:celery_app
+            - flower
+            - --port=5555
+            - --broker=$(CELERY_BROKER_URL)
+            - --basic_auth=$(FLOWER_BASIC_AUTH)
+          ports:
+            - name: flower
+              containerPort: 5555
+              protocol: TCP
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: xr7-runtime-secrets
+                  key: celery_broker_url
+            - name: FLOWER_BASIC_AUTH
+              valueFrom:
+                secretKeyRef:
+                  name: xr7-runtime-secrets
+                  key: flower_basic_auth  # Format: "username:password"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 5555
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /healthcheck
+              port: 5555
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xr7-flower
+  namespace: xr7
+  labels:
+    app: xr7-flower
+spec:
+  type: ClusterIP
+  selector:
+    app: xr7-flower
+  ports:
+    - name: flower
+      port: 5555
+      targetPort: 5555
+      protocol: TCP
+---
+# Optional: Ingress for internal-only access
+# Uncomment and configure for your environment
+#
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: xr7-flower-ingress
+#   namespace: xr7
+#   annotations:
+#     # Use cert-manager for TLS
+#     cert-manager.io/cluster-issuer: "letsencrypt-prod"
+#     # Restrict to internal IPs only
+#     nginx.ingress.kubernetes.io/whitelist-source-range: "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
+# spec:
+#   ingressClassName: nginx
+#   tls:
+#     - hosts:
+#         - flower.internal.xr7.ai
+#       secretName: flower-tls
+#   rules:
+#     - host: flower.internal.xr7.ai
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: xr7-flower
+#                 port:
+#                   number: 5555
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xr7-flower
+  namespace: xr7
+  labels:
+    app: xr7-flower
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xr7-flower
+  template:
+    metadata:
+      labels:
+        app: xr7-flower
+    spec:
+      serviceAccountName: xr7-workload
+      containers:
+        - name: flower
+          image: ghcr.io/mkallberg21/artistos:latest
+          imagePullPolicy: Always
+          command:
+            - celery
+            - -A
+            - XR7.celery_app:celery_app
+            - flower
+            - --address=0.0.0.0
+            - --port=5555
+            - --persistent=False
+          ports:
+            - containerPort: 5555
+              name: http
+          envFrom:
+            - secretRef:
+                name: xr7-runtime-secrets
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 5555
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 5555
+            initialDelaySeconds: 30
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xr7-flower
+  namespace: xr7
+  labels:
+    app: xr7-flower
+spec:
+  type: ClusterIP
+  selector:
+    app: xr7-flower
+  ports:
+    - name: http
+      port: 5555
+      targetPort: 5555

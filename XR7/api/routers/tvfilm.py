@@ -223,7 +223,7 @@ async def tvfilm_ingestion_preview(file: UploadFile = File(...)):
 async def tvfilm_ingestion_commit(
     artist_id: str, file: UploadFile = File(...), db: Session = Depends(get_db)
 ):
-    artist = _artist_or_404(db, artist_id)
+    artist = get_artist_or_404(artist_id, db)
     raw = await file.read()
     file_hash = hashlib.sha256(raw).hexdigest()
     preview = parse_statement_preview(raw, filename=file.filename or "upload.csv")

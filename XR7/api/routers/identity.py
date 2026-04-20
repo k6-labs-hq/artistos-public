@@ -48,7 +48,7 @@ def auto_match_identity(
     db: Session = Depends(get_db),
     _: dict = Depends(require_artist_access),
 ) -> ArtistIdentityMatchSchema:
-    artist = _artist_or_404(db, artist_id)
+    artist = get_artist_or_404(artist_id, db)
 
     statement = None
     if payload.statement_id:
