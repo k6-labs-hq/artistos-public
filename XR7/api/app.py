@@ -30,6 +30,7 @@ from XR7.api.routers import (
     recovery,
     widget,
 )
+from XR7.api.routers import audit_rights as audit_rights_router
 from XR7.api.routers import auth as auth_router
 from XR7.api.routers import b2b as b2b_router
 from XR7.api.routers import batch_ingestion as batch_ingestion_router
@@ -40,6 +41,7 @@ from XR7.api.routers import branding as branding_router
 from XR7.api.routers import case_rooms as case_rooms_router
 from XR7.api.routers import catalog_health as catalog_health_router
 from XR7.api.routers import catalog_value as catalog_value_router
+from XR7.api.routers import charts as charts_router
 from XR7.api.routers import class_action as class_action_router
 from XR7.api.routers import collaborator_share as collaborator_share_router
 from XR7.api.routers import concierge as concierge_router
@@ -54,6 +56,7 @@ from XR7.api.routers import data_residency as data_residency_router
 from XR7.api.routers import earnings_time_machine as earnings_time_machine_router
 from XR7.api.routers import enterprise_analysis as enterprise_analysis_router
 from XR7.api.routers import expansion as expansion_router
+from XR7.api.routers import exports as exports_router
 from XR7.api.routers import fetchers as fetchers_router
 from XR7.api.routers import fingerprinting as fingerprinting_router
 from XR7.api.routers import forensic as forensic_router
@@ -67,6 +70,7 @@ from XR7.api.routers import llm_recovery as llm_recovery_router
 from XR7.api.routers import messages as messages_router
 from XR7.api.routers import ml_suite as ml_suite_router
 from XR7.api.routers import notifications as notifications_router
+from XR7.api.routers import oauth_connectors as oauth_connectors_router
 from XR7.api.routers import observability as observability_router
 from XR7.api.routers import onboarding as onboarding_router
 from XR7.api.routers import payer_health as payer_health_router
@@ -80,6 +84,7 @@ from XR7.api.routers import slo as slo_router
 from XR7.api.routers import sovereignty as sovereignty_router
 from XR7.api.routers import support as support_router
 from XR7.api.routers import team as team_router
+from XR7.api.routers import team_management as team_management_router
 from XR7.api.routers import terms as terms_router
 from XR7.api.routers import transparency as transparency_router
 from XR7.api.routers import trolley as trolley_router
@@ -465,6 +470,11 @@ app.include_router(catalog_value_router.router)
 app.include_router(recovery_credit_score_router.router)
 app.include_router(collaborator_share_router.router)
 app.include_router(observability_router.router)
+app.include_router(exports_router.router)
+app.include_router(charts_router.router)
+app.include_router(oauth_connectors_router.router)
+app.include_router(team_management_router.router)
+app.include_router(audit_rights_router.router)
 
 
 @app.get(
