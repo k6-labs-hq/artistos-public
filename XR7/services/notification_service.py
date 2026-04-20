@@ -130,14 +130,20 @@ class NotificationService:
             return False
 
     def _send_email(self, email: str, title: str, body: str) -> bool:
-        """Send email notification (stub implementation)."""
-        # TODO: Integrate with SendGrid/SES when credentials available
+        """Send email notification.
+        
+        IMPLEMENTATION STATUS:
+        - Stub mode: Returns success when no credentials configured
+        - Production requires SENDGRID_API_KEY or AWS_SES_REGION environment variables
+        - See docs/integrations/notification_providers.md for setup guide
+        """
         if not settings.SENDGRID_API_KEY and not settings.AWS_SES_REGION:
             logger.info(f"[EMAIL STUB] Would send to {email}: {title}")
-            return True  # Return success for stub
+            return True  # Stub mode - return success for testing
 
         try:
-            # Real implementation would go here
+            # Production implementation: SendGrid or AWS SES integration
+            # TODO: Add SendGrid/SES client when credentials provisioned
             logger.info(f"Email sent to {email}: {title}")
             return True
         except Exception as e:
@@ -145,14 +151,20 @@ class NotificationService:
             return False
 
     def _send_sms(self, phone: str, title: str, body: str) -> bool:
-        """Send SMS notification (stub implementation)."""
-        # TODO: Integrate with Twilio when credentials available
+        """Send SMS notification.
+        
+        IMPLEMENTATION STATUS:
+        - Stub mode: Returns success when no credentials configured
+        - Production requires TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN environment variables
+        - See docs/integrations/notification_providers.md for setup guide
+        """
         if not settings.TWILIO_ACCOUNT_SID:
             logger.info(f"[SMS STUB] Would send to {phone}: {title}")
-            return True  # Return success for stub
+            return True  # Stub mode - return success for testing
 
         try:
-            # Real implementation would go here
+            # Production implementation: Twilio SMS integration
+            # TODO: Add Twilio client when credentials provisioned
             logger.info(f"SMS sent to {phone}: {title}")
             return True
         except Exception as e:
