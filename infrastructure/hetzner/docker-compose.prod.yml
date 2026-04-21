@@ -1,0 +1,83 @@
+# Production Compose stack — Hetzner (and re-deployable elsewhere).
+#
+# Keep vendor-neutral: every service here runs identically on AWS EC2,
+# DigitalOcean Droplet, or bare metal. For AWS ECS deploy, translate each
+# service to a Task Definition — see ../PORTABILITY.md.
+#
+# Secrets and config come from .env.prod (gitignored). Never commit it.
+
+services:
+  api:
+    image: ghcr.io/k6-labs-hq/artistos:latest
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      XR7_ENV: production
+    command: uvicorn XR7.api.app:app --host 0.0.0.0 --port 8000 --workers 2
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - xr7
+
+  worker:
+    image: ghcr.io/k6-labs-hq/artistos:latest
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      XR7_ENV: production
+    command: celery -A XR7.celery_app:celery_app worker --loglevel=INFO --concurrency=2
+    depends_on:
+      - redis
+    networks:
+      - xr7
+
+  scheduler:
+    image: ghcr.io/k6-labs-hq/artistos:latest
+    restart: unless-stopped
+    env_file: .env.prod
+    environment:
+      XR7_ENV: production
+    command: celery -A XR7.celery_app:celery_app beat --loglevel=INFO
+    depends_on:
+      - redis
+    networks:
+      - xr7
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - xr7
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+    networks:
+      - xr7
+
+volumes:
+  redis_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  xr7:
+    driver: bridge
