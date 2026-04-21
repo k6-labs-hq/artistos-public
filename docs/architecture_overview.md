@@ -1,5 +1,8 @@
 # XR7 Engine 2 Architecture Overview
 
+> **Superseded by [`docs/architecture/`](architecture/README.md).**
+> Start at [`docs/architecture/README.md`](architecture/README.md). The content below is retained for historical reference.
+
 XR7 Engine 2 is a FastAPI + SQLAlchemy + Celery platform for artist royalty recovery.
 
 ## Core Layers

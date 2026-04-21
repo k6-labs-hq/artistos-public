@@ -1,5 +1,12 @@
 # XR7 Architecture Diagrams
 
+> **Superseded by [`docs/architecture/`](architecture/README.md).**
+> The current C4 L1 diagram lives in [`docs/architecture/01-system-context.md`](architecture/01-system-context.md); the C4 L2 container diagram is in [`docs/architecture/02-containers.md`](architecture/02-containers.md); data-flow sequence diagrams are in [`docs/architecture/04-data-flows.md`](architecture/04-data-flows.md).
+>
+> The diagrams below are kept for historical reference and may drift from reality.
+
+---
+
 All diagrams use [Mermaid](https://mermaid.js.org/) syntax. Render in GitHub, Obsidian, or any Mermaid-compatible viewer.
 
 ---
