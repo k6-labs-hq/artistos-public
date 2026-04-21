@@ -28,6 +28,9 @@ class Artist(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     role: Mapped[str | None] = mapped_column(String, nullable=True)
+    supabase_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True, unique=True, index=True
+    )
     ipi_number: Mapped[str | None] = mapped_column(String, nullable=True)
     stage_names: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
