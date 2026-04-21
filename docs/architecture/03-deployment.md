@@ -1,14 +1,15 @@
-# 03 — Deployment (AWS)
+# 03 — Deployment
 
-> **Status: TARGET.** This doc describes the intended production topology. It is **not yet built.** Tracked in [EPIC #102](https://github.com/k6-labs-hq/ArtistOS/issues/102). Update this file as #102 sub-issues land.
-
-Today ArtistOS runs only in local Compose. This doc specifies the AWS topology we're building toward so that any engineer contributing to #102 can do so in a coherent direction.
+> **Status: TARGET.** Deployment is being built out. See [EPIC #102](https://github.com/k6-labs-hq/ArtistOS/issues/102).
+>
+> **Current direction (2026-04-21): Hetzner for MVP, AWS-portable.** Per [cloud provider evaluation](../decisions/cloud-provider-evaluation.md). The Hetzner deployment layer lives in [`infrastructure/hetzner/`](../../infrastructure/hetzner/). Portability to AWS preserved via [`infrastructure/PORTABILITY.md`](../../infrastructure/PORTABILITY.md). This doc retains the AWS target topology as a reference for the future migration.
 
 ## Rationale (why this stack)
 
-- **ECS Fargate over Kubernetes** — at MVP scale, EKS is overkill. Fargate removes cluster-level ops entirely.
-- **RDS Multi-AZ** — royalty data is financial; we need automated backups and point-in-time recovery from day one.
-- **Supabase for auth, not Cognito** — already decided in [#99](https://github.com/k6-labs-hq/ArtistOS/issues/99). Auth is not deployed in AWS; Supabase is a managed SaaS boundary. See [06-identity](06-identity.md).
+- **Hetzner over AWS for MVP** — 5–7× cheaper at comparable specs, EU hosting simplifies GDPR, portable to AWS when scale or enterprise deals demand it. Trigger criteria in the [cloud provider evaluation](../decisions/cloud-provider-evaluation.md).
+- **Docker Compose over Kubernetes** — single VM is enough at MVP. Translates directly to ECS Task Definitions or Cloud Run on migration.
+- **Managed Postgres everywhere** — royalty data is financial; automated backups and point-in-time recovery are non-negotiable. Hetzner Managed Postgres today, RDS on migration.
+- **Supabase for auth, not Cognito** — already decided in [#99](https://github.com/k6-labs-hq/ArtistOS/issues/99). Auth is a SaaS boundary and stays identical across clouds. See [06-identity](06-identity.md).
 
 ## Target topology
 

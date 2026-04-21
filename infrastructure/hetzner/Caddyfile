@@ -1,0 +1,35 @@
+# Caddy production config for ArtistOS.
+# Caddy auto-issues Let's Encrypt TLS certificates on first request.
+# Swap ${DOMAIN} via environment substitution at container start,
+# or hardcode your real domain below.
+
+{$DOMAIN:localhost} {
+	# Enforce HTTPS
+	encode gzip zstd
+
+	# Security headers
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		# CORS handled in FastAPI — do not double it here
+		-Server
+	}
+
+	# Optional: basic rate limit at the edge (per-IP)
+	# Uncomment if you install the caddy-ratelimit plugin.
+	# rate_limit {
+	# 	zone api_burst {
+	# 		key {remote_host}
+	# 		events 100
+	# 		window 1m
+	# 	}
+	# }
+
+	reverse_proxy api:8000 {
+		health_uri /health
+		health_interval 30s
+		health_timeout 5s
+	}
+}
