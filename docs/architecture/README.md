@@ -21,6 +21,7 @@ Canonical reference architecture for ArtistOS. Read in order if you're new; jump
 | 06 | [Identity & auth](06-identity.md) | Target | [#100](https://github.com/k6-labs-hq/ArtistOS/issues/100), [#101](https://github.com/k6-labs-hq/ArtistOS/issues/101) |
 | 07 | [Observability](07-observability.md) | Target | [#94](https://github.com/k6-labs-hq/ArtistOS/issues/94)-[#98](https://github.com/k6-labs-hq/ArtistOS/issues/98) |
 | 08 | [Security boundaries](08-security-boundaries.md) | Current | — |
+| 09 | [**Production readiness checklist**](09-production-readiness.md) | Gate | — |
 
 ## Conventions
 
