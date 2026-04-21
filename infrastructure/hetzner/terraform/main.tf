@@ -31,32 +31,12 @@ provider "hcloud" {
   # HCLOUD_TOKEN env var
 }
 
-variable "environment" {
-  description = "Environment name (prod, staging)"
-  type        = string
-  default     = "prod"
-}
-
-variable "location" {
-  description = "Hetzner datacenter location"
-  type        = string
-  default     = "fsn1" # Falkenstein, Germany
-}
-
-variable "server_type" {
-  description = "VM size"
-  type        = string
-  default     = "cpx21" # 3 vCPU, 4GB RAM, 80GB SSD
-}
-
-variable "ssh_key_names" {
-  description = "Names of SSH keys already uploaded to Hetzner console"
-  type        = list(string)
-}
+# variables.tf defines: environment, location, server_type, ssh_key_names, domain
+# locals: fqdn_api, fqdn_frontend, resource_name, private_subnet
 
 # Private network for app ↔ DB ↔ storage traffic
 resource "hcloud_network" "xr7" {
-  name     = "xr7-${var.environment}"
+  name     = local.resource_name
   ip_range = "10.0.0.0/16"
 }
 
@@ -64,12 +44,12 @@ resource "hcloud_network_subnet" "xr7_private" {
   network_id   = hcloud_network.xr7.id
   type         = "cloud"
   network_zone = "eu-central"
-  ip_range     = "10.0.1.0/24"
+  ip_range     = local.private_subnet
 }
 
 # Firewall: only 22 + 80 + 443 open to the world
 resource "hcloud_firewall" "xr7" {
-  name = "xr7-${var.environment}"
+  name = local.resource_name
 
   rule {
     direction = "in"
@@ -98,7 +78,8 @@ resource "hcloud_firewall" "xr7" {
 
 # App VM
 resource "hcloud_server" "xr7_app" {
-  name        = "xr7-${var.environment}-app"
+  name        = "${local.resource_name}-app"
+  # NB: SSH key list is the main access-control lever. For prod, restrict to admins only.
   image       = "ubuntu-24.04"
   server_type = var.server_type
   location    = var.location
@@ -139,7 +120,7 @@ resource "hcloud_server" "xr7_app" {
 
 # Load balancer in front of the VM (enables zero-downtime deploys + easy scale-out later)
 resource "hcloud_load_balancer" "xr7" {
-  name               = "xr7-${var.environment}"
+  name               = local.resource_name
   load_balancer_type = "lb11"
   location           = var.location
 }

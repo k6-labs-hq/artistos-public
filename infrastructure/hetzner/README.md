@@ -1,6 +1,16 @@
 # Hetzner Deployment
 
-Production deployment path for ArtistOS. Vendor-neutral at the app layer (Docker Compose) with a thin Hetzner-specific infrastructure layer. Portable to AWS — see [`../PORTABILITY.md`](../PORTABILITY.md).
+Deployment path for ArtistOS QA and production. Vendor-neutral at the app layer (Docker Compose) with a thin Hetzner-specific infrastructure layer. Portable to AWS — see [`../PORTABILITY.md`](../PORTABILITY.md). Access control per [`docs/decisions/access-policy.md`](../../docs/decisions/access-policy.md).
+
+## Environments
+
+| Environment | Where | Domain | Deploy trigger |
+|-------------|-------|--------|----------------|
+| **local** | your laptop (podman + docker-compose) | `localhost` | manual |
+| **qa** | Hetzner VM `xr7-qa-app` | `api.qa.k6-labs.com` | auto on push to `main` |
+| **prod** | Hetzner VM `xr7-prod-app` | `api.k6-labs.com` | `workflow_dispatch` + admin approval on the `prod` GitHub Environment |
+
+Both Hetzner VMs live in the same Hetzner project (`artistos`), separate from the `trivia` project.
 
 ## Architecture
 
@@ -34,31 +44,40 @@ Supabase (auth), Trolley (payouts), Sentry (errors), and the LLM provider are se
 4. **GitHub Container Registry access** for pulling the xr7-api image.
 5. **Secrets populated**: Supabase JWT secret, Trolley API key, JWT signing secret, DB credentials.
 
-## First-time deployment
+## First-time provisioning (per environment)
 
 ```bash
-# 1. Provision infra via Terraform
+# 1. Provision infra via Terraform (run once for QA, once for prod)
 cd infrastructure/hetzner/terraform
 export HCLOUD_TOKEN=<your-token>
 terraform init
-terraform apply   # creates VM, firewall, Postgres, Object Storage
 
-# 2. SSH to the VM (IP printed in Terraform output)
+# QA environment
+terraform workspace new qa
+terraform apply -var environment=qa -var 'ssh_key_names=["jason-admin","matt-admin","dev-ops"]'
+
+# Prod environment — admin SSH keys ONLY
+terraform workspace new prod
+terraform apply -var environment=prod -var 'ssh_key_names=["jason-admin","matt-admin"]'
+
+# 2. Point DNS at the load balancer IPs from terraform output
+#    api.qa.k6-labs.com  → <qa-lb-ipv4>
+#    api.k6-labs.com     → <prod-lb-ipv4>
+
+# 3. SSH to each VM, bootstrap
 ssh root@<vm-ip>
-
-# 3. Clone repo
 git clone https://github.com/k6-labs-hq/ArtistOS.git /opt/artistos
 cd /opt/artistos/infrastructure/hetzner
 
-# 4. Populate production .env
-cp .env.prod.example .env.prod
-vi .env.prod   # paste real secrets
+# 4. Populate environment file
+cp .env.qa.example .env.qa       # (or .env.prod.example .env.prod)
+vi .env.qa                       # paste real secrets
 
 # 5. First deploy
 bash deploy.sh
 
 # 6. Verify
-curl https://api.your-domain.com/health
+curl https://api.qa.k6-labs.com/health
 ```
 
 ## Day-two operations

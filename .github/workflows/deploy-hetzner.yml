@@ -1,0 +1,162 @@
+name: Deploy → Hetzner
+
+# Deploys ArtistOS to Hetzner.
+# - Push to main → auto-deploys to QA
+# - Deploy to PROD requires manual workflow_dispatch + approval on the "prod" GitHub Environment
+#
+# Required GitHub Environment secrets (scope each to its environment):
+#   HETZNER_SSH_KEY    — private key for deploy user on the VM
+#   HETZNER_HOST       — IP or hostname of the Hetzner VM
+#   HETZNER_USER       — SSH user (default: deploy)
+#
+# Required GitHub Environment variables:
+#   DEPLOY_DOMAIN      — api.qa.k6-labs.com (qa) / api.k6-labs.com (prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: "Target environment"
+        type: choice
+        options: [qa, prod]
+        default: qa
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+
+concurrency:
+  group: deploy-hetzner-${{ inputs.target_environment || 'qa' }}
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    name: Build + push image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image_sha_tag: sha-${{ github.sha }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-qa:
+    name: Deploy → QA
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    # Only auto-deploy QA on push; manual dispatch targets whatever was selected.
+    if: >-
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && inputs.target_environment == 'qa')
+    environment:
+      name: qa
+      url: https://api.qa.k6-labs.com
+    steps:
+      - name: Check secrets present
+        id: check
+        run: |
+          if [[ -z "${{ secrets.HETZNER_SSH_KEY }}" || -z "${{ secrets.HETZNER_HOST }}" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "WARNING: QA secrets not configured — skipping"
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy over SSH
+        if: steps.check.outputs.skip != 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER || 'deploy' }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/artistos
+            git fetch origin main
+            git reset --hard origin/main
+            cd infrastructure/hetzner
+            bash deploy.sh
+
+      - name: Smoke test
+        if: steps.check.outputs.skip != 'true'
+        run: |
+          sleep 10
+          curl -fsS --max-time 15 "https://${{ vars.DEPLOY_DOMAIN }}/health" \
+            || (echo "QA smoke test failed" >&2; exit 1)
+          echo "QA deployed and healthy."
+
+  deploy-prod:
+    name: Deploy → Prod (requires approval)
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    # Prod is manual-only. The "prod" GitHub Environment must have required reviewers configured.
+    if: >-
+      github.event_name == 'workflow_dispatch' && inputs.target_environment == 'prod'
+    environment:
+      name: prod
+      url: https://api.k6-labs.com
+    steps:
+      - name: Check secrets present
+        id: check
+        run: |
+          if [[ -z "${{ secrets.HETZNER_SSH_KEY }}" || -z "${{ secrets.HETZNER_HOST }}" ]]; then
+            echo "ERROR: prod secrets missing" >&2
+            exit 1
+          fi
+          echo "ok=true" >> $GITHUB_OUTPUT
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER || 'deploy' }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          script: |
+            set -euo pipefail
+            cd /opt/artistos
+            git fetch origin main
+            git reset --hard origin/main
+            cd infrastructure/hetzner
+            bash deploy.sh
+
+      - name: Smoke test
+        run: |
+          sleep 10
+          curl -fsS --max-time 15 "https://${{ vars.DEPLOY_DOMAIN }}/health" \
+            || (echo "Prod smoke test failed" >&2; exit 1)
+          echo "Prod deployed and healthy."
