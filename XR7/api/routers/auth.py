@@ -10,6 +10,10 @@ from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
 from XR7.auth.jwt_service import JWTValidationError, jwt_service
+from XR7.auth.supabase import (
+    get_supabase_claims,
+    resolve_artist_from_claims,
+)
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
 
@@ -247,3 +251,58 @@ def auth_me(
             "expires_at": payload.get("exp"),
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Supabase Auth — exchanges a Supabase JWT for an XR7 session token.
+# Stub endpoint while we migrate off the legacy artist_login flow.
+# ---------------------------------------------------------------------------
+
+
+@router.post(
+    "/auth/supabase/exchange",
+    response_model=TokenResponse,
+    openapi_extra={
+        "responses": {
+            "200": {"description": "XR7 access token for the linked Artist"},
+            "401": {"description": "Invalid or expired Supabase token"},
+            "403": {"description": "Supabase user not linked to an XR7 Artist"},
+            "503": {"description": "SUPABASE_JWT_SECRET not configured"},
+        }
+    },
+)
+def supabase_exchange(
+    supabase_claims: dict[str, Any] = Depends(get_supabase_claims),
+    db: Session = Depends(get_db),
+) -> TokenResponse:
+    """Verify a Supabase JWT, look up the linked Artist, and issue an XR7 token.
+
+    This is the authentication path for MVP. Clients authenticate via Supabase
+    (email+password, magic link, OAuth), then POST the Supabase access token here
+    to get an XR7-signed token that the rest of the API accepts.
+    """
+    artist = resolve_artist_from_claims(supabase_claims, db)
+    if artist is None:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Supabase user is not linked to an XR7 Artist. " "Pre-onboarding required for MVP."
+            ),
+        )
+
+    # Back-fill the link if we resolved by email.
+    if not getattr(artist, "supabase_user_id", None):
+        artist.supabase_user_id = str(supabase_claims.get("sub") or "") or None
+        db.commit()
+
+    token = jwt_service.issue_token(
+        subject=artist.id,
+        role="artist",
+        extra={
+            "artist_id": artist.id,
+            "artist_email": artist.email,
+            "tenant_id": _DEFAULT_TENANT_ID,
+            "supabase_user_id": str(supabase_claims.get("sub") or ""),
+        },
+    )
+    return TokenResponse(access_token=token, expires_in_seconds=jwt_service.access_ttl_minutes * 60)
