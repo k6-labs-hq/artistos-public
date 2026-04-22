@@ -18496,7 +18496,7 @@
     },
     "/artists/{artist_id}/charts/earnings-trend": {
       "get": {
-        "description": "Get earnings trend over time for line chart visualization.\n\nFeature #7: Dashboard Charts\n\nReturns daily aggregated earnings for the specified lookback period.\n\nArgs:\n    artist_id: Artist identifier\n    days: Lookback period in days (1-365, default: 90)\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Date strings (YYYY-MM-DD)\n    - datasets: Single dataset with daily earnings\n    - metadata: Summary statistics\n\nExample:\n    GET /artists/art_123/charts/earnings-trend?days=90\n    \n    Response:\n    {\n        \"labels\": [\"2026-01-01\", \"2026-01-02\", ...],\n        \"datasets\": [{\n            \"label\": \"Earnings\",\n            \"data\": [1250.50, 980.25, ...]\n        }],\n        \"metadata\": {\n            \"period_days\": 90,\n            \"total_earnings\": 125000.50,\n            \"data_points\": 45\n        }\n    }\n\nPerformance:\n    - p95 < 200ms for typical artist (90 days)\n    - Cached queries recommended for production\n    - Uses date truncation and aggregation\n\nResponsive:\n    - Works on mobile (reduced data points if needed)\n    - Desktop shows full granularity",
+        "description": "Get earnings trend over time for line chart visualization.\n\nFeature #7: Dashboard Charts\n\nReturns daily aggregated earnings for the specified lookback period.\n\nArgs:\n    artist_id: Artist identifier\n    days: Lookback period in days (1-365, default: 90)\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Date strings (YYYY-MM-DD)\n    - datasets: Single dataset with daily earnings\n    - metadata: Summary statistics\n\nExample:\n    GET /artists/art_123/charts/earnings-trend?days=90\n\n    Response:\n    {\n        \"labels\": [\"2026-01-01\", \"2026-01-02\", ...],\n        \"datasets\": [{\n            \"label\": \"Earnings\",\n            \"data\": [1250.50, 980.25, ...]\n        }],\n        \"metadata\": {\n            \"period_days\": 90,\n            \"total_earnings\": 125000.50,\n            \"data_points\": 45\n        }\n    }\n\nPerformance:\n    - p95 < 200ms for typical artist (90 days)\n    - Cached queries recommended for production\n    - Uses date truncation and aggregation\n\nResponsive:\n    - Works on mobile (reduced data points if needed)\n    - Desktop shows full granularity",
         "operationId": "earnings_trend_chart_artists__artist_id__charts_earnings_trend_get",
         "parameters": [
           {
@@ -18551,7 +18551,7 @@
     },
     "/artists/{artist_id}/charts/leakage-by-category": {
       "get": {
-        "description": "Get leakage breakdown by anomaly category for pie/bar chart.\n\nFeature #7: Dashboard Charts\n\nShows estimated recoverable amounts grouped by anomaly category.\nOnly includes open/investigating anomalies.\n\nArgs:\n    artist_id: Artist identifier\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Category names (ROYALTY, PLATFORM, SYNC, etc.)\n    - datasets: Single dataset with recoverable amounts\n    - backgroundColor: Category-specific colors\n    - metadata: Summary statistics\n\nExample:\n    GET /artists/art_123/charts/leakage-by-category\n    \n    Response:\n    {\n        \"labels\": [\"ROYALTY\", \"PLATFORM\", \"SYNC\"],\n        \"datasets\": [{\n            \"label\": \"Estimated Recoverable\",\n            \"data\": [15000, 8500, 3200],\n            \"backgroundColor\": [\"#FF6384\", \"#36A2EB\", \"#FFCE56\"]\n        }],\n        \"metadata\": {\n            \"total_recoverable\": 26700,\n            \"category_count\": 3\n        }\n    }\n\nPerformance:\n    - p95 < 100ms (simple GROUP BY)\n    - Indexed on (artist_id, category, status)\n\nVisualization:\n    - Mobile: Pie chart (compact)\n    - Desktop: Bar chart (more detail)",
+        "description": "Get leakage breakdown by anomaly category for pie/bar chart.\n\nFeature #7: Dashboard Charts\n\nShows estimated recoverable amounts grouped by anomaly category.\nOnly includes open/investigating anomalies.\n\nArgs:\n    artist_id: Artist identifier\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Category names (ROYALTY, PLATFORM, SYNC, etc.)\n    - datasets: Single dataset with recoverable amounts\n    - backgroundColor: Category-specific colors\n    - metadata: Summary statistics\n\nExample:\n    GET /artists/art_123/charts/leakage-by-category\n\n    Response:\n    {\n        \"labels\": [\"ROYALTY\", \"PLATFORM\", \"SYNC\"],\n        \"datasets\": [{\n            \"label\": \"Estimated Recoverable\",\n            \"data\": [15000, 8500, 3200],\n            \"backgroundColor\": [\"#FF6384\", \"#36A2EB\", \"#FFCE56\"]\n        }],\n        \"metadata\": {\n            \"total_recoverable\": 26700,\n            \"category_count\": 3\n        }\n    }\n\nPerformance:\n    - p95 < 100ms (simple GROUP BY)\n    - Indexed on (artist_id, category, status)\n\nVisualization:\n    - Mobile: Pie chart (compact)\n    - Desktop: Bar chart (more detail)",
         "operationId": "leakage_by_category_chart_artists__artist_id__charts_leakage_by_category_get",
         "parameters": [
           {
@@ -18592,7 +18592,7 @@
     },
     "/artists/{artist_id}/charts/recovery-trajectory": {
       "get": {
-        "description": "Get recoverable vs recovered trajectory over time for line chart.\n\nFeature #7: Dashboard Charts\n\nShows two cumulative trend lines:\n- Total recoverable (from anomalies detected)\n- Total recovered (from claims paid out)\n\nArgs:\n    artist_id: Artist identifier\n    days: Lookback period in days (1-730, default: 180)\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Month strings (YYYY-MM)\n    - datasets: Two datasets (recoverable, recovered)\n    - metadata: Summary with recovery rate\n\nExample:\n    GET /artists/art_123/charts/recovery-trajectory?days=180\n    \n    Response:\n    {\n        \"labels\": [\"2026-01\", \"2026-02\", \"2026-03\"],\n        \"datasets\": [\n            {\n                \"label\": \"Total Recoverable\",\n                \"data\": [10000, 25000, 42000],\n                \"borderColor\": \"rgb(255, 99, 132)\"\n            },\n            {\n                \"label\": \"Total Recovered\",\n                \"data\": [2000, 8500, 18500],\n                \"borderColor\": \"rgb(75, 192, 192)\"\n            }\n        ],\n        \"metadata\": {\n            \"period_days\": 180,\n            \"total_recoverable\": 42000,\n            \"total_recovered\": 18500,\n            \"recovery_rate\": 0.44\n        }\n    }\n\nPerformance:\n    - p95 < 300ms (two queries with monthly bucketing)\n    - Cumulative calculation done in Python\n\nBusiness value:\n    - Shows recovery team effectiveness\n    - Highlights gap between detected and recovered\n    - Recovery rate trend visible over time",
+        "description": "Get recoverable vs recovered trajectory over time for line chart.\n\nFeature #7: Dashboard Charts\n\nShows two cumulative trend lines:\n- Total recoverable (from anomalies detected)\n- Total recovered (from claims paid out)\n\nArgs:\n    artist_id: Artist identifier\n    days: Lookback period in days (1-730, default: 180)\n\nReturns:\n    Chart.js compatible dataset:\n    - labels: Month strings (YYYY-MM)\n    - datasets: Two datasets (recoverable, recovered)\n    - metadata: Summary with recovery rate\n\nExample:\n    GET /artists/art_123/charts/recovery-trajectory?days=180\n\n    Response:\n    {\n        \"labels\": [\"2026-01\", \"2026-02\", \"2026-03\"],\n        \"datasets\": [\n            {\n                \"label\": \"Total Recoverable\",\n                \"data\": [10000, 25000, 42000],\n                \"borderColor\": \"rgb(255, 99, 132)\"\n            },\n            {\n                \"label\": \"Total Recovered\",\n                \"data\": [2000, 8500, 18500],\n                \"borderColor\": \"rgb(75, 192, 192)\"\n            }\n        ],\n        \"metadata\": {\n            \"period_days\": 180,\n            \"total_recoverable\": 42000,\n            \"total_recovered\": 18500,\n            \"recovery_rate\": 0.44\n        }\n    }\n\nPerformance:\n    - p95 < 300ms (two queries with monthly bucketing)\n    - Cumulative calculation done in Python\n\nBusiness value:\n    - Shows recovery team effectiveness\n    - Highlights gap between detected and recovered\n    - Recovery rate trend visible over time",
         "operationId": "recovery_trajectory_chart_artists__artist_id__charts_recovery_trajectory_get",
         "parameters": [
           {
@@ -24590,7 +24590,7 @@
     },
     "/artists/{artist_id}/oauth/callback": {
       "post": {
-        "description": "Handle OAuth callback and exchange code for tokens.\n\nFeature #7: Semi-automated pull fallbacks\n\nExchanges authorization code for access/refresh tokens.\nStores encrypted tokens with automatic refresh scheduling.\n\nArgs:\n    artist_id: Artist identifier\n    payload: OAuth callback data (code, state, redirect_uri)\n\nReturns:\n    PlatformOAuthCredential with connection status\n\nSecurity:\n    - Verifies state token to prevent CSRF\n    - Tokens encrypted at rest\n    - Refresh tokens rotated on each use\n    - Access tokens auto-refreshed before expiration\n\nSECURITY GAP - CSRF Protection:\n    State token verification is currently disabled for MVP.\n    Production deployment requires implementing session-based state validation:\n    \n    1. Generate cryptographically random state token on /oauth/authorize\n    2. Store state in user session (Redis/encrypted cookie)\n    3. Verify state matches session value on callback\n    4. Reject mismatched state tokens (CSRF attack indicator)\n    \n    See: https://tools.ietf.org/html/rfc6749#section-10.12\n    See: docs/security/oauth_csrf_mitigation.md",
+        "description": "Handle OAuth callback and exchange code for tokens.\n\nFeature #7: Semi-automated pull fallbacks\n\nExchanges authorization code for access/refresh tokens.\nStores encrypted tokens with automatic refresh scheduling.\n\nArgs:\n    artist_id: Artist identifier\n    payload: OAuth callback data (code, state, redirect_uri)\n\nReturns:\n    PlatformOAuthCredential with connection status\n\nSecurity:\n    - Verifies state token to prevent CSRF\n    - Tokens encrypted at rest\n    - Refresh tokens rotated on each use\n    - Access tokens auto-refreshed before expiration\n\nSECURITY GAP - CSRF Protection:\n    State token verification is currently disabled for MVP.\n    Production deployment requires implementing session-based state validation:\n\n    1. Generate cryptographically random state token on /oauth/authorize\n    2. Store state in user session (Redis/encrypted cookie)\n    3. Verify state matches session value on callback\n    4. Reject mismatched state tokens (CSRF attack indicator)\n\n    See: https://tools.ietf.org/html/rfc6749#section-10.12\n    See: docs/security/oauth_csrf_mitigation.md",
         "operationId": "oauth_callback_artists__artist_id__oauth_callback_post",
         "parameters": [
           {
@@ -31861,6 +31861,42 @@
         ]
       }
     },
+    "/auth/supabase/exchange": {
+      "post": {
+        "description": "Verify a Supabase JWT, look up the linked Artist, and issue an XR7 token.\n\nThis is the authentication path for MVP. Clients authenticate via Supabase\n(email+password, magic link, OAuth), then POST the Supabase access token here\nto get an XR7-signed token that the rest of the API accepts.",
+        "operationId": "supabase_exchange_auth_supabase_exchange_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenResponse"
+                }
+              }
+            },
+            "description": "XR7 access token for the linked Artist"
+          },
+          "401": {
+            "description": "Invalid or expired Supabase token"
+          },
+          "403": {
+            "description": "Supabase user not linked to an XR7 Artist"
+          },
+          "503": {
+            "description": "SUPABASE_JWT_SECRET not configured"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Supabase Exchange",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/b2b/org/{org_id}/artists/bulk-onboard": {
       "post": {
         "operationId": "bulk_onboard_b2b_org__org_id__artists_bulk_onboard_post",
@@ -33265,46 +33301,6 @@
           }
         },
         "summary": "Get Claim",
-        "tags": [
-          "claims"
-        ]
-      }
-    },
-    "/claims/{claim_id}/activate-agent": {
-      "post": {
-        "operationId": "activate_negotiator_agent_claims__claim_id__activate_agent_post",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "claim_id",
-            "required": true,
-            "schema": {
-              "title": "Claim Id",
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {}
-              }
-            },
-            "description": "Successful Response"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            },
-            "description": "Validation Error"
-          }
-        },
-        "summary": "Activate Negotiator Agent",
         "tags": [
           "claims"
         ]
