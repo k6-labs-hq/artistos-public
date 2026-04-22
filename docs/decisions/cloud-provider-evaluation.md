@@ -279,7 +279,7 @@ Upon decision:
 1. Update [docs/architecture/03-deployment.md](../architecture/03-deployment.md) to reflect chosen provider.
 2. Update [docs/architecture/09-production-readiness.md](../architecture/09-production-readiness.md) — section 6 specifics.
 3. Close out part of [#102](https://github.com/k6-labs-hq/ArtistOS/issues/102) (prod env epic) with the chosen path.
-4. Provision account, set up Terraform (AWS) or Pulumi/Ansible (Hetzner) for IaC.
+4. Provision account, set up Terraform for IaC — same tool works for Hetzner today and AWS later (HCL + `init`/`plan`/`apply` workflow is identical; only the provider stanza changes). Hetzner modules in [infrastructure/hetzner/terraform/](../../infrastructure/hetzner/terraform/); AWS migration path in [infrastructure/PORTABILITY.md](../../infrastructure/PORTABILITY.md).
 5. Deploy staging first, validate the production readiness checklist against it.
 
 **Target to first deployed URL**: 5–7 days after decision, assuming the MVP happy path is working locally (currently not — see section 1 of the production readiness checklist).
