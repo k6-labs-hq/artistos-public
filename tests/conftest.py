@@ -98,11 +98,7 @@ _two_agent_graph.SessionLocal = TestSession
 import XR7.agents.onboarding.catalog_agents as _catalog_agents  # noqa: E402
 import XR7.agents.onboarding.core as _onboarding_core  # noqa: E402
 import XR7.agents.onboarding.enrichment_agents as _enrichment_agents  # noqa: E402
-import XR7.agents.specialized_agents as _specialized_agents  # noqa: E402
-import XR7.agents.vip_persona_agent as _vip_persona_agent  # noqa: E402
 
-_specialized_agents.SessionLocal = TestSession
-_vip_persona_agent.SessionLocal = TestSession
 _catalog_agents.SessionLocal = TestSession
 _enrichment_agents.SessionLocal = TestSession
 _onboarding_core.SessionLocal = TestSession

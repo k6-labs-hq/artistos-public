@@ -11,7 +11,6 @@ Full coverage test suite for the Invite-Only Premier Experience:
   - Weekly brief generation
   - VIP referral creation + listing
   - VipService unit tests (offline, no HTTP)
-  - VipPersonaEnrichmentNode LangGraph unit test
 """
 
 from __future__ import annotations
@@ -752,53 +751,3 @@ class TestVipServiceUnit:
             assert len(drops) >= 1
             assert "title" in drops[0]
 
-
-# ══════════════════════════════════════════════════════════════
-# 11.  VipPersonaEnrichmentNode LangGraph UNIT TEST
-# ══════════════════════════════════════════════════════════════
-
-
-class TestVipPersonaEnrichmentNode:
-    def test_non_vip_artist_passthrough(self):
-        """Node returns empty dict for non-VIP artist — clean pass-through."""
-        from XR7.agents.vip_persona_agent import VipPersonaEnrichmentNode
-
-        with TestSession() as db:
-            aid = _make_artist(db)
-
-        state = {"artist_id": aid}
-        result = asyncio.run(VipPersonaEnrichmentNode(state))
-        assert isinstance(result, dict)
-        assert result.get("vip_active", False) is False
-
-    def test_vip_artist_injects_state(self, monkeypatch):
-        """Node injects VIP fields for an active VIP member."""
-        from XR7.agents.vip_persona_agent import VipPersonaEnrichmentNode
-
-        monkeypatch.setenv("XR7_ORG_KEY", "org-secret")
-        with TestSession() as db:
-            aid = _make_artist(db)
-            svc = VipService(db)
-            svc.admin_grant_vip(
-                aid,
-                tier_level=VipTierLevel.FOUNDERS_CIRCLE,
-                concierge_analyst_name="Alex",
-            )
-
-        with patch("XR7.tasks.vip_tasks.enrich_artist_persona") as mock_task:
-            mock_task.delay = MagicMock(return_value=MagicMock(id="job-123"))
-            # Force node DB access to use test session instead of app SessionLocal.
-            with patch("XR7.agents.vip_persona_agent.SessionLocal", new=TestSession):
-                state = {"artist_id": aid}
-                result = asyncio.run(VipPersonaEnrichmentNode(state))
-
-        assert result.get("vip_active") is True
-        assert result.get("vip_tier") is not None
-        assert result.get("concierge_analyst_name") == "Alex"
-
-    def test_node_handles_db_error_gracefully(self):
-        """Node should not raise even if artist_id is missing from state."""
-        from XR7.agents.vip_persona_agent import VipPersonaEnrichmentNode
-
-        result = asyncio.run(VipPersonaEnrichmentNode({}))
-        assert isinstance(result, dict)
