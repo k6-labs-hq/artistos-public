@@ -10,13 +10,13 @@ variable "environment" {
 variable "location" {
   description = "Hetzner datacenter location"
   type        = string
-  default     = "fsn1" # Falkenstein, Germany
+  default     = "ash" # Ashburn, VA — matches Supabase us-east-1 region
 }
 
 variable "server_type" {
-  description = "VM size (x86). cx23 is the 2026 replacement for the retired CPX21."
+  description = "VM size (x86). cpx21 is the entry-level for US locations (cx23 is EU-only)."
   type        = string
-  default     = "cx23" # 2 vCPU, 4GB RAM, 40GB SSD, €4.99/mo
+  default     = "cpx21" # 3 vCPU, 4GB RAM, 80GB SSD, €13.99/mo
 }
 
 variable "ssh_key_names" {

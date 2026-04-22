@@ -43,7 +43,7 @@ resource "hcloud_network" "xr7" {
 resource "hcloud_network_subnet" "xr7_private" {
   network_id   = hcloud_network.xr7.id
   type         = "cloud"
-  network_zone = "eu-central"
+  network_zone = "us-east"
   ip_range     = local.private_subnet
 }
 
