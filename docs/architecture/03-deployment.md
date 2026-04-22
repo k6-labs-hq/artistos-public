@@ -11,7 +11,95 @@
 - **Managed Postgres everywhere** — royalty data is financial; automated backups and point-in-time recovery are non-negotiable. Hetzner Managed Postgres today, RDS on migration.
 - **Supabase for auth, not Cognito** — already decided in [#99](https://github.com/k6-labs-hq/ArtistOS/issues/99). Auth is a SaaS boundary and stays identical across clouds. See [06-identity](06-identity.md).
 
-## Target topology
+## Current topology (Hetzner, MVP)
+
+```mermaid
+flowchart TB
+    subgraph internet[Public Internet]
+        user[User browser]
+    end
+
+    porkbun[Porkbun DNS<br/>k6-labs.com]
+
+    subgraph hetzner[Hetzner Cloud — xr7 project]
+        lb[Hetzner Load Balancer<br/>TCP 80/443]
+
+        subgraph vm[CPX21 VM — Falkenstein]
+            caddy[Caddy<br/>auto Let's Encrypt]
+            api[xr7-api container]
+            worker[xr7-worker container]
+            scheduler[xr7-scheduler container]
+            redis[(Redis<br/>in-compose)]
+        end
+
+        pg[(Hetzner Managed Postgres)]
+        obj[(Hetzner Object Storage<br/>S3-compatible)]
+    end
+
+    subgraph saas[External SaaS - vendor-neutral]
+        sb[Supabase Auth]
+        tr[Trolley payouts]
+        sentry[Sentry errors]
+        llm[OpenAI / xAI]
+    end
+
+    user --> porkbun
+    porkbun --> lb
+    lb --> caddy
+    caddy --> api
+    api --> pg
+    api --> redis
+    api --> obj
+    worker --> pg
+    worker --> redis
+    scheduler --> redis
+
+    user -.OAuth / magic link.-> sb
+    api -.verify JWT.-> sb
+    api --> tr
+    api --> llm
+    api -.errors.-> sentry
+```
+
+**Per-environment hostnames** ([see access policy](../decisions/access-policy.md)):
+
+| Env | API | Frontend |
+|---|---|---|
+| QA | `api.qa.xr7.k6-labs.com` | `app.qa.xr7.k6-labs.com` |
+| Prod | `api.xr7.k6-labs.com` | `app.xr7.k6-labs.com` |
+
+> `api.k6-labs.com` is reserved for a separate product (arcos7) — ArtistOS lives under `*.xr7.k6-labs.com`.
+
+### Component mapping — Hetzner (today)
+
+| Local dev (Podman Compose) | Hetzner (QA/Prod) |
+|---|---|
+| `api` container | Docker Compose service on CPX21 VM, Caddy reverse-proxy in front |
+| `worker` container | Docker Compose service (Celery) |
+| `scheduler` container | Docker Compose service (Celery beat, single instance) |
+| `postgres` | Hetzner Managed Postgres (automated backups) |
+| `redis` | Docker Compose service (data ephemeral; accepts for MVP) |
+| `minio` | Hetzner Object Storage (S3-compatible, same boto3 client) |
+| `frontend` Vite dev server | Static bundle served by Caddy or on Object Storage + Caddy proxy |
+| `.env` | `.env.qa` / `.env.prod` on VM (0600 perms); migrate to Doppler pre-launch |
+
+### Deployment flow — Hetzner
+
+1. CI builds image on merge to `main` → push to GHCR (`ghcr.io/k6-labs-hq/artistos:<sha>`)
+2. Auto-deploy QA: GitHub Actions SSHes to QA VM, runs `infrastructure/hetzner/deploy.sh` which pulls the new image, runs `alembic upgrade head`, rolling `docker compose up -d`
+3. Smoke test against `https://api.qa.xr7.k6-labs.com/health`
+4. Prod deploy: `workflow_dispatch` with admin approval on the `prod` GitHub Environment → same SSH flow against prod VM
+5. Rollback: re-run workflow against previous image SHA
+
+CI definition: [`.github/workflows/deploy-hetzner.yml`](../../.github/workflows/deploy-hetzner.yml).
+
+### Cost envelope — Hetzner (MVP)
+
+Roughly **€25–35 / month** at MVP scale (€6 VM + €15 managed Postgres + €5 object storage + €1 snapshots + free bandwidth up to 20 TB). Per-environment cost doubles for QA + Prod.
+
+---
+
+## AWS migration target topology
 
 ```mermaid
 flowchart TB
@@ -84,7 +172,7 @@ flowchart TB
     worker_svc -.->|logs + metrics| cw
 ```
 
-## Component mapping
+### Component mapping — AWS (future target)
 
 | Local dev (Compose) | Production (AWS) | Notes |
 |---|---|---|
@@ -97,24 +185,24 @@ flowchart TB
 | `frontend` (Vite dev server) | Static bundle in S3 + CloudFront | Build in CI, invalidate on deploy |
 | `.env` | AWS Secrets Manager | Secrets referenced by ARN in ECS task definitions |
 
-## Environments
+### Environments — AWS (future target)
 
 | Env | AWS account | Domain | Data |
 |---|---|---|---|
 | Local | — | `localhost` | MinIO + local Postgres |
-| Staging | Same account, separate VPC/prefix | `staging.artistos.io` | Sanitized prod snapshot or synthetic |
-| Prod | Same account (or separate — decision in #102) | `artistos.io` | Real |
+| QA | Same account, separate VPC/prefix | `api.qa.xr7.k6-labs.com` | Seed/synthetic only |
+| Prod | Same account (or separate) | `api.xr7.k6-labs.com` | Real |
 
 Supabase projects mirror these — see [06-identity](06-identity.md).
 
-## Networking
+### Networking — AWS (future target)
 
 - **VPC** — single VPC per environment, 2 AZs minimum.
 - **Subnets** — public (ALB, NAT), app-private (ECS), data-private (RDS, ElastiCache).
 - **Security groups** — ALB → api; api/worker/beat → RDS, Redis; outbound 443 only from app tier.
 - **No public IPs** on ECS tasks; outbound via NAT.
 
-## Deployment flow
+### Deployment flow — AWS (future target)
 
 1. CI builds image on merge to `main` → push to ECR.
 2. CI runs Alembic migrations against RDS.
@@ -122,23 +210,16 @@ Supabase projects mirror these — see [06-identity](06-identity.md).
 4. Smoke test against a known synthetic artist.
 5. Frontend: Vite build → `aws s3 sync` → CloudFront invalidation.
 
-CI/CD details live in [`docs/cicd_pipeline_reference.md`](../cicd_pipeline_reference.md) (pre-dates this move to AWS; update required when #102 lands).
+### Cost envelope — AWS (future, at MVP scale)
 
-## Backup & DR
+Roughly **$200–$400 / month**. Dominated by RDS Multi-AZ and NAT egress.
 
-- **RDS:** automated daily snapshots, 7-day retention; PITR.
-- **S3:** versioning + cross-region replication for `xr7-backups`.
-- **Restore drill:** quarterly — see [`docs/disaster_recovery_backup_strategy.md`](../disaster_recovery_backup_strategy.md).
+## Open decisions
 
-## Cost envelope (MVP)
-
-Per [#102](https://github.com/k6-labs-hq/ArtistOS/issues/102): roughly **$200–$400 / month** at MVP scale. Dominated by RDS Multi-AZ and NAT egress.
-
-## Open decisions (from #102)
-
-- [ ] Domain name (artistos.io vs xr7.com vs subdomain)
-- [ ] New AWS account vs existing
-- [ ] Who owns the AWS bill
+- [ ] Domain confirmed: `*.xr7.k6-labs.com` (2026-04-22)
+- [x] Cloud provider chosen: Hetzner for MVP (2026-04-21)
+- [ ] Production Hetzner VM provisioned
+- [ ] Production secrets stored in Doppler / Vault (MVP: 0600 file on VM)
 
 ## See also
 
