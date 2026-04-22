@@ -1,7 +1,10 @@
 name: Branding Contract Guard
 
 on:
+  # push only runs on main (after merge); PR branch pushes covered by pull_request.
+  # Prevents duplicate runs for every PR commit.
   push:
+    branches: ["main"]
     paths:
       - XR7/api/routers/**
       - XR7/services/branding.py
