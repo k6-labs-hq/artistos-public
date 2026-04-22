@@ -24,15 +24,15 @@ variable "ssh_key_names" {
   type        = list(string)
 }
 
-variable "domain" {
-  description = "Root domain (e.g. k6-labs.com). The actual hostname becomes api.qa.<domain> or api.<domain>."
+variable "product_domain" {
+  description = "Product subdomain (e.g. xr7.k6-labs.com). Hostnames become api.<product_domain> / app.<product_domain> for prod and api.qa.<product_domain> / app.qa.<product_domain> for QA. Leaves api.k6-labs.com free for other products (e.g. arcos7)."
   type        = string
-  default     = "k6-labs.com"
+  default     = "xr7.k6-labs.com"
 }
 
 locals {
-  fqdn_api       = var.environment == "prod" ? "api.${var.domain}" : "api.qa.${var.domain}"
-  fqdn_frontend  = var.environment == "prod" ? "app.${var.domain}" : "app.qa.${var.domain}"
+  fqdn_api       = var.environment == "prod" ? "api.${var.product_domain}" : "api.qa.${var.product_domain}"
+  fqdn_frontend  = var.environment == "prod" ? "app.${var.product_domain}" : "app.qa.${var.product_domain}"
   resource_name  = "xr7-${var.environment}"
   private_subnet = var.environment == "prod" ? "10.0.1.0/24" : "10.0.2.0/24"
 }

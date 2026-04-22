@@ -10,7 +10,7 @@ name: Deploy → Hetzner
 #   HETZNER_USER       — SSH user (default: deploy)
 #
 # Required GitHub Environment variables:
-#   DEPLOY_DOMAIN      — api.qa.k6-labs.com (qa) / api.k6-labs.com (prod)
+#   DEPLOY_DOMAIN      — api.qa.xr7.k6-labs.com (qa) / api.xr7.k6-labs.com (prod)
 
 on:
   workflow_dispatch:
@@ -85,7 +85,7 @@ jobs:
       (github.event_name == 'workflow_dispatch' && inputs.target_environment == 'qa')
     environment:
       name: qa
-      url: https://api.qa.k6-labs.com
+      url: https://api.qa.xr7.k6-labs.com
     steps:
       - name: Check secrets present
         id: check
@@ -129,7 +129,7 @@ jobs:
       github.event_name == 'workflow_dispatch' && inputs.target_environment == 'prod'
     environment:
       name: prod
-      url: https://api.k6-labs.com
+      url: https://api.xr7.k6-labs.com
     steps:
       - name: Check secrets present
         id: check
