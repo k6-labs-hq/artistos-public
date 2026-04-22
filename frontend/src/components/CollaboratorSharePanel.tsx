@@ -13,6 +13,8 @@
  */
 import { useState } from "react";
 
+import { ErrorBoundary } from "./ErrorBoundary";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -189,6 +191,7 @@ export function CollaboratorSharePanel({
 
   if (result) {
     return (
+      <ErrorBoundary name="Collaborator Share Panel">
       <div style={styles.panel}>
         <div style={styles.header}>
           <div>
@@ -249,6 +252,7 @@ export function CollaboratorSharePanel({
           Add More Collaborators
         </button>
       </div>
+      </ErrorBoundary>
     );
   }
 
@@ -257,6 +261,7 @@ export function CollaboratorSharePanel({
   // --------------------------------------------------------------------------
 
   return (
+    <ErrorBoundary name="Collaborator Share Panel">
     <div style={styles.panel}>
       <div style={styles.header}>
         <div>
@@ -352,6 +357,7 @@ export function CollaboratorSharePanel({
         </div>
       </form>
     </div>
+    </ErrorBoundary>
   );
 }
 

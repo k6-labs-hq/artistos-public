@@ -14,6 +14,8 @@
 
 import { useState } from "react";
 
+import { ErrorBoundary } from "./ErrorBoundary";
+
 // ─── shared tiny primitives ────────────────────────────────────────────────
 
 function Bar({ pct, color = "var(--accent)" }: { pct: number; color?: string }) {
@@ -619,27 +621,29 @@ export function AgencyPortfolioDashboard() {
 
 export function TVFilmDashboardVisualizations() {
   return (
-    <div className="tvfilm-visualizations">
-      <div className="section-head">
-        <h2>TV/Film Enterprise Visualizations</h2>
-        <p>Production timelines, episode trees, residuals waterfall, distribution maps, and agency portfolio — all in one surface.</p>
-      </div>
-      <div className="viz-two-col">
-        <div>
-          <ProductionTimelineViewer />
-          <ResidualsWaterfallChart />
-          <DistributionWindowMap />
-          <SyndicationHeatmap />
-          <StreamingReuseTracker />
+    <ErrorBoundary name="TV/Film Dashboard Visualizations">
+      <div className="tvfilm-visualizations">
+        <div className="section-head">
+          <h2>TV/Film Enterprise Visualizations</h2>
+          <p>Production timelines, episode trees, residuals waterfall, distribution maps, and agency portfolio — all in one surface.</p>
         </div>
-        <div>
-          <EpisodeSeasonTree />
-          <PayrollAuditBreakdown />
-          <StuntAdjustmentCalculator />
-          <BackendParticipationForecast />
-          <AgencyPortfolioDashboard />
+        <div className="viz-two-col">
+          <div>
+            <ProductionTimelineViewer />
+            <ResidualsWaterfallChart />
+            <DistributionWindowMap />
+            <SyndicationHeatmap />
+            <StreamingReuseTracker />
+          </div>
+          <div>
+            <EpisodeSeasonTree />
+            <PayrollAuditBreakdown />
+            <StuntAdjustmentCalculator />
+            <BackendParticipationForecast />
+            <AgencyPortfolioDashboard />
+          </div>
         </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }

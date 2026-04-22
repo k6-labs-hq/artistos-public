@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+
+import { ErrorBoundary } from "./ErrorBoundary";
 import "./InviteDashboard.css";
 
 interface Invite {
@@ -113,6 +115,7 @@ export const InviteDashboard: React.FC = () => {
   };
 
   return (
+    <ErrorBoundary name="Invite Dashboard">
     <div className="invite-dashboard">
       <h1>Invite Management Dashboard</h1>
       <p className="subtitle">
@@ -334,6 +337,7 @@ export const InviteDashboard: React.FC = () => {
         </div>
       )}
     </div>
+    </ErrorBoundary>
   );
 };
 

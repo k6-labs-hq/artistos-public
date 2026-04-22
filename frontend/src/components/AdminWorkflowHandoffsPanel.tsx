@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
+import { ErrorBoundary } from "./ErrorBoundary";
 import "./AdminWorkflowHandoffsPanel.css";
 
 type HandoffRow = {
@@ -166,6 +167,7 @@ export function AdminWorkflowHandoffsPanel() {
   };
 
   return (
+    <ErrorBoundary name="Admin Workflow Handoffs Panel">
     <main className="handoff-admin-page">
       <section className="handoff-admin-shell">
         <header className="handoff-admin-header">
@@ -291,6 +293,7 @@ export function AdminWorkflowHandoffsPanel() {
         </section>
       </section>
     </main>
+    </ErrorBoundary>
   );
 }
 
