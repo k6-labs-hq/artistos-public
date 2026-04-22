@@ -24,7 +24,7 @@ flowchart TB
     subgraph hetzner[Hetzner Cloud — xr7 project]
         lb[Hetzner Load Balancer<br/>TCP 80/443]
 
-        subgraph vm[CPX21 VM — Falkenstein]
+        subgraph vm[CPX21 VM — Ashburn, VA]
             caddy[Caddy<br/>auto Let's Encrypt]
             api[xr7-api container]
             worker[xr7-worker container]

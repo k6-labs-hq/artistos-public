@@ -53,3 +53,10 @@ frontend/src/**/*.js
 # Infrastructure secrets/state inputs
 infrastructure/secrets/runtime.env
 infrastructure/terraform/environments/*/terraform.tfvars
+
+# Terraform state (local dev only — for real backend use S3)
+infrastructure/hetzner/terraform/.terraform/
+infrastructure/hetzner/terraform/.terraform.lock.hcl
+infrastructure/hetzner/terraform/terraform.tfstate
+infrastructure/hetzner/terraform/terraform.tfstate.backup
+infrastructure/hetzner/terraform/terraform.tfstate.d/
