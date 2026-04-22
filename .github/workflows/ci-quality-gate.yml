@@ -11,8 +11,10 @@ name: CI — Quality Gate
 #   naming-check  — custom script: enforce naming conventions (work/recording/party)
 
 on:
+  # push only runs on main (after merge); PR branch pushes covered by pull_request.
+  # Prevents duplicate runs for every PR commit.
   push:
-    branches: ["**"]
+    branches: ["main"]
   pull_request:
     branches: ["main"]
 
