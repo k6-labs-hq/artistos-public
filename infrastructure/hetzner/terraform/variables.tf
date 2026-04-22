@@ -14,9 +14,9 @@ variable "location" {
 }
 
 variable "server_type" {
-  description = "VM size"
+  description = "VM size (x86). cx23 is the 2026 replacement for the retired CPX21."
   type        = string
-  default     = "cpx21" # 3 vCPU, 4GB RAM, 80GB SSD, €5.83/mo
+  default     = "cx23" # 2 vCPU, 4GB RAM, 40GB SSD, €4.99/mo
 }
 
 variable "ssh_key_names" {
@@ -31,8 +31,9 @@ variable "product_domain" {
 }
 
 locals {
-  fqdn_api       = var.environment == "prod" ? "api.${var.product_domain}" : "api.qa.${var.product_domain}"
-  fqdn_frontend  = var.environment == "prod" ? "app.${var.product_domain}" : "app.qa.${var.product_domain}"
-  resource_name  = "xr7-${var.environment}"
-  private_subnet = var.environment == "prod" ? "10.0.1.0/24" : "10.0.2.0/24"
+  fqdn_api           = var.environment == "prod" ? "api.${var.product_domain}" : "api.qa.${var.product_domain}"
+  fqdn_frontend      = var.environment == "prod" ? "app.${var.product_domain}" : "app.qa.${var.product_domain}"
+  resource_name      = "xr7-${var.environment}"
+  private_subnet     = var.environment == "prod" ? "10.0.1.0/24" : "10.0.2.0/24"
+  private_app_ip     = var.environment == "prod" ? "10.0.1.10" : "10.0.2.10"
 }
