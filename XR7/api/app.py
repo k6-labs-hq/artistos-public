@@ -280,11 +280,6 @@ def _llm_feature_status() -> dict[str, object]:
             "fallback_enabled": True,
             "credential_source": "LLM_API_KEY",
         },
-        "specialized_agents": {
-            "available": shared_llm_ready,
-            "fallback_enabled": True,
-            "credential_source": "LLM_API_KEY",
-        },
     }
     available_count = sum(1 for feature in features.values() if feature["available"])
 
