@@ -7,8 +7,8 @@ Deployment path for ArtistOS QA and production. Vendor-neutral at the app layer 
 | Environment | Where | Domain | Deploy trigger |
 |-------------|-------|--------|----------------|
 | **local** | your laptop (podman + docker-compose) | `localhost` | manual |
-| **qa** | Hetzner VM `xr7-qa-app` | `api.qa.k6-labs.com` | auto on push to `main` |
-| **prod** | Hetzner VM `xr7-prod-app` | `api.k6-labs.com` | `workflow_dispatch` + admin approval on the `prod` GitHub Environment |
+| **qa** | Hetzner VM `xr7-qa-app` | `api.qa.xr7.k6-labs.com` | auto on push to `main` |
+| **prod** | Hetzner VM `xr7-prod-app` | `api.xr7.k6-labs.com` | `workflow_dispatch` + admin approval on the `prod` GitHub Environment |
 
 Both Hetzner VMs live in the same Hetzner project (`artistos`), separate from the `trivia` project.
 
@@ -61,8 +61,8 @@ terraform workspace new prod
 terraform apply -var environment=prod -var 'ssh_key_names=["jason-admin","matt-admin"]'
 
 # 2. Point DNS at the load balancer IPs from terraform output
-#    api.qa.k6-labs.com  → <qa-lb-ipv4>
-#    api.k6-labs.com     → <prod-lb-ipv4>
+#    api.qa.xr7.k6-labs.com  → <qa-lb-ipv4>
+#    api.xr7.k6-labs.com     → <prod-lb-ipv4>
 
 # 3. SSH to each VM, bootstrap
 ssh root@<vm-ip>
@@ -77,7 +77,7 @@ vi .env.qa                       # paste real secrets
 bash deploy.sh
 
 # 6. Verify
-curl https://api.qa.k6-labs.com/health
+curl https://api.qa.xr7.k6-labs.com/health
 ```
 
 ## Day-two operations
