@@ -1,5 +1,7 @@
 import React from "react";
 
+import { ErrorBoundary } from "./ErrorBoundary";
+
 const componentNames = [
   "Production Timeline Viewer",
   "Episode/Season Tree",
@@ -17,19 +19,21 @@ const componentNames = [
 
 export function TVFilmEnterprisePanels(): JSX.Element {
   return (
-    <section className="tvfilm-enterprise-panels" data-reveal="true" aria-label="TV and Film enterprise dashboard modules">
-      <div className="section-head">
-        <h2>TV/Film Enterprise Modules</h2>
-        <p>Portfolio-scale views for agencies, management firms, production companies, and legal operations.</p>
-      </div>
-      <div className="feature-grid">
-        {componentNames.map((name) => (
-          <article className="feature-card" key={name}>
-            <h3>{name}</h3>
-            <p>Production-ready XR7 panel with role-aware filtering, evidence traceability, and bulk action support.</p>
-          </article>
-        ))}
-      </div>
-    </section>
+    <ErrorBoundary name="TV/Film Enterprise Panels">
+      <section className="tvfilm-enterprise-panels" data-reveal="true" aria-label="TV and Film enterprise dashboard modules">
+        <div className="section-head">
+          <h2>TV/Film Enterprise Modules</h2>
+          <p>Portfolio-scale views for agencies, management firms, production companies, and legal operations.</p>
+        </div>
+        <div className="feature-grid">
+          {componentNames.map((name) => (
+            <article className="feature-card" key={name}>
+              <h3>{name}</h3>
+              <p>Production-ready XR7 panel with role-aware filtering, evidence traceability, and bulk action support.</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </ErrorBoundary>
   );
 }

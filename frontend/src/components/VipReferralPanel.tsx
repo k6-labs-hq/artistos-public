@@ -6,6 +6,8 @@
  */
 import { useEffect, useState } from "react";
 
+import { ErrorBoundary } from "./ErrorBoundary";
+
 interface VipReferral {
   id: string;
   referred_email: string;
@@ -107,6 +109,7 @@ export function VipReferralPanel({
   }
 
   return (
+    <ErrorBoundary name="VIP Referral Panel">
     <div className="vrp-panel">
       {/* Header */}
       <div className="vrp-header">
@@ -202,6 +205,7 @@ export function VipReferralPanel({
 
       <style>{css}</style>
     </div>
+    </ErrorBoundary>
   );
 }
 

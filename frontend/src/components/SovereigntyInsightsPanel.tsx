@@ -1,4 +1,5 @@
 import { ConfidenceMeter } from "./ConfidenceMeter";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { SolUrgencyHeatmap } from "./SolUrgencyHeatmap";
 import { RecoverableWaterfallChart } from "./RecoverableWaterfallChart";
 import { PayerScorecard } from "./PayerScorecard";
@@ -17,11 +18,13 @@ export function SovereigntyInsightsPanel({
   payerRows,
 }: SovereigntyInsightsPanelProps) {
   return (
-    <section className="sovereignty-grid" aria-label="Sovereignty analytics">
-      <ConfidenceMeter value={confidence} />
-      <SolUrgencyHeatmap cells={solCells} />
-      <RecoverableWaterfallChart steps={waterfall} />
-      <PayerScorecard rows={payerRows} />
-    </section>
+    <ErrorBoundary name="Sovereignty Insights Panel">
+      <section className="sovereignty-grid" aria-label="Sovereignty analytics">
+        <ConfidenceMeter value={confidence} />
+        <SolUrgencyHeatmap cells={solCells} />
+        <RecoverableWaterfallChart steps={waterfall} />
+        <PayerScorecard rows={payerRows} />
+      </section>
+    </ErrorBoundary>
   );
 }
