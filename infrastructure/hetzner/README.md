@@ -2,6 +2,10 @@
 
 Deployment path for ArtistOS QA and production. Vendor-neutral at the app layer (Docker Compose) with a thin Hetzner-specific infrastructure layer. Portable to AWS — see [`../PORTABILITY.md`](../PORTABILITY.md). Access control per [`docs/decisions/access-policy.md`](../../docs/decisions/access-policy.md).
 
+## Deploy model: CI pushes (not VM pulls)
+
+CI builds the Docker image and pushes to GHCR. CI then rsyncs only the small set of config files (this directory's `docker-compose.prod.yml`, `Caddyfile`, `deploy.sh`) to the VM and SSHes to run `docker compose pull && up`. **The VM never clones the repo** and has no GitHub credentials — just an SSH key and `.env.<env>`.
+
 ## Environments
 
 | Environment | Where | Domain | Deploy trigger |

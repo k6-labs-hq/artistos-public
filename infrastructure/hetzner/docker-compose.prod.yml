@@ -1,53 +1,79 @@
-# Production Compose stack — Hetzner (and re-deployable elsewhere).
+# Production/QA Compose stack for Hetzner.
 #
-# Keep vendor-neutral: every service here runs identically on AWS EC2,
-# DigitalOcean Droplet, or bare metal. For AWS ECS deploy, translate each
-# service to a Task Definition — see ../PORTABILITY.md.
+# Vendor-neutral at the app layer. CI (or operator) rsyncs this file plus
+# Caddyfile + .env.<env> to the VM; nothing else from the repo needed there.
+# Portable to AWS — see ../PORTABILITY.md.
 #
-# Secrets and config come from .env.prod (gitignored). Never commit it.
+# Env file controls which services are reachable as external vs in-compose:
+#   DATABASE_URL=...@db:5432/... → uses inline 'db' service
+#   DATABASE_URL=...@<rds-host>/... → bypasses inline service
+# Same for S3: if S3_ENDPOINT_URL points at http://minio:9000, the inline
+# minio service serves it. If it points at a real S3 endpoint, inline is idle.
 
 services:
   api:
     image: ghcr.io/k6-labs-hq/artistos:latest
     restart: unless-stopped
-    env_file: .env.prod
+    env_file: .env.qa
     environment:
-      XR7_ENV: production
+      PYTHONPATH: /app
     command: uvicorn XR7.api.app:app --host 0.0.0.0 --port 8000 --workers 2
     depends_on:
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 30s
-    networks:
-      - xr7
+    networks: [xr7]
 
   worker:
     image: ghcr.io/k6-labs-hq/artistos:latest
     restart: unless-stopped
-    env_file: .env.prod
+    env_file: .env.qa
     environment:
-      XR7_ENV: production
+      PYTHONPATH: /app
     command: celery -A XR7.celery_app:celery_app worker --loglevel=INFO --concurrency=2
     depends_on:
-      - redis
-    networks:
-      - xr7
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks: [xr7]
 
   scheduler:
     image: ghcr.io/k6-labs-hq/artistos:latest
     restart: unless-stopped
-    env_file: .env.prod
+    env_file: .env.qa
     environment:
-      XR7_ENV: production
+      PYTHONPATH: /app
     command: celery -A XR7.celery_app:celery_app beat --loglevel=INFO
     depends_on:
-      - redis
-    networks:
-      - xr7
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks: [xr7]
+
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: xr7
+      POSTGRES_DB: xr7
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U xr7 -d xr7"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [xr7]
 
   redis:
     image: redis:7-alpine
@@ -55,8 +81,18 @@ services:
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
-    networks:
-      - xr7
+    networks: [xr7]
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - minio_data:/data
+    networks: [xr7]
 
   caddy:
     image: caddy:2-alpine
@@ -64,17 +100,20 @@ services:
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      DOMAIN: "${DOMAIN}"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
       - api
-    networks:
-      - xr7
+    networks: [xr7]
 
 volumes:
+  pg_data:
   redis_data:
+  minio_data:
   caddy_data:
   caddy_config:
 
