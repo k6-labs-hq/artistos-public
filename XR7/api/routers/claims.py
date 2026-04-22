@@ -20,7 +20,6 @@ from XR7.api.routers.auth import (
 )
 from XR7.auth.event_notifications import send_event_notification
 from XR7.blockchain.evidence_anchor import EvidenceAnchor as BlockchainEvidenceAnchor
-from XR7.llm.negotiation_agent import AutonomousNegotiatorAgent
 from XR7.models.admin_audit_log import AdminAuditLog
 from XR7.models.anomaly import Anomaly
 from XR7.models.artist import Artist
@@ -1654,26 +1653,3 @@ async def escalate_legal(claim_id: str, db: Session = Depends(get_db)):
     }
 
 
-@router.post("/claims/{claim_id}/activate-agent")
-async def activate_negotiator_agent(claim_id: str, db: Session = Depends(get_db)):
-    claim = db.query(Claim).filter(Claim.id == claim_id).first()
-    if not claim:
-        raise HTTPException(status_code=404, detail="Claim not found")
-    agent = AutonomousNegotiatorAgent(db)
-    submitted = agent.auto_draft_and_submit_claim(claim_id)
-    rounds = agent.run_negotiation_rounds(claim_id)
-    if float(claim.recovered_amount or 0.0) >= 10000:
-        escalation = await agent.escalate_to_attorney_network(claim_id)
-    else:
-        escalation = {"escalated": False}
-    claim.evidence = claim.evidence or {}
-    claim.evidence.setdefault("agent", {})
-    claim.evidence["agent"]["agent_status"] = "active"
-    db.commit()
-    return {
-        "claim_id": claim_id,
-        "agent_status": "active",
-        "submission": submitted,
-        "negotiation_rounds": rounds,
-        "escalation": escalation,
-    }
