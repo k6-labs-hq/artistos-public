@@ -89,7 +89,7 @@ resource "hcloud_server" "xr7_app" {
 
   network {
     network_id = hcloud_network.xr7.id
-    ip         = "10.0.1.10"
+    ip         = local.private_app_ip
   }
 
   user_data = <<-EOF
