@@ -66,18 +66,23 @@
 
 ## 6. Infrastructure
 
-| # | Check | Evidence | Blocker issue |
-|---|-------|----------|---------------|
-| 6.1 | ☐ Compute target provisioned (ECS Fargate / App Runner / Hetzner VM) | | [#102](https://github.com/k6-labs-hq/ArtistOS/issues/102) |
-| 6.2 | ☐ Managed Postgres with automated daily backups + point-in-time recovery | | |
-| 6.3 | ☐ Redis / queue with persistence or replication | | |
-| 6.4 | ☐ S3 bucket for uploads + evidence bundles; lifecycle + versioning enabled | | |
-| 6.5 | ☐ TLS termination via ACM / Let's Encrypt; HTTP → HTTPS redirect | | |
-| 6.6 | ☐ DNS record + domain configured | | |
-| 6.7 | ☐ Outbound egress only to known third parties (Trolley, Supabase, LLM provider) | | |
-| 6.8 | ☐ Database connection pool bounded (`pool_size`, `pool_recycle`) | | [#42](https://github.com/k6-labs-hq/ArtistOS/issues/42) |
-| 6.9 | ☐ Request body size limit middleware active | | [#73](https://github.com/k6-labs-hq/ArtistOS/issues/73) |
-| 6.10 | ☐ Upload rate limiting on per-artist basis | | [#80](https://github.com/k6-labs-hq/ArtistOS/issues/80) |
+Target per the [cloud provider evaluation](../decisions/cloud-provider-evaluation.md): **Hetzner for MVP, AWS-portable**. Each check lists the Hetzner-specific action; AWS migration equivalents are in [`infrastructure/PORTABILITY.md`](../../infrastructure/PORTABILITY.md).
+
+| # | Check | Hetzner action | Blocker issue |
+|---|-------|----------------|---------------|
+| 6.1 | ☐ Compute VM provisioned | `terraform apply` in `infrastructure/hetzner/terraform/` for both `qa` and `prod` workspaces. CPX21 each (3 vCPU / 4 GB). | [#102](https://github.com/k6-labs-hq/ArtistOS/issues/102) |
+| 6.2 | ☐ Managed Postgres with automated daily backups + point-in-time recovery | Provision **Hetzner Managed Postgres** per env via console (Terraform provider still alpha). Enable automated daily backups + 7-day retention. Record DSN into `.env.<env>`. | |
+| 6.3 | ☐ Redis with AOF persistence (single-node is OK for MVP) | Runs in Docker Compose on the VM (`redis:7-alpine --appendonly yes`). Data is ephemeral — acceptable for MVP; move to managed Redis at 100+ artists. | |
+| 6.4 | ☐ S3-compatible object storage with versioning + lifecycle | **Hetzner Object Storage** buckets `xr7-artifacts-qa` and `xr7-artifacts-prod`. Enable versioning. Same boto3 client via `S3_ENDPOINT_URL` env var. | |
+| 6.5 | ☐ TLS termination with HTTP → HTTPS redirect | **Caddy** in Docker Compose auto-issues Let's Encrypt certs. Config: [`infrastructure/hetzner/Caddyfile`](../../infrastructure/hetzner/Caddyfile). | |
+| 6.6 | ☐ DNS records configured | **Porkbun** A records: `api.qa.xr7` + `app.qa.xr7` → QA LB IP; `api.xr7` + `app.xr7` → Prod LB IP. `k6-labs.com` root + `api.k6-labs.com` left alone (marketing + arcos7 respectively). | |
+| 6.7 | ☐ Outbound egress restricted to known third parties | Hetzner firewall outbound rules allow: Supabase (auth), Trolley (payouts), GHCR (pull), Let's Encrypt ACME, LLM provider, Sentry. Deny everything else. | |
+| 6.8 | ☐ Database connection pool bounded | Set SQLAlchemy `pool_size=20`, `max_overflow=20`, `pool_recycle=3600` in production settings. | [#42](https://github.com/k6-labs-hq/ArtistOS/issues/42) |
+| 6.9 | ☐ Request body size limit middleware active | `LimitUploadSize` middleware (100 MB default) — already shipped via #73. Verify active in prod via integration test. | [#73](https://github.com/k6-labs-hq/ArtistOS/issues/73) |
+| 6.10 | ☐ Upload rate limiting on per-artist basis | 10 uploads/hour per artist — already shipped via #80. Verify via integration test. | [#80](https://github.com/k6-labs-hq/ArtistOS/issues/80) |
+| 6.11 | ☐ SSH to prod VM locked to admin keys only | Prod Terraform `ssh_key_names = ["jason-admin","matt-admin"]` — see [access-policy.md](../decisions/access-policy.md). | |
+| 6.12 | ☐ Hetzner API token scoped to the `artistos` project only | Generated via Console → Security → API Tokens with R/W on single project. Stored in GitHub Environment secret. | |
+| 6.13 | ☐ Daily off-site DB backup beyond Hetzner's automated snapshots | Celery beat task: `pg_dump` → Hetzner Object Storage bucket `xr7-backups` with 30-day lifecycle. Restore drill quarterly. | [#49](https://github.com/k6-labs-hq/ArtistOS/issues/49) |
 
 ## 7. Deployment + rollback
 

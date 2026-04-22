@@ -31,6 +31,7 @@ from typing import List
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.engine import AnomalyEngine
@@ -217,37 +218,39 @@ def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
 def _save_payments(db: Session, payments: list[dict]) -> int:
     """Persist normalised payment dicts to the DB, returning the count saved.
 
-    Commits in batches of 500 to limit memory pressure for large statements.
+    Uses per-row savepoints so a duplicate (artist_id, reference_id) skips the
+    row without aborting the whole transaction. Matches the ingestion
+    idempotency contract: re-uploading the same statement is a no-op.
     """
-    _CHUNK = 500
     count = 0
     created: list[Payment] = []
     for p in payments:
+        pt_raw = str(p.get("payment_type", "ROYALTY")).upper()
         try:
-            pt_raw = str(p.get("payment_type", "ROYALTY")).upper()
-            try:
-                payment_type = PaymentType(pt_raw)
-            except ValueError:
-                payment_type = PaymentType.ROYALTY
+            payment_type = PaymentType(pt_raw)
+        except ValueError:
+            payment_type = PaymentType.ROYALTY
 
-            payment = Payment(
-                id=str(uuid.uuid4()),
-                payment_type=payment_type,
-                artist_id=p["artist_id"],
-                amount=float(p.get("amount", 0.0)),
-                currency=p.get("currency", "USD"),
-                source=p.get("source"),
-                period_start=p.get("period_start"),
-                period_end=p.get("period_end"),
-                reference_id=p.get("reference_id"),
-                received_at=datetime.now(timezone.utc),
-            )
-            db.add(payment)
+        payment = Payment(
+            id=str(uuid.uuid4()),
+            payment_type=payment_type,
+            artist_id=p["artist_id"],
+            amount=float(p.get("amount", 0.0)),
+            currency=p.get("currency", "USD"),
+            source=p.get("source"),
+            period_start=p.get("period_start"),
+            period_end=p.get("period_end"),
+            reference_id=p.get("reference_id"),
+            received_at=datetime.now(timezone.utc),
+        )
+        try:
+            with db.begin_nested():
+                db.add(payment)
+                db.flush()
             created.append(payment)
             count += 1
-            if count % _CHUNK == 0:
-                db.commit()
-        except Exception:  # noqa: BLE001
+        except IntegrityError:
+            # Duplicate (artist_id, reference_id) — skip idempotently.
             continue
     db.commit()
     webhook_service = OutboundWebhookService(db)

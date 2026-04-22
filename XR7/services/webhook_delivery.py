@@ -6,6 +6,7 @@ about events (e.g., payment received, claim status changed).
 
 from __future__ import annotations
 
+import json
 import uuid
 from datetime import datetime
 
@@ -76,16 +77,18 @@ class OutboundWebhookService:
                 }
             )
         """
-        # Extract artist_id from payload if not provided
+        # Extract artist_id from payload if not provided (used for logging only)
         if artist_id is None:
             artist_id = payload.get("artist_id")
 
-        # Create webhook event record
+        # Create webhook event record. WebhookEvent model uses raw_payload (Text)
+        # and requires a source; 'outbound' marks records queued by this service
+        # vs. inbound webhooks.
         event = WebhookEvent(
             id=str(uuid.uuid4()),
+            source="outbound",
             event_type=event_type,
-            payload=payload,
-            artist_id=artist_id,
+            raw_payload=json.dumps(payload, default=str),
             status=WebhookEventStatus.PENDING,
             created_at=datetime.utcnow(),
             processing_error=None,
