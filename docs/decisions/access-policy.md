@@ -27,7 +27,7 @@
 | Prod — secrets (real Supabase, real Trolley, JWT signing keys, DB creds) | ✅ | ❌ | ❌ |
 | Real artist data (read) | ✅ | ❌ | ❌ |
 | Hetzner Cloud Console | ✅ | ❌ | ❌ |
-| DNS (Cloudflare / registrar) | ✅ | ❌ | ❌ |
+| DNS (Porkbun) | ✅ | ❌ | ❌ |
 | Billing (Hetzner, Supabase, etc.) | ✅ | ❌ | ❌ |
 
 ## How this is enforced

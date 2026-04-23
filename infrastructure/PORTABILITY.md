@@ -36,10 +36,9 @@ Only the infrastructure provisioning layer. See the mapping below.
 | Redis | Docker container or Hetzner Redis Cloud | ElastiCache Redis |
 | Object storage | Hetzner Object Storage (S3-compatible) | S3 bucket |
 | TLS certs | Caddy + Let's Encrypt (automatic) | ACM + ALB listener |
-| DNS | Cloudflare / Hetzner DNS | Route53 |
+| DNS | Porkbun | Route53 |
 | Secrets | `.env.prod` file + file perms 0600 | Secrets Manager / SSM Parameter Store |
 | Backups | Managed Postgres daily snapshots + `pg_dump` off-site | RDS automated backups |
-| CDN (optional) | Cloudflare | CloudFront |
 
 ### What the migration looks like, concretely
 

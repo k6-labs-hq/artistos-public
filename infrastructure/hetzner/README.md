@@ -44,7 +44,7 @@ Supabase (auth), Trolley (payouts), Sentry (errors), and the LLM provider are se
 
 1. **Hetzner Cloud account** with project created.
 2. **API token** with read/write access (Project → Security → API Tokens).
-3. **Domain** with DNS pointing to the Hetzner Load Balancer IP (Cloudflare works great).
+3. **Domain** with DNS pointing to the Hetzner Load Balancer IP. DNS is managed in Porkbun (`k6-labs.com`).
 4. **GitHub Container Registry access** for pulling the xr7-api image.
 5. **Secrets populated**: Supabase JWT secret, Trolley API key, JWT signing secret, DB credentials.
 
