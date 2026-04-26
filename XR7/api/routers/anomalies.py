@@ -1,3 +1,6 @@
+import hashlib
+import json
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -10,8 +13,11 @@ from XR7.graph.rights_graph import RightsGraph
 from XR7.ml.confidence_gating import ConfidenceGatingService
 from XR7.models.anomaly import (
     Anomaly,
+    AnomalyCategory,
     AnomalyRecoveryProbabilityResponseSchema,
     AnomalySchema,
+    AnomalySeverity,
+    AnomalyStatus,
     AnomalyWithRecoverabilitySchema,
     DetectAnomaliesResponseSchema,
 )
@@ -38,6 +44,59 @@ from xr7_common.logging import get_logger
 router = APIRouter(tags=["anomalies"])
 _router_service = router_service_for("anomalies")
 logger = get_logger(__name__)
+
+
+def _deterministic_anomaly_id(artist_id: str, rule_id: str, evidence: dict) -> str:
+    """Stable id so re-running detection is idempotent (same rule + same evidence = same row)."""
+    h = hashlib.sha256()
+    h.update(artist_id.encode())
+    h.update(b"|")
+    h.update(rule_id.encode())
+    h.update(b"|")
+    h.update(json.dumps(evidence or {}, sort_keys=True, default=str).encode())
+    return f"anm_{h.hexdigest()[:24]}"
+
+
+def _persist_anomaly(db: Session, artist_id: str, row: dict, confidence: float) -> Anomaly:
+    """Upsert an anomaly detected by the rule engine. Returns the persisted row."""
+    rule_id = str(row.get("rule_id") or row.get("subtype") or "UNKNOWN")
+    evidence = row.get("evidence") or {}
+    anomaly_id = _deterministic_anomaly_id(artist_id, rule_id, evidence)
+
+    existing = db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
+    if existing is not None:
+        existing.confidence_score = confidence
+        existing.estimated_recoverable = row.get("estimated_recoverable")
+        existing.expected_amount = row.get("expected_amount")
+        existing.actual_amount = row.get("actual_amount")
+        existing.urgent_flag = bool(row.get("urgent_flag"))
+        return existing
+
+    anomaly = Anomaly(
+        id=anomaly_id,
+        artist_id=artist_id,
+        category=AnomalyCategory(str(row.get("category") or "ROYALTY")),
+        subtype=str(row.get("subtype") or "UNKNOWN"),
+        severity=AnomalySeverity(str(row.get("severity") or "LOW")),
+        expected_amount=row.get("expected_amount"),
+        actual_amount=row.get("actual_amount"),
+        estimated_recoverable=row.get("estimated_recoverable"),
+        confidence_score=confidence,
+        status=AnomalyStatus.OPEN,
+        description=row.get("description"),
+        feature_snapshot=json.dumps(
+            {
+                "rule_id": rule_id,
+                "rule_name": row.get("rule_name"),
+                "evidence": evidence,
+            },
+            default=str,
+        ),
+        urgent_flag=bool(row.get("urgent_flag")),
+    )
+    db.add(anomaly)
+    db.flush()
+    return anomaly
 
 
 @router.get(
@@ -223,8 +282,13 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
             )
             continue
 
+        # Persist (or upsert) the anomaly so downstream flows can reference it by id.
+        persisted = _persist_anomaly(db, artist_id, row, confidence)
+        anomaly_id = persisted.id
+
         # Enrich anomaly metadata
         row_payload = dict(row)
+        row_payload["id"] = anomaly_id
         row_payload.update(build_recoverability_payload(row_payload))
         row_payload["gating_decision"] = {
             "tier": decision.tier.value,
@@ -233,7 +297,6 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
         }
         enriched.append(row_payload)
 
-        anomaly_id = row.get("id")
         reason = f"Anomaly detected: {row.get('subtype') or row.get('category') or 'UNKNOWN'}"
 
         # Route to review queue if required (REVIEW tier)
@@ -242,7 +305,7 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
                 db,
                 artist_id=artist_id,
                 source_type=ReviewSourceType.ML_CONFIDENCE,
-                source_id=str(anomaly_id) if anomaly_id else None,
+                source_id=anomaly_id,
                 reason=f"{reason} (confidence: {confidence:.2f})",
                 priority_score=decision.priority_score,
                 payload=row_payload,
@@ -259,6 +322,8 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
                     "estimated_recoverable": row.get("estimated_recoverable"),
                 },
             )
+
+    db.commit()
 
     # Log gating metrics
     gating_metrics = gating.get_metrics()
