@@ -1,8 +1,10 @@
-"""Supabase Auth integration (stub for MVP).
+"""Supabase Auth integration.
 
-Supabase-issued JWTs are HS256 signed with the Supabase project JWT secret
-(Settings → API → JWT Settings → JWT Secret). We validate tokens locally
-using that secret — no round-trip to Supabase needed.
+Supabase projects created after ~2026 sign tokens with asymmetric keys
+(ES256 by default) and publish the public key at
+``{SUPABASE_URL}/auth/v1/.well-known/jwks.json``. Older projects still
+sign with a shared HS256 secret. This module verifies both by inspecting
+the token header's ``alg`` / ``kid`` and picking the right key source.
 
 Flow:
     1. Client obtains a JWT from Supabase (email+password, magic link, OAuth).
@@ -12,8 +14,9 @@ Flow:
     5. We attach the resolved identity to the request context.
 
 Environment variables:
-    SUPABASE_URL               — e.g. https://xxxxx.supabase.co
-    SUPABASE_JWT_SECRET        — shared HS256 secret
+    SUPABASE_URL               — e.g. https://xxxxx.supabase.co (required for JWKS)
+    SUPABASE_JWT_SECRET        — legacy HS256 secret (optional; only needed for
+                                 projects still using HS256 signing)
     SUPABASE_JWT_AUDIENCE      — default "authenticated"
     SUPABASE_JWT_ISSUER        — default "{SUPABASE_URL}/auth/v1"
 """
@@ -21,6 +24,7 @@ Environment variables:
 from __future__ import annotations
 
 import os
+from functools import lru_cache
 from typing import Any
 
 import jwt
@@ -31,6 +35,10 @@ from sqlalchemy.orm import Session
 from XR7.models.artist import Artist
 from XR7.models.base import get_db
 
+# Supported asymmetric algorithms. HS256 is handled separately with the
+# shared secret path.
+_ASYMMETRIC_ALGORITHMS = ("ES256", "RS256", "EdDSA")
+
 
 class SupabaseAuthError(ValueError):
     pass
@@ -39,12 +47,20 @@ class SupabaseAuthError(ValueError):
 _bearer_scheme = HTTPBearer(auto_error=False)
 
 
+def _get_supabase_url() -> str:
+    url = os.environ.get("SUPABASE_URL", "").strip().rstrip("/")
+    if not url:
+        raise SupabaseAuthError("SUPABASE_URL is not configured.")
+    return url
+
+
 def _get_supabase_secret() -> str:
     secret = os.environ.get("SUPABASE_JWT_SECRET", "").strip()
     if not secret:
         raise SupabaseAuthError(
-            "SUPABASE_JWT_SECRET is not configured. "
-            "Set it from Supabase project Settings → API → JWT Secret."
+            "SUPABASE_JWT_SECRET is not configured. This project appears to use "
+            "HS256 signing — set it from Supabase Settings → API → JWT Secret, or "
+            "switch the project to asymmetric (ES256/RS256) signing keys."
         )
     return secret
 
@@ -61,19 +77,57 @@ def _get_issuer() -> str | None:
     return f"{url}/auth/v1" if url else None
 
 
+@lru_cache(maxsize=4)
+def _jwk_client(supabase_url: str) -> jwt.PyJWKClient:
+    """Cached JWKS client (one per Supabase URL). Handles key rotation via
+    its own internal cache TTL."""
+    return jwt.PyJWKClient(f"{supabase_url}/auth/v1/.well-known/jwks.json")
+
+
+def _resolve_signing_key(token: str) -> tuple[str | Any, str]:
+    """Return ``(key, algorithm)`` used to verify ``token``.
+
+    For asymmetric algorithms, fetch the key from the project's JWKS using
+    the token's ``kid``. For HS256, use the configured shared secret. In
+    either case the algorithm is chosen from the token header so a compromised
+    header cannot downgrade us — the allowed set is restricted by caller.
+    """
+    try:
+        header = jwt.get_unverified_header(token)
+    except jwt.InvalidTokenError as exc:
+        raise HTTPException(status_code=401, detail=f"Invalid Supabase token: {exc}") from exc
+
+    algorithm = str(header.get("alg") or "").upper()
+    if algorithm in _ASYMMETRIC_ALGORITHMS:
+        try:
+            url = _get_supabase_url()
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        try:
+            signing_key = _jwk_client(url).get_signing_key_from_jwt(token)
+        except jwt.PyJWKClientError as exc:
+            raise HTTPException(
+                status_code=401, detail=f"Unable to resolve JWKS signing key: {exc}"
+            ) from exc
+        return signing_key.key, algorithm
+    if algorithm == "HS256":
+        try:
+            return _get_supabase_secret(), "HS256"
+        except SupabaseAuthError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+    raise HTTPException(status_code=401, detail=f"Unsupported JWT algorithm: {algorithm}")
+
+
 def verify_supabase_jwt(token: str) -> dict[str, Any]:
     """Validate a Supabase-issued JWT and return its claims.
 
     Raises HTTPException(401) on any validation failure.
     """
-    try:
-        secret = _get_supabase_secret()
-    except SupabaseAuthError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    key, algorithm = _resolve_signing_key(token)
 
     options: dict[str, Any] = {}
     kwargs: dict[str, Any] = {
-        "algorithms": ["HS256"],
+        "algorithms": [algorithm],
         "audience": _get_audience(),
     }
     issuer = _get_issuer()
@@ -83,7 +137,7 @@ def verify_supabase_jwt(token: str) -> dict[str, Any]:
         options["verify_iss"] = False
 
     try:
-        claims = jwt.decode(token, secret, options=options or None, **kwargs)
+        claims = jwt.decode(token, key, options=options or None, **kwargs)
     except jwt.ExpiredSignatureError as exc:
         raise HTTPException(status_code=401, detail="Supabase token expired") from exc
     except jwt.InvalidTokenError as exc:
