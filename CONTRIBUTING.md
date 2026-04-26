@@ -82,6 +82,34 @@ Frontend requires Node 22+:
 cd frontend && npm install && npm run dev
 ```
 
+### Dev Supabase (shared project for auth testing)
+
+Auth goes through Supabase in every environment, including local. All devs share a single **`artistos-dev`** Supabase project for convenience. Your app data (artists, works, claims, events) stays in your local Postgres container — Supabase is *only* for authentication.
+
+**Get your credentials** from the engineering lead (see the `#dev` channel). You need two values:
+
+- `SUPABASE_URL` — shared across all devs
+- `SUPABASE_ANON_KEY` — shared, safe to have in a dev `.env`
+
+Drop them into your local `.env`:
+
+```bash
+SUPABASE_URL=https://<dev-project>.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+SUPABASE_JWT_AUDIENCE=authenticated
+```
+
+The frontend `.env` needs the same URL + anon key with `VITE_` prefix:
+
+```bash
+VITE_SUPABASE_URL=https://<dev-project>.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
+```
+
+A shared **test user** (`nova@example.com`) is seeded in the dev project so you can log in immediately without creating your own. Passwords are in the team password manager.
+
+The API verifies Supabase-issued JWTs by fetching the project's public signing key from `{SUPABASE_URL}/auth/v1/.well-known/jwks.json` (ES256). No shared JWT secret is needed for new projects. Legacy HS256 projects can still set `SUPABASE_JWT_SECRET` and the backend will fall back to it. For full flow testing, the frontend (`npm run dev`) and the API (`uvicorn ...`) both need to be running.
+
 ## Code standards
 
 - Python 3.12 · FastAPI · SQLAlchemy 2.0 · Pydantic v2
