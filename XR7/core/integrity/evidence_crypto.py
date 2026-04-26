@@ -78,16 +78,28 @@ def hmac_verify(chain_hash: str, signature: str) -> bool:
 
 
 def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
-    """Sign message with RSA-SHA256 using cryptography library or openssl subprocess."""
+    """Sign message with RSA-SHA256 using cryptography library or openssl subprocess.
+
+    Raises ``ValueError`` if the PEM is not an RSA key — PKCS#1 v1.5 padding is
+    RSA-specific, so an EC / Ed25519 / Ed448 key would otherwise fail with a
+    cryptic error. Evidence integrity is load-bearing, so misconfiguration must
+    fail loud, not silent.
+    """
     try:
         # Try cryptography library first (pure Python, cross-platform)
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.primitives.asymmetric.rsa import RSAPrivateKey
 
         private_key = serialization.load_pem_private_key(
             private_key_pem.encode("utf-8"), password=None
         )
-        signature = private_key.sign(message.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256())  # type: ignore[call-arg,union-attr]
+        if not isinstance(private_key, RSAPrivateKey):
+            raise ValueError(
+                f"Evidence signing key must be RSA (got {type(private_key).__name__}). "
+                "Set XR7_EVIDENCE_PRIVATE_KEY_PEM to an RSA PEM, or use signing mode 'hmac'."
+            )
+        signature = private_key.sign(message.encode("utf-8"), padding.PKCS1v15(), hashes.SHA256())
         return base64.b64encode(signature).decode("ascii")
 
     except ImportError:
@@ -109,12 +121,17 @@ def openssl_rsa_sign(message: str, private_key_pem: str) -> str:
 
 
 def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) -> bool:
-    """Verify RSA-SHA256 signature using cryptography library or openssl subprocess."""
+    """Verify RSA-SHA256 signature using cryptography library or openssl subprocess.
+
+    Returns ``False`` if the public key is not RSA — audit verification must
+    never silently succeed against the wrong key type.
+    """
     try:
         # Try cryptography library first (pure Python, cross-platform)
         from cryptography.exceptions import InvalidSignature
         from cryptography.hazmat.primitives import hashes, serialization
         from cryptography.hazmat.primitives.asymmetric import padding
+        from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
 
         try:
             signature = base64.b64decode(signature_b64.encode("ascii"), validate=True)
@@ -122,6 +139,8 @@ def openssl_rsa_verify(message: str, signature_b64: str, public_key_pem: str) ->
             return False
 
         public_key = serialization.load_pem_public_key(public_key_pem.encode("utf-8"))
+        if not isinstance(public_key, RSAPublicKey):
+            return False
 
         try:
             public_key.verify(
