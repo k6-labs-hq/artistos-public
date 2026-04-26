@@ -46,12 +46,26 @@ engine = create_engine(
 
 
 @event.listens_for(engine, "before_cursor_execute")
-def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+def before_cursor_execute(
+    conn: Any,
+    cursor: Any,
+    statement: str,
+    parameters: Any,
+    context: Any,
+    executemany: bool,
+) -> None:
     conn.info.setdefault("query_start_time", []).append(time.perf_counter())
 
 
 @event.listens_for(engine, "after_cursor_execute")
-def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+def after_cursor_execute(
+    conn: Any,
+    cursor: Any,
+    statement: str,
+    parameters: Any,
+    context: Any,
+    executemany: bool,
+) -> None:
     start_times = conn.info.get("query_start_time", [])
     if not start_times:
         return
@@ -84,7 +98,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @event.listens_for(SessionLocal, "do_orm_execute")
-def _enforce_tenant_scope(execute_state) -> None:
+def _enforce_tenant_scope(execute_state: Any) -> None:
     """Enforce tenant isolation on all SELECT queries.
 
     Automatically filters queries to only return rows matching the current
@@ -119,20 +133,21 @@ def _enforce_tenant_scope(execute_state) -> None:
                 tenant_entities.append(model_cls)
 
         if tenant_entities:
+            current_tenant: str = tenant_id
+
+            def _tenant_filter(cls: Any) -> Any:
+                return cls.tenant_id == current_tenant
+
             execute_state.statement = execute_state.statement.options(
                 *[
-                    with_loader_criteria(
-                        entity,
-                        lambda cls, tenant_id=tenant_id: cls.tenant_id == tenant_id,
-                        include_aliases=True,
-                    )
+                    with_loader_criteria(entity, _tenant_filter, include_aliases=True)
                     for entity in tenant_entities
                 ]
             )
 
 
 @event.listens_for(SessionLocal, "before_flush")
-def _enforce_tenant_writes(session, flush_context, instances) -> None:
+def _enforce_tenant_writes(session: Any, flush_context: Any, instances: Any) -> None:
     """Enforce tenant isolation on write operations (INSERT/UPDATE/DELETE).
 
     Validates that:
