@@ -2,8 +2,12 @@
 Health check endpoints for Kubernetes liveness and readiness probes.
 
 Provides two endpoints:
-- /health: Liveness probe (always returns 200 if app is running)
+- /health/live: Liveness probe (always returns 200 if app is running)
 - /health/ready: Readiness probe (checks all dependencies)
+
+Note: the canonical /health endpoint with full dependency checks lives in
+XR7/api/app.py — load balancers and the default health URL should hit that.
+This router only exposes K8s-specific probe paths.
 """
 
 import logging
@@ -93,13 +97,14 @@ async def check_trolley() -> Dict[str, Any]:
         return {"status": "degraded", "error": "Trolley API unreachable"}
 
 
-@router.get("/health")
+@router.get("/health/live")
 async def health_liveness():
     """
     Kubernetes liveness probe - returns 200 if application is running.
 
     This endpoint should always return quickly and indicate the service is alive.
-    Does not check dependencies.
+    Does not check dependencies. For dependency-aware checks, use /health (load
+    balancer) or /health/ready (K8s readiness).
     """
     return {"status": "ok", "timestamp": datetime.utcnow().isoformat(), "service": "artistos-api"}
 
