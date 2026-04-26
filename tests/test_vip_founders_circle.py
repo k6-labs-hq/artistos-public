@@ -15,7 +15,6 @@ Full coverage test suite for the Invite-Only Premier Experience:
 
 from __future__ import annotations
 
-import asyncio
 import hashlib
 import uuid
 from unittest.mock import MagicMock, patch
