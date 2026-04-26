@@ -5,6 +5,7 @@ import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
 import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
 import { AnomalyDetailPage } from "./components/AnomalyDetailPage";
 import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPanel";
+import { LoginPage } from "./components/LoginPage";
 import { NotFoundPage } from "./components/NotFoundPage";
 
 type ThemeMode = "dark" | "light";
@@ -231,6 +232,7 @@ export function App() {
   const adminHandoffsRoute = useMemo(() => window.location.pathname === "/admin/workflow/handoffs/ui", []);
   const normalizedPath = useMemo(() => window.location.pathname.replace(/\/+$/, "") || "/", []);
   const homeRoute = normalizedPath === "/";
+  const loginRoute = normalizedPath === "/login";
 
   const anomalyId = anomalyMatch?.[1];
   if (anomalyId) {
@@ -239,6 +241,10 @@ export function App() {
 
   if (adminHandoffsRoute) {
     return <AdminWorkflowHandoffsPanel />;
+  }
+
+  if (loginRoute) {
+    return <LoginPage />;
   }
 
   if (!homeRoute) {
@@ -280,7 +286,7 @@ export function App() {
             >
               <span aria-hidden="true">{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
             </button>
-            <button type="button" className="cta small">Get Started</button>
+            <a className="cta small" href="/login">Sign in</a>
             {/* eslint-disable-next-line jsx-a11y/aria-props */}
             <button
               type="button"
