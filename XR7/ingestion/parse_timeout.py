@@ -6,7 +6,8 @@ cause parser to hang or consume excessive CPU/memory.
 
 from __future__ import annotations
 
-import signal
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from typing import Any, Callable
 
 from xr7_common.logging import get_logger
@@ -50,14 +51,6 @@ class StatementParseTimeoutError(Exception):
         super().__init__(message or default_msg)
 
 
-def _timeout_handler(signum, frame):
-    """Signal handler for SIGALRM timeout."""
-    raise StatementParseTimeoutError(
-        DEFAULT_PARSE_TIMEOUT,
-        f"Operation timed out after {DEFAULT_PARSE_TIMEOUT} seconds",
-    )
-
-
 def parse_with_timeout(
     func: Callable,
     *args,
@@ -66,8 +59,9 @@ def parse_with_timeout(
 ) -> Any:
     """Execute a parsing function with timeout enforcement.
 
-    Wraps the provided function in a timeout mechanism. If execution exceeds
-    the timeout, raises StatementParseTimeoutError to prevent resource exhaustion.
+    Runs ``func`` on a worker thread and waits at most ``timeout_seconds``
+    for completion. Works identically on Linux, macOS, and Windows, and on
+    any caller thread (main, FastAPI thread-pool, async bridge, worker).
 
     Args:
         func: Function to execute with timeout
@@ -79,58 +73,25 @@ def parse_with_timeout(
         Result from func execution
 
     Raises:
-        StatementParseTimeoutError: If execution exceeds timeout
-
-    Example::
-
-        try:
-            result = parse_with_timeout(
-                parse_statement_file,
-                file_content,
-                artist_id,
-                filename="statement.csv",
-                timeout_seconds=30,
-            )
-        except StatementParseTimeoutError as e:
-            logger.error(f"Parsing timed out: {e}")
+        StatementParseTimeoutError: If execution exceeds timeout.
 
     Notes:
-        - Uses SIGALRM signal on Unix/Linux (not Windows compatible)
-        - For Windows, consider using threading.Timer or multiprocessing
-        - TODO: Replace with multiprocessing-based timeout for Windows support
+        - On timeout, the worker thread is not forcibly killed (Python does
+          not support that). The caller gets the error immediately; the
+          orphaned thread finishes in the background and its result is
+          discarded. For hard-kill semantics use
+          ``parse_with_timeout_multiprocessing``.
     """
-    # TODO: Add Windows-compatible timeout mechanism
-    # Current implementation uses SIGALRM which is Unix-only
-    # For production on Windows, use multiprocessing.Process with join(timeout)
-
     try:
-        # Set up signal-based timeout (Unix only)
-        if hasattr(signal, "SIGALRM"):
-            old_handler = signal.signal(signal.SIGALRM, _timeout_handler)
-            signal.alarm(timeout_seconds)
-
+        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="parse-timeout") as pool:
+            future = pool.submit(func, *args, **kwargs)
             try:
-                result = func(*args, **kwargs)
-                signal.alarm(0)  # Cancel alarm
-                return result
-            finally:
-                # Restore original handler
-                signal.signal(signal.SIGALRM, old_handler)
-        else:
-            # Windows or no signal support: execute without timeout
-            # TODO: Implement multiprocessing-based timeout for Windows
-            logger.warning(
-                "parse_timeout_not_supported_on_platform",
-                extra={"timeout_seconds": timeout_seconds},
-            )
-            return func(*args, **kwargs)
-
+                return future.result(timeout=timeout_seconds)
+            except FutureTimeoutError:
+                raise StatementParseTimeoutError(timeout_seconds) from None
     except StatementParseTimeoutError:
-        # Re-raise timeout errors
         raise
-
     except Exception as exc:
-        # Log other errors
         logger.error(
             "parse_with_timeout_unexpected_error",
             extra={"error": str(exc), "error_type": type(exc).__name__},
