@@ -167,6 +167,18 @@ _FORMATS = {
         "required": {"title", "date", "payer", "revenue"},
         "aliases": {"revenue": "amount", "payer": "source"},
     },
+    "bmi_real": {
+        # BMI's real Royalty Distribution Statement CSV (28-col writer/publisher
+        # export from the BMI member portal). Distinct from the simplified
+        # 'bmi' format above which is the synthetic test fixture shape.
+        "required": {"period", "title name", "perf source", "royalty amount", "perf count"},
+        "aliases": {
+            "title name": "title",
+            "royalty amount": "amount",
+            "perf source": "source",
+            "perf count": "quantity",
+        },
+    },
     "spotify": {
         "required": {"track name", "streams", "stream revenue"},
         "aliases": {"track name": "title", "stream revenue": "amount", "streams": "quantity"},
@@ -320,7 +332,26 @@ SUPPORTED_FORMATS: dict[str, dict] = {
         "name": "BMI",
         "type": "pro",
         "key_columns": ["Title", "ISWC", "Date", "Payer", "Revenue"],
-        "description": "BMI royalty statement CSV.",
+        "description": "BMI royalty statement CSV (simplified test fixture shape).",
+    },
+    "bmi_real": {
+        "name": "BMI (Royalty Distribution Statement)",
+        "type": "pro",
+        "key_columns": [
+            "PERIOD",
+            "W OR P",
+            "PARTICIPANT NAME",
+            "TITLE NAME",
+            "PERF SOURCE",
+            "PERF COUNT",
+            "ROYALTY AMOUNT",
+        ],
+        "description": (
+            "BMI's real 28-column Royalty Distribution Statement CSV "
+            "(downloaded from BMI member portal). Period encoded as YYYYQ "
+            "(e.g. 20253 = Q3 2025). Currently parses writer rows only; "
+            "publisher rows (W OR P = P) are skipped."
+        ),
     },
     "spotify": {
         "name": "Spotify for Artists",
@@ -917,6 +948,141 @@ def _parse_bmi(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
     return event, payment
 
 
+# ── BMI real-format helpers (28-col Royalty Distribution Statement) ─────────
+
+# BMI rolls performance into known surfaces; treat these as STREAM events,
+# everything else as PERFORMANCE (radio, TV, live, etc.). The list isn't
+# exhaustive — anything not matching defaults to PERFORMANCE.
+_BMI_STREAMING_SOURCES = (
+    "SPOTIFY",
+    "APPLE",
+    "AMAZON",
+    "YOUTUBE",
+    "PANDORA",
+    "DEEZER",
+    "TIDAL",
+    "SOUNDCLOUD",
+    "AUDIOMACK",
+    "TIKTOK",
+    "INTERNET",
+    "IHEART",
+    "SIRIUSXMDIGITAL",
+)
+
+
+def _decode_bmi_period(value: str) -> tuple[date | None, date | None]:
+    """Decode BMI's ``YYYYQ`` period encoding.
+
+    Examples: ``"20253"`` → (2025-07-01, 2025-09-30), ``"20251"`` → Q1 2025.
+    Returns ``(None, None)`` for unparseable values (international accounting
+    periods like ``191ST`` show in the PDF but not in the CSV; if they ever
+    do appear, the row's amount is still captured but without a period).
+    """
+    raw = (value or "").strip()
+    if len(raw) != 5 or not raw.isdigit():
+        return None, None
+    year = int(raw[:4])
+    quarter = int(raw[4])
+    if quarter < 1 or quarter > 4:
+        return None, None
+    start_month = (quarter - 1) * 3 + 1
+    period_start = date(year, start_month, 1)
+    end_month = start_month + 2
+    last_day = _month_end(datetime(year, end_month, 1, tzinfo=timezone.utc))
+    return period_start, last_day
+
+
+_BMI_COUNTRY_TO_ISO = {
+    "UNITED STATES": "US",
+    "CANADA": "CA",
+    "UNITED KINGDOM": "GB",
+    "AUSTRALIA": "AU",
+    "GERMANY": "DE",
+    "FRANCE": "FR",
+    "NETHERLANDS": "NL",
+    "SWEDEN": "SE",
+    "NORWAY": "NO",
+    "DENMARK": "DK",
+    "FINLAND": "FI",
+    "JAPAN": "JP",
+    "BRAZIL": "BR",
+    "MEXICO": "MX",
+    "ITALY": "IT",
+    "SPAIN": "ES",
+    "BELGIUM": "BE",
+    "AUSTRIA": "AT",
+    "SWITZERLAND": "CH",
+    "IRELAND": "IE",
+    "NEW ZEALAND": "NZ",
+}
+
+
+def _bmi_country_to_iso(country: str) -> str:
+    """Map BMI's full-country-name to ISO 3166-1 alpha-2; default US."""
+    raw = (country or "").strip().upper()
+    return _BMI_COUNTRY_TO_ISO.get(raw, raw[:2] if len(raw) >= 2 else "US")
+
+
+def _parse_bmi_real(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    """Parse one row of BMI's real 28-column Royalty Distribution Statement.
+
+    Skips publisher rows (``W OR P == 'P'``) since this MVP-stage parser
+    focuses on writer royalties; publisher rows are typically a separate
+    distribution to a separate IPI.
+    """
+    w_or_p = _col(row, "w or p").strip().upper()
+    if w_or_p and w_or_p != "W":
+        return None, None
+
+    amount_str = _col(row, "royalty amount", "current activity amt")
+    amount = _parse_amount(amount_str)
+    if amount is None or amount == 0:
+        return None, None
+
+    period_start, period_end = _decode_bmi_period(_col(row, "period"))
+
+    perf_source = _col(row, "perf source") or "UNKNOWN"
+    title = _col(row, "title name", "title") or "UNKNOWN"
+    country = _col(row, "country of performance")
+    perf_count = _parse_int(_col(row, "perf count")) or 1
+
+    # Prefer explicit perf_date when present; fall back to period start.
+    raw_perf_date = _col(row, "perf date")
+    dt = _parse_date(raw_perf_date)
+    if dt is None:
+        dt = (
+            datetime(period_start.year, period_start.month, period_start.day, tzinfo=timezone.utc)
+            if period_start
+            else datetime.now(timezone.utc)
+        )
+
+    is_streaming = any(token in perf_source.upper() for token in _BMI_STREAMING_SOURCES)
+    event_type = "STREAM" if is_streaming else "PERFORMANCE"
+
+    event = {
+        "event_type": event_type,
+        "artist_id": artist_id,
+        "platform": f"BMI / {perf_source}",
+        "territory": _bmi_country_to_iso(country),
+        "timestamp": dt,
+        "quantity": perf_count,
+        "unit_value": round(amount / max(perf_count, 1), 6),
+        "currency": "USD",
+        "work_title": title,
+    }
+    payment = {
+        "payment_type": "ROYALTY",
+        "artist_id": artist_id,
+        "amount": round(amount, 6),
+        "currency": "USD",
+        "source": f"BMI / {perf_source}",
+        "period_start": period_start,
+        "period_end": period_end,
+        "reference_id": _row_hash(row, "bmi_real"),
+    }
+    return event, payment
+
+
 def _parse_spotify(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
     raw_date = _col(row, "date", "month")
     dt = _parse_date(raw_date) or datetime.now(timezone.utc)
@@ -1099,6 +1265,7 @@ _FORMAT_PARSERS.update(
         "bandcamp": _parse_bandcamp,  # SALE event, item_type source label
         "ascap": _parse_ascap,  # per-performance, fixed territory US
         "bmi": _parse_bmi,  # per-performance, fixed territory US
+        "bmi_real": _parse_bmi_real,  # 28-col BMI Royalty Distribution Statement
         "spotify": _parse_spotify,  # stream revenue column name
         "soundcloud": _parse_soundcloud,  # extra SC-specific metadata fields
         "generic": _parse_generic,  # column-sniffing fallback
