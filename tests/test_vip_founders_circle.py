@@ -749,4 +749,3 @@ class TestVipServiceUnit:
             assert isinstance(drops, list)
             assert len(drops) >= 1
             assert "title" in drops[0]
-

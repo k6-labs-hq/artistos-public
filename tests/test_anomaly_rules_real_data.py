@@ -121,7 +121,9 @@ def test_track_outlier_fires_for_below_half_median():
         _stream(title="Track B", qty=100_000, unit_value=0.001),  # 0.001
         _stream(title="Track C", qty=100_000, unit_value=0.0011),  # 0.0011
         _stream(title="Track D", qty=100_000, unit_value=0.0009),  # 0.0009
-        _stream(title="Track E", qty=100_000, unit_value=0.0004),  # 0.0004 ← outlier (40% of median)
+        _stream(
+            title="Track E", qty=100_000, unit_value=0.0004
+        ),  # 0.0004 ← outlier (40% of median)
     ]
     findings = run_transparent_rules(ARTIST, events=events, payments=[], contracts=[])
     matches = _findings_by_rule(findings, "TRACK_RATE_OUTLIER")

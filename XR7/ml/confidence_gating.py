@@ -138,7 +138,6 @@ class ConfidenceGatingService:
         urgency_flag = context.get("urgency_flag", False)
         estimated_recoverable = float(context.get("estimated_recoverable", 0.0))
 
-
         # Compute priority score (0-100)
         # Factors: confidence (70%), dollar amount (20%), urgency (10%)
         priority_score = (

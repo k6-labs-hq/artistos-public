@@ -992,6 +992,7 @@ def _parse_bmi(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
 
 # ── BMI real-format helpers (28-col Royalty Distribution Statement) ─────────
 
+
 def _decode_bmi_period(value: str) -> tuple[date | None, date | None]:
     """Decode BMI's ``YYYYQ`` period encoding.
 

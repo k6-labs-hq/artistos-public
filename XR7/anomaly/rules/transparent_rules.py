@@ -287,9 +287,7 @@ def run_transparent_rules(
         # Heuristic: where retroactive corrections happen at this scale,
         # roughly half the same amount is typically still uncollected.
         est_more_uncollected = round(total_retro * 0.5, 2)
-        worst_payer, worst_b = max(
-            high_retro_payers, key=lambda kv: kv[1]["retro"] / kv[1]["all"]
-        )
+        worst_payer, worst_b = max(high_retro_payers, key=lambda kv: kv[1]["retro"] / kv[1]["all"])
         worst_ratio = worst_b["retro"] / worst_b["all"]
         findings.append(
             {
@@ -352,9 +350,7 @@ def run_transparent_rules(
         median_rate = sorted_rates[len(sorted_rates) // 2]
         threshold = median_rate * 0.5
         outliers = [
-            (title, rate, qty)
-            for title, rate, qty in track_rates
-            if rate > 0 and rate < threshold
+            (title, rate, qty) for title, rate, qty in track_rates if rate > 0 and rate < threshold
         ]
         if outliers and median_rate > 0:
             # Recoverable estimate: bring outliers up to median rate on their volume.

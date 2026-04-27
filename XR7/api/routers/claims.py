@@ -1651,5 +1651,3 @@ async def escalate_legal(claim_id: str, db: Session = Depends(get_db)):
         "attorney_packet": packet,
         "legal_success_probability": 0.71,
     }
-
-

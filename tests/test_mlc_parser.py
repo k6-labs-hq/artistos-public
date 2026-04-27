@@ -76,9 +76,15 @@ def test_detect_format_mlc_does_not_clash_with_other_pros():
 
 
 def test_parse_basic_streaming_row():
-    csv = _MLC_HEADER + "\n" + _row(
-        dsp_name="Spotify", usages="60153", royalty_amount="20.7677",
-        distributed="20.7677",
+    csv = (
+        _MLC_HEADER
+        + "\n"
+        + _row(
+            dsp_name="Spotify",
+            usages="60153",
+            royalty_amount="20.7677",
+            distributed="20.7677",
+        )
     )
     result = parse_csv(csv.encode(), artist_id="artist-1")
 
@@ -103,10 +109,16 @@ def test_parse_basic_streaming_row():
 
 def test_parse_reprocessing_row_keeps_processing_type_in_source():
     """Reprocessing rows should be distinguishable in payment.source for downstream filtering."""
-    csv = _MLC_HEADER + "\n" + _row(
-        processing_type="reprocessing",
-        royalty_amount="0.5000", late_fee="0.0001", interest="0.0001",
-        distributed="0.5002",
+    csv = (
+        _MLC_HEADER
+        + "\n"
+        + _row(
+            processing_type="reprocessing",
+            royalty_amount="0.5000",
+            late_fee="0.0001",
+            interest="0.0001",
+            distributed="0.5002",
+        )
     )
     result = parse_csv(csv.encode(), artist_id="artist-1")
     assert "reprocessing" in result.payments[0]["source"]
@@ -139,9 +151,15 @@ def test_parse_multiple_dsps_aggregated_correctly():
 
 def test_parse_distributed_includes_interest_and_late_fee():
     """Distributed Amount = Royalty + Late Fee + Interest. We use Distributed."""
-    csv = _MLC_HEADER + "\n" + _row(
-        royalty_amount="1.0000", late_fee="0.0500", interest="0.0100",
-        distributed="1.0600",
+    csv = (
+        _MLC_HEADER
+        + "\n"
+        + _row(
+            royalty_amount="1.0000",
+            late_fee="0.0500",
+            interest="0.0100",
+            distributed="1.0600",
+        )
     )
     result = parse_csv(csv.encode(), artist_id="artist-1")
     assert result.payments[0]["amount"] == 1.06

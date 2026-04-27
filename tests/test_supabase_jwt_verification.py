@@ -185,7 +185,10 @@ def test_unsupported_algorithm_rejected(monkeypatch):
     with pytest.raises(HTTPException) as excinfo:
         verify_supabase_jwt(token)
     assert excinfo.value.status_code == 401
-    assert "Unsupported" in str(excinfo.value.detail) or "algorithm" in str(excinfo.value.detail).lower()
+    assert (
+        "Unsupported" in str(excinfo.value.detail)
+        or "algorithm" in str(excinfo.value.detail).lower()
+    )
 
 
 def test_missing_supabase_url_for_es256_returns_503(monkeypatch):

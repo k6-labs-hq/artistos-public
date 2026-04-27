@@ -99,7 +99,11 @@ def test_detect_format_synthetic_bmi_still_detected():
 
 
 def test_parse_writer_streaming_row():
-    csv = _BMI_REAL_HEADER + "\n" + _row(perf_source="SPOTIFY PREM", perf_count="1234", royalty="2.50")
+    csv = (
+        _BMI_REAL_HEADER
+        + "\n"
+        + _row(perf_source="SPOTIFY PREM", perf_count="1234", royalty="2.50")
+    )
     result = parse_csv(csv.encode(), artist_id="artist-1")
 
     assert result.format_detected == "bmi_real"
