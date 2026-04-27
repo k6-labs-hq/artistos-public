@@ -24,11 +24,11 @@ import os
 from pathlib import Path
 
 import pytest
-from alembic.config import Config as AlembicConfig
 from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
 from alembic import command as alembic_command
+from alembic.config import Config as AlembicConfig
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -102,8 +102,9 @@ class AlembicRunner:
 
     def current_revision(self) -> str | None:
         """Return the current migration revision string."""
-        from alembic.runtime.migration import MigrationContext
         from sqlalchemy import create_engine as _ce
+
+        from alembic.runtime.migration import MigrationContext
 
         db_url = self.cfg.get_main_option("sqlalchemy.url")
         eng = _ce(db_url)
