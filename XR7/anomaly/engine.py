@@ -24,6 +24,8 @@ class AnomalyEngine:
                 "id": e.id,
                 "event_type": self._enum_value(e.event_type),
                 "work_id": e.work_id,
+                "work_title": getattr(e, "work_title", None),
+                "platform": getattr(e, "platform", None),
                 "quantity": e.quantity,
                 "unit_value": e.unit_value,
                 "currency": e.currency,

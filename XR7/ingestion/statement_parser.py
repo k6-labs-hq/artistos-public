@@ -1093,6 +1093,14 @@ def _parse_bmi_real(row: dict, artist_id: str) -> tuple[dict | None, dict | None
         "currency": "USD",
         "work_title": title,
     }
+    # received_at marks when the artist actually got paid. Without this the
+    # "stream month missing payment" rule false-positives on multi-period
+    # ingestion (it would see all payments as arriving in one month).
+    received_at = (
+        datetime(period_end.year, period_end.month, period_end.day, tzinfo=timezone.utc)
+        if period_end
+        else dt
+    )
     payment = {
         "payment_type": "ROYALTY",
         "artist_id": artist_id,
@@ -1101,6 +1109,7 @@ def _parse_bmi_real(row: dict, artist_id: str) -> tuple[dict | None, dict | None
         "source": f"BMI / {perf_source}",
         "period_start": period_start,
         "period_end": period_end,
+        "received_at": received_at,
         "reference_id": _row_hash(row, "bmi_real"),
     }
     return event, payment
@@ -1158,6 +1167,9 @@ def _parse_mlc(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
         "work_title": title,
         "isrc": _col(row, "isrc"),
     }
+    # MLC distributes monthly so received_at ≈ period_end + a few weeks.
+    # Use period_end as a sensible proxy — keeps multi-period analysis honest.
+    received_at = period_end if period_end else dt
     payment = {
         "payment_type": "ROYALTY",
         "artist_id": artist_id,
@@ -1168,6 +1180,7 @@ def _parse_mlc(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
         "source": f"MLC / {dsp_name} / {processing_type}",
         "period_start": period_start_d,
         "period_end": period_end_d,
+        "received_at": received_at,
         "reference_id": _row_hash(row, "mlc"),
     }
     return event, payment
