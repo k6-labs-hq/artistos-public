@@ -243,9 +243,15 @@ def anomaly_recovery_probability_endpoint(anomaly_id: str, db: Session = Depends
     }
 
 
-@router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
-def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
-    _router_service.get_artist_or_404(artist_id, db)
+def run_detection_and_persist(artist_id: str, db: Session) -> list[dict]:
+    """Run the anomaly engine, gate by confidence, persist accepted findings, and
+    route REVIEW-tier items into the review queue.
+
+    Returns the list of enriched anomaly dicts (each with persisted ``id``). Used
+    by both ``POST /anomalies/detect`` and the post-upload flow in
+    ``ingestion.upload_statement`` so findings are persisted and not silently
+    dropped.
+    """
     rg = RightsGraph()
     engine = AnomalyEngine(EarningsEngine(rg), rg)
     anomaly_dicts = engine.detect_all(artist_id, db)
@@ -338,6 +344,14 @@ def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
             "gating_metrics": gating_metrics,
         },
     )
+
+    return enriched
+
+
+@router.post("/artists/{artist_id}/anomalies/detect", response_model=DetectAnomaliesResponseSchema)
+def detect_anomalies(artist_id: str, db: Session = Depends(get_db)):
+    _router_service.get_artist_or_404(artist_id, db)
+    enriched = run_detection_and_persist(artist_id, db)
 
     try:
         hubspot_sync_recovery_update.delay(artist_id, event="anomalies_detected")

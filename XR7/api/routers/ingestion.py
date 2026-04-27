@@ -34,12 +34,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from XR7.anomaly.engine import AnomalyEngine
+from XR7.api.routers.anomalies import run_detection_and_persist
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.auth.event_notifications import send_event_notification
-from XR7.earnings.engine import EarningsEngine
 from XR7.fingerprinting.matching.identity_matching import persist_identity_match
-from XR7.graph.rights_graph import RightsGraph
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
 from XR7.ingestion.parse_timeout import StatementParseTimeoutError, parse_with_timeout
@@ -395,12 +393,12 @@ async def upload_statement(
     events_created = event_result["inserted"]
     payments_created = _save_payments(db, result.payments)
 
-    # Run anomaly detection on newly ingested data
+    # Run anomaly detection on newly ingested data and persist findings.
+    # Without this, dicts came back from the engine but were never inserted
+    # into the anomalies table — so the dashboard / notifications saw nothing.
     if events_created > 0:
         try:
-            rg = RightsGraph()
-            anomaly_engine = AnomalyEngine(EarningsEngine(rg), rg)
-            anomaly_engine.detect_all(artist_id, db)
+            run_detection_and_persist(artist_id, db)
         except Exception:  # noqa: BLE001
             logger.exception(
                 "Anomaly detection after upload failed (non-blocking)",
@@ -790,8 +788,7 @@ async def upload_statement_batch(
                 extra={"artist_id": artist_id},
             )
         try:
-            rg = RightsGraph()
-            AnomalyEngine(EarningsEngine(rg), rg).detect_all(artist_id, db)
+            run_detection_and_persist(artist_id, db)
         except Exception:  # noqa: BLE001
             logger.exception(
                 "Batch anomaly detection failed (non-blocking)", extra={"artist_id": artist_id}
