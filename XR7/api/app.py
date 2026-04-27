@@ -168,7 +168,14 @@ async def lifespan(app: FastAPI):
     import XR7.models.xr7_idempotency  # noqa: F401
     import XR7.models.xr7_royalty  # noqa: F401
 
-    Base.metadata.create_all(bind=engine)
+    # In deployed environments (qa, production), alembic migrations are the
+    # source of truth for schema; create_all() would conflict with the enum
+    # types alembic already created (Postgres CREATE TYPE doesn't honor
+    # SQLAlchemy's checkfirst — known quirk). Local dev / test still uses
+    # create_all() for fast SQLite bootstrap without running migrations.
+    xr7_env = os.environ.get("XR7_ENV", "development").strip().lower()
+    if xr7_env in {"development", "test"}:
+        Base.metadata.create_all(bind=engine)
     configure_structured_logging()
     configure_tracing(app)
     yield
