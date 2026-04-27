@@ -26,6 +26,9 @@ htmlcov/
 .vscode/
 *.swp
 
+# Claude Code runtime state (local-only; not for the repo)
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
