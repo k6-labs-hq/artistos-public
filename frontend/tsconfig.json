@@ -12,6 +12,11 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
+    // tsc is for type-checking only; Vite handles the actual JS transpile.
+    // Without noEmit, `tsc -b` (in the build script) writes .js files next to
+    // every .tsx in src/, which then shadow the .tsx sources on subsequent
+    // dev-server starts. This was a recurring bug; explicit noEmit pins it.
+    "noEmit": true,
     "paths": {
       "@/*": ["./src/*"],
       "@xr7-sdk/*": ["../sdk/typescript/src/*"]

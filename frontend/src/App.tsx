@@ -7,6 +7,7 @@ import { AnomalyDetailPage } from "./components/AnomalyDetailPage";
 import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPanel";
 import { LoginPage } from "./components/LoginPage";
 import { NotFoundPage } from "./components/NotFoundPage";
+import { clearXR7Token, getXR7Token } from "./lib/supabase";
 
 type ThemeMode = "dark" | "light";
 
@@ -135,6 +136,14 @@ export function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
   const [activeSectionId, setActiveSectionId] = useState<string>("trust");
+  const [isAuthed, setIsAuthed] = useState<boolean>(() => Boolean(getXR7Token()));
+
+  const handleSignOut = () => {
+    clearXR7Token();
+    setIsAuthed(false);
+    // Stay on the marketing page; reload so any in-memory auth-aware components reset.
+    window.location.assign("/");
+  };
 
   useEffect(() => {
     const saved = window.localStorage.getItem("xr7-theme");
@@ -286,7 +295,13 @@ export function App() {
             >
               <span aria-hidden="true">{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
             </button>
-            <a className="cta small" href="/login">Sign in</a>
+            {isAuthed ? (
+              <button type="button" className="cta small" onClick={handleSignOut}>
+                Sign out
+              </button>
+            ) : (
+              <a className="cta small" href="/login">Sign in</a>
+            )}
             {/* eslint-disable-next-line jsx-a11y/aria-props */}
             <button
               type="button"
@@ -312,9 +327,26 @@ export function App() {
               {item.label}
             </a>
           ))}
-          <button type="button" className="cta" onClick={() => setMobileMenuOpen(false)}>
-            Start Free
-          </button>
+          {isAuthed ? (
+            <button
+              type="button"
+              className="cta"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                handleSignOut();
+              }}
+            >
+              Sign out
+            </button>
+          ) : (
+            <a
+              className="cta"
+              href="/login"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Sign in
+            </a>
+          )}
         </div>
       </header>
 
@@ -326,7 +358,14 @@ export function App() {
           <h1>Uncover Every Dollar You Are Owed</h1>
           <p className="hero-copy">{heroSubtitle}</p>
           <div className="hero-actions">
-            <button type="button" className="cta large pulse">Get Started Free</button>
+            {/* Hide the "Get Started" CTA when the visitor has already signed in.
+                A "Go to dashboard" replacement would 404 today since no /dashboard
+                route exists yet — fold that in once the dashboard ships. */}
+            {!isAuthed ? (
+              <a className="cta large pulse" href="/login">
+                Get Started Free
+              </a>
+            ) : null}
             <button type="button" className="ghost large" onClick={() => setDemoOpen(true)}>
               Watch Demo
             </button>

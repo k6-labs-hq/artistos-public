@@ -10,6 +10,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
       "@xr7-sdk": path.resolve(__dirname, "../sdk/typescript/src"),
     },
+    // Resolve TypeScript first. Without this, an accidentally-checked-in or
+    // locally-stale '.js' next to its source '.tsx' would shadow the .tsx —
+    // Vite's default extension order puts '.js' before '.tsx'. We've been
+    // bitten by this before; explicit ordering pins it.
+    extensions: [".mjs", ".tsx", ".ts", ".jsx", ".js", ".json"],
   },
   server: {
     fs: {
