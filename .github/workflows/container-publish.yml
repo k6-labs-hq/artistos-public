@@ -72,7 +72,11 @@ jobs:
         if: github.event_name == 'push'
         uses: aquasecurity/trivy-action@0.35.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ steps.img.outputs.name }}:sha-${{ github.sha }}
+          # Scan the :latest tag (always pushed on main builds via the
+          # metadata-action raw rule). Using github.sha would produce a
+          # 40-char ref but metadata-action tags as sha-<7-char-short>;
+          # mismatch caused MANIFEST_UNKNOWN.
+          image-ref: ${{ env.REGISTRY }}/${{ steps.img.outputs.name }}:latest
           format: 'table'
           severity: 'CRITICAL,HIGH'
           exit-code: '1'
