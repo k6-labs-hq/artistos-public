@@ -56,6 +56,36 @@ git checkout -b <type>/<short-description>
 - ✅ Use `Closes #N` in every PR description
 - ✅ Move cards through columns as you work
 
+## Staying in sync with main
+
+To avoid accidentally creating merge commits or reverting other people's work when you pull, configure git to always rebase:
+
+```bash
+git config --global pull.rebase true
+git config --global rebase.autoStash true
+```
+
+After this, plain `git pull` rebases your local commits on top of the latest remote — no merge commits, no clobbered work. This is a one-time setup.
+
+If you hit a conflict during rebase, the safe escape hatch is:
+
+```bash
+git rebase --abort   # puts you back where you started
+```
+
+Resolve conflicts file-by-file, then `git add <file>` and `git rebase --continue`. **Do not** `git reset --hard` to escape — that throws away work.
+
+If you need to update a PR branch with the latest `main`:
+
+```bash
+git checkout your-branch
+git fetch origin
+git rebase origin/main
+git push --force-with-lease   # safe force-push: refuses to overwrite if someone else pushed
+```
+
+Never use plain `git push --force` on a shared branch.
+
 ## Branch naming
 
 - `feat/<desc>` — new feature
