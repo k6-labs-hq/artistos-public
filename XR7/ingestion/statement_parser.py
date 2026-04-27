@@ -992,26 +992,6 @@ def _parse_bmi(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
 
 # ── BMI real-format helpers (28-col Royalty Distribution Statement) ─────────
 
-# BMI rolls performance into known surfaces; treat these as STREAM events,
-# everything else as PERFORMANCE (radio, TV, live, etc.). The list isn't
-# exhaustive — anything not matching defaults to PERFORMANCE.
-_BMI_STREAMING_SOURCES = (
-    "SPOTIFY",
-    "APPLE",
-    "AMAZON",
-    "YOUTUBE",
-    "PANDORA",
-    "DEEZER",
-    "TIDAL",
-    "SOUNDCLOUD",
-    "AUDIOMACK",
-    "TIKTOK",
-    "INTERNET",
-    "IHEART",
-    "SIRIUSXMDIGITAL",
-)
-
-
 def _decode_bmi_period(value: str) -> tuple[date | None, date | None]:
     """Decode BMI's ``YYYYQ`` period encoding.
 
@@ -1098,11 +1078,12 @@ def _parse_bmi_real(row: dict, artist_id: str) -> tuple[dict | None, dict | None
             else datetime.now(timezone.utc)
         )
 
-    is_streaming = any(token in perf_source.upper() for token in _BMI_STREAMING_SOURCES)
-    event_type = "STREAM" if is_streaming else "PERFORMANCE"
-
+    # All BMI rows are unit-of-consumption that earned royalty — emit STREAM.
+    # The platform field ("BMI / RADIO", "BMI / SPOTIFY PREM", "BMI / TIKTOK")
+    # carries the source distinction. EventType.PERFORMANCE doesn't exist in
+    # the schema; broadening the enum is a separate-PR conversation.
     event = {
-        "event_type": event_type,
+        "event_type": "STREAM",
         "artist_id": artist_id,
         "platform": f"BMI / {perf_source}",
         "territory": _bmi_country_to_iso(country),

@@ -121,11 +121,13 @@ def test_parse_writer_streaming_row():
     assert p["source"] == "BMI / SPOTIFY PREM"
 
 
-def test_parse_radio_row_classified_as_performance():
-    """Non-streaming surfaces (RADIO, TV, LIVE) → PERFORMANCE event_type."""
+def test_parse_radio_row_keeps_source_in_platform():
+    """All BMI rows emit STREAM (EventType enum doesn't include PERFORMANCE).
+    The platform field carries the source distinction."""
     csv = _BMI_REAL_HEADER + "\n" + _row(perf_source="RADIO", royalty="0.06")
     result = parse_csv(csv.encode(), artist_id="artist-1")
-    assert result.events[0]["event_type"] == "PERFORMANCE"
+    assert result.events[0]["event_type"] == "STREAM"
+    assert result.events[0]["platform"] == "BMI / RADIO"
 
 
 def test_parse_publisher_row_skipped():
