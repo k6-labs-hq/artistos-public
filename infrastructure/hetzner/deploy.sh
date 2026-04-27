@@ -18,9 +18,10 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
-# Load DOMAIN so Caddy picks it up
+# Load API_DOMAIN + APP_DOMAIN so Caddy picks them up.
+# Legacy DOMAIN is still respected for backwards compat.
 set -a; source "$ENV_FILE"; set +a
-export DOMAIN
+export API_DOMAIN APP_DOMAIN DOMAIN
 
 echo "==> Pulling latest image for ${ENV_NAME}..."
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" pull api worker scheduler
@@ -35,8 +36,9 @@ docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --remove-orphans
 
 echo "==> Waiting for health..."
 sleep 8
+HEALTH_HOST="${API_DOMAIN:-${DOMAIN:-localhost}}"
 if curl -fsS --max-time 10 "http://localhost:8000/health" >/dev/null 2>&1 || \
-   curl -fsS --max-time 10 "https://${DOMAIN}/health" >/dev/null 2>&1; then
+   curl -fsS --max-time 10 "https://${HEALTH_HOST}/health" >/dev/null 2>&1; then
   echo "Deploy OK for ${ENV_NAME}"
 else
   echo "WARNING: health check failed; inspect 'docker compose logs api'" >&2

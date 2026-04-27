@@ -1,13 +1,12 @@
 # Caddy production config for ArtistOS.
-# Caddy auto-issues Let's Encrypt TLS certificates on first request.
-# Swap ${DOMAIN} via environment substitution at container start,
-# or hardcode your real domain below.
+# Two sites:
+#   {$API_DOMAIN}  → reverse proxy to the FastAPI app container
+#   {$APP_DOMAIN}  → static SPA (Vite-built dist mounted at /srv/app)
+# Caddy auto-issues Let's Encrypt TLS for both on first request.
 
-{$DOMAIN:localhost} {
-	# Enforce HTTPS
+{$API_DOMAIN:localhost} {
 	encode gzip zstd
 
-	# Security headers
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options nosniff
@@ -17,19 +16,27 @@
 		-Server
 	}
 
-	# Optional: basic rate limit at the edge (per-IP)
-	# Uncomment if you install the caddy-ratelimit plugin.
-	# rate_limit {
-	# 	zone api_burst {
-	# 		key {remote_host}
-	# 		events 100
-	# 		window 1m
-	# 	}
-	# }
-
 	reverse_proxy api:8000 {
 		health_uri /health
 		health_interval 30s
 		health_timeout 5s
 	}
+}
+
+{$APP_DOMAIN:localhost} {
+	encode gzip zstd
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	root * /srv/app
+	# SPA routing: any path that isn't a real file returns index.html
+	# so the React router handles it client-side.
+	try_files {path} /index.html
+	file_server
 }
