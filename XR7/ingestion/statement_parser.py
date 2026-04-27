@@ -179,6 +179,23 @@ _FORMATS = {
             "perf count": "quantity",
         },
     },
+    "mlc": {
+        # The MLC mechanical royalty distribution. Native export is Apple
+        # Numbers (.numbers); also available as CSV from the member portal.
+        "required": {
+            "payee mlc number",
+            "mlc song code",
+            "distributed amount",
+            "processing type",
+            "number of usages",
+        },
+        "aliases": {
+            "distributed amount": "amount",
+            "number of usages": "quantity",
+            "dsp name": "source",
+            "work primary title": "title",
+        },
+    },
     "spotify": {
         "required": {"track name", "streams", "stream revenue"},
         "aliases": {"track name": "title", "stream revenue": "amount", "streams": "quantity"},
@@ -351,6 +368,31 @@ SUPPORTED_FORMATS: dict[str, dict] = {
             "(downloaded from BMI member portal). Period encoded as YYYYQ "
             "(e.g. 20253 = Q3 2025). Currently parses writer rows only; "
             "publisher rows (W OR P = P) are skipped."
+        ),
+    },
+    "mlc": {
+        "name": "The MLC (mechanical royalties)",
+        "type": "pro",
+        "key_columns": [
+            "Payee Name",
+            "Payee MLC Number",
+            "Usage Period Start Date",
+            "Usage Period End Date",
+            "DSP Name",
+            "Work Primary Title",
+            "ISWC",
+            "Processing Type",
+            "Number of Usages",
+            "Royalty Amount",
+            "Late Fee Amount",
+            "Interest Amount",
+            "Distributed Amount",
+        ],
+        "description": (
+            "The Mechanical Licensing Collective mechanical royalty distribution. "
+            "Native export is Apple Numbers (.numbers); also available as CSV. "
+            "Use parse_mlc_numbers_file() for .numbers; CSV flows through the "
+            "standard parse_csv() path."
         ),
     },
     "spotify": {
@@ -1083,6 +1125,73 @@ def _parse_bmi_real(row: dict, artist_id: str) -> tuple[dict | None, dict | None
     return event, payment
 
 
+# ── MLC (Mechanical Licensing Collective) parser ────────────────────────────
+
+
+def _parse_mlc(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
+    """Parse one row of an MLC mechanical royalty distribution.
+
+    All MLC rows are US-territory mechanical streaming income. We tag them
+    as STREAM events with payment_type=ROYALTY but include processing_type
+    in the source label so downstream filtering can distinguish ``regular``
+    current-period payments from ``reprocessing`` retroactive catch-ups
+    (an important signal — high reprocessing % suggests more uncollected
+    royalties exist).
+    """
+    # Distributed Amount = Royalty Amount + Late Fee Amount + Interest Amount.
+    # Use Distributed for the payment ledger (total received), and prefer it
+    # over Royalty Amount alone since the late fee + interest are real
+    # received income too.
+    distributed = _parse_amount(_col(row, "distributed amount"))
+    royalty = _parse_amount(_col(row, "royalty amount"))
+    amount = distributed if distributed is not None else royalty
+    if amount is None or amount == 0:
+        return None, None
+
+    quantity = _parse_int(_col(row, "number of usages")) or 1
+    title = _col(row, "work primary title", "title") or "UNKNOWN"
+    dsp_name = _col(row, "dsp name", "source") or "UNKNOWN"
+    territory = _col(row, "territory") or "US"
+    processing_type = _col(row, "processing type") or "regular"
+
+    period_start_str = _col(row, "usage period start date")
+    period_end_str = _col(row, "usage period end date")
+    period_start = _parse_date(period_start_str)
+    period_end = _parse_date(period_end_str)
+    period_start_d = period_start.date() if period_start else None
+    period_end_d = period_end.date() if period_end else None
+
+    # Use period_start as the event timestamp; if missing, fall back to
+    # ingestion time so downstream queries don't break.
+    dt = period_start or datetime.now(timezone.utc)
+
+    event = {
+        "event_type": "STREAM",
+        "artist_id": artist_id,
+        "platform": f"MLC / {dsp_name}",
+        "territory": territory,
+        "timestamp": dt,
+        "quantity": quantity,
+        "unit_value": round(amount / max(quantity, 1), 6),
+        "currency": "USD",
+        "work_title": title,
+        "isrc": _col(row, "isrc"),
+    }
+    payment = {
+        "payment_type": "ROYALTY",
+        "artist_id": artist_id,
+        "amount": round(amount, 6),
+        "currency": "USD",
+        # Include processing_type in source so anomaly detection can detect
+        # high reprocessing ratios per artist.
+        "source": f"MLC / {dsp_name} / {processing_type}",
+        "period_start": period_start_d,
+        "period_end": period_end_d,
+        "reference_id": _row_hash(row, "mlc"),
+    }
+    return event, payment
+
+
 def _parse_spotify(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
     raw_date = _col(row, "date", "month")
     dt = _parse_date(raw_date) or datetime.now(timezone.utc)
@@ -1266,6 +1375,7 @@ _FORMAT_PARSERS.update(
         "ascap": _parse_ascap,  # per-performance, fixed territory US
         "bmi": _parse_bmi,  # per-performance, fixed territory US
         "bmi_real": _parse_bmi_real,  # 28-col BMI Royalty Distribution Statement
+        "mlc": _parse_mlc,  # The MLC mechanical royalty distribution
         "spotify": _parse_spotify,  # stream revenue column name
         "soundcloud": _parse_soundcloud,  # extra SC-specific metadata fields
         "generic": _parse_generic,  # column-sniffing fallback
