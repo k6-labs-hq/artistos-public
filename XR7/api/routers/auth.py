@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import uuid
+from datetime import datetime, timezone
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
@@ -14,6 +16,7 @@ from XR7.auth.supabase import (
     get_supabase_claims,
     resolve_artist_from_claims,
 )
+from XR7.models.artist import Artist
 from XR7.models.base import get_db
 from XR7.services.branding import inject_branding_metadata
 
@@ -259,6 +262,53 @@ def auth_me(
 # ---------------------------------------------------------------------------
 
 
+def _provision_artist_from_supabase_claims(claims: dict[str, Any], db: Session) -> Artist:
+    """Create an Artist row for a freshly-authenticated Supabase user.
+
+    Identity provenance: the Artist is keyed by ``supabase_user_id`` (the
+    JWT's ``sub``). Email is captured if present in the claims. The
+    artist's display name uses the ``user_metadata.artist_name`` if set
+    (we populate this on admin-created Supabase users), otherwise falls
+    back to the email local-part, otherwise "New artist".
+
+    This runs from /auth/supabase/exchange when no Artist matches the
+    Supabase user — i.e. on the user's very first sign-in. Subsequent
+    sign-ins find the row and skip this path.
+
+    Security note: this trusts that the Supabase project's signup policy
+    matches what we want. For closed beta we run with email/password
+    signup disabled and admins create users via the admin API, so any
+    valid token here corresponds to an admin-vetted person. For open
+    signup later, this provisioning step would need additional gates
+    (email-domain allow-list, admin-approval queue, payment, etc.).
+    """
+    supabase_uid = str(claims.get("sub") or "")
+    if not supabase_uid:
+        # verify_supabase_jwt enforces sub already, but defense in depth.
+        raise HTTPException(status_code=401, detail="Supabase token missing subject")
+
+    email = str(claims.get("email") or "").strip().lower() or None
+    user_metadata = claims.get("user_metadata") or {}
+    name = (
+        str(user_metadata.get("artist_name") or "").strip()
+        or (email.split("@", 1)[0] if email else "")
+        or "New artist"
+    )
+
+    artist = Artist(
+        id=str(uuid.uuid4()),
+        name=name,
+        email=email,
+        supabase_user_id=supabase_uid,
+        country_code="US",
+        created_at=datetime.now(timezone.utc),
+    )
+    db.add(artist)
+    db.commit()
+    db.refresh(artist)
+    return artist
+
+
 @router.post(
     "/auth/supabase/exchange",
     response_model=TokenResponse,
@@ -266,7 +316,6 @@ def auth_me(
         "responses": {
             "200": {"description": "XR7 access token for the linked Artist"},
             "401": {"description": "Invalid or expired Supabase token"},
-            "403": {"description": "Supabase user not linked to an XR7 Artist"},
             "503": {"description": "SUPABASE_JWT_SECRET not configured"},
         }
     },
@@ -275,20 +324,18 @@ def supabase_exchange(
     supabase_claims: dict[str, Any] = Depends(get_supabase_claims),
     db: Session = Depends(get_db),
 ) -> TokenResponse:
-    """Verify a Supabase JWT, look up the linked Artist, and issue an XR7 token.
+    """Verify a Supabase JWT, look up (or auto-provision) the linked Artist, and issue an XR7 token.
 
     This is the authentication path for MVP. Clients authenticate via Supabase
     (email+password, magic link, OAuth), then POST the Supabase access token here
     to get an XR7-signed token that the rest of the API accepts.
+
+    First-time sign-in auto-provisions an Artist row keyed by the Supabase
+    user id. Subsequent sign-ins resolve the existing row.
     """
     artist = resolve_artist_from_claims(supabase_claims, db)
     if artist is None:
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Supabase user is not linked to an XR7 Artist. " "Pre-onboarding required for MVP."
-            ),
-        )
+        artist = _provision_artist_from_supabase_claims(supabase_claims, db)
 
     # Back-fill the link if we resolved by email.
     if not getattr(artist, "supabase_user_id", None):
