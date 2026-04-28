@@ -5,6 +5,7 @@ import { TVFilmEnterprisePanels } from "./components/TVFilmEnterprisePanels";
 import { TVFilmWorkspace } from "./components/TVFilmWorkspace";
 import { AnomalyDetailPage } from "./components/AnomalyDetailPage";
 import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPanel";
+import { DashboardPage } from "./components/DashboardPage";
 import { LoginPage } from "./components/LoginPage";
 import { NotFoundPage } from "./components/NotFoundPage";
 import { clearXR7Token, getXR7Token } from "./lib/supabase";
@@ -242,6 +243,7 @@ export function App() {
   const normalizedPath = useMemo(() => window.location.pathname.replace(/\/+$/, "") || "/", []);
   const homeRoute = normalizedPath === "/";
   const loginRoute = normalizedPath === "/login";
+  const dashboardRoute = normalizedPath === "/dashboard";
 
   const anomalyId = anomalyMatch?.[1];
   if (anomalyId) {
@@ -254,6 +256,10 @@ export function App() {
 
   if (loginRoute) {
     return <LoginPage />;
+  }
+
+  if (dashboardRoute) {
+    return <DashboardPage />;
   }
 
   if (!homeRoute) {
@@ -296,9 +302,14 @@ export function App() {
               <span aria-hidden="true">{theme === "dark" ? "Dark Mode" : "Light Mode"}</span>
             </button>
             {isAuthed ? (
-              <button type="button" className="cta small" onClick={handleSignOut}>
-                Sign out
-              </button>
+              <>
+                <a className="cta small" href="/dashboard" style={{ marginRight: "8px" }}>
+                  Dashboard
+                </a>
+                <button type="button" className="cta small" onClick={handleSignOut}>
+                  Sign out
+                </button>
+              </>
             ) : (
               <a className="cta small" href="/login">Sign in</a>
             )}
@@ -328,16 +339,25 @@ export function App() {
             </a>
           ))}
           {isAuthed ? (
-            <button
-              type="button"
-              className="cta"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                handleSignOut();
-              }}
-            >
-              Sign out
-            </button>
+            <>
+              <a
+                className="cta"
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Dashboard
+              </a>
+              <button
+                type="button"
+                className="cta"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleSignOut();
+                }}
+              >
+                Sign out
+              </button>
+            </>
           ) : (
             <a
               className="cta"
@@ -358,14 +378,15 @@ export function App() {
           <h1>Uncover Every Dollar You Are Owed</h1>
           <p className="hero-copy">{heroSubtitle}</p>
           <div className="hero-actions">
-            {/* Hide the "Get Started" CTA when the visitor has already signed in.
-                A "Go to dashboard" replacement would 404 today since no /dashboard
-                route exists yet — fold that in once the dashboard ships. */}
-            {!isAuthed ? (
+            {isAuthed ? (
+              <a className="cta large pulse" href="/dashboard">
+                Go to dashboard
+              </a>
+            ) : (
               <a className="cta large pulse" href="/login">
                 Get Started Free
               </a>
-            ) : null}
+            )}
             <button type="button" className="ghost large" onClick={() => setDemoOpen(true)}>
               Watch Demo
             </button>

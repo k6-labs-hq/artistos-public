@@ -242,12 +242,20 @@ def auth_me(
     payload: dict[str, Any] = Depends(get_auth_payload), db: Session = Depends(get_db)
 ) -> dict:
 
+    artist_id = payload.get("artist_id")
+    artist_name: str | None = None
+    if artist_id and payload.get("role") == "artist":
+        row = db.query(Artist).filter(Artist.id == artist_id).first()
+        if row is not None:
+            artist_name = row.name
+
     return inject_branding_metadata(
         db,
         {
             "subject": payload.get("sub"),
             "role": payload.get("role"),
-            "artist_id": payload.get("artist_id"),
+            "artist_id": artist_id,
+            "artist_name": artist_name,
             "artist_email": payload.get("artist_email"),
             "tenant_id": payload.get("tenant_id"),
             "issued_at": payload.get("iat"),

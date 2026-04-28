@@ -167,6 +167,25 @@ class TestAuthMe:
         data = resp.json()
         assert data["role"] == "artist"
 
+    def test_artist_me_includes_artist_name(self):
+        """The dashboard nav reads `artist_name` from /auth/me — pin that."""
+        artist_id = _create_artist(name="Beta User", email="beta@example.com")
+        token = _make_token("artist", subject=artist_id, extra={"artist_id": artist_id})
+        resp = client.get("/auth/me", headers=_auth(token))
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["artist_id"] == artist_id
+        assert data["artist_name"] == "Beta User"
+
+    def test_admin_me_has_null_artist_name(self):
+        """Admin tokens have no artist row to look up; field is null, not missing."""
+        token = _make_token("admin", subject="admin@example.com")
+        resp = client.get("/auth/me", headers=_auth(token))
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "artist_name" in data
+        assert data["artist_name"] is None
+
 
 # ---------------------------------------------------------------------------
 # 4. Admin scope enforcement

@@ -31,9 +31,7 @@ export function LoginPage() {
         throw new Error("Supabase returned no access token");
       }
       await exchangeForXR7Token(supabaseToken);
-      // MVP: bounce to the dashboard (recovery console). Replace with a real
-      // router once react-router lands.
-      window.location.assign("/");
+      window.location.assign("/dashboard");
     } catch (err) {
       setState("error");
       setErrorMessage(err instanceof Error ? err.message : "Sign-in failed");
