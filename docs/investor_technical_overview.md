@@ -149,7 +149,7 @@ DSP Statements (CSV / XML / JSON / DDEX)
 Every other player in the space uses accountants reviewing spreadsheets. XR7 uses:
 - A multi-signal matching pipeline with ML confidence scoring
 - Statistical rate-deviation detection trained on billions of data points
-- An automated claims workflow that files, tracks, and escalates disputes
+- A claims workflow that drafts disputes, manages state, and (post-remittance) automates fee calculation + payout. Filing/tracking is operator-mediated during the closed-beta period and is on roadmap to automate — see [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176)
 - An evidence engine that generates legally-defensible documentation in minutes, not months
 
 **The result:** XR7 recovers royalties that no human analyst would ever find, at a cost structure 90% lower than manual review. The platform gets better with every statement ingested, every claim filed, and every settlement received.

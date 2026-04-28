@@ -8,7 +8,9 @@
 
 XR7 Engine 2 is a multi-vertical artist earnings accuracy platform. It detects, recovers, and prevents earning discrepancies across music royalties, TV/Film residuals, touring settlements, merchandise royalties, sync licensing, brand partnerships, and platform payments.
 
-**Core value proposition**: Given a set of royalty statements from any distributor, PRO, or DSP, XR7 automatically ingests, normalises, variance-scans, generates evidence packets, drafts claims, and routes them through a state-machine-managed lifecycle to settlement.
+**Core value proposition**: Given a set of royalty statements from any distributor, PRO, or DSP, XR7 automatically ingests, normalises, variance-scans, generates evidence packets, and drafts claims through a state-machine-managed lifecycle. Once a remittance is recorded, fee calculation and Trolley payout are also automated.
+
+> **Honest scope note (beta period):** the *filing* step — actually delivering the dispute to the payer and tracking the response — is human-mediated today. See [docs/runbooks/manual-recovery.md](runbooks/manual-recovery.md) and the parent epic [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176).
 
 ---
 
