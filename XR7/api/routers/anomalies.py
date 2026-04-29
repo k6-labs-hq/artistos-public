@@ -46,14 +46,23 @@ _router_service = router_service_for("anomalies")
 logger = get_logger(__name__)
 
 
-def _deterministic_anomaly_id(artist_id: str, rule_id: str, evidence: dict) -> str:
-    """Stable id so re-running detection is idempotent (same rule + same evidence = same row)."""
+def _deterministic_anomaly_id(artist_id: str, rule_id: str, identity_key: str) -> str:
+    """Stable id so re-running detection is idempotent (#216).
+
+    Hashes on (artist_id, rule_id, identity_key). The identity_key is what
+    distinguishes multiple findings of the same rule for the same artist —
+    e.g. worst_payer for HIGH_RETROACTIVE_PAYMENT_RATIO, work_title for
+    TRACK_RATE_OUTLIER. Rules that fire at most once per artist pass an
+    empty string. Crucially, time-varying counts (payment_count, etc.)
+    are NOT in the hash anymore — those used to make every re-detection
+    insert a fresh row instead of upserting in place.
+    """
     h = hashlib.sha256()
     h.update(artist_id.encode())
     h.update(b"|")
     h.update(rule_id.encode())
     h.update(b"|")
-    h.update(json.dumps(evidence or {}, sort_keys=True, default=str).encode())
+    h.update(identity_key.encode())
     return f"anm_{h.hexdigest()[:24]}"
 
 
@@ -61,7 +70,10 @@ def _persist_anomaly(db: Session, artist_id: str, row: dict, confidence: float) 
     """Upsert an anomaly detected by the rule engine. Returns the persisted row."""
     rule_id = str(row.get("rule_id") or row.get("subtype") or "UNKNOWN")
     evidence = row.get("evidence") or {}
-    anomaly_id = _deterministic_anomaly_id(artist_id, rule_id, evidence)
+    # Each rule declares an `identity_key` that's stable across re-detections.
+    # Defaults to empty string for rules that fire at most once per artist.
+    identity_key = str(row.get("identity_key") or "")
+    anomaly_id = _deterministic_anomaly_id(artist_id, rule_id, identity_key)
 
     existing = db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
     if existing is not None:

@@ -115,6 +115,7 @@ def run_transparent_rules(
                     "description": "Average stream payout rate is below 50% of recent platform baseline.",
                     "rule_id": "STREAM_PAYOUT_UNDER_50",
                     "rule_name": "Stream payout less than 50% baseline",
+                    "identity_key": "",  # fires once per artist
                     "evidence": {
                         "observed_rate": round(observed_rate, 6),
                         "median_platform_rate": round(baseline, 6),
@@ -150,6 +151,7 @@ def run_transparent_rules(
                     "description": "Detected royalty payment gap greater than 60 days.",
                     "rule_id": "PAYMENT_GAP_OVER_60",
                     "rule_name": "Royalty payment gap exceeds 60 days",
+                    "identity_key": "",  # fires once per artist with the current largest gap
                     "evidence": {
                         "largest_gap_days": largest_gap,
                         "payment_count": len(payment_dates),
@@ -188,6 +190,7 @@ def run_transparent_rules(
                         "description": "Observed stream unit values deviate from contract baseline by over 20%.",
                         "rule_id": "CONTRACT_RATE_DEVIATION_OVER_20",
                         "rule_name": "Contract rate deviation exceeds 20%",
+                        "identity_key": "",  # aggregates across all contracts; fires once per artist
                         "evidence": {
                             "contract_rate": round(contract_rate, 6),
                             "observed_rate": round(observed, 6),
@@ -251,6 +254,7 @@ def run_transparent_rules(
                 ),
                 "rule_id": "STREAM_MONTH_NO_PAYMENT",
                 "rule_name": "Stream month missing payment",
+                "identity_key": "",  # one finding per artist; missing_months is the time-varying detail
                 "evidence": {
                     "months_with_events": len(event_months),
                     "months_with_payments": len(payout_months),
@@ -289,6 +293,7 @@ def run_transparent_rules(
                     "description": "Single payment concentration suggests volatility or delayed remittance behavior.",
                     "rule_id": "PAYMENT_CONCENTRATION_OVER_60",
                     "rule_name": "Top payment concentration above 60%",
+                    "identity_key": "",  # fires once per artist
                     "evidence": {
                         "top_payment": round(top, 2),
                         "total_payments": round(total, 2),
@@ -316,6 +321,7 @@ def run_transparent_rules(
                 "description": "Contracts missing terms may weaken automated validation and recovery posture.",
                 "rule_id": "CONTRACT_TERMS_MISSING",
                 "rule_name": "Contract terms are incomplete",
+                "identity_key": "",  # fires once per artist
                 "evidence": {
                     "contracts_total": len(contracts),
                     "contracts_missing_terms": len(incomplete_contracts),
@@ -389,6 +395,9 @@ def run_transparent_rules(
                 ),
                 "rule_id": "HIGH_RETROACTIVE_RATIO",
                 "rule_name": "High retroactive payment ratio",
+                # Per-payer rule — same artist can have a finding for MLC AND a separate
+                # finding for ASCAP. Identity is the worst payer in this firing.
+                "identity_key": worst_payer,
                 "evidence": {
                     "by_payer": {
                         payer: {
@@ -459,6 +468,10 @@ def run_transparent_rules(
                     ),
                     "rule_id": "TRACK_RATE_OUTLIER",
                     "rule_name": "Outlier track underpayment",
+                    # Aggregated across all outlier tracks; one finding per artist that
+                    # lists the worst offenders in evidence. Per-track findings would
+                    # need their own rule_id.
+                    "identity_key": "",
                     "evidence": {
                         "tracks_examined": len(track_rates),
                         "outlier_count": len(outliers),
