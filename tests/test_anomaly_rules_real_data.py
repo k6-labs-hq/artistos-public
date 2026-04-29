@@ -93,6 +93,127 @@ def test_stream_month_without_payment_does_not_fire_when_period_matches():
     )
 
 
+def _stream_in_month(
+    *, year: int, month: int, day: int = 15, qty: int = 1000, rate: float = 0.004
+) -> dict:
+    """Helper for #209 lag-gate tests — produces a stream event in a specific month."""
+    return {
+        "id": f"e-{year}-{month}-{day}-{qty}",
+        "event_type": "STREAM",
+        "work_title": f"Track-{year}-{month}",
+        "platform": "Spotify",
+        "quantity": qty,
+        "unit_value": rate,
+        "currency": "USD",
+        "territory": "US",
+        "timestamp": datetime(year, month, day, tzinfo=timezone.utc),
+    }
+
+
+def test_stream_month_does_not_fire_when_only_one_month_uploaded():
+    """Min-coverage gate (#209): single-statement upload has no comparison baseline.
+
+    Without 3+ months of history, we can't tell "the artist has a missing-payment
+    pattern" from "the artist only uploaded one statement." Stay quiet rather
+    than fire a high-stakes claim.
+    """
+    feb = datetime(2026, 2, 15, tzinfo=timezone.utc)
+    events = [
+        {
+            "id": f"e-{i}",
+            "event_type": "STREAM",
+            "work_title": "Some Track",
+            "platform": "Spotify",
+            "quantity": 1000,
+            "unit_value": 0.004,
+            "currency": "USD",
+            "territory": "US",
+            "timestamp": feb,
+        }
+        for i in range(5)
+    ]
+    findings = run_transparent_rules(ARTIST, events=events, payments=[], contracts=[])
+    subtypes = {f["subtype"] for f in findings}
+    assert "STREAM_MONTH_WITHOUT_PAYMENT" not in subtypes
+
+
+def test_stream_month_does_not_fire_within_lag_window():
+    """Lag gate (#209): recent months without payments aren't anomalous.
+
+    Distributors and DSPs typically pay 60-90 days after the period closes.
+    Streams in the last 90 days with no payment yet is normal cadence, not a
+    missing payment. Set up 4 months ending in the current month, with the
+    most recent month missing a payment — should not fire because the missing
+    month is within the lag window.
+    """
+    today = datetime.now(timezone.utc).date()
+
+    def _months_ago(n: int) -> tuple[int, int]:
+        # Walk back n months from today's first-of-month.
+        y, m = today.year, today.month
+        for _ in range(n):
+            m -= 1
+            if m == 0:
+                m = 12
+                y -= 1
+        return y, m
+
+    months = [_months_ago(n) for n in range(4)]  # most recent → 3 months back
+    events = [_stream_in_month(year=y, month=m) for (y, m) in months]
+    # All months have a payment EXCEPT the most-recent one (still in lag).
+    payments = [
+        _payment(
+            source="DistroKid",
+            amount=4.0,
+            received_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+            period_start=date(y, m, 1),
+        )
+        for (y, m) in months[1:]
+    ]
+    findings = run_transparent_rules(ARTIST, events=events, payments=payments, contracts=[])
+    subtypes = {f["subtype"] for f in findings}
+    assert "STREAM_MONTH_WITHOUT_PAYMENT" not in subtypes
+
+
+def test_stream_month_still_fires_for_old_unpaid_months():
+    """Lag gate must NOT mask real signal — months from 6+ months ago should still fire.
+
+    Sets up 6 months of events, all paid except for the OLDEST (6 months back).
+    That month is well past the 90-day lag window → real missing-payment signal.
+    """
+    today = datetime.now(timezone.utc).date()
+
+    def _months_ago(n: int) -> tuple[int, int]:
+        y, m = today.year, today.month
+        for _ in range(n):
+            m -= 1
+            if m == 0:
+                m = 12
+                y -= 1
+        return y, m
+
+    months = [_months_ago(n) for n in range(2, 8)]  # 2 to 7 months back, all past lag
+    events = [_stream_in_month(year=y, month=m) for (y, m) in months]
+    # All months EXCEPT the oldest get a payment.
+    payments = [
+        _payment(
+            source="DistroKid",
+            amount=4.0,
+            received_at=datetime(2026, 1, 1, tzinfo=timezone.utc),
+            period_start=date(y, m, 1),
+        )
+        for (y, m) in months[:-1]
+    ]
+    findings = run_transparent_rules(ARTIST, events=events, payments=payments, contracts=[])
+    subtypes = {f["subtype"] for f in findings}
+    assert "STREAM_MONTH_WITHOUT_PAYMENT" in subtypes
+    f = next(x for x in findings if x["subtype"] == "STREAM_MONTH_WITHOUT_PAYMENT")
+    # Recoverable should be the conservative 30% of unpaid stream value, not the full amount.
+    gross = f["evidence"]["gross_unpaid_estimate"]
+    assert f["estimated_recoverable"] < gross
+    assert abs(f["estimated_recoverable"] - gross * 0.30) < 0.01
+
+
 def test_stream_month_without_payment_falls_back_to_received_at_when_period_missing():
     """Pre-existing payment dicts without period_start (legacy data) keep working.
 

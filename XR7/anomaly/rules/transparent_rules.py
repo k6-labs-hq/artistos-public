@@ -1,6 +1,32 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
+
+# Rule 4 (STREAM_MONTH_WITHOUT_PAYMENT) gates — see #208 for the original false-positive,
+# and #209 for why these gates exist. The credibility budget for the dashboard is the
+# constraint: don't promise recoverable dollars unless we're confident the gap is real.
+#
+# These two gates intentionally make the rule conservative. Edge cases left as
+# follow-up in #209: source-aware quarterly cadence for PRO-only uploads, and
+# per-source lag tuning (DistroKid: 60d, BMI: 120d, MLC: 90d, etc.).
+
+# How many days after a reporting period's end before we expect the payment to land.
+# Most distributors are 60-90 days; pick the longer end conservatively. A month
+# whose end-of-period is within this window of "now" is treated as "too recent
+# to flag" rather than "missing."
+PAYMENT_LAG_DAYS = 90
+
+# Minimum number of distinct event months required before Rule 4 fires at all.
+# With one or two months of data, "missing payment" claims are too speculative —
+# the artist might just not have uploaded the corresponding statement. Three
+# months gives the rule something to compare against.
+MIN_COVERAGE_MONTHS = 3
+
+# Realistic recovery fraction. Even when a missing-payment gap is real, full
+# recovery is rare due to SOL windows, partial settlements, and audit ranges.
+# Under-promise the recoverable amount until we have settlement data to
+# calibrate against.
+RECOVERY_LIKELIHOOD = 0.30
 
 
 def _mean(values: list[float]) -> float:
@@ -171,14 +197,40 @@ def run_transparent_rules(
                     }
                 )
 
-    # RULE 4: if no royalty payments in months with streams.
+    # RULE 4: if no royalty payments in months with streams. See #208 / #209 / #210 / #211.
+    #
+    # Two gates avoid false positives that erode dashboard credibility:
+    #   1) Coverage gate: at least 3 distinct event months. With less, we can't
+    #      tell "missing" from "single-statement upload."
+    #   2) Lag gate: months within PAYMENT_LAG_DAYS (90) of now are treated as
+    #      "too recent to flag" — distributors normally pay 60-90 days after
+    #      the period ends, so a recent month with no payment yet isn't an
+    #      anomaly, it's just normal cadence.
     event_months = {
         (_to_dt(e.get("timestamp")).year, _to_dt(e.get("timestamp")).month)
         for e in stream_events
         if _to_dt(e.get("timestamp"))
     }
-    missing_months = sorted(event_months - payout_months)
-    if missing_months:
+
+    raw_missing = sorted(event_months - payout_months)
+    lag_cutoff_date = (now - timedelta(days=PAYMENT_LAG_DAYS)).date()
+
+    def _month_end(year: int, month: int) -> date:
+        if month == 12:
+            return date(year + 1, 1, 1) - timedelta(days=1)
+        return date(year, month + 1, 1) - timedelta(days=1)
+
+    missing_months = [(y, m) for (y, m) in raw_missing if _month_end(y, m) <= lag_cutoff_date]
+    months_skipped_due_to_lag = len(raw_missing) - len(missing_months)
+
+    if len(event_months) >= MIN_COVERAGE_MONTHS and missing_months:
+        gross_for_missing = sum(
+            float(e.get("quantity") or 0.0) * float(e.get("unit_value") or 0.0)
+            for e in stream_events
+            if _to_dt(e.get("timestamp"))
+            and (_to_dt(e.get("timestamp")).year, _to_dt(e.get("timestamp")).month)
+            in set(missing_months)
+        )
         findings.append(
             {
                 "artist_id": artist_id,
@@ -187,22 +239,27 @@ def run_transparent_rules(
                 "severity": "HIGH",
                 "expected_amount": None,
                 "actual_amount": None,
-                "estimated_recoverable": round(
-                    sum(
-                        float(e.get("quantity") or 0.0) * float(e.get("unit_value") or 0.0)
-                        for e in stream_events
-                    ),
-                    2,
-                ),
+                # Multiply by RECOVERY_LIKELIHOOD: full recovery is rare even
+                # when the gap is real (SOL windows, partial settlements). Don't
+                # inflate the dashboard headline number with optimistic claims.
+                "estimated_recoverable": round(gross_for_missing * RECOVERY_LIKELIHOOD, 2),
                 "confidence_score": 0.86,
                 "status": "OPEN",
-                "description": "At least one month contains stream activity with no corresponding royalty payment.",
+                "description": (
+                    f"{len(missing_months)} month(s) older than {PAYMENT_LAG_DAYS} days "
+                    "show stream activity with no corresponding royalty payment recorded."
+                ),
                 "rule_id": "STREAM_MONTH_NO_PAYMENT",
                 "rule_name": "Stream month missing payment",
                 "evidence": {
                     "months_with_events": len(event_months),
                     "months_with_payments": len(payout_months),
                     "missing_months": [f"{y:04d}-{m:02d}" for y, m in missing_months[:6]],
+                    "months_skipped_due_to_lag": months_skipped_due_to_lag,
+                    "payment_lag_days": PAYMENT_LAG_DAYS,
+                    "min_coverage_months": MIN_COVERAGE_MONTHS,
+                    "recovery_likelihood": RECOVERY_LIKELIHOOD,
+                    "gross_unpaid_estimate": round(gross_for_missing, 2),
                 },
             }
         )
