@@ -337,9 +337,16 @@ async def upload_statement(
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
+    # De-duplication runs on the *original* uploaded bytes. A .numbers and a
+    # CSV that happen to convert to the same content are still two different
+    # files the user submitted — treat them as different. Re-uploading the
+    # exact same file (.numbers or .csv) still dedups correctly because the
+    # original bytes are identical.
+    file_hash = hashlib.sha256(content).hexdigest()
+
     # Apple Numbers files (.numbers) are zip-wrapped binary protobuf — the CSV-based
-    # parsers can't read them directly. Convert before falling through to detection.
-    # MLC ships member statements as Numbers by default. See #195.
+    # parsers can't read them directly. Convert AFTER hashing so dedup is keyed on
+    # the original upload, not on post-conversion bytes. See #195.
     if file.filename.lower().endswith(".numbers"):
         try:
             content = numbers_to_csv_bytes(content)
@@ -348,11 +355,6 @@ async def upload_statement(
                 status_code=422,
                 detail=f"Could not read Numbers file: {exc}",
             ) from exc
-
-    # De-duplication: reject if the exact same file was already uploaded.
-    # Hash the post-conversion bytes so re-uploading the same .numbers file
-    # is caught as a duplicate.
-    file_hash = hashlib.sha256(content).hexdigest()
     existing = (
         db.query(Statement)
         .filter(Statement.artist_id == artist_id, Statement.file_hash == file_hash)
