@@ -11,6 +11,89 @@ import { useCallback, useEffect, useState } from "react";
 import { clearXR7Token, getXR7Token } from "../lib/supabase";
 import { type Anomaly, type Me, UnauthorizedError, xr7 } from "../lib/xr7Client";
 
+/**
+ * Rendered when an artist has uploaded data but the engine has no findings to
+ * surface. Empty state must NOT read as "engine broken" or "we couldn't find
+ * any money" — both lie about the methodology. Instead, explain what we look
+ * for, why silence is sometimes the honest answer, and what additional data
+ * unlocks which rules. See the conversation around #209 for why this matters
+ * to credibility.
+ */
+function EmptyAnomaliesGuidance() {
+  const surfaces = [
+    {
+      title: "Cross-platform rate audits",
+      detail:
+        "Compare per-stream rates across DSPs and against industry baselines to surface tracks paid below market.",
+      unlocks: "Multiple distributor months",
+    },
+    {
+      title: "PRO retroactive analysis",
+      detail:
+        "Identify when a PRO (BMI/ASCAP/MLC) is delivering a high share of payments as retroactive corrections — a leading indicator of unrecovered current-period royalties.",
+      unlocks: "A BMI / ASCAP / MLC quarterly statement",
+    },
+    {
+      title: "Track-level rate outliers",
+      detail:
+        "Flag tracks earning materially below your catalog's median rate at the same platform.",
+      unlocks: "4+ tracks with meaningful stream volume",
+    },
+    {
+      title: "Missing-period detection",
+      detail:
+        "Detect months that have streaming activity but no corresponding royalty payment, after accounting for the typical 60–90 day distributor lag.",
+      unlocks: "3+ months of statement history",
+    },
+    {
+      title: "Below-threshold accruals",
+      detail:
+        "Surface royalties accrued but unpaid because they sit under a payer's distribution threshold (BMI's $2 minimum is the common one).",
+      unlocks: "Your BMI Accrual Report PDF (coming soon)",
+    },
+  ];
+
+  return (
+    <div
+      style={{
+        padding: "24px",
+        borderRadius: "16px",
+        border: "1px solid rgba(168, 85, 247, 0.3)",
+        background: "rgba(16, 16, 28, 0.6)",
+      }}
+    >
+      <p style={{ marginTop: 0, opacity: 0.85 }}>
+        No anomalies detected for the data you've uploaded so far. <strong>That's not the
+        engine giving up — it's the honest answer for the data we have.</strong> Royalty
+        recovery is fundamentally a cross-source, cross-period exercise. Below is what XR7
+        looks for and what additional data unlocks each surface.
+      </p>
+      <ul style={{ listStyle: "none", padding: 0, margin: "16px 0 0 0" }}>
+        {surfaces.map((s) => (
+          <li
+            key={s.title}
+            style={{
+              padding: "12px 0",
+              borderTop: "1px solid rgba(255,255,255,0.08)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: "16px" }}>
+              <strong style={{ flex: 1 }}>{s.title}</strong>
+              <span style={{ opacity: 0.6, fontSize: "0.85em", whiteSpace: "nowrap" }}>
+                Unlocks with: {s.unlocks}
+              </span>
+            </div>
+            <p style={{ margin: "4px 0 0 0", opacity: 0.8, fontSize: "0.95em" }}>{s.detail}</p>
+          </li>
+        ))}
+      </ul>
+      <p style={{ marginTop: "20px", marginBottom: 0, opacity: 0.7, fontSize: "0.9em" }}>
+        Add another statement above to expand the audit surface.
+      </p>
+    </div>
+  );
+}
+
 type LoadState = "loading" | "ready" | "needs_terms" | "error";
 
 export function DashboardPage() {
@@ -128,7 +211,9 @@ export function DashboardPage() {
       <header className="site-nav" role="banner">
         <div className="nav-inner">
           <a className="brand" href="/dashboard" aria-label="XR7 dashboard">
-            <img src="/xr7-logo-mark.png" alt="XR7 logo" />
+            {/* Use the SVG (transparent) instead of the PNG (RGB w/ baked white background)
+                so the dashboard's dark theme doesn't show a white card behind the logo. */}
+            <img src="/xr7-logo-mark.svg" alt="XR7 logo" />
             <span>XR7</span>
           </a>
           <div className="nav-actions">
@@ -216,9 +301,7 @@ export function DashboardPage() {
             <section style={{ marginTop: "32px" }}>
               <h2>Detected anomalies</h2>
               {anomalies.length === 0 ? (
-                <p style={{ opacity: 0.7 }}>
-                  No anomalies yet. Upload a statement to see findings.
-                </p>
+                <EmptyAnomaliesGuidance />
               ) : (
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>

@@ -275,7 +275,7 @@ export function App() {
       <header className="site-nav" role="banner">
         <div className="nav-inner">
           <a className="brand" href="#top" aria-label="XR7 homepage">
-            <img src="/xr7-logo-mark.png" alt="XR7 logo" />
+            <img src="/xr7-logo-mark.svg" alt="XR7 logo" />
             <span>XR7</span>
           </a>
 
@@ -461,7 +461,7 @@ export function App() {
 
           <div className="app-mock" aria-label="XR7 dashboard preview with metrics, chart, and case table">
             <aside className="mock-sidebar">
-              <img src="/xr7-logo-mark.png" alt="" aria-hidden="true" />
+              <img src="/xr7-logo-mark.svg" alt="" aria-hidden="true" />
               <a href="#">Overview</a>
               <a href="#">Recovery Cases</a>
               <a href="#">Platform Coverage</a>
