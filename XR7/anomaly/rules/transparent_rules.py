@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 
 def _mean(values: list[float]) -> float:
@@ -8,8 +8,14 @@ def _mean(values: list[float]) -> float:
 
 
 def _to_dt(value):
+    # datetime check has to come before date because datetime is a subclass of date.
     if isinstance(value, datetime):
         return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
+    if isinstance(value, date):
+        # period_start/period_end columns are stored as date (not datetime); without
+        # this branch _to_dt returned None for them and the rules fell back to
+        # received_at — re-introducing #208 by a different code path.
+        return datetime(value.year, value.month, value.day, tzinfo=timezone.utc)
     if isinstance(value, str):
         parsed = datetime.fromisoformat(value)
         return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)

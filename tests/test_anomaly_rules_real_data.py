@@ -15,7 +15,7 @@ end-to-end without hitting the DB.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from XR7.anomaly.rules.transparent_rules import run_transparent_rules
 
@@ -61,7 +61,9 @@ def test_stream_month_without_payment_does_not_fire_when_period_matches():
     Post-fix, period_start drives the bucketing and the rule stays silent.
     """
     feb = datetime(2026, 2, 15, tzinfo=timezone.utc)
-    feb_period = datetime(2026, 2, 1, tzinfo=timezone.utc)
+    # Real ingestion stores period_start as a date, not a datetime — that
+    # subtype dispatch is what tripped #208's first patch. Pin the date type.
+    feb_period = date(2026, 2, 1)
     today = datetime(2026, 4, 29, tzinfo=timezone.utc)
 
     events = [
