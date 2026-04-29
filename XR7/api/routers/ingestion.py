@@ -40,6 +40,7 @@ from XR7.auth.event_notifications import send_event_notification
 from XR7.fingerprinting.matching.identity_matching import persist_identity_match
 from XR7.ingestion.connectors.regional_global import RegionalGlobalConnector
 from XR7.ingestion.connectors.soundexchange_mlc import SoundExchangeMLCConnector
+from XR7.ingestion.numbers_file import numbers_to_csv_bytes
 from XR7.ingestion.parse_timeout import StatementParseTimeoutError, parse_with_timeout
 from XR7.ingestion.statement_parser import SUPPORTED_FORMATS, parse_csv, parse_statement_file
 from XR7.ingestion.statement_signal_extractor import (
@@ -318,10 +319,12 @@ async def upload_statement(
     # Gate: artist must have accepted the current T&C before submitting data.
     require_terms_accepted(artist_id, db)
 
-    if not file.filename or not file.filename.lower().endswith((".csv", ".tsv", ".xlsx")):
+    if not file.filename or not file.filename.lower().endswith(
+        (".csv", ".tsv", ".xlsx", ".numbers")
+    ):
         raise HTTPException(
             status_code=400,
-            detail="Only CSV/TSV/XLSX files are accepted.  "
+            detail="Only CSV/TSV/XLSX/Numbers files are accepted.  "
             "Export your statement from your distributor or PRO portal.",
         )
 
@@ -334,7 +337,21 @@ async def upload_statement(
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
-    # De-duplication: reject if the exact same file was already uploaded
+    # Apple Numbers files (.numbers) are zip-wrapped binary protobuf — the CSV-based
+    # parsers can't read them directly. Convert before falling through to detection.
+    # MLC ships member statements as Numbers by default. See #195.
+    if file.filename.lower().endswith(".numbers"):
+        try:
+            content = numbers_to_csv_bytes(content)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Could not read Numbers file: {exc}",
+            ) from exc
+
+    # De-duplication: reject if the exact same file was already uploaded.
+    # Hash the post-conversion bytes so re-uploading the same .numbers file
+    # is caught as a duplicate.
     file_hash = hashlib.sha256(content).hexdigest()
     existing = (
         db.query(Statement)
@@ -360,13 +377,21 @@ async def upload_statement(
         or 0
     )
 
-    # Parse with timeout enforcement (prevents DoS from malformed files)
+    # Parse with timeout enforcement (prevents DoS from malformed files).
+    # If the input was a .numbers file we already converted it to CSV bytes
+    # above; pass a .csv suffix to the parser dispatcher so it picks the
+    # CSV path. Statement audit / display still uses the user's original filename.
+    parse_filename = (
+        (file.filename or "statement.csv").rsplit(".", 1)[0] + ".csv"
+        if (file.filename or "").lower().endswith(".numbers")
+        else (file.filename or "statement.csv")
+    )
     try:
         result = parse_with_timeout(
             parse_statement_file,
             content,
             artist_id,
-            filename=file.filename or "statement.csv",
+            filename=parse_filename,
         )
     except StatementParseTimeoutError as timeout_err:
         raise HTTPException(

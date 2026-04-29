@@ -269,13 +269,13 @@ export function DashboardPage() {
             >
               <h2 style={{ marginTop: 0 }}>Upload a statement</h2>
               <p style={{ opacity: 0.8 }}>
-                Accepted formats: CSV, TSV, XLSX. BMI, MLC, ASCAP, DistroKid, TuneCore, and others
-                are auto-detected.
+                Accepted formats: CSV, TSV, XLSX, Numbers. BMI, MLC, ASCAP, DistroKid, TuneCore,
+                and others are auto-detected — including MLC's native Apple Numbers exports.
               </p>
               <form onSubmit={handleUpload}>
                 <input
                   type="file"
-                  accept=".csv,.tsv,.xlsx"
+                  accept=".csv,.tsv,.xlsx,.numbers"
                   onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
                   aria-label="Royalty statement file"
                 />
