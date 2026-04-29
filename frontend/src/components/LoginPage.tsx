@@ -2,41 +2,97 @@ import { useState } from "react";
 
 import { exchangeForXR7Token, getSupabaseClient } from "../lib/supabase";
 
-type LoginState = "idle" | "submitting" | "error";
+type FormState = "idle" | "submitting" | "error" | "needs_confirmation";
+type Mode = "signin" | "signup";
 
 export function LoginPage() {
+  const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [state, setState] = useState<LoginState>("idle");
+  const [artistName, setArtistName] = useState("");
+  const [state, setState] = useState<FormState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const supabaseConfigured = Boolean(
     (import.meta.env.VITE_SUPABASE_URL as string | undefined) &&
       (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined),
   );
 
+  const handleSignIn = async () => {
+    const supabase = getSupabaseClient();
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    const supabaseToken = data.session?.access_token;
+    if (!supabaseToken) {
+      throw new Error("Supabase returned no access token");
+    }
+    await exchangeForXR7Token(supabaseToken);
+    window.location.assign("/dashboard");
+  };
+
+  const handleSignUp = async () => {
+    const supabase = getSupabaseClient();
+    const trimmedName = artistName.trim();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: trimmedName ? { artist_name: trimmedName } : undefined,
+      },
+    });
+    if (error) throw error;
+
+    // Two outcomes from Supabase:
+    //   - Project has email confirmation OFF → session is returned, sign-in is immediate.
+    //   - Project has email confirmation ON  → user is created but session is null;
+    //     we can't currently deliver the confirmation email (no SMTP wired, see
+    //     issue #180). Surface a clear message instead of a dead "Sign in" loop.
+    if (data.session) {
+      await exchangeForXR7Token(data.session.access_token);
+      window.location.assign("/dashboard");
+      return;
+    }
+    setState("needs_confirmation");
+    setInfo(
+      "Account created. Email confirmation is required by the project, but no email " +
+        "provider is wired yet — ask an operator to confirm your account, then sign in.",
+    );
+  };
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setState("submitting");
     setErrorMessage(null);
-
+    setInfo(null);
     try {
-      const supabase = getSupabaseClient();
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        throw error;
+      if (mode === "signup") {
+        await handleSignUp();
+      } else {
+        await handleSignIn();
       }
-      const supabaseToken = data.session?.access_token;
-      if (!supabaseToken) {
-        throw new Error("Supabase returned no access token");
-      }
-      await exchangeForXR7Token(supabaseToken);
-      window.location.assign("/dashboard");
     } catch (err) {
       setState("error");
-      setErrorMessage(err instanceof Error ? err.message : "Sign-in failed");
+      setErrorMessage(err instanceof Error ? err.message : `${mode} failed`);
     }
   };
+
+  const switchMode = (next: Mode) => {
+    setMode(next);
+    setErrorMessage(null);
+    setInfo(null);
+    setState("idle");
+  };
+
+  const heading = mode === "signup" ? "Create your XR7 account" : "Sign in to XR7";
+  const submitLabel =
+    state === "submitting"
+      ? mode === "signup"
+        ? "Creating account…"
+        : "Signing in…"
+      : mode === "signup"
+        ? "Create account"
+        : "Sign in";
 
   return (
     <div className="xr7-app">
@@ -53,7 +109,7 @@ export function LoginPage() {
           }}
         >
           <h1 id="login-heading" style={{ marginTop: 0 }}>
-            Sign in to XR7
+            {heading}
           </h1>
           {!supabaseConfigured ? (
             <p role="alert" style={{ color: "#fca5a5" }}>
@@ -64,6 +120,24 @@ export function LoginPage() {
           ) : null}
 
           <form onSubmit={handleSubmit} noValidate>
+            {mode === "signup" ? (
+              <>
+                <label htmlFor="signup-name" style={{ display: "block", marginBottom: "6px" }}>
+                  Artist or songwriter name
+                </label>
+                <input
+                  id="signup-name"
+                  type="text"
+                  autoComplete="name"
+                  value={artistName}
+                  onChange={(e) => setArtistName(e.target.value)}
+                  disabled={state === "submitting" || !supabaseConfigured}
+                  placeholder="How you want to be addressed"
+                  style={{ width: "100%", marginBottom: "16px", padding: "10px" }}
+                />
+              </>
+            ) : null}
+
             <label htmlFor="login-email" style={{ display: "block", marginBottom: "6px" }}>
               Email
             </label>
@@ -84,8 +158,9 @@ export function LoginPage() {
             <input
               id="login-password"
               type="password"
-              autoComplete="current-password"
+              autoComplete={mode === "signup" ? "new-password" : "current-password"}
               required
+              minLength={6}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={state === "submitting" || !supabaseConfigured}
@@ -97,6 +172,11 @@ export function LoginPage() {
                 {errorMessage}
               </p>
             ) : null}
+            {info ? (
+              <p role="status" style={{ color: "#86efac", marginTop: 0 }}>
+                {info}
+              </p>
+            ) : null}
 
             <button
               type="submit"
@@ -104,11 +184,51 @@ export function LoginPage() {
               disabled={state === "submitting" || !supabaseConfigured}
               style={{ width: "100%" }}
             >
-              {state === "submitting" ? "Signing in…" : "Sign in"}
+              {submitLabel}
             </button>
           </form>
 
-          <p style={{ marginTop: "24px", fontSize: "0.9em", opacity: 0.7 }}>
+          <p style={{ marginTop: "24px", fontSize: "0.9em", opacity: 0.85 }}>
+            {mode === "signup" ? (
+              <>
+                Already have an account?{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode("signin")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#a855f7",
+                    cursor: "pointer",
+                    padding: 0,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Sign in
+                </button>
+              </>
+            ) : (
+              <>
+                New to XR7?{" "}
+                <button
+                  type="button"
+                  onClick={() => switchMode("signup")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#a855f7",
+                    cursor: "pointer",
+                    padding: 0,
+                    textDecoration: "underline",
+                  }}
+                >
+                  Create an account
+                </button>
+              </>
+            )}
+          </p>
+
+          <p style={{ marginTop: "16px", fontSize: "0.85em", opacity: 0.6 }}>
             Auth is handled by Supabase. Your XR7 session token is stored locally and expires on
             sign-out.
           </p>
