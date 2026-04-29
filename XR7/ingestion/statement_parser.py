@@ -525,6 +525,19 @@ def detect_format(headers: list[str]) -> str:
     ):
         return "soundcloud"
 
+    # DistroKid: accept both legacy ("Month" + "Earnings") and modern
+    # ("Sale Month" + "Earnings (USD)") header conventions. Modern statements
+    # (downloaded from DistroKid Bank → Reports as of 2026) use the latter
+    # and would otherwise fall through to the generic parser. Checked before
+    # the generic loop because TuneCore also has "sale month" + the constant
+    # columns; the differentiator is "earnings*" vs "net revenue".
+    if (
+        {"store", "title", "quantity"}.issubset(normalised)
+        and (normalised & {"month", "sale month"})
+        and any(h == "earnings" or h.startswith("earnings ") for h in normalised)
+    ):
+        return "distrokid"
+
     for fmt_name, spec in _FORMATS.items():
         required = spec["required"]
         if required.issubset(normalised):
@@ -671,9 +684,9 @@ _DISTRIBUTOR_COLS: dict[str, _DistributorCols] = {
     "distrokid": _DistributorCols(
         date=("month", "sale month", "date"),
         quantity=("quantity",),
-        amount=("earnings", "net", "amount"),
+        amount=("earnings", "earnings (usd)", "net", "amount"),
         platform=("store", "platform", "source"),
-        territory=("country", "territory"),
+        territory=("country", "country of sale", "territory"),
         title=("title", "track name", "song"),
         default_platform="DistroKid",
         source_label="DistroKid",

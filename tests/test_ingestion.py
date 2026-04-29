@@ -102,6 +102,53 @@ class TestDetectFormat:
             == "distrokid"
         )
 
+    def test_detects_modern_distrokid(self):
+        """Real DistroKid statements (2026) ship with `Sale Month` + `Earnings (USD)`.
+
+        Pre-fix this fell through to the generic parser and dropped every row;
+        see #204. Pin the modern shape so we don't regress.
+        """
+        modern_headers = [
+            "Date Inserted",
+            "Reporting Date",
+            "Sale Month",
+            "Store",
+            "Artist",
+            "Title",
+            "ISRC",
+            "UPC",
+            "Quantity",
+            "Team Percentage",
+            "Source Type",
+            "Country of Sale",
+            "Songwriter Royalties Withheld (USD)",
+            "Earnings (USD)",
+            "Recoup (USD)",
+        ]
+        assert detect_format(modern_headers) == "distrokid"
+
+    def test_modern_distrokid_row_parses_amount(self):
+        """Modern DistroKid amount column is `Earnings (USD)`, not bare `Earnings`.
+
+        The detector match is moot if `_col` can't find the amount column when
+        parsing rows. Pin both halves together.
+        """
+        from XR7.ingestion.statement_parser import parse_csv
+
+        body = (
+            "Date Inserted,Reporting Date,Sale Month,Store,Artist,Title,ISRC,UPC,"
+            "Quantity,Team Percentage,Source Type,Country of Sale,"
+            "Songwriter Royalties Withheld (USD),Earnings (USD),Recoup (USD)\n"
+            "2026-04-20,2026-04-20,2026-02,Spotify,Chris DeAnda,Better Than You,"
+            "QZFZ22510358,199090210946,10,100,Song,GB,0.00000,0.043911488004,\n"
+        ).encode("utf-8")
+        result = parse_csv(body, "test-artist-id")
+        assert result.format_detected == "distrokid"
+        assert len(result.payments) == 1
+        assert abs(result.payments[0]["amount"] - 0.043911) < 1e-5
+        assert result.events[0]["platform"] == "Spotify"
+        assert result.events[0]["territory"] == "GB"
+
     def test_detects_tunecore(self):
         assert (
             detect_format(
