@@ -37,7 +37,7 @@ def _stream(*, title: str, qty: int, unit_value: float) -> dict:
     }
 
 
-def _payment(*, source: str, amount: float, received_at=NOW) -> dict:
+def _payment(*, source: str, amount: float, received_at=NOW, period_start=None) -> dict:
     return {
         "id": f"p-{source}-{amount}",
         "payment_type": "ROYALTY",
@@ -45,7 +45,84 @@ def _payment(*, source: str, amount: float, received_at=NOW) -> dict:
         "currency": "USD",
         "source": source,
         "received_at": received_at,
+        "period_start": period_start,
     }
+
+
+def test_stream_month_without_payment_does_not_fire_when_period_matches():
+    """Regression for #208.
+
+    Real shape: an artist uploads Feb 2026 statement on Apr 29 2026. Events
+    have timestamp=2026-02-*, payments have period_start=2026-02-01 but
+    received_at=now() (today). Pre-fix the rule bucketed payments by
+    received_at, which always landed in "today's month" and so the rule fired
+    saying Feb has no payments — even though Feb has 369 of them.
+
+    Post-fix, period_start drives the bucketing and the rule stays silent.
+    """
+    feb = datetime(2026, 2, 15, tzinfo=timezone.utc)
+    feb_period = datetime(2026, 2, 1, tzinfo=timezone.utc)
+    today = datetime(2026, 4, 29, tzinfo=timezone.utc)
+
+    events = [
+        {
+            "id": f"e-{i}",
+            "event_type": "STREAM",
+            "work_title": "Some Track",
+            "platform": "Spotify",
+            "quantity": 1000,
+            "unit_value": 0.004,
+            "currency": "USD",
+            "territory": "US",
+            "timestamp": feb,
+        }
+        for i in range(5)
+    ]
+    payments = [
+        _payment(source="DistroKid", amount=4.0, received_at=today, period_start=feb_period)
+        for _ in range(5)
+    ]
+
+    findings = run_transparent_rules(ARTIST, events=events, payments=payments, contracts=[])
+    subtypes = {f["subtype"] for f in findings}
+    assert "STREAM_MONTH_WITHOUT_PAYMENT" not in subtypes, (
+        f"Rule 4 should not fire when payment period_start matches event month; "
+        f"got findings: {subtypes}"
+    )
+
+
+def test_stream_month_without_payment_falls_back_to_received_at_when_period_missing():
+    """Pre-existing payment dicts without period_start (legacy data) keep working.
+
+    Some existing rows in the DB may have been ingested before payments
+    started carrying period_start consistently. The rule must fall back to
+    received_at gracefully so we don't break existing behavior.
+    """
+    feb = datetime(2026, 2, 15, tzinfo=timezone.utc)
+    same_month_received = datetime(2026, 2, 20, tzinfo=timezone.utc)
+
+    events = [
+        {
+            "id": f"e-{i}",
+            "event_type": "STREAM",
+            "work_title": "Some Track",
+            "platform": "Spotify",
+            "quantity": 1000,
+            "unit_value": 0.004,
+            "currency": "USD",
+            "territory": "US",
+            "timestamp": feb,
+        }
+        for i in range(5)
+    ]
+    # No period_start — legacy shape — but received_at is in the same month.
+    payments = [
+        _payment(source="DistroKid", amount=4.0, received_at=same_month_received) for _ in range(5)
+    ]
+
+    findings = run_transparent_rules(ARTIST, events=events, payments=payments, contracts=[])
+    subtypes = {f["subtype"] for f in findings}
+    assert "STREAM_MONTH_WITHOUT_PAYMENT" not in subtypes
 
 
 def _findings_by_rule(findings: list[dict], rule_id: str) -> list[dict]:

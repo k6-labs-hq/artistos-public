@@ -44,6 +44,13 @@ class AnomalyEngine:
                 "currency": p.currency,
                 "source": p.source,
                 "received_at": p.received_at,
+                # period_start/period_end describe the reporting period the
+                # payment covers (e.g. 2026-02-01..2026-02-28 for a Feb
+                # statement). received_at is the ingestion timestamp — using
+                # it for monthly bucketing is wrong because uploads always
+                # happen after the period closes. See #208.
+                "period_start": getattr(p, "period_start", None),
+                "period_end": getattr(p, "period_end", None),
             }
             for p in payments
         ]

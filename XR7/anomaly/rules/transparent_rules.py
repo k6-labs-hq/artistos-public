@@ -36,10 +36,26 @@ def run_transparent_rules(
     royalty_payments = [
         p for p in payments if str(p.get("payment_type", "")).upper() in {"ROYALTY", "SETTLEMENT"}
     ]
+
+    def _payment_period_dt(p: dict) -> datetime | None:
+        """Bucket a payment by the reporting period it covers, not by ingestion time.
+
+        Statements are uploaded after the period closes, so received_at
+        always lands in "today's month" — using it for month-bucketing fired
+        STREAM_MONTH_WITHOUT_PAYMENT on every upload (#208). Prefer
+        period_start, then period_end, and only fall back to received_at
+        if neither is set.
+        """
+        return (
+            _to_dt(p.get("period_start"))
+            or _to_dt(p.get("period_end"))
+            or _to_dt(p.get("received_at"))
+        )
+
     payout_months = {
-        (_to_dt(p.get("received_at")).year, _to_dt(p.get("received_at")).month)
+        (_payment_period_dt(p).year, _payment_period_dt(p).month)
         for p in royalty_payments
-        if _to_dt(p.get("received_at"))
+        if _payment_period_dt(p)
     }
 
     # RULE 1: streaming payout under 50% of expected market baseline.
@@ -77,8 +93,11 @@ def run_transparent_rules(
             )
 
     # RULE 2: monthly royalty history has gap > 60 days.
+    # Same period-vs-ingestion concern as Rule 4 — if every payment was
+    # ingested today, received_at-based gaps would be 0 even when the
+    # underlying reporting periods are years apart. Bucket by period.
     payment_dates = sorted(
-        [_to_dt(p.get("received_at")) for p in royalty_payments if _to_dt(p.get("received_at"))]
+        [_payment_period_dt(p) for p in royalty_payments if _payment_period_dt(p)]
     )
     if len(payment_dates) >= 2:
         largest_gap = max((b - a).days for a, b in zip(payment_dates[:-1], payment_dates[1:]))
