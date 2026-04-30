@@ -879,6 +879,110 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
 
 
+@router.post("/claims/{claim_id}/file-via-email")
+def file_claim_via_email(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    auth_payload: dict = Depends(get_auth_payload),
+):
+    """Operator-triggered: actually file this claim by emailing the payer.
+
+    Renders the evidence packet PDF, calls dispute_delivery.deliver_dispute,
+    and on success records the outbound MessageID + advances the Claim's
+    status to FILED. Failure leaves the Claim unchanged and returns the
+    structured error so operators can decide on retry.
+
+    This is the operator-dashboard "file now" surface; it deliberately
+    requires an explicit POST rather than auto-firing as part of detection.
+    Until #181 ships an operator UI, this is the API operators call.
+    """
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    enforce_claim_access(claim.artist_id, auth_payload)
+
+    artist = db.query(Artist).filter(Artist.id == claim.artist_id).first()
+    anomaly = (
+        db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+        if claim.anomaly_id
+        else None
+    )
+    if artist is None or anomaly is None:
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot file: claim must have a linked artist + anomaly",
+        )
+
+    # Resolve payer from claim.payer_name (e.g., "MLC", "BMI") or fall back
+    # to the anomaly's worst_payer evidence field.
+    payer_id = claim.payer_name
+    if not payer_id and anomaly.feature_snapshot:
+        snapshot = json.loads(anomaly.feature_snapshot or "{}")
+        payer_id = (snapshot.get("evidence") or {}).get("worst_payer")
+    if not payer_id:
+        raise HTTPException(
+            status_code=409,
+            detail="Cannot file: claim has no payer_name and the anomaly does not identify one",
+        )
+
+    from XR7.recovery.dispute_correlation import record_outbound_filing  # noqa: PLC0415
+    from XR7.recovery.dispute_delivery import deliver_dispute  # noqa: PLC0415
+    from XR7.services.evidence_packet_pdf import render_evidence_packet_pdf  # noqa: PLC0415
+
+    snapshot = json.loads(anomaly.feature_snapshot or "{}")
+    pdf_bytes = render_evidence_packet_pdf(
+        claim={
+            "id": claim.id,
+            "payer_name": claim.payer_name,
+            "sol_deadline": (claim.sol_deadline.isoformat() if claim.sol_deadline else None),
+        },
+        artist={"id": artist.id, "name": artist.name},
+        anomaly={
+            "id": anomaly.id,
+            "subtype": str(anomaly.subtype) if anomaly.subtype else None,
+            "rule_id": snapshot.get("rule_id"),
+            "category": str(anomaly.category) if anomaly.category else None,
+            "severity": str(anomaly.severity) if anomaly.severity else None,
+            "confidence_score": (
+                float(anomaly.confidence_score) if anomaly.confidence_score is not None else None
+            ),
+            "estimated_recoverable": (
+                float(anomaly.estimated_recoverable)
+                if anomaly.estimated_recoverable is not None
+                else None
+            ),
+            "created_at": anomaly.created_at.isoformat() if anomaly.created_at else None,
+            "description": anomaly.description,
+            "evidence": snapshot.get("evidence"),
+        },
+    )
+
+    result = deliver_dispute(
+        claim={"id": claim.id, "payer_name": claim.payer_name},
+        artist={"id": artist.id, "name": artist.name},
+        anomaly={
+            "subtype": str(anomaly.subtype) if anomaly.subtype else None,
+            "description": anomaly.description,
+            "estimated_recoverable": (
+                float(anomaly.estimated_recoverable)
+                if anomaly.estimated_recoverable is not None
+                else None
+            ),
+            "confidence_score": (
+                float(anomaly.confidence_score) if anomaly.confidence_score is not None else None
+            ),
+        },
+        pdf_bytes=pdf_bytes,
+        payer_id=payer_id,
+    )
+
+    if result.get("success"):
+        record_outbound_filing(claim, send_result=result, artist_id=artist.id)
+        db.commit()
+
+    return result
+
+
 @router.get("/claims/{claim_id}/evidence.pdf")
 def get_evidence_pdf(
     claim_id: str,

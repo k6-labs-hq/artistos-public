@@ -33,6 +33,10 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from XR7.models.base import get_db
+from XR7.recovery.dispute_correlation import (
+    find_claim_by_outbound_message_id,
+    record_inbound_reply,
+)
 from XR7.recovery.immutable_ledger import ImmutableLedgerService
 
 router = APIRouter(tags=["postmark"])
@@ -132,33 +136,64 @@ async def postmark_inbound(
     # Metadata{}, Tag, MailboxHash, OriginalRecipient. See
     # https://postmarkapp.com/developer/user-guide/inbound/parse-an-email
     metadata = payload.get("Metadata") or {}
-    artist_id = str(metadata.get("artist_id") or "") or None
-    claim_id = str(metadata.get("claim_id") or "") or None
+    in_reply_to = payload.get("InReplyTo") or None
+    artist_id_meta = str(metadata.get("artist_id") or "") or None
+    claim_id_meta = str(metadata.get("claim_id") or "") or None
 
     summary = {
         "from": payload.get("From"),
         "subject": payload.get("Subject"),
         "message_id": payload.get("MessageID"),
-        "in_reply_to": payload.get("InReplyTo"),
+        "in_reply_to": in_reply_to,
         "tag": payload.get("Tag"),
-        "claim_id": claim_id,
-        "artist_id": artist_id,
+        "claim_id_metadata": claim_id_meta,
+        "artist_id_metadata": artist_id_meta,
         "text_excerpt": (payload.get("TextBody") or "")[:500],
     }
     logger.info("postmark_inbound_received", extra=summary)
 
-    # Persist into the immutable ledger so nothing is lost while the
-    # per-payer correlation logic (#179) is still under construction.
+    # Try to correlate this reply to a specific Claim by matching the
+    # InReplyTo header against any outbound MessageID we've recorded in
+    # Claim.communications. If we find a match, append the inbound to the
+    # claim's communications and advance status (FILED → IN_REVIEW). If we
+    # don't match (e.g., manual email to disputes@ from a non-XR7 sender),
+    # we still log to the immutable ledger for operator review — never
+    # silently drop inbound traffic.
+    correlated_claim = find_claim_by_outbound_message_id(db, in_reply_to)
+    correlated_claim_id: str | None = None
+    correlated_artist_id: str | None = None
+    if correlated_claim is not None:
+        record_inbound_reply(correlated_claim, postmark_payload=payload)
+        db.commit()
+        correlated_claim_id = correlated_claim.id
+        correlated_artist_id = correlated_claim.artist_id
+        logger.info(
+            "postmark_inbound_correlated",
+            extra={
+                "claim_id": correlated_claim.id,
+                "in_reply_to": in_reply_to,
+                "new_status": str(correlated_claim.status),
+            },
+        )
+
+    # Persist into the immutable ledger as well — captures correlated AND
+    # uncorrelated inbound traffic for audit. Use the correlated artist_id
+    # when available, fall back to the metadata-supplied one.
+    artist_id = correlated_artist_id or artist_id_meta
     if artist_id:
         ImmutableLedgerService(db).append(
             artist_id,
             "inbound_email_received",
             {
                 **summary,
+                "correlated_claim_id": correlated_claim_id,
                 # Keep the full payload available for later replay; redacting
                 # is the next-PR concern when we know what fields are sensitive.
                 "raw_postmark_payload": payload,
             },
         )
 
-    return {"status": "received"}
+    return {
+        "status": "received",
+        "correlated_claim_id": correlated_claim_id,
+    }
