@@ -10,7 +10,7 @@ XR7 Engine 2 is a multi-vertical artist earnings accuracy platform. It detects, 
 
 **Core value proposition**: Given a set of royalty statements from any distributor, PRO, or DSP, XR7 automatically ingests, normalises, variance-scans, generates evidence packets, and drafts claims through a state-machine-managed lifecycle. Once a remittance is recorded, fee calculation and Trolley payout are also automated.
 
-> **Honest scope note (beta period):** the *filing* step — actually delivering the dispute to the payer and tracking the response — is human-mediated today. See [docs/runbooks/manual-recovery.md](runbooks/manual-recovery.md) and the parent epic [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176).
+> **Honest scope note (beta period, updated 2026-04-30):** the *filing* step is partially automated — outbound email infrastructure (Postmark) and inbound reply parse are live and verified on QA (#219, #220). What's still human-mediated is **per-payer dispute content** (BMI-specific email body, ASCAP attachments, MLC submission process) and reply-to-claim correlation. Tracked in [#179](https://github.com/k6-labs-hq/ArtistOS/issues/179) under parent epic [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176). Operator runbook: [docs/runbooks/manual-recovery.md](runbooks/manual-recovery.md).
 
 ---
 

@@ -25,7 +25,7 @@
 
 XR7 is a royalty recovery and music rights intelligence engine. It ingests payment statements from DSPs, PROs, and distributors; normalizes and reconciles them against an artist's registered catalog; identifies discrepancies; drafts claims and evidence packets; and (once a remittance arrives) settles fees and disburses the artist's share through Trolley.
 
-The middle of the recovery loop — actually contacting payers, filing the dispute, tracking the response — is **not automated yet**. A K6 Labs operator does it by hand following [docs/runbooks/manual-recovery.md](runbooks/manual-recovery.md). The work to close that gap is tracked in [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176).
+The middle of the recovery loop — actually contacting payers, filing the dispute, tracking the response — is **partially automated as of 2026-04-30**. The email infrastructure (Postmark outbound + inbound parse) is live and verified end-to-end on QA; the per-payer dispute templates and reply-correlation logic are the remaining gap, tracked in [#179](https://github.com/k6-labs-hq/ArtistOS/issues/179). Until that ships, a K6 Labs operator handles per-payer specifics by hand following [docs/runbooks/manual-recovery.md](runbooks/manual-recovery.md). The full epic is [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176).
 
 The system is built on **FastAPI**, **SQLAlchemy 2**, **Celery**, and **LangGraph** and deployed as a containerized service on Kubernetes.
 

@@ -9,27 +9,32 @@ ArtistOS automates the upstream half of royalty recovery: ingestion, anomaly
 detection, claim drafting, evidence packet generation, claim state machine,
 and (once a remittance is recorded) fee calculation + Trolley payout.
 
-It does **not** automate the middle: actually contacting payers (PROs / DSPs),
-filing the dispute, tracking the response, and recording the inbound payment.
-Today that work is done by hand by a K6 Labs operator. This runbook is the
-checklist for that work.
+It does **not yet** automate the middle: actually contacting payers (PROs /
+DSPs), filing the dispute, tracking the response, and recording the inbound
+payment. Today that work is done by hand by a K6 Labs operator. This runbook
+is the checklist for that work.
 
-The blocker is concrete:
+**Status as of 2026-04-30:**
 
-- `XR7/recovery/dispute_delivery.py` returns `"detail": "simulated"` for every
-  channel — no SMTP send, no portal POST.
-- `XR7/recovery/auto_filing_engine.py` returns a payload dict and never enqueues
-  anything.
-- `XR7/tasks/pipeline.py::submit_recovery_action` flips `Claim.status` to
-  `IN_REVIEW` and exits.
-- An SMTP host is already wired into the notification path but **not** the
-  dispute path — see [#178](https://github.com/k6-labs-hq/ArtistOS/issues/178).
-- An email-sending provider has not been provisioned —
-  [#180](https://github.com/k6-labs-hq/ArtistOS/issues/180).
-- The ops dashboard that would replace this runbook is tracked in
-  [#181](https://github.com/k6-labs-hq/ArtistOS/issues/181).
+| Layer | State |
+|---|---|
+| Email provider | ✅ Postmark provisioned, domain verified, env vars wired (#180 / #219 / #220) |
+| Outbound dispute send via Postmark | ✅ infrastructure live; dispute_delivery.py wiring is #179 |
+| Inbound dispute reply parse | ✅ webhook live at `/webhooks/postmark/inbound`; correlation logic is #179 |
+| Per-payer dispute templates | ⏳ #179 — the next major PR |
+| `XR7/recovery/dispute_delivery.py` | ⏳ still returns `"detail": "simulated"` until #179 wires it through |
+| `XR7/recovery/auto_filing_engine.py` | ⏳ still returns a payload dict; #179 wires the queue + delivery |
+| `XR7/tasks/pipeline.py::submit_recovery_action` | ⏳ still only flips `Claim.status` to `IN_REVIEW`; #179 advances it through real states |
+| Ops dashboard for filing queue | ⏳ [#181](https://github.com/k6-labs-hq/ArtistOS/issues/181) |
+| Postmark account approval status | ⏳ pending (Postmark policy review for new accounts; outbound to non-domain recipients sandboxed until cleared) |
 
-Until the above land, the operator follows the steps below.
+So the **email pipe** is wired and verified end-to-end on QA. What's left
+is the **per-payer playbook content** (what the dispute email actually says,
+which payer accepts which attachments, how we render the evidence packet to
+PDF, how we correlate replies back to specific Claims). That's #179 work and
+ships next.
+
+Until #179 lands, the operator follows the steps below.
 
 ## What the system has already done before you start
 
@@ -83,8 +88,12 @@ notes until the `PayerPlaybook` model lands (part of #176):
 | MLC | Portal | TheMLC.com member portal | Use their dispute form; reference the song-code (`M####H`) |
 | SoundExchange | Portal | soundexchange.com `My SX Account` | Letter of representation may be required |
 
-For email channels: today, send from your personal/ops mailbox — `dispute_delivery.py`
-will eventually do this through the SMTP host once #178 lands.
+For email channels: today, still send from your personal/ops mailbox. The
+Postmark outbound infrastructure is live (#219), but `dispute_delivery.py`
+hasn't been wired to call it yet — that's #179. **Don't manually compose
+dispute emails through Postmark either** — once #179 lands, every dispute
+needs to flow through the system to capture the outbound MessageID for
+reply correlation. Mixing manual + automated sends breaks the audit chain.
 
 ### 4. Mark the claim as filed in XR7
 
@@ -144,6 +153,8 @@ state transition.
 - Parent epic: [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176) —
   replace simulated claim filing with real per-payer execution
 - Ops dashboard: [#181](https://github.com/k6-labs-hq/ArtistOS/issues/181)
-- SMTP delivery: [#178](https://github.com/k6-labs-hq/ArtistOS/issues/178)
-- Per-payer playbook framework: [#179](https://github.com/k6-labs-hq/ArtistOS/issues/179)
-- Email provider provisioning: [#180](https://github.com/k6-labs-hq/ArtistOS/issues/180)
+- SMTP delivery: [#178](https://github.com/k6-labs-hq/ArtistOS/issues/178) —
+  infrastructure wired by #219; per-payer wiring of `dispute_delivery.py` is #179
+- Per-payer playbook framework: [#179](https://github.com/k6-labs-hq/ArtistOS/issues/179) — **the next major PR; closes most of this runbook**
+- Email provider provisioning: [#180](https://github.com/k6-labs-hq/ArtistOS/issues/180) — **closed by #219 + #220 on 2026-04-30**
+- Postmark setup runbook: [docs/runbooks/postmark-setup.md](postmark-setup.md)
