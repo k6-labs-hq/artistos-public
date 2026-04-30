@@ -48,6 +48,19 @@ class XR7Settings:
     xr7_env: str = os.getenv("XR7_ENV", "development").lower()
 
     # Notification settings (Sprint 6 - email/SMS)
+    # Primary email provider: Postmark (chosen for transactional deliverability +
+    # inbound-parse for dispute reply correlation; see #218 strategy doc and the
+    # postmark setup runbook). Other providers below remain only because legacy
+    # codepaths still reference them; new code should use POSTMARK_*.
+    POSTMARK_API_TOKEN: str | None = os.getenv("POSTMARK_API_TOKEN")
+    POSTMARK_FROM_EMAIL: str = os.getenv("POSTMARK_FROM_EMAIL", "notifications@xr7.k6-labs.com")
+    POSTMARK_DISPUTES_FROM_EMAIL: str = os.getenv(
+        "POSTMARK_DISPUTES_FROM_EMAIL", "disputes@xr7.k6-labs.com"
+    )
+    # Inbound parse webhook authenticates Postmark replies by matching this
+    # shared secret in the X-Postmark-Webhook-Token header.
+    POSTMARK_INBOUND_WEBHOOK_TOKEN: str | None = os.getenv("POSTMARK_INBOUND_WEBHOOK_TOKEN")
+
     SENDGRID_API_KEY: str | None = os.getenv("SENDGRID_API_KEY")
     AWS_SES_REGION: str | None = os.getenv("AWS_SES_REGION")
     TWILIO_ACCOUNT_SID: str | None = os.getenv("TWILIO_ACCOUNT_SID")

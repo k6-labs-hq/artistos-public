@@ -76,6 +76,7 @@ from XR7.api.routers import observability as observability_router
 from XR7.api.routers import onboarding as onboarding_router
 from XR7.api.routers import payer_health as payer_health_router
 from XR7.api.routers import payers as payers_router
+from XR7.api.routers import postmark_webhooks as postmark_webhooks_router
 from XR7.api.routers import public as public_router
 from XR7.api.routers import recovery_credit_score as recovery_credit_score_router
 from XR7.api.routers import referrals as referrals_router
@@ -406,6 +407,7 @@ app.include_router(recovery.router)
 app.include_router(widget.router)
 app.include_router(ingestion.router)
 app.include_router(trolley_router.router)
+app.include_router(postmark_webhooks_router.router)
 app.include_router(dashboard_router.router)
 app.include_router(terms_router.router)
 app.include_router(intelligence_router.router)

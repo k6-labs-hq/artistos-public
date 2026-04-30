@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from XR7.models.notification_delivery_log import NotificationDeliveryLog
 from XR7.models.notification_preference import NotificationPreference
+from XR7.services.postmark_client import get_postmark_client
 from xr7_common.settings import settings
 
 logger = logging.getLogger(__name__)
@@ -128,25 +129,28 @@ class NotificationService:
             return False
 
     def _send_email(self, email: str, title: str, body: str) -> bool:
-        """Send email notification.
+        """Send email notification via Postmark.
 
-        IMPLEMENTATION STATUS:
-        - Stub mode: Returns success when no credentials configured
-        - Production requires SENDGRID_API_KEY or AWS_SES_REGION environment variables
-        - See docs/integrations/notification_providers.md for setup guide
+        Returns True for both real sends and stub mode (when POSTMARK_API_TOKEN
+        is unset, the client logs and returns success). The notification log
+        captures delivery state independently — see _log_delivery — so a stub
+        send is auditable.
         """
-        if not settings.SENDGRID_API_KEY and not settings.AWS_SES_REGION:
-            logger.info(f"[EMAIL STUB] Would send to {email}: {title}")
-            return True  # Stub mode - return success for testing
-
-        try:
-            # Production implementation: SendGrid or AWS SES integration
-            # TODO: Add SendGrid/SES client when credentials provisioned
-            logger.info(f"Email sent to {email}: {title}")
-            return True
-        except Exception as e:
-            logger.error(f"Email send failed: {e}")
-            return False
+        client = get_postmark_client()
+        result = client.send_email(
+            to=email,
+            subject=title,
+            text_body=body,
+            tag="user-notification",
+        )
+        if result.stubbed:
+            logger.info(f"[EMAIL STUB] {email}: {title}")
+        elif not result.delivered:
+            logger.error(
+                "Email send failed via Postmark",
+                extra={"to": email, "error_code": result.error_code, "error": result.error_message},
+            )
+        return result.delivered
 
     def _send_sms(self, phone: str, title: str, body: str) -> bool:
         """Send SMS notification.
