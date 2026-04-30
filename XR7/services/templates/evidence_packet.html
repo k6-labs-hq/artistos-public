@@ -33,8 +33,13 @@
     p { margin: 6pt 0; }
 
     .cover {
-      page-break-after: always;
-      padding-top: 1in;
+      /* No forced page break — let content flow. Single-finding packets pack
+         to 1-2 pages cleanly; multi-finding packets break naturally where the
+         next section doesn't fit. The forced break + 1in padding-top combo
+         was leaving 4-5in of empty space on the cover for short packets. */
+      margin-bottom: 28pt;
+      padding-bottom: 18pt;
+      border-bottom: 0.5pt solid #ccc;
     }
     .cover .badge {
       display: inline-block;
@@ -110,16 +115,12 @@
       margin: 8pt 0;
     }
 
-    pre.evidence-json {
-      font-family: "SF Mono", Monaco, "Courier New", monospace;
-      font-size: 8pt;
-      background: #f4f4f8;
-      padding: 8pt;
-      border: 0.5pt solid #ddd;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.4;
-    }
+    /* Keep section content together when possible — avoids ugly mid-table
+       page breaks. For very long evidence lists this is overridden by
+       page-break-inside: auto on the body. */
+    section { page-break-inside: avoid; }
+    section h2 { page-break-after: avoid; }
+    table { page-break-inside: avoid; }
   </style>
 </head>
 <body>
@@ -169,11 +170,12 @@
 </section>
 
 <section>
-  <h2>1. Anomaly Detection Report</h2>
+  <h2>1. Royalty Audit Finding</h2>
   <p class="muted small">
-    XR7's transparent anomaly engine examined this artist's payment history and produced the
-    following finding. The detection logic is rule-based and deterministic; the same input
-    data will always produce the same output.
+    This finding was identified during an automated review of the artist's royalty
+    payment history. The audit methodology is rule-based and deterministic — the same
+    source data will always produce the same finding — supporting reproducibility and
+    independent verification by any subsequent reviewer.
   </p>
 
   <table>
@@ -193,21 +195,65 @@
   {% endif %}
 </section>
 
-{% if anomaly.evidence %}
+{% if evidence_sections %}
 <section>
   <h2>2. Supporting Evidence</h2>
   <p class="muted small">
-    Aggregated data extracted from the artist's ingested royalty statements that triggered
-    this finding. Hash-signed in the immutable ledger; tampering with this packet
-    invalidates the signature on page {{ "%d"|format(loop.index|default(99)) if false else 'last' }}.
+    Aggregated data extracted from the artist's ingested royalty statements that
+    supports this finding. Source data is hash-signed in the immutable ledger;
+    any modification to this packet invalidates the signature in the provenance
+    section below.
   </p>
-  <pre class="evidence-json">{{ evidence_json }}</pre>
+
+  {% for sec in evidence_sections %}
+    {% if sec.title %}<h3>{{ sec.title }}</h3>{% endif %}
+    <table>
+      <tbody>
+        {% for row in sec.rows %}
+          <tr><th style="width:55%;">{{ row.label }}</th><td class="numeric">{{ row.value }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endfor %}
+</section>
+{% endif %}
+
+{% if line_items %}
+<section style="page-break-inside: auto;">
+  <h2>3. Line-Item Detail</h2>
+  <p class="muted small">
+    {% if line_items_meta.shown is not none and line_items_meta.total is not none and line_items_meta.shown < line_items_meta.total %}
+      Top {{ line_items_meta.shown }} of {{ line_items_meta.total }} {{ line_items_meta.subject|default('payment') }}{% if line_items_meta.total != 1 %}s{% endif %} contributing to this finding, sorted by amount descending. Full record set available on request.
+    {% else %}
+      All {{ line_items_meta.total|default(line_items|length) }} {{ line_items_meta.subject|default('payment') }}{% if (line_items_meta.total|default(line_items|length)) != 1 %}s{% endif %} contributing to this finding.
+    {% endif %}
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Period</th>
+        <th>Source</th>
+        <th class="numeric">Amount</th>
+        <th>Classification</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for li in line_items %}
+        <tr>
+          <td class="numeric small">{{ li.period|default('—') }}</td>
+          <td class="small">{{ li.source|default('—') }}</td>
+          <td class="currency small">{% if li.amount is not none %}${{ "%.2f"|format(li.amount|float) }}{% else %}—{% endif %}</td>
+          <td class="small">{{ li.classification|default('—') }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </section>
 {% endif %}
 
 {% if cover_page.sol_deadline %}
 <section>
-  <h2>3. Statute of Limitations Analysis</h2>
+  <h2>{% if line_items %}4{% else %}3{% endif %}. Statute of Limitations Analysis</h2>
   <table>
     <tbody>
       <tr><th style="width:30%;">SOL deadline</th><td class="numeric">{{ cover_page.sol_deadline }}</td></tr>
@@ -218,7 +264,7 @@
 {% endif %}
 
 <section>
-  <h2>{{ '4' if cover_page.sol_deadline else '3' }}. Cryptographic Provenance</h2>
+  <h2>{% set n = 3 %}{% if line_items %}{% set n = n + 1 %}{% endif %}{% if cover_page.sol_deadline %}{% set n = n + 1 %}{% endif %}{{ n }}. Cryptographic Provenance</h2>
   <p class="muted small">
     This packet was generated and signed by XR7 at the timestamp on the cover page. The
     signature below covers the entire content of this PDF; any modification will fail

@@ -28,6 +28,7 @@ from XR7.models.claim import Claim, ClaimSchema, ClaimStatus
 from XR7.models.evidence_anchor import EvidenceAnchor as EvidenceAnchorModel
 from XR7.models.ml_feedback import CalibrationSnapshot
 from XR7.models.notification_preference import NotificationPreference
+from XR7.models.payment import Payment
 from XR7.models.review_queue import ReviewSourceType
 from XR7.recovery.attorney_escalation import AttorneyNetworkEscalator
 from XR7.recovery.cash_recovery_forecast import build_claim_forecast
@@ -908,6 +909,51 @@ def get_evidence_pdf(
 
     from XR7.services.evidence_packet_pdf import render_evidence_packet_pdf  # noqa: PLC0415
 
+    # Pull underlying line items so the dispute team can verify the math, not
+    # just trust the aggregate. Currently scoped to HIGH_RETROACTIVE_RATIO since
+    # that's our most common Brody-shape finding; per-rule line-item logic for
+    # the other rules can land alongside their per-payer playbook in #179.
+    line_items: list[dict] = []
+    line_items_meta: dict = {}
+    if anomaly is not None:
+        snapshot = json.loads(anomaly.feature_snapshot or "{}")
+        rule_id = snapshot.get("rule_id") or str(anomaly.subtype or "")
+        if rule_id == "HIGH_RETROACTIVE_RATIO":
+            worst_payer = (snapshot.get("evidence") or {}).get("worst_payer")
+            if worst_payer:
+                payments = (
+                    db.query(Payment)
+                    .filter(
+                        Payment.artist_id == claim.artist_id,
+                        Payment.source.ilike(f"%{worst_payer}%"),
+                    )
+                    .all()
+                )
+
+                def _classify(src: str) -> str:
+                    s = (src or "").lower()
+                    if "reprocessing" in s or "adjustment" in s or "retroactive" in s:
+                        return "Retroactive"
+                    return "Current period"
+
+                rows = [
+                    {
+                        "period": (p.period_start.isoformat() if p.period_start else "—"),
+                        "source": p.source or "—",
+                        "amount": float(p.amount or 0.0),
+                        "classification": _classify(p.source or ""),
+                    }
+                    for p in payments
+                ]
+                rows.sort(key=lambda r: r["amount"], reverse=True)
+                _shown = min(len(rows), 30)
+                line_items = rows[:_shown]
+                line_items_meta = {
+                    "shown": _shown,
+                    "total": len(rows),
+                    "subject": "payment",
+                }
+
     pdf_bytes = render_evidence_packet_pdf(
         claim={
             "id": claim.id,
@@ -950,6 +996,8 @@ def get_evidence_pdf(
             if anomaly
             else {}
         ),
+        line_items=line_items,
+        line_items_meta=line_items_meta,
     )
 
     filename = f"xr7-evidence-{claim_id}.pdf"

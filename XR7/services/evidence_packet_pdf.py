@@ -27,7 +27,6 @@ so callers can fall back to manual filing without crashing.
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 from datetime import datetime, timezone
 from pathlib import Path
@@ -38,6 +37,138 @@ from jinja2 import ChainableUndefined, Environment, FileSystemLoader, select_aut
 logger = logging.getLogger(__name__)
 
 _TEMPLATE_DIR = Path(__file__).parent / "templates"
+
+# Keys whose values should render as currency. Substring match so things like
+# "total_amount", "retroactive_amount", "estimated_recoverable" all hit.
+_CURRENCY_KEY_HINTS = ("amount", "recoverable", "payment_total", "total_received")
+# Keys whose values should render as percentages. Same substring match.
+_RATIO_KEY_HINTS = ("ratio", "percent", "_pct", "rate", "concentration", "share")
+# Keys whose values are counts (integer, comma-formatted).
+_COUNT_KEY_HINTS = ("count", "payments", "events", "tracks", "rows", "months", "days")
+
+
+def _humanize_key(key: str) -> str:
+    """`retroactive_ratio` → `Retroactive Ratio`. Special-case common abbreviations."""
+    parts = key.replace("_", " ").split()
+    title = " ".join(p.capitalize() for p in parts)
+    return (
+        title.replace("Mlc", "MLC")
+        .replace("Bmi", "BMI")
+        .replace("Ascap", "ASCAP")
+        .replace("Sol", "SOL")
+        .replace("Pct", "Percentage")
+        .replace("Url", "URL")
+    )
+
+
+def _humanize_value(key: str, value: Any) -> str:
+    """Format a scalar value based on the heuristic inferred from its key.
+
+    Money keys → `$X,XXX.XX`. Ratio keys (0.7409) → `74.1%`. Count keys → `1,234`.
+    Everything else → string-cast. Doesn't try to be clever about ambiguous keys.
+    """
+    if value is None:
+        return "—"
+    key_lower = key.lower()
+    try:
+        if any(h in key_lower for h in _CURRENCY_KEY_HINTS):
+            return f"${float(value):,.2f}"
+        if any(h in key_lower for h in _RATIO_KEY_HINTS):
+            f = float(value)
+            # If it's a fraction (0..1.5), render as percentage. If already a
+            # whole-number percentage (e.g. 74), render with trailing %.
+            return f"{f * 100:.1f}%" if abs(f) <= 1.5 else f"{f:.1f}%"
+        if any(h in key_lower for h in _COUNT_KEY_HINTS) and isinstance(value, (int, float)):
+            return f"{int(value):,}"
+    except (TypeError, ValueError):
+        pass
+    return str(value)
+
+
+def _format_evidence_sections(evidence: dict[str, Any] | None) -> list[dict[str, Any]]:
+    """Turn the raw evidence dict into a list of presentation sections.
+
+    Each section: `{"title": str | None, "rows": [{"label": str, "value": str}]}`.
+    The template iterates sections and renders each as a small key-value table.
+
+    Why per-section: a finding's evidence often has flat scalar values (Summary)
+    plus nested dicts like `by_payer.MLC`, plus optional list-of-dicts like
+    `top_outliers`. Each subtree reads better with its own header. Without this,
+    a flat key-value dump loses the by-payer breakout that's the whole point
+    of the HIGH_RETROACTIVE_PAYMENT_RATIO finding.
+
+    Per-rule narrative customization (BMI-specific framing of the same data,
+    legal language tuning) is intentionally out of scope here — that's the
+    next layer up and lives with the per-payer playbook (#179).
+    """
+    if not evidence or not isinstance(evidence, dict):
+        return []
+
+    sections: list[dict[str, Any]] = []
+
+    # Top-level scalar values → "Summary" table
+    summary_rows = [
+        {"label": _humanize_key(k), "value": _humanize_value(k, v)}
+        for k, v in evidence.items()
+        if not isinstance(v, (dict, list))
+    ]
+    if summary_rows:
+        sections.append({"title": "Summary", "rows": summary_rows})
+
+    # `by_payer` is the most common nested structure (HIGH_RETROACTIVE_RATIO).
+    # Each payer gets its own table.
+    by_payer = evidence.get("by_payer")
+    if isinstance(by_payer, dict):
+        for payer, metrics in by_payer.items():
+            if isinstance(metrics, dict):
+                sections.append(
+                    {
+                        "title": f"Payer: {payer}",
+                        "rows": [
+                            {"label": _humanize_key(sk), "value": _humanize_value(sk, sv)}
+                            for sk, sv in metrics.items()
+                            if not isinstance(sv, (dict, list))
+                        ],
+                    }
+                )
+
+    # Other nested dicts (not `by_payer`) → their own section
+    for k, v in evidence.items():
+        if k == "by_payer":
+            continue
+        if isinstance(v, dict):
+            sub_rows = [
+                {"label": _humanize_key(sk), "value": _humanize_value(sk, sv)}
+                for sk, sv in v.items()
+                if not isinstance(sv, (dict, list))
+            ]
+            if sub_rows:
+                sections.append({"title": _humanize_key(k), "rows": sub_rows})
+        elif isinstance(v, list) and v and isinstance(v[0], dict):
+            # List of dicts (e.g., top_outliers) — render each as a row group
+            for i, item in enumerate(v[:5], start=1):
+                sections.append(
+                    {
+                        "title": f"{_humanize_key(k)} #{i}",
+                        "rows": [
+                            {"label": _humanize_key(sk), "value": _humanize_value(sk, sv)}
+                            for sk, sv in item.items()
+                            if not isinstance(sv, (dict, list))
+                        ],
+                    }
+                )
+        elif isinstance(v, list) and v:
+            # List of scalars (e.g., missing_months) — single row with comma-joined values
+            sections.append(
+                {
+                    "title": _humanize_key(k),
+                    "rows": [{"label": "Values", "value": ", ".join(str(x) for x in v[:24])}],
+                }
+            )
+
+    return sections
+
+
 # ChainableUndefined: missing attrs/keys render as empty string instead of
 # raising. Operator surface — partial data is preferable to a crashed render
 # (a missing payer name is fine; a 500 from the download endpoint is not).
@@ -55,6 +186,8 @@ def render_evidence_packet_pdf(
     artist: dict[str, Any] | None = None,
     cover_page: dict[str, Any] | None = None,
     signature: str | None = None,
+    line_items: list[dict[str, Any]] | None = None,
+    line_items_meta: dict[str, Any] | None = None,
 ) -> bytes:
     """Render an evidence packet to PDF bytes.
 
@@ -106,13 +239,7 @@ def render_evidence_packet_pdf(
 
     generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    evidence_json = ""
-    if anomaly.get("evidence"):
-        try:
-            evidence_json = json.dumps(anomaly["evidence"], indent=2, default=str, sort_keys=True)
-        except (TypeError, ValueError) as exc:
-            logger.warning("Could not JSON-encode anomaly evidence: %s", exc)
-            evidence_json = str(anomaly["evidence"])
+    evidence_sections = _format_evidence_sections(anomaly.get("evidence"))
 
     template = _jinja_env.get_template("evidence_packet.html")
 
@@ -120,13 +247,18 @@ def render_evidence_packet_pdf(
     # in. Two-pass keeps the hash genuinely covering the entire visible content
     # except itself (the hash field on the second-pass render holds the
     # first-pass hash).
+    line_items = line_items or []
+    line_items_meta = line_items_meta or {}
+
     first_pass_html = template.render(
         generated_at=generated_at,
         claim=claim,
         anomaly=anomaly,
         artist=artist,
         cover_page=cover_page,
-        evidence_json=evidence_json,
+        evidence_sections=evidence_sections,
+        line_items=line_items,
+        line_items_meta=line_items_meta,
         packet_hash="(computing)",
         signature=signature,
     )
@@ -138,7 +270,9 @@ def render_evidence_packet_pdf(
         anomaly=anomaly,
         artist=artist,
         cover_page=cover_page,
-        evidence_json=evidence_json,
+        evidence_sections=evidence_sections,
+        line_items=line_items,
+        line_items_meta=line_items_meta,
         packet_hash=packet_hash,
         signature=signature,
     )
