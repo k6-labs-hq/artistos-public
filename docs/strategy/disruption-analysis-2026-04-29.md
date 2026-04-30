@@ -370,3 +370,140 @@ If the next 12 months is spent on closing the loop and the next 12 months after 
 ---
 
 *Last updated 2026-04-29. Re-evaluate quarterly. The market and competitive landscape will move; the strategic thesis should be revisited if a competitor lands the same vertical-integration play before we do, or if a strategic buyer signals interest before month 18.*
+
+---
+
+# Update — 2026-04-30: One-day recalibration
+
+Less than 24 hours after this doc was written, we executed what I'd labeled "Week 1 of the next 90 days" in about three hours of working time. Honest re-evaluation of what that means, what it doesn't mean, and where the timeline actually stands.
+
+## What got compressed
+
+Tonight's work shipped:
+
+- **#180 (email provider provisioning)** — Postmark account, domain verification (DKIM + Return-Path on `xr7.k6-labs.com`), DMARC scaffold
+- **#219 (foundation PR)** — Postmark client wrapper with stub/live mode toggle, error handling for the suppressed-recipient case, full test coverage
+- **#220 (Basic Auth refactor)** — inbound webhook accepting both X-Postmark-Webhook-Token and Postmark's standard Basic Auth in the URL
+- Inbound parse webhook endpoint live, validated end-to-end on QA, Postmark's "Check" button returns 200
+- API token + inbound shared secret loaded into QA env, verified outbound `delivered=True` with a real `MessageID` from Postmark
+- 17 regression tests covering stub mode, real send, error paths, and both inbound auth transports
+- Setup runbook so an operator could repeat this for production
+
+In the original 90-day plan, that work was scoped as:
+
+> - Provision email provider (#180) — week 1
+> - Wire SMTP-based dispute delivery for BMI specifically (#178 + #179 partial) — weeks 2–6 (we did the SMTP-delivery infra portion of this)
+> - Operator dashboard MVP (#181) for the cases that need human review — weeks 6–10 (we did the inbound parse portion of this)
+
+So the "Week 1" estimate was right for the email provider piece in isolation, but we accidentally also did a meaningful slice of weeks 2–6 and weeks 6–10 in the same session. **That's not three hours = three weeks. It's three hours = the foundational infrastructure for three weeks of planned work, with the actual application logic still ahead.**
+
+## What this tells us, honestly
+
+LLM-assisted engineering compresses **plumbing** work dramatically. That includes:
+
+- API client wrappers
+- Webhook endpoints and auth
+- Test scaffolding
+- Configuration and env-var wiring
+- DNS setup steps documented and executed
+- Provider integration boilerplate
+
+It does not compress the same way for work that requires:
+
+- Domain knowledge that's not in the codebase (what does BMI's dispute team actually want to see?)
+- Legal review (what statements can we make on behalf of an artist, signed by them, without crossing into unauthorized practice of law?)
+- Real-world relationships (which PRO industry-relations contacts will help us if we hit a wall?)
+- Calibration data (when does retroactive ratio actually predict recoverable money? Need real outcomes to know)
+- Beta cohort acquisition (artists with $50K+ catalogs aren't on a list we can scrape)
+- Time-bound external systems (Postmark approval, BMI's response SLA, statute-of-limitations clocks)
+
+So the original "six months of focused work for two engineers" estimate for closing the recovery loop probably **revises down to 3–4 months on engineering surface area**, but the parts that aren't pure engineering still take wall-clock time.
+
+## What's actually next, recalibrated
+
+The remaining work to close the loop, with realistic estimates given tonight's pace:
+
+| Item | Original estimate | Revised | Compressible by LLM? |
+|---|---|---|---|
+| BMI dispute email template + content | weeks 2–6 | 1–2 days *for the rendering* | Partially — the template engineering is fast; the content of what we say to BMI requires legal review and is bound by what BMI actually accepts |
+| PDF generation for evidence packets | weeks 4–6 | 1–2 days | Yes — WeasyPrint or reportlab + the existing JSON evidence packet, mostly engineering |
+| Wire `dispute_delivery.py` to use the Postmark client | weeks 2–6 | a few hours | Fully — the interface is small |
+| Reply → Claim correlation in inbound webhook | weeks 6–10 | 1–2 days | Partially — engineering is fast; the matching heuristics need calibration data over time |
+| Operator dashboard MVP | weeks 6–10 | 1–2 days | Yes — UI/UX for a known data shape |
+| First real BMI dispute end-to-end with a live beta artist | week 8 | **bound by Postmark approval + a willing beta artist + actually waiting for BMI to respond** | No — wall-clock |
+| Anomaly outcome → engine feedback wiring | weeks 8–12 | 2–3 days of engineering, then **months of accumulating real outcomes** | The wiring is engineering; the data accumulation is calendar time |
+| 1,000 active artists, demonstrable unit economics | months 6–12 | unchanged — still calendar time | No — bound by acquisition + real claim resolution timelines |
+| Enterprise pilot with a label or management company | months 12–18 | unchanged — bound by sales cycle | No — bound by relationships + procurement |
+| Series A / M&A conversations | months 18–24 | could land at month 12–18 if engineering keeps compressing | Partially — accelerates if traction shows up faster |
+
+## Does this change the $200M target's plausibility?
+
+**Yes, slightly upward — but not for the reason that's fun to think about.**
+
+The conventional read is: "we're going 5x faster than expected, so the timeline compresses 5x." That's wrong. The real compression is on engineering surface area, which is maybe a third of the total work to a credible $200M outcome. The other two-thirds — beta cohort acquisition, claim resolution wall-clock, calibration data accumulation, enterprise sales cycles — runs on calendar time that doesn't compress.
+
+What actually moves with this kind of pace:
+
+1. **Earlier closure on the recovery loop.** Original target was "first real BMI dispute end-to-end by week 8 of next 90 days." Realistic now: 2–3 weeks if Postmark approves quickly + we have a willing beta artist with a BMI statement worth filing on. That's a meaningful pull-forward of the case-study clock.
+
+2. **Less hiring pressure, sooner.** I projected the engineer hire at month 6 to free Jason from being a single point of failure. With this pace, the hire might not be needed for engineering throughput until month 9–12. The hire **is still needed** by month 6 — but for **operational durability** (CI green sustained, deploy automation, code review redundancy), not for raw output. Don't conflate the two.
+
+3. **Earlier strategic positioning.** Original projection had M&A discussions starting around month 18. With faster engineering progress demonstrated, a strategic buyer might engage sooner — not because the engineering is done, but because the **trajectory** is visible earlier. That changes valuation dynamics; an in-flight rocket gets a higher multiple than a stationary one.
+
+4. **What it does NOT change:** the credibility-budget framing, the "missing middle is the strategic question," the codebase-breadth-as-due-diligence-risk concern, the single-operator dependency. All of those are organizational/cultural concerns that a fast engineering pace can actually make *worse* by hiding them under shipping velocity.
+
+## Revised honest answer to Matt's question
+
+Updated read: **Plausible. More plausible than yesterday. Still not probable, and the bottleneck shifts.**
+
+Yesterday's read: "$200M is in range if the next 12 months is spent on closing the loop." That's still true — but with tonight's pace, "closing the loop" is more like 2–3 months of engineering plus 6+ months of calibration on real outcomes. The total time to a credible $200M conversation hasn't shrunk dramatically; it's still gated by external time-bound things (case studies, real claim resolutions, enterprise sales cycles).
+
+What HAS shrunk: the **risk** of running out of engineering runway. Yesterday I worried about whether two engineers could close the loop in six months. Tonight that worry is downgraded — one engineer + LLM assistance is moving fast enough that the engineering side isn't the constraint anymore.
+
+The constraint is now squarely on the **non-engineering** parts of the operation:
+
+- Sourcing real beta artists with meaningful catalog data (Brody is a great test case for engineering, terrible for sales)
+- Establishing relationships with PRO industry-relations contacts (BMI, ASCAP, MLC) so when we start filing automated disputes at scale, we're not flagged as a bot
+- Legal review of dispute content (artist's signature on what we say on their behalf)
+- Operator hire for the human-judgment cases (still needed even with automation)
+- Sales motion for enterprise pilots
+- Calibration of rules from outcome data (no shortcut)
+
+**The disciplined posture going forward** is to keep engineering going at this pace, but **not let engineering velocity become the metric we optimize for**. The metric is still "did we close a real recovery for a real artist this month?" That metric isn't compressing as fast as the engineering one is.
+
+## What I would change in the original 90-day commit list
+
+The 90-day commits should be tightened. Updated version:
+
+**Engineering commitments (revised)**
+
+- [x] Provision email provider (#180) — done 2026-04-30
+- [ ] Wire SMTP-based dispute delivery for BMI specifically (#178 + #179) — by **week 2** (was weeks 2–6)
+- [ ] Build PDF generation for evidence packets — by **week 2** (was weeks 4–6)
+- [ ] Run the first real BMI dispute end-to-end with a real beta artist — by **week 4** (was week 8), gated on Postmark approval + a beta artist with usable BMI data
+- [ ] Operator dashboard MVP (#181) — by **week 5** (was weeks 6–10)
+- [ ] CI green on `main`; keep it green — week 1, sustained thereafter (unchanged — still hasn't happened, still important)
+- [ ] Anomaly outcome → engine feedback wiring — by **week 6** (was weeks 8–12)
+
+**Product / business commitments (largely unchanged)**
+
+- [ ] Bridge waitlist→dashboard recovery story — week 1–2 (unchanged)
+- [ ] **Source 3–5 mid-tier artists into beta cohort** — by week 4 (unchanged — bound by sourcing, not engineering)
+- [ ] Document the manual recovery procedure in detail enough that an ops hire could run it — by week 6 (was week 8)
+- [ ] First case study published internally — by week 8 (was week 12), gated on the first real recovery
+
+The pull-forwards on engineering items free up bandwidth in months 2–3 for what was previously month 4–6 work: **building the calibration feedback loop and starting enterprise conversations earlier**.
+
+## The dangerous version of this
+
+The version of this re-evaluation I want to NOT write is: "We're going to hit \$200M in 12 months instead of 24." That would be reading shipping velocity as overall progress, which it isn't. Engineering fast doesn't mean BMI responds faster, doesn't mean a real beta cohort materializes faster, doesn't mean enterprise sales cycles compress.
+
+The honest version is: **we just demonstrated that we can execute the engineering portion of the disruption thesis far faster than I projected**. That removes one specific risk (engineering throughput). It does not change the structural risks (beta cohort acquisition, calibration time, sales cycle, regulatory tolerance for automated dispute filing).
+
+Net: yesterday I said "plausible, not probable, conditional on closing the recovery loop." Today I'd say "plausible, more plausible than yesterday by about 10%, conditional on closing the loop AND on accepting that the non-engineering parts of the work still take real time."
+
+That's the honest delta. Not "we're going to do this in half the time." Just: one specific risk got smaller.
+
+---
+
+*Update last edited 2026-04-30. The original 2026-04-29 analysis above remains the structural strategic frame; this update adjusts the timeline based on observed engineering velocity but does not revise the underlying thesis.*
