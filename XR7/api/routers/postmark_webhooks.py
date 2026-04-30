@@ -22,6 +22,8 @@ ships with that work.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import hmac
 import json
 import logging
@@ -37,13 +39,64 @@ router = APIRouter(tags=["postmark"])
 logger = logging.getLogger(__name__)
 
 
+def _basic_auth_password(authorization_header: str | None) -> str | None:
+    """Extract the password component from an `Authorization: Basic <base64>` header.
+
+    Postmark's inbound webhook authentication is "Basic Auth in the URL" — when
+    the configured webhook URL is `https://user:secret@host/path`, Postmark
+    sends `Authorization: Basic base64(user:secret)` on every POST. Returns the
+    decoded password (everything after the first `:`), or None on any failure.
+    """
+    if not authorization_header:
+        return None
+    parts = authorization_header.split(None, 1)
+    if len(parts) != 2 or parts[0].lower() != "basic":
+        return None
+    try:
+        decoded = base64.b64decode(parts[1], validate=True).decode("utf-8", errors="replace")
+    except (binascii.Error, UnicodeDecodeError):
+        return None
+    _, _, password = decoded.partition(":")
+    return password or None
+
+
+def _verify_inbound_auth(
+    *,
+    custom_header_value: str | None,
+    authorization_header: str | None,
+    expected: str,
+) -> bool:
+    """Return True if either auth path matches the expected secret.
+
+    Two transports supported:
+    - `X-Postmark-Webhook-Token: <secret>` (custom header, what curl tests use)
+    - `Authorization: Basic <base64(any:secret)>` (what Postmark itself sends
+      when the webhook URL is `https://user:secret@host/path`)
+
+    Both routes hash the same `POSTMARK_INBOUND_WEBHOOK_TOKEN`. Constant-time
+    compare via hmac.compare_digest to avoid timing-leak.
+    """
+    if custom_header_value and hmac.compare_digest(custom_header_value, expected):
+        return True
+    basic_password = _basic_auth_password(authorization_header)
+    if basic_password and hmac.compare_digest(basic_password, expected):
+        return True
+    return False
+
+
 @router.post("/webhooks/postmark/inbound")
 async def postmark_inbound(
     request: Request,
     db: Session = Depends(get_db),
     x_postmark_webhook_token: str | None = Header(default=None, alias="X-Postmark-Webhook-Token"),
+    authorization: str | None = Header(default=None),
 ) -> dict:
     """Receive an inbound email reply from Postmark's parse webhook.
+
+    Authenticates via either:
+    - X-Postmark-Webhook-Token header (curl-friendly, what tests use)
+    - HTTP Basic Auth (what Postmark itself sends when the webhook URL
+      is configured as `https://user:secret@host/path`)
 
     Returns 200 quickly so Postmark doesn't retry on slow processing.
     The actual claim-correlation work happens later via the immutable
@@ -62,8 +115,12 @@ async def postmark_inbound(
             status_code=503,
             detail="Inbound webhook not configured (POSTMARK_INBOUND_WEBHOOK_TOKEN unset)",
         )
-    if not x_postmark_webhook_token or not hmac.compare_digest(x_postmark_webhook_token, expected):
-        raise HTTPException(status_code=401, detail="Invalid webhook token")
+    if not _verify_inbound_auth(
+        custom_header_value=x_postmark_webhook_token,
+        authorization_header=authorization,
+        expected=expected,
+    ):
+        raise HTTPException(status_code=401, detail="Invalid webhook auth")
 
     try:
         payload = await request.json()

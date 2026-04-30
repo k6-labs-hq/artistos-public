@@ -121,6 +121,47 @@ def test_webhook_returns_400_on_malformed_json(configured_webhook):
     assert resp.status_code == 400
 
 
+def test_webhook_accepts_basic_auth_with_correct_password(configured_webhook):
+    """Postmark inbound auth works via Basic Auth when the webhook URL embeds credentials.
+
+    When the configured webhook URL is `https://postmark:<secret>@host/path`,
+    Postmark sends `Authorization: Basic base64(postmark:<secret>)`. We verify
+    the password against the same `POSTMARK_INBOUND_WEBHOOK_TOKEN`.
+    """
+    import base64
+
+    artist_id = _seed_artist()
+    cred = base64.b64encode(b"postmark:secret-xyz").decode("ascii")
+    resp = client.post(
+        "/webhooks/postmark/inbound",
+        json=_inbound_payload(artist_id=artist_id),
+        headers={"Authorization": f"Basic {cred}"},
+    )
+    assert resp.status_code == 200, resp.text
+
+
+def test_webhook_rejects_basic_auth_with_wrong_password(configured_webhook):
+    import base64
+
+    cred = base64.b64encode(b"postmark:wrong-secret").decode("ascii")
+    resp = client.post(
+        "/webhooks/postmark/inbound",
+        json=_inbound_payload(),
+        headers={"Authorization": f"Basic {cred}"},
+    )
+    assert resp.status_code == 401
+
+
+def test_webhook_rejects_basic_auth_with_malformed_base64(configured_webhook):
+    """A malformed Authorization header should fail closed, not crash."""
+    resp = client.post(
+        "/webhooks/postmark/inbound",
+        json=_inbound_payload(),
+        headers={"Authorization": "Basic not-valid-base64!!!"},
+    )
+    assert resp.status_code == 401
+
+
 def test_webhook_does_not_persist_when_metadata_lacks_artist(configured_webhook):
     """Postmark inbound webhooks for unknown artists land but don't write a ledger entry.
 
