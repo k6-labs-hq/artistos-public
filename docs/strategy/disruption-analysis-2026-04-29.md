@@ -507,3 +507,33 @@ That's the honest delta. Not "we're going to do this in half the time." Just: on
 ---
 
 *Update last edited 2026-04-30. The original 2026-04-29 analysis above remains the structural strategic frame; this update adjusts the timeline based on observed engineering velocity but does not revise the underlying thesis.*
+
+---
+
+# Update — 2026-04-30 EOD: Runway constraint resets the operational frame
+
+A diagnostic conversation later in the day surfaced a constraint that the prior analysis didn't account for: **personal runway is <6 months and "money yesterday" pressure is real.** That changes the dominant question.
+
+**This document remains useful as the strategic frame** — the disruption thesis (vertical recovery integration, white space at automated cross-platform indie-tier audit, $200M outcome plausibility) is unchanged. **But for the next 30–90 days, the operational document is [next-30-days.md](next-30-days.md), not this one.** The 30-day plan replaces "build to $200M over 24 months" with "create a capital event before runway exits" as the immediate target.
+
+The 5-question diagnostic that produced the runway pivot:
+
+1. **Music-rights attorney** — Matt has multiple, fast.
+2. **Waitlist** — 50+ signups, well-known names; recovery-estimate distribution unknown until queried.
+3. **Music industry relationships** — Matt has hundreds via YODL ties + Nashville scene; Jason has a few. Nashville (country/Americana songwriters) means deep BMI exposure — exactly our sweet spot.
+4. **Cash + runway** — <6 months personal runway; Matt full-time on K6 Labs; "I need money yesterday."
+5. **Customer conversations** — Matt has had several; Jason has had none yet.
+
+Implication: the contingency-fee revenue model is wall-clock-bound to PRO response cycles (BMI 30/90 days + remittance delay), so it cannot extend runway in the relevant window. The 30-day plan therefore prioritises:
+
+- **Pre-seed / seed capital event in 60–120 days** based on engineering completeness + first dispute filings + Nashville cohort
+- **Services revenue (flat-fee portfolio audit for one Nashville label/manager) in 30–60 days** as the fastest cash bridge
+- **Strategic acquihire conversations** as the Plan B if the above stall
+
+The $200M outcome stays plausible IF the runway gets solved. Without a capital event in the next 90 days, the question stops being "$200M when" and becomes "does this company exist."
+
+See [next-30-days.md](next-30-days.md) for the actionable plan.
+
+---
+
+*Update added 2026-04-30 EOD after the runway diagnostic. The 30-day plan supersedes this document as the operational reference until a capital event lands.*
