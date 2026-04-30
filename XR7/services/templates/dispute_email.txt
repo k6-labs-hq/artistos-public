@@ -1,0 +1,39 @@
+{{ salutation }}
+
+I am writing on behalf of {{ artist_name }}{% if artist_pro_id %} ({{ payer_id }} #{{ artist_pro_id }}){% endif %} to formally dispute royalty payment activity captured in your records and to request review of the attached audit finding.
+
+{{ artist_name }} authorises XR7 (a service of K6 Labs, Inc.) to act on their behalf for the limited purpose of submitting royalty audit findings and receiving correspondence in response. A signed Limited Power of Attorney is available on request.
+
+The attached evidence packet documents the following finding:
+
+  Finding: {{ finding_subtype }}
+  {%- if estimated_recoverable %}
+  Estimated recoverable: ${{ "%.2f"|format(estimated_recoverable|float) }}
+  {%- endif %}
+  {%- if confidence_pct %}
+  Confidence: {{ confidence_pct }}%
+  {%- endif %}
+
+{{ finding_description }}
+
+The packet (PDF attachment) includes:
+  - A summary cover page with the artist identifier and finding scope
+  - The full audit determination, including rule logic and confidence band
+  - Aggregated supporting evidence
+  - Line-item detail of the underlying payment records contributing to this finding, sorted by amount
+  - A SHA-256 cryptographic signature of the packet contents
+
+We respectfully request acknowledgement of receipt within {{ sla_acknowledge_days }} days, and a substantive response within {{ sla_decision_days }} days, in line with {{ payer_display_name }}'s published member-relations procedure.
+
+If you have questions about the audit methodology, the underlying source data, or require additional documentation, please reply to this email — replies are routed to our claims-management system and will be associated with this filing automatically.
+
+Sincerely,
+
+XR7 Recovery Operations
+on behalf of {{ artist_name }}
+K6 Labs, Inc.
+
+— — —
+Reference: claim {{ claim_id }}
+Filing date: {{ filing_date }}
+Outbound message id: (set by mail provider on send)

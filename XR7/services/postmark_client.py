@@ -27,7 +27,9 @@ other provider" fallback because:
 
 from __future__ import annotations
 
+import base64
 import logging
+import os
 from dataclasses import dataclass
 from typing import Any
 
@@ -39,6 +41,20 @@ logger = logging.getLogger(__name__)
 
 _POSTMARK_API = "https://api.postmarkapp.com"
 _POSTMARK_TIMEOUT = 10.0
+
+
+@dataclass(frozen=True)
+class PostmarkAttachment:
+    """A file to attach to an outbound email.
+
+    `content` is the raw bytes; the client base64-encodes for the Postmark API.
+    Don't pre-encode — that's the client's job and double-encoding will silently
+    corrupt the attachment.
+    """
+
+    name: str
+    content: bytes
+    content_type: str = "application/octet-stream"
 
 
 @dataclass(frozen=True)
@@ -66,8 +82,19 @@ class PostmarkClient:
         api_token: str | None = None,
         default_from: str | None = None,
     ) -> None:
-        self._api_token = api_token if api_token is not None else settings.POSTMARK_API_TOKEN
-        self._default_from = default_from or settings.POSTMARK_FROM_EMAIL
+        # Read at construction time, not at module load. Settings is a frozen
+        # dataclass evaluated when xr7_common is imported — that's too early
+        # for tests that monkeypatch env vars at fixture time. Falling back to
+        # os.environ keeps the test path working without giving up the typed
+        # settings dataclass for production paths.
+        self._api_token = (
+            api_token
+            if api_token is not None
+            else (os.environ.get("POSTMARK_API_TOKEN") or settings.POSTMARK_API_TOKEN)
+        )
+        self._default_from = (
+            default_from or os.environ.get("POSTMARK_FROM_EMAIL") or settings.POSTMARK_FROM_EMAIL
+        )
 
     @property
     def configured(self) -> bool:
@@ -85,6 +112,7 @@ class PostmarkClient:
         message_stream: str = "outbound",
         metadata: dict[str, str] | None = None,
         tag: str | None = None,
+        attachments: list[PostmarkAttachment] | None = None,
     ) -> PostmarkSendResult:
         """Send a single transactional email.
 
@@ -98,11 +126,12 @@ class PostmarkClient:
         """
         if not self.configured:
             logger.info(
-                "[POSTMARK STUB] Would send to %s subject=%r tag=%s metadata=%s",
+                "[POSTMARK STUB] Would send to %s subject=%r tag=%s metadata=%s attachments=%d",
                 to,
                 subject,
                 tag,
                 metadata,
+                len(attachments) if attachments else 0,
             )
             return PostmarkSendResult(delivered=True, message_id=None, stubbed=True)
 
@@ -121,6 +150,15 @@ class PostmarkClient:
             payload["Metadata"] = metadata
         if tag is not None:
             payload["Tag"] = tag
+        if attachments:
+            payload["Attachments"] = [
+                {
+                    "Name": a.name,
+                    "Content": base64.b64encode(a.content).decode("ascii"),
+                    "ContentType": a.content_type,
+                }
+                for a in attachments
+            ]
 
         try:
             resp = httpx.post(
