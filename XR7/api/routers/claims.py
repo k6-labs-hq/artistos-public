@@ -878,6 +878,88 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
 
 
+@router.get("/claims/{claim_id}/evidence.pdf")
+def get_evidence_pdf(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    auth_payload: dict = Depends(get_auth_payload),
+):
+    """Render the evidence packet for a claim as a PDF.
+
+    The PDF format is what we attach to dispute emails (BMI/ASCAP/MLC/
+    SoundExchange all accept email + PDF for the email-channel payers)
+    and what operators download for review. Same data as
+    `/claims/{id}/evidence`, just rendered for human consumption.
+
+    See `XR7.services.evidence_packet_pdf` for the renderer; this endpoint
+    is a thin authz + DB-fetch wrapper around it.
+    """
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    enforce_claim_access(claim.artist_id, auth_payload)
+
+    artist = db.query(Artist).filter(Artist.id == claim.artist_id).first()
+    anomaly = (
+        db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
+        if claim.anomaly_id
+        else None
+    )
+
+    from XR7.services.evidence_packet_pdf import render_evidence_packet_pdf  # noqa: PLC0415
+
+    pdf_bytes = render_evidence_packet_pdf(
+        claim={
+            "id": claim.id,
+            "payer_name": getattr(claim, "payer_name", None),
+            "sol_deadline": (
+                claim.sol_deadline.isoformat() if getattr(claim, "sol_deadline", None) else None
+            ),
+            "amount": getattr(claim, "amount", None),
+        },
+        artist={"name": artist.name} if artist else {},
+        anomaly=(
+            {
+                "id": anomaly.id,
+                "subtype": str(anomaly.subtype) if anomaly.subtype else None,
+                "rule_id": (
+                    json.loads(anomaly.feature_snapshot or "{}").get("rule_id")
+                    if anomaly.feature_snapshot
+                    else None
+                ),
+                "category": str(anomaly.category) if anomaly.category else None,
+                "severity": str(anomaly.severity) if anomaly.severity else None,
+                "confidence_score": (
+                    float(anomaly.confidence_score)
+                    if anomaly.confidence_score is not None
+                    else None
+                ),
+                "estimated_recoverable": (
+                    float(anomaly.estimated_recoverable)
+                    if anomaly.estimated_recoverable is not None
+                    else None
+                ),
+                "created_at": anomaly.created_at.isoformat() if anomaly.created_at else None,
+                "description": anomaly.description,
+                "evidence": (
+                    json.loads(anomaly.feature_snapshot or "{}").get("evidence")
+                    if anomaly.feature_snapshot
+                    else None
+                ),
+            }
+            if anomaly
+            else {}
+        ),
+    )
+
+    filename = f"xr7-evidence-{claim_id}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @router.get("/claims/{claim_id}/evidence")
 def get_evidence(
     claim_id: str,
