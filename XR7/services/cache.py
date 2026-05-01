@@ -185,8 +185,12 @@ def cached_response(cache_key: str, ttl_seconds: int = 60) -> Callable:
                 sort_keys=True,
             )
 
-            # Hash to keep key length manageable
-            args_hash = hashlib.md5(args_str.encode()).hexdigest()[:8]
+            # Hash to keep cache key length manageable. MD5 is fine here —
+            # this is a key-shortener, not a security primitive. The
+            # `usedforsecurity=False` flag signals intent and silences the
+            # bandit B324 HIGH-severity warning on the nightly static-analysis
+            # workflow.
+            args_hash = hashlib.md5(args_str.encode(), usedforsecurity=False).hexdigest()[:8]
             full_key = f"{cache_key}:{func.__name__}:{args_hash}"
 
             # Try to get from cache

@@ -299,6 +299,11 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     permissions:
+      # Declaring any job-level permissions block implicitly revokes the
+      # workflow's default `contents: read`, which actions/checkout needs.
+      # Without contents: read, checkout fails with a misleading
+      # "repository not found" / 403. Both lines must stay.
+      contents: read
       issues: write
     steps:
       - uses: actions/checkout@v6
