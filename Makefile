@@ -1,7 +1,13 @@
-PYTHON ?= /usr/bin/python3
-UVICORN ?= uvicorn
+PYTHON ?= venv/bin/python
+UVICORN ?= venv/bin/uvicorn
+ALEMBIC ?= venv/bin/alembic
 
-.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check check-sdk-todos sdk-python sdk-typescript sdks seed up down docker-build worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
+# Auto-load .env for local dev targets so DATABASE_URL / ADMIN_API_KEY /
+# POSTMARK_* etc. don't have to be sourced manually in every terminal.
+# Prefix this to any target that runs the API or migrations.
+LOAD_ENV := set -a && [ -f .env ] && . ./.env; set +a;
+
+.PHONY: install run dev frontend-dev frontend-build test lint migrate-up migrate-down openapi api-reference docs-check check-sdk-todos sdk-python sdk-typescript sdks seed seed-ops-demo up down docker-build worker beat check-runtime-stubs check-openapi-breaking update-completion install-git-hooks infra-plan-dev infra-plan-staging infra-plan-prod k8s-apply-base slo-gate restore-drill bootstrap-dev bootstrap-staging bootstrap-prod deploy-dev deploy-staging deploy-prod apply-runtime-secret enterprise-historical-analysis
 
 BASE_REF ?= origin/main
 
@@ -9,13 +15,13 @@ install:
 	$(PYTHON) -m pip install -r requirements.txt
 
 run:
-	$(UVICORN) XR7.api.app:app --reload
+	$(LOAD_ENV) PYTHONPATH=. $(UVICORN) XR7.api.app:app --reload
 
 dev:
 	docker compose up --build api worker postgres redis
 
 frontend-dev:
-	cd frontend && npm install && npm run dev
+	$(LOAD_ENV) cd frontend && npm install && npm run dev
 
 frontend-build:
 	cd frontend && npm install && npm run build
@@ -34,10 +40,13 @@ lint:
 	$(PYTHON) -m py_compile XR7/api/app.py
 
 migrate-up:
-	alembic upgrade head
+	$(LOAD_ENV) PYTHONPATH=. $(ALEMBIC) upgrade head
 
 migrate-down:
-	alembic downgrade -1
+	$(LOAD_ENV) PYTHONPATH=. $(ALEMBIC) downgrade -1
+
+seed-ops-demo:
+	$(LOAD_ENV) PYTHONPATH=. $(PYTHON) scripts/seed_ops_demo.py
 
 openapi:
 	$(PYTHON) scripts/export_openapi.py
