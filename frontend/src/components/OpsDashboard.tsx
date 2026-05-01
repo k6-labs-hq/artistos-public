@@ -62,6 +62,7 @@ export function OpsDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [filingClaimId, setFilingClaimId] = useState<string | null>(null);
+  const [previewingClaimId, setPreviewingClaimId] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<{ claim_id: string; result: FilingResult } | null>(
     null,
   );
@@ -106,6 +107,32 @@ export function OpsDashboard() {
       setError(String(e));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const previewPacket = async (claimId: string) => {
+    if (!adminKey.trim()) {
+      setError("Admin key is required.");
+      return;
+    }
+    setPreviewingClaimId(claimId);
+    setError("");
+    try {
+      const res = await fetch(`${basePath}/admin/claims/${claimId}/evidence.pdf`, { headers });
+      if (!res.ok) {
+        const text = await res.text();
+        setError(`Preview failed (${res.status}): ${text.slice(0, 200)}`);
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener");
+      // Revoke after a delay so the new tab has time to load it.
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setPreviewingClaimId(null);
     }
   };
 
@@ -250,22 +277,33 @@ export function OpsDashboard() {
                             ) : null}
                           </td>
                           <td style={styles.td}>
-                            <button
-                              type="button"
-                              onClick={() => fileClaim(r.claim_id)}
-                              disabled={!canFile || filingClaimId === r.claim_id}
-                              style={{
-                                ...styles.button,
-                                ...(canFile ? styles.buttonPrimary : styles.buttonDisabled),
-                              }}
-                              title={
-                                canFile
-                                  ? "Send dispute email to payer"
-                                  : "Only PREPARED claims can be filed"
-                              }
-                            >
-                              {filingClaimId === r.claim_id ? "Filing…" : "File via email"}
-                            </button>
+                            <div style={styles.actions}>
+                              <button
+                                type="button"
+                                onClick={() => previewPacket(r.claim_id)}
+                                disabled={previewingClaimId === r.claim_id}
+                                style={{ ...styles.button, ...styles.buttonGhost }}
+                                title="Open the rendered evidence packet PDF in a new tab"
+                              >
+                                {previewingClaimId === r.claim_id ? "Loading…" : "Preview"}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => fileClaim(r.claim_id)}
+                                disabled={!canFile || filingClaimId === r.claim_id}
+                                style={{
+                                  ...styles.button,
+                                  ...(canFile ? styles.buttonPrimary : styles.buttonDisabled),
+                                }}
+                                title={
+                                  canFile
+                                    ? "Send dispute email to payer"
+                                    : "Only PREPARED claims can be filed"
+                                }
+                              >
+                                {filingClaimId === r.claim_id ? "Filing…" : "File via email"}
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -381,7 +419,9 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
   },
   buttonPrimary: { background: "#6520BD", borderColor: "#6520BD", color: "#fff" },
+  buttonGhost: { background: "transparent" },
   buttonDisabled: { opacity: 0.4, cursor: "not-allowed" },
+  actions: { display: "flex", gap: 6 },
   error: { color: "#ff8585", marginTop: 12, fontSize: 13 },
   tabs: { display: "flex", gap: 4, marginBottom: 16, flexWrap: "wrap" },
   tab: {

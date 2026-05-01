@@ -1088,27 +1088,13 @@ def admin_file_claim_via_email(
     return _file_claim_via_email_impl(claim, db)
 
 
-@router.get("/claims/{claim_id}/evidence.pdf")
-def get_evidence_pdf(
-    claim_id: str,
-    db: Session = Depends(get_db),
-    auth_payload: dict = Depends(get_auth_payload),
-):
-    """Render the evidence packet for a claim as a PDF.
+def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
+    """Shared renderer for the JWT-gated and admin-key-gated PDF endpoints.
 
-    The PDF format is what we attach to dispute emails (BMI/ASCAP/MLC/
-    SoundExchange all accept email + PDF for the email-channel payers)
-    and what operators download for review. Same data as
-    `/claims/{id}/evidence`, just rendered for human consumption.
-
-    See `XR7.services.evidence_packet_pdf` for the renderer; this endpoint
-    is a thin authz + DB-fetch wrapper around it.
+    Auth is the caller's responsibility; this helper just fetches the
+    artist + anomaly, pulls line items if applicable, and returns the
+    rendered PDF bytes.
     """
-    claim = db.query(Claim).filter(Claim.id == claim_id).first()
-    if not claim:
-        raise HTTPException(status_code=404, detail="Claim not found")
-    enforce_claim_access(claim.artist_id, auth_payload)
-
     artist = db.query(Artist).filter(Artist.id == claim.artist_id).first()
     anomaly = (
         db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
@@ -1208,13 +1194,47 @@ def get_evidence_pdf(
         line_items=line_items,
         line_items_meta=line_items_meta,
     )
+    return pdf_bytes
 
-    filename = f"xr7-evidence-{claim_id}.pdf"
+
+def _evidence_pdf_response(claim: Claim, db: Session) -> Response:
+    pdf_bytes = _render_claim_evidence_pdf(claim, db)
+    filename = f"xr7-evidence-{claim.id}.pdf"
     return Response(
         content=pdf_bytes,
         media_type="application/pdf",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        headers={"Content-Disposition": f'inline; filename="{filename}"'},
     )
+
+
+@router.get("/claims/{claim_id}/evidence.pdf")
+def get_evidence_pdf(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    auth_payload: dict = Depends(get_auth_payload),
+):
+    """Render the evidence packet for a claim as a PDF (JWT-gated)."""
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    enforce_claim_access(claim.artist_id, auth_payload)
+    return _evidence_pdf_response(claim, db)
+
+
+@router.get("/admin/claims/{claim_id}/evidence.pdf")
+def admin_get_evidence_pdf(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Admin-key variant of the evidence PDF for the operator dashboard
+    Preview button. Inline disposition so browsers render in-tab instead
+    of forcing download.
+    """
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    return _evidence_pdf_response(claim, db)
 
 
 @router.get("/claims/{claim_id}/evidence")
