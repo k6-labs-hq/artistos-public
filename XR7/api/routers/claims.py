@@ -11,7 +11,11 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from XR7.agents.orchestrator import run_export_prep_pipeline_sync
-from XR7.api.authz import authorize_advance_approval_access, authorize_claim_edit_access
+from XR7.api.authz import (
+    authorize_advance_approval_access,
+    authorize_claim_edit_access,
+    require_admin,
+)
 from XR7.api.routers.auth import (
     enforce_claim_access,
     get_auth_payload,
@@ -879,28 +883,14 @@ def generate_evidence(claim_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=str(e))
 
 
-@router.post("/claims/{claim_id}/file-via-email")
-def file_claim_via_email(
-    claim_id: str,
-    db: Session = Depends(get_db),
-    auth_payload: dict = Depends(get_auth_payload),
-):
-    """Operator-triggered: actually file this claim by emailing the payer.
+def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
+    """Shared implementation for filing a claim by email.
 
-    Renders the evidence packet PDF, calls dispute_delivery.deliver_dispute,
-    and on success records the outbound MessageID + advances the Claim's
-    status to FILED. Failure leaves the Claim unchanged and returns the
-    structured error so operators can decide on retry.
-
-    This is the operator-dashboard "file now" surface; it deliberately
-    requires an explicit POST rather than auto-firing as part of detection.
-    Until #181 ships an operator UI, this is the API operators call.
+    Used by both the JWT-gated `/claims/{id}/file-via-email` endpoint and
+    the admin-key-gated `/admin/claims/{id}/file-via-email` endpoint. Auth
+    is the caller's responsibility; this helper assumes access has already
+    been verified.
     """
-    claim = db.query(Claim).filter(Claim.id == claim_id).first()
-    if not claim:
-        raise HTTPException(status_code=404, detail="Claim not found")
-    enforce_claim_access(claim.artist_id, auth_payload)
-
     artist = db.query(Artist).filter(Artist.id == claim.artist_id).first()
     anomaly = (
         db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
@@ -981,6 +971,121 @@ def file_claim_via_email(
         db.commit()
 
     return result
+
+
+@router.post("/claims/{claim_id}/file-via-email")
+def file_claim_via_email(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    auth_payload: dict = Depends(get_auth_payload),
+):
+    """Operator-triggered: actually file this claim by emailing the payer.
+
+    Renders the evidence packet PDF, calls dispute_delivery.deliver_dispute,
+    and on success records the outbound MessageID + advances the Claim's
+    status to FILED. Failure leaves the Claim unchanged and returns the
+    structured error so operators can decide on retry.
+
+    JWT-gated: enforces admin role OR matching artist on the claim. The
+    parallel /admin/claims/{id}/file-via-email endpoint is the X-Admin-Key
+    variant used by the operator dashboard.
+    """
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    enforce_claim_access(claim.artist_id, auth_payload)
+    return _file_claim_via_email_impl(claim, db)
+
+
+@router.get("/admin/claims/queue")
+def admin_claims_queue(
+    status: str | None = Query(default=None, description="Filter by ClaimStatus name"),
+    payer: str | None = Query(default=None, description="Filter by payer_name"),
+    limit: int = Query(default=100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Cross-artist claim queue for the operator dashboard.
+
+    Returns the metadata operators need to triage filings: artist, payer,
+    anomaly subtype + estimated recoverable, status, SOL countdown, last
+    communication. Filtered/sorted server-side; no per-artist pagination.
+    """
+    q = db.query(Claim).filter(Claim.deleted_at.is_(None))
+    if status:
+        q = q.filter(Claim.status == status)
+    if payer:
+        q = q.filter(Claim.payer_name == payer)
+    claims = q.order_by(Claim.created_at.desc()).limit(limit).all()
+
+    artist_ids = {c.artist_id for c in claims}
+    anomaly_ids = {c.anomaly_id for c in claims if c.anomaly_id}
+    artists_by_id = {
+        a.id: a for a in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()
+    } if artist_ids else {}
+    anomalies_by_id = {
+        a.id: a for a in db.query(Anomaly).filter(Anomaly.id.in_(anomaly_ids)).all()
+    } if anomaly_ids else {}
+
+    now = datetime.now(timezone.utc)
+    rows = []
+    for c in claims:
+        artist = artists_by_id.get(c.artist_id)
+        anomaly = anomalies_by_id.get(c.anomaly_id) if c.anomaly_id else None
+        sol_days = None
+        if c.sol_deadline:
+            deadline = c.sol_deadline
+            if deadline.tzinfo is None:
+                deadline = deadline.replace(tzinfo=timezone.utc)
+            sol_days = (deadline - now).days
+        comms = c.communications or []
+        last_comm = comms[-1] if comms else None
+        rows.append(
+            {
+                "claim_id": c.id,
+                "artist_id": c.artist_id,
+                "artist_name": artist.name if artist else None,
+                "payer_name": c.payer_name,
+                "status": str(c.status.value if hasattr(c.status, "value") else c.status),
+                "anomaly_subtype": (
+                    str(anomaly.subtype) if anomaly and anomaly.subtype else None
+                ),
+                "estimated_recoverable": (
+                    float(anomaly.estimated_recoverable)
+                    if anomaly and anomaly.estimated_recoverable is not None
+                    else None
+                ),
+                "sol_days_remaining": sol_days,
+                "communications_count": len(comms),
+                "last_communication_at": (
+                    last_comm.get("occurred_at") if isinstance(last_comm, dict) else None
+                ),
+                "created_at": c.created_at.isoformat() if c.created_at else None,
+                "proof_submitted_at": (
+                    c.proof_submitted_at.isoformat() if c.proof_submitted_at else None
+                ),
+            }
+        )
+    return {"total": len(rows), "items": rows}
+
+
+@router.post("/admin/claims/{claim_id}/file-via-email")
+def admin_file_claim_via_email(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Admin-key variant of /claims/{id}/file-via-email for the ops dashboard.
+
+    Same behavior as the JWT-gated endpoint — renders evidence PDF, calls
+    Postmark, persists outbound MessageID, advances status to FILED on
+    success — but auth is via X-Admin-Key so ops can drive it without a
+    per-artist JWT.
+    """
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    return _file_claim_via_email_impl(claim, db)
 
 
 @router.get("/claims/{claim_id}/evidence.pdf")

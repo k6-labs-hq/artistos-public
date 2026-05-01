@@ -8,6 +8,7 @@ import { AdminWorkflowHandoffsPanel } from "./components/AdminWorkflowHandoffsPa
 import { DashboardPage } from "./components/DashboardPage";
 import { LoginPage } from "./components/LoginPage";
 import { NotFoundPage } from "./components/NotFoundPage";
+import { OpsDashboard } from "./components/OpsDashboard";
 import { clearXR7Token, getXR7Token } from "./lib/supabase";
 
 type ThemeMode = "dark" | "light";
@@ -244,6 +245,7 @@ export function App() {
   const homeRoute = normalizedPath === "/";
   const loginRoute = normalizedPath === "/login";
   const dashboardRoute = normalizedPath === "/dashboard";
+  const opsRoute = normalizedPath === "/ops";
 
   const anomalyId = anomalyMatch?.[1];
   if (anomalyId) {
@@ -260,6 +262,10 @@ export function App() {
 
   if (dashboardRoute) {
     return <DashboardPage />;
+  }
+
+  if (opsRoute) {
+    return <OpsDashboard />;
   }
 
   if (!homeRoute) {
