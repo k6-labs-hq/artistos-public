@@ -1060,6 +1060,7 @@ def admin_claims_queue(
                 "last_communication_at": (
                     last_comm.get("occurred_at") if isinstance(last_comm, dict) else None
                 ),
+                "communications": comms,
                 "created_at": c.created_at.isoformat() if c.created_at else None,
                 "proof_submitted_at": (
                     c.proof_submitted_at.isoformat() if c.proof_submitted_at else None

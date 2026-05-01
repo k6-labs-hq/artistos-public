@@ -1,6 +1,22 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { ErrorBoundary } from "./ErrorBoundary";
+
+type Communication = {
+  direction?: string;
+  message_id?: string | null;
+  channel?: string | null;
+  payer_id?: string | null;
+  submission_address?: string | null;
+  stubbed?: boolean;
+  timestamp?: string | null;
+  artist_id?: string | null;
+  in_reply_to?: string | null;
+  from_address?: string | null;
+  subject?: string | null;
+  body_excerpt?: string | null;
+  received_at?: string | null;
+};
 
 type ClaimRow = {
   claim_id: string;
@@ -13,6 +29,7 @@ type ClaimRow = {
   sol_days_remaining: number | null;
   communications_count: number;
   last_communication_at: string | null;
+  communications: Communication[];
   created_at: string | null;
   proof_submitted_at: string | null;
 };
@@ -63,6 +80,7 @@ export function OpsDashboard() {
   const [error, setError] = useState("");
   const [filingClaimId, setFilingClaimId] = useState<string | null>(null);
   const [previewingClaimId, setPreviewingClaimId] = useState<string | null>(null);
+  const [expandedClaimId, setExpandedClaimId] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<{ claim_id: string; result: FilingResult } | null>(
     null,
   );
@@ -241,6 +259,7 @@ export function OpsDashboard() {
                 <table style={styles.table}>
                   <thead>
                     <tr>
+                      <th style={styles.th}></th>
                       <th style={styles.th}>Artist</th>
                       <th style={styles.th}>Payer</th>
                       <th style={styles.th}>Anomaly</th>
@@ -254,8 +273,31 @@ export function OpsDashboard() {
                     {rows.map((r) => {
                       const sol = solBadge(r.sol_days_remaining);
                       const canFile = r.status === "PREPARED";
+                      const isExpanded = expandedClaimId === r.claim_id;
+                      const hasComms = (r.communications?.length || 0) > 0;
                       return (
-                        <tr key={r.claim_id} style={styles.tr}>
+                        <Fragment key={r.claim_id}>
+                        <tr style={styles.tr}>
+                          <td style={styles.tdToggle}>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedClaimId(isExpanded ? null : r.claim_id)
+                              }
+                              disabled={!hasComms}
+                              style={{
+                                ...styles.expandBtn,
+                                ...(hasComms ? {} : styles.buttonDisabled),
+                              }}
+                              title={
+                                hasComms
+                                  ? `Show ${r.communications_count} message(s)`
+                                  : "No communications yet"
+                              }
+                            >
+                              {isExpanded ? "▾" : "▸"}
+                            </button>
+                          </td>
                           <td style={styles.td}>
                             <strong>{r.artist_name || r.artist_id}</strong>
                             <div style={styles.subtle}>{r.claim_id}</div>
@@ -306,6 +348,15 @@ export function OpsDashboard() {
                             </div>
                           </td>
                         </tr>
+                        {isExpanded && hasComms ? (
+                          <tr style={styles.tr}>
+                            <td></td>
+                            <td colSpan={7} style={styles.tdExpanded}>
+                              <CommsTimeline comms={r.communications} />
+                            </td>
+                          </tr>
+                        ) : null}
+                        </Fragment>
                       );
                     })}
                   </tbody>
@@ -344,6 +395,58 @@ export function OpsDashboard() {
         </section>
       </main>
     </ErrorBoundary>
+  );
+}
+
+function CommsTimeline({ comms }: { comms: Communication[] }) {
+  return (
+    <ol style={styles.timeline}>
+      {comms.map((c, i) => {
+        const inbound = c.direction === "inbound";
+        const ts = c.received_at || c.timestamp || "";
+        return (
+          <li key={`${c.message_id || i}-${i}`} style={styles.timelineItem}>
+            <div style={styles.timelineHead}>
+              <span
+                style={{
+                  ...styles.badge,
+                  ...(inbound
+                    ? { background: "#2a143a", color: "#c885ff" }
+                    : { background: "#142a3a", color: "#7bb3e3" }),
+                }}
+              >
+                {inbound ? "← Inbound" : "Outbound →"}
+              </span>
+              <span style={styles.timelineTime}>{ts ? new Date(ts).toLocaleString() : "—"}</span>
+              {c.stubbed ? <span style={styles.timelineMeta}>(stub)</span> : null}
+            </div>
+            {inbound ? (
+              <>
+                <div style={styles.timelineMeta}>From: {c.from_address || "—"}</div>
+                {c.subject ? (
+                  <div style={styles.timelineSubject}>{c.subject}</div>
+                ) : null}
+                {c.body_excerpt ? (
+                  <pre style={styles.timelineBody}>{c.body_excerpt}</pre>
+                ) : null}
+                {c.in_reply_to ? (
+                  <div style={styles.timelineMeta}>In-Reply-To: {c.in_reply_to}</div>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <div style={styles.timelineMeta}>
+                  To: {c.submission_address || c.payer_id || "—"} · channel: {c.channel || "email"}
+                </div>
+                {c.message_id ? (
+                  <div style={styles.timelineMeta}>MessageID: {c.message_id}</div>
+                ) : null}
+              </>
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
@@ -470,6 +573,47 @@ const styles: Record<string, React.CSSProperties> = {
   tr: { borderBottom: "1px solid #1d1d25" },
   td: { padding: "12px", verticalAlign: "top" },
   tdRight: { padding: "12px", textAlign: "right", verticalAlign: "top" },
+  tdToggle: { padding: "12px 4px 12px 12px", verticalAlign: "top", width: 32 },
+  tdExpanded: { padding: "0 12px 16px", background: "#101019" },
+  expandBtn: {
+    width: 22,
+    height: 22,
+    padding: 0,
+    borderRadius: 4,
+    border: "1px solid #2a2a35",
+    background: "#1f1f28",
+    color: "#aaa",
+    fontSize: 11,
+    cursor: "pointer",
+    lineHeight: "20px",
+    textAlign: "center",
+  },
+  timeline: { listStyle: "none", padding: 0, margin: 0, fontSize: 12 },
+  timelineItem: {
+    padding: "10px 12px",
+    borderLeft: "2px solid #2a2a35",
+    marginLeft: 8,
+    marginBottom: 8,
+    background: "#15151c",
+    borderRadius: "0 6px 6px 0",
+  },
+  timelineHead: { display: "flex", alignItems: "center", gap: 8, marginBottom: 4 },
+  timelineTime: { color: "#aaa", fontSize: 11 },
+  timelineMeta: { color: "#888", fontSize: 11, margin: "2px 0" },
+  timelineSubject: { color: "#e8e8ee", fontWeight: 600, margin: "4px 0" },
+  timelineBody: {
+    background: "#0b0b10",
+    border: "1px solid #25252e",
+    borderRadius: 4,
+    padding: 8,
+    fontSize: 11,
+    color: "#ddd",
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-word",
+    margin: "6px 0 0",
+    maxHeight: 240,
+    overflow: "auto",
+  },
   subtle: { color: "#666", fontSize: 11, marginTop: 2 },
   badge: {
     display: "inline-block",
