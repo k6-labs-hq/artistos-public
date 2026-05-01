@@ -81,6 +81,13 @@ export function OpsDashboard() {
   const [filingClaimId, setFilingClaimId] = useState<string | null>(null);
   const [previewingClaimId, setPreviewingClaimId] = useState<string | null>(null);
   const [expandedClaimId, setExpandedClaimId] = useState<string | null>(null);
+  const [remittanceClaimId, setRemittanceClaimId] = useState<string | null>(null);
+  const [remittanceForm, setRemittanceForm] = useState({
+    gross_amount: "",
+    remittance_method: "ach",
+    reference_number: "",
+  });
+  const [submittingRemittance, setSubmittingRemittance] = useState(false);
   const [lastResult, setLastResult] = useState<{ claim_id: string; result: FilingResult } | null>(
     null,
   );
@@ -151,6 +158,47 @@ export function OpsDashboard() {
       setError(String(e));
     } finally {
       setPreviewingClaimId(null);
+    }
+  };
+
+  const submitRemittance = async (claimId: string) => {
+    if (!adminKey.trim()) {
+      setError("Admin key is required.");
+      return;
+    }
+    const amount = parseFloat(remittanceForm.gross_amount);
+    if (!amount || amount <= 0) {
+      setError("Gross amount must be a positive number.");
+      return;
+    }
+    if (!remittanceForm.reference_number.trim()) {
+      setError("Reference number is required.");
+      return;
+    }
+    setSubmittingRemittance(true);
+    setError("");
+    try {
+      const res = await fetch(`${basePath}/admin/claims/${claimId}/record-remittance`, {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          gross_amount: amount,
+          remittance_method: remittanceForm.remittance_method,
+          reference_number: remittanceForm.reference_number.trim(),
+        }),
+      });
+      const payload = await res.json();
+      if (!res.ok) {
+        setError(payload.detail || `Failed (${res.status}).`);
+        return;
+      }
+      setRemittanceClaimId(null);
+      setRemittanceForm({ gross_amount: "", remittance_method: "ach", reference_number: "" });
+      await loadQueue();
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setSubmittingRemittance(false);
     }
   };
 
@@ -345,9 +393,37 @@ export function OpsDashboard() {
                               >
                                 {filingClaimId === r.claim_id ? "Filing…" : "File via email"}
                               </button>
+                              {["FILED", "IN_REVIEW", "ACCEPTED"].includes(r.status) ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setRemittanceClaimId(
+                                      remittanceClaimId === r.claim_id ? null : r.claim_id,
+                                    )
+                                  }
+                                  style={{ ...styles.button, ...styles.buttonGhost }}
+                                  title="Record remittance from payer"
+                                >
+                                  Record remittance
+                                </button>
+                              ) : null}
                             </div>
                           </td>
                         </tr>
+                        {remittanceClaimId === r.claim_id ? (
+                          <tr style={styles.tr}>
+                            <td></td>
+                            <td colSpan={7} style={styles.tdExpanded}>
+                              <RemittanceForm
+                                form={remittanceForm}
+                                setForm={setRemittanceForm}
+                                onSubmit={() => submitRemittance(r.claim_id)}
+                                onCancel={() => setRemittanceClaimId(null)}
+                                submitting={submittingRemittance}
+                              />
+                            </td>
+                          </tr>
+                        ) : null}
                         {isExpanded && hasComms ? (
                           <tr style={styles.tr}>
                             <td></td>
@@ -395,6 +471,80 @@ export function OpsDashboard() {
         </section>
       </main>
     </ErrorBoundary>
+  );
+}
+
+function RemittanceForm({
+  form,
+  setForm,
+  onSubmit,
+  onCancel,
+  submitting,
+}: {
+  form: { gross_amount: string; remittance_method: string; reference_number: string };
+  setForm: (f: { gross_amount: string; remittance_method: string; reference_number: string }) => void;
+  onSubmit: () => void;
+  onCancel: () => void;
+  submitting: boolean;
+}) {
+  return (
+    <div style={styles.remittanceBox}>
+      <div style={styles.remittanceTitle}>Record remittance from payer</div>
+      <div style={styles.remittanceGrid}>
+        <label style={styles.field}>
+          <span style={styles.fieldLabel}>Gross amount (USD)</span>
+          <input
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={form.gross_amount}
+            onChange={(e) => setForm({ ...form, gross_amount: e.target.value })}
+            style={styles.input}
+            placeholder="6120.00"
+          />
+        </label>
+        <label style={styles.field}>
+          <span style={styles.fieldLabel}>Method</span>
+          <select
+            value={form.remittance_method}
+            onChange={(e) => setForm({ ...form, remittance_method: e.target.value })}
+            style={styles.input}
+          >
+            <option value="ach">ACH</option>
+            <option value="wire">Wire</option>
+            <option value="check">Check</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label style={styles.field}>
+          <span style={styles.fieldLabel}>Reference number</span>
+          <input
+            type="text"
+            value={form.reference_number}
+            onChange={(e) => setForm({ ...form, reference_number: e.target.value })}
+            style={styles.input}
+            placeholder="BMI-2026-04-DR-12345"
+          />
+        </label>
+      </div>
+      <div style={styles.remittanceActions}>
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={submitting}
+          style={{ ...styles.button, ...styles.buttonPrimary }}
+        >
+          {submitting ? "Saving…" : "Save remittance"}
+        </button>
+        <button type="button" onClick={onCancel} style={{ ...styles.button, ...styles.buttonGhost }}>
+          Cancel
+        </button>
+      </div>
+      <p style={styles.remittanceMeta}>
+        Advances claim to FUNDS_RECEIVED, computes platform fee + artist net, and writes the
+        immutable ledger entry. Trolley payout to the artist remains a separate manual step.
+      </p>
+    </div>
   );
 }
 
@@ -601,6 +751,16 @@ const styles: Record<string, React.CSSProperties> = {
   timelineTime: { color: "#aaa", fontSize: 11 },
   timelineMeta: { color: "#888", fontSize: 11, margin: "2px 0" },
   timelineSubject: { color: "#e8e8ee", fontWeight: 600, margin: "4px 0" },
+  remittanceBox: { padding: "12px 0" },
+  remittanceTitle: { fontWeight: 600, marginBottom: 8 },
+  remittanceGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+    gap: 12,
+    marginBottom: 12,
+  },
+  remittanceActions: { display: "flex", gap: 8 },
+  remittanceMeta: { color: "#888", fontSize: 11, marginTop: 8 },
   timelineBody: {
     background: "#0b0b10",
     border: "1px solid #25252e",

@@ -1089,6 +1089,48 @@ def admin_file_claim_via_email(
     return _file_claim_via_email_impl(claim, db)
 
 
+class RecordRemittanceRequest(BaseModel):
+    gross_amount: float
+    remittance_method: str
+    reference_number: str
+    received_date: datetime | None = None
+
+
+@router.post("/admin/claims/{claim_id}/record-remittance", response_model=ClaimSchema)
+def admin_record_remittance(
+    claim_id: str,
+    body: RecordRemittanceRequest,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin),
+):
+    """Operator-recorded remittance: payer paid, capture the details.
+
+    Wraps `BillingEngine.record_manual_remittance`, which sets
+    recovered_amount + fee split + remittance metadata, advances status to
+    FUNDS_RECEIVED, writes a TrolleyTransaction row (type=REMITTANCE), and
+    appends to the immutable ledger.
+
+    Trolley disbursement to the artist is a separate step (see
+    `BillingEngine.disburse_via_trolley`) — not auto-fired here so the
+    operator can sanity-check the amount before money moves to the
+    artist's bank.
+    """
+    from XR7.billing.engine import BillingEngine  # noqa: PLC0415
+
+    received = body.received_date or datetime.now(timezone.utc)
+    try:
+        claim = BillingEngine(db).record_manual_remittance(
+            claim_id=claim_id,
+            gross_amount=body.gross_amount,
+            remittance_method=body.remittance_method,
+            received_date=received,
+            reference_number=body.reference_number,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
+    return claim
+
+
 def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
     """Shared renderer for the JWT-gated and admin-key-gated PDF endpoints.
 
