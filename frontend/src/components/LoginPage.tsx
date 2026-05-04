@@ -2,6 +2,32 @@ import { useState } from "react";
 
 import { exchangeForXR7Token, getSupabaseClient } from "../lib/supabase";
 
+const apiBase = (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "";
+
+/**
+ * Decide the post-login destination based on the JWT we just received.
+ * Admin role → operator console (/ops). Everyone else → artist dashboard.
+ *
+ * We fetch /auth/me rather than decoding the JWT client-side because (a)
+ * the role is the source of truth on the server, (b) we want to surface
+ * any auth-state issues here before the user lands on a screen they can't
+ * use, and (c) it's one fetch — cheap.
+ */
+async function postLoginDestination(xr7Token: string): Promise<string> {
+  try {
+    const res = await fetch(`${apiBase}/auth/me`, {
+      headers: { Authorization: `Bearer ${xr7Token}` },
+    });
+    if (res.ok) {
+      const body = (await res.json()) as { role?: string | null };
+      if (body.role === "admin") return "/ops";
+    }
+  } catch {
+    // Fall through to default.
+  }
+  return "/dashboard";
+}
+
 type FormState = "idle" | "submitting" | "error" | "needs_confirmation";
 type Mode = "signin" | "signup";
 
@@ -27,8 +53,8 @@ export function LoginPage() {
     if (!supabaseToken) {
       throw new Error("Supabase returned no access token");
     }
-    await exchangeForXR7Token(supabaseToken);
-    window.location.assign("/dashboard");
+    const xr7Token = await exchangeForXR7Token(supabaseToken);
+    window.location.assign(await postLoginDestination(xr7Token));
   };
 
   const handleSignUp = async () => {
@@ -49,8 +75,8 @@ export function LoginPage() {
     //     we can't currently deliver the confirmation email (no SMTP wired, see
     //     issue #180). Surface a clear message instead of a dead "Sign in" loop.
     if (data.session) {
-      await exchangeForXR7Token(data.session.access_token);
-      window.location.assign("/dashboard");
+      const xr7Token = await exchangeForXR7Token(data.session.access_token);
+      window.location.assign(await postLoginDestination(xr7Token));
       return;
     }
     setState("needs_confirmation");
