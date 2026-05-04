@@ -3,15 +3,21 @@ from __future__ import annotations
 import functools
 import hmac
 import os
-from typing import Callable
+from typing import Any, Callable
 
-from fastapi import Header, HTTPException
+from fastapi import Depends, Header, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.api.deps import get_artist_or_404
+from XR7.auth.jwt_service import JWTValidationError, jwt_service
 from XR7.models.artist import Artist
 from XR7.models.team_access import TeamMember, TeamRole
+
+# Module-level bearer scheme so /admin endpoints show BearerAuth in OpenAPI
+# alongside the existing X-Admin-Key option.
+_bearer_scheme = HTTPBearer(auto_error=False)
 
 
 def artist_or_404(artist_id: str, db: Session) -> Artist:
@@ -98,6 +104,59 @@ def require_admin(x_admin_key: str = Header(default="", alias="X-Admin-Key")) ->
         expected = "admin-secret"
     if not x_admin_key or not hmac.compare_digest(x_admin_key, expected):
         raise HTTPException(status_code=401, detail="Invalid or missing admin key")
+
+
+def _expected_admin_key() -> str | None:
+    """The admin key the request must match. Returns None if no key configured."""
+    expected = (
+        os.environ.get("ADMIN_API_KEY")
+        or os.environ.get("WIDGET_ADMIN_KEY")
+        or os.environ.get("ADMIN_SECRET_KEY")
+    )
+    if expected:
+        return expected
+    env = os.environ.get("XR7_ENV", "development").lower()
+    if env == "production":
+        return None
+    return "admin-secret"  # dev convenience
+
+
+def require_admin_session(
+    x_admin_key: str = Header(default="", alias="X-Admin-Key"),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
+) -> dict[str, Any]:
+    """Admin auth that accepts EITHER an X-Admin-Key header OR a Bearer JWT
+    with role=admin.
+
+    Use this on /admin/* endpoints that operators drive from the dashboard.
+    The X-Admin-Key path keeps the existing curl/automation use-cases
+    working; the JWT path lets the operator-dashboard use the same
+    Supabase-issued session that authenticates the rest of the frontend
+    (no separate "paste your admin key" step once the operator's email
+    is in XR7_ADMIN_USER_EMAILS).
+
+    Returns a dict describing the authenticated session — the JWT payload
+    when authenticated by token, or a synthetic ``{"role": "admin",
+    "auth_method": "admin_key"}`` shape when authenticated by key.
+    """
+    # 1. X-Admin-Key path — same logic as require_admin, but doesn't 401 on
+    #    a missing key (we may have a JWT instead).
+    if x_admin_key:
+        expected = _expected_admin_key()
+        if expected and hmac.compare_digest(x_admin_key, expected):
+            return {"role": "admin", "auth_method": "admin_key"}
+
+    # 2. Bearer JWT path.
+    if credentials is not None:
+        try:
+            payload = jwt_service.verify_token(credentials.credentials)
+        except JWTValidationError as exc:
+            raise HTTPException(status_code=401, detail=str(exc)) from exc
+        if str(payload.get("role") or "") == "admin":
+            return {**payload, "auth_method": "jwt"}
+        raise HTTPException(status_code=403, detail="Admin role required")
+
+    raise HTTPException(status_code=401, detail="Admin auth required")
 
 
 def authorize_claim_edit_access(

@@ -1,6 +1,13 @@
 import { Fragment, useEffect, useMemo, useState } from "react";
 
+import { getXR7Token } from "../lib/supabase";
 import { ErrorBoundary } from "./ErrorBoundary";
+
+type Me = {
+  role?: string | null;
+  admin_email?: string | null;
+  artist_email?: string | null;
+};
 
 type Communication = {
   direction?: string;
@@ -73,6 +80,8 @@ function solBadge(days: number | null): { label: string; tone: string } {
 
 export function OpsDashboard() {
   const [adminKey, setAdminKey] = useState("");
+  const [me, setMe] = useState<Me | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [rows, setRows] = useState<ClaimRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -101,11 +110,50 @@ export function OpsDashboard() {
     if (adminKey) window.localStorage.setItem(STORAGE_ADMIN_KEY, adminKey);
   }, [adminKey]);
 
-  const headers = useMemo(() => ({ "X-Admin-Key": adminKey }), [adminKey]);
+  // On mount, check whether we have a Supabase-issued admin JWT. If yes,
+  // we use Bearer auth and hide the admin-key field. If no JWT or the
+  // JWT is for an artist, we fall back to the X-Admin-Key flow.
+  useEffect(() => {
+    const token = getXR7Token();
+    if (!token) {
+      setAuthChecking(false);
+      return;
+    }
+    (async () => {
+      try {
+        const res = await fetch(`${basePath}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (res.ok) {
+          const body = (await res.json()) as Me;
+          setMe(body);
+        }
+      } catch {
+        // Ignore — fall back to admin-key flow.
+      } finally {
+        setAuthChecking(false);
+      }
+    })();
+  }, []);
+
+  const isJwtAdmin = me?.role === "admin";
+
+  const headers = useMemo<Record<string, string>>(() => {
+    const token = getXR7Token();
+    const h: Record<string, string> = {};
+    if (isJwtAdmin && token) {
+      h.Authorization = `Bearer ${token}`;
+    } else {
+      h["X-Admin-Key"] = adminKey;
+    }
+    return h;
+  }, [adminKey, isJwtAdmin]);
+
+  const isAuthed = isJwtAdmin || adminKey.trim().length > 0;
 
   const loadQueue = async () => {
-    if (!adminKey.trim()) {
-      setError("Admin key is required.");
+    if (!isAuthed) {
+      setError("Admin auth required — sign in or paste an admin key.");
       return;
     }
     setLoading(true);
@@ -136,8 +184,8 @@ export function OpsDashboard() {
   };
 
   const previewPacket = async (claimId: string) => {
-    if (!adminKey.trim()) {
-      setError("Admin key is required.");
+    if (!isAuthed) {
+      setError("Admin auth required — sign in or paste an admin key.");
       return;
     }
     setPreviewingClaimId(claimId);
@@ -162,8 +210,8 @@ export function OpsDashboard() {
   };
 
   const submitRemittance = async (claimId: string) => {
-    if (!adminKey.trim()) {
-      setError("Admin key is required.");
+    if (!isAuthed) {
+      setError("Admin auth required — sign in or paste an admin key.");
       return;
     }
     const amount = parseFloat(remittanceForm.gross_amount);
@@ -203,8 +251,8 @@ export function OpsDashboard() {
   };
 
   const fileClaim = async (claimId: string) => {
-    if (!adminKey.trim()) {
-      setError("Admin key is required.");
+    if (!isAuthed) {
+      setError("Admin auth required — sign in or paste an admin key.");
       return;
     }
     if (!window.confirm(`File claim ${claimId} via email? This sends a real dispute to the payer.`)) {
@@ -254,27 +302,56 @@ export function OpsDashboard() {
           </header>
 
           <section style={styles.card}>
-            <div style={styles.row}>
-              <label style={styles.field}>
-                <span style={styles.fieldLabel}>Admin key</span>
-                <input
-                  type="password"
-                  value={adminKey}
-                  onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="X-Admin-Key"
-                  style={styles.input}
-                  autoComplete="current-password"
-                />
-              </label>
-              <button
-                type="button"
-                onClick={loadQueue}
-                disabled={loading || !adminKey.trim()}
-                style={{ ...styles.button, ...styles.buttonPrimary }}
-              >
-                {loading ? "Loading…" : "Load queue"}
-              </button>
-            </div>
+            {authChecking ? (
+              <p style={styles.subtle}>Checking session…</p>
+            ) : isJwtAdmin ? (
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <span style={styles.fieldLabel}>Signed in</span>
+                  <div>
+                    <strong>{me?.admin_email || "(admin)"}</strong>{" "}
+                    <span style={styles.subtle}>· role: admin</span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadQueue}
+                  disabled={loading}
+                  style={{ ...styles.button, ...styles.buttonPrimary }}
+                >
+                  {loading ? "Loading…" : "Load queue"}
+                </button>
+              </div>
+            ) : (
+              <div style={styles.row}>
+                <label style={styles.field}>
+                  <span style={styles.fieldLabel}>Admin key (fallback)</span>
+                  <input
+                    type="password"
+                    value={adminKey}
+                    onChange={(e) => setAdminKey(e.target.value)}
+                    placeholder="X-Admin-Key"
+                    style={styles.input}
+                    autoComplete="current-password"
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={loadQueue}
+                  disabled={loading || !adminKey.trim()}
+                  style={{ ...styles.button, ...styles.buttonPrimary }}
+                >
+                  {loading ? "Loading…" : "Load queue"}
+                </button>
+              </div>
+            )}
+            {!authChecking && !isJwtAdmin ? (
+              <p style={styles.subtle}>
+                Sign in via <a href="/login" style={{ color: "#a87bff" }}>/login</a> with an admin
+                email (in <code>XR7_ADMIN_USER_EMAILS</code>) to authenticate via Supabase instead
+                of pasting a key.
+              </p>
+            ) : null}
             {error ? <p style={styles.error}>{error}</p> : null}
           </section>
 

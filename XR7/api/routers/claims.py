@@ -14,7 +14,7 @@ from XR7.agents.orchestrator import run_export_prep_pipeline_sync
 from XR7.api.authz import (
     authorize_advance_approval_access,
     authorize_claim_edit_access,
-    require_admin,
+    require_admin_session,
 )
 from XR7.api.routers.auth import (
     enforce_claim_access,
@@ -1003,7 +1003,7 @@ def admin_claims_queue(
     payer: str | None = Query(default=None, description="Filter by payer_name"),
     limit: int = Query(default=100, ge=1, le=500),
     db: Session = Depends(get_db),
-    _: None = Depends(require_admin),
+    _: None = Depends(require_admin_session),
 ):
     """Cross-artist claim queue for the operator dashboard.
 
@@ -1074,7 +1074,7 @@ def admin_claims_queue(
 def admin_file_claim_via_email(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(require_admin),
+    _: None = Depends(require_admin_session),
 ):
     """Admin-key variant of /claims/{id}/file-via-email for the ops dashboard.
 
@@ -1101,7 +1101,7 @@ def admin_record_remittance(
     claim_id: str,
     body: RecordRemittanceRequest,
     db: Session = Depends(get_db),
-    _: None = Depends(require_admin),
+    _: None = Depends(require_admin_session),
 ):
     """Operator-recorded remittance: payer paid, capture the details.
 
@@ -1268,7 +1268,7 @@ def get_evidence_pdf(
 def admin_get_evidence_pdf(
     claim_id: str,
     db: Session = Depends(get_db),
-    _: None = Depends(require_admin),
+    _: None = Depends(require_admin_session),
 ):
     """Admin-key variant of the evidence PDF for the operator dashboard
     Preview button. Inline disposition so browsers render in-tab instead
