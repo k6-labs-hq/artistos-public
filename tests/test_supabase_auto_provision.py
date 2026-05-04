@@ -204,3 +204,90 @@ def test_token_without_sub_rejected_at_401_not_provisioned():
         headers={"Authorization": f"Bearer {bogus}"},
     )
     assert resp.status_code == 401
+
+
+# ── Admin-allowlist behavior ───────────────────────────────────────────────
+
+
+def test_admin_email_gets_admin_role_and_no_artist_provisioned(monkeypatch):
+    """An email in XR7_ADMIN_USER_EMAILS gets role=admin and skips artist creation."""
+    monkeypatch.setenv("XR7_ADMIN_USER_EMAILS", "founder@k6-labs.com,co-founder@k6-labs.com")
+
+    supabase_uid = str(uuid.uuid4())
+    token = _issue_supabase_token(sub=supabase_uid, email="founder@k6-labs.com")
+
+    resp = client.post(
+        "/auth/supabase/exchange",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200, resp.text
+    xr7_token = resp.json()["access_token"]
+
+    # /auth/me should report role=admin with no artist_id
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {xr7_token}"})
+    assert me.status_code == 200
+    body = me.json()
+    assert body["role"] == "admin"
+    assert body["artist_id"] is None
+    assert body["admin_email"] == "founder@k6-labs.com"
+
+    # No Artist row created for this admin
+    assert _count_artists_for(supabase_uid) == 0
+
+
+def test_admin_allowlist_is_case_insensitive(monkeypatch):
+    """Comparison should be case-insensitive on both sides."""
+    monkeypatch.setenv("XR7_ADMIN_USER_EMAILS", "Founder@K6-Labs.com")
+
+    supabase_uid = str(uuid.uuid4())
+    token = _issue_supabase_token(sub=supabase_uid, email="FOUNDER@k6-labs.com")
+    resp = client.post(
+        "/auth/supabase/exchange",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    xr7_token = resp.json()["access_token"]
+
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {xr7_token}"})
+    assert me.json()["role"] == "admin"
+
+
+def test_non_admin_email_still_gets_artist_role(monkeypatch):
+    """Allowlist set but unrelated email still flows through normal artist provisioning."""
+    monkeypatch.setenv("XR7_ADMIN_USER_EMAILS", "founder@k6-labs.com")
+
+    supabase_uid = str(uuid.uuid4())
+    token = _issue_supabase_token(sub=supabase_uid, email="real-artist@example.com")
+
+    resp = client.post(
+        "/auth/supabase/exchange",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    xr7_token = resp.json()["access_token"]
+
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {xr7_token}"})
+    body = me.json()
+    assert body["role"] == "artist"
+    assert body["artist_id"] is not None
+
+    # Artist row was created
+    assert _count_artists_for(supabase_uid) == 1
+
+
+def test_empty_allowlist_treats_everyone_as_artist(monkeypatch):
+    """Unset / empty allowlist means no admins — every email flows to artist."""
+    monkeypatch.setenv("XR7_ADMIN_USER_EMAILS", "")
+
+    supabase_uid = str(uuid.uuid4())
+    token = _issue_supabase_token(sub=supabase_uid, email="anyone@example.com")
+
+    resp = client.post(
+        "/auth/supabase/exchange",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert resp.status_code == 200
+    xr7_token = resp.json()["access_token"]
+
+    me = client.get("/auth/me", headers={"Authorization": f"Bearer {xr7_token}"})
+    assert me.json()["role"] == "artist"

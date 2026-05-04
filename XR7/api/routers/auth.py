@@ -31,6 +31,29 @@ _ENFORCE_AUTH_GLOBALLY = os.environ.get("XR7_ENFORCE_AUTH_GLOBALLY", "0").strip(
 _DEFAULT_TENANT_ID = os.environ.get("XR7_DEFAULT_TENANT_ID", "default").strip() or "default"
 
 
+def _admin_email_allowlist() -> set[str]:
+    """Bootstrap allowlist of email addresses that get role=admin on sign-in.
+
+    Read from ``XR7_ADMIN_USER_EMAILS`` (comma-separated). Lowercased.
+
+    Why an env-var allowlist and not a DB table: there are 1-3 admins for
+    the entire closed beta. Putting them in env keeps the bootstrap problem
+    simple — no chicken-and-egg of "you need an admin to add admins."
+
+    When the company has more than ~5 admins or admin assignments change
+    during the beta, swap this for a `users.role` column with admin-only
+    CRUD. Until then, env is the right shape.
+    """
+    raw = os.environ.get("XR7_ADMIN_USER_EMAILS", "")
+    return {e.strip().lower() for e in raw.split(",") if e.strip()}
+
+
+def _is_admin_email(email: str | None) -> bool:
+    if not email:
+        return False
+    return email.strip().lower() in _admin_email_allowlist()
+
+
 def get_auth_payload(
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
 ) -> dict[str, Any]:
@@ -257,6 +280,7 @@ def auth_me(
             "artist_id": artist_id,
             "artist_name": artist_name,
             "artist_email": payload.get("artist_email"),
+            "admin_email": payload.get("admin_email"),
             "tenant_id": payload.get("tenant_id"),
             "issued_at": payload.get("iat"),
             "expires_at": payload.get("exp"),
@@ -340,14 +364,35 @@ def supabase_exchange(
 
     First-time sign-in auto-provisions an Artist row keyed by the Supabase
     user id. Subsequent sign-ins resolve the existing row.
+
+    Admin emails (in ``XR7_ADMIN_USER_EMAILS``) bypass artist provisioning
+    and receive an admin token directly. Admins are not artists in this
+    system — they're operators of the platform on behalf of artists.
     """
+    email = str(supabase_claims.get("email") or "").strip().lower() or None
+    supabase_uid = str(supabase_claims.get("sub") or "")
+
+    if _is_admin_email(email):
+        token = jwt_service.issue_token(
+            subject=email or supabase_uid,
+            role="admin",
+            extra={
+                "admin_email": email,
+                "tenant_id": _DEFAULT_TENANT_ID,
+                "supabase_user_id": supabase_uid,
+            },
+        )
+        return TokenResponse(
+            access_token=token, expires_in_seconds=jwt_service.access_ttl_minutes * 60
+        )
+
     artist = resolve_artist_from_claims(supabase_claims, db)
     if artist is None:
         artist = _provision_artist_from_supabase_claims(supabase_claims, db)
 
     # Back-fill the link if we resolved by email.
     if not getattr(artist, "supabase_user_id", None):
-        artist.supabase_user_id = str(supabase_claims.get("sub") or "") or None
+        artist.supabase_user_id = supabase_uid or None
         db.commit()
 
     token = jwt_service.issue_token(
@@ -357,7 +402,7 @@ def supabase_exchange(
             "artist_id": artist.id,
             "artist_email": artist.email,
             "tenant_id": _DEFAULT_TENANT_ID,
-            "supabase_user_id": str(supabase_claims.get("sub") or ""),
+            "supabase_user_id": supabase_uid,
         },
     )
     return TokenResponse(access_token=token, expires_in_seconds=jwt_service.access_ttl_minutes * 60)
