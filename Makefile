@@ -48,6 +48,9 @@ migrate-down:
 seed-ops-demo:
 	$(LOAD_ENV) PYTHONPATH=. $(PYTHON) scripts/seed_ops_demo.py
 
+briefs-pdf:
+	$(PYTHON) scripts/render_briefs_pdf.py
+
 openapi:
 	$(PYTHON) scripts/export_openapi.py
 
