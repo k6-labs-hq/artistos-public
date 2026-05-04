@@ -122,3 +122,33 @@ def get_payer_config(payer_id: str | None) -> PayerConfig | None:
         if canonical.upper() in normalised:
             return config
     return None
+
+
+def get_payer_office(
+    db,  # noqa: ANN001 — typing as Session would create a circular import in some test setups
+    payer_id: str,
+    office_name: str | None = None,
+):
+    """Look up a PayerOffice row by payer + (optionally) office name.
+
+    When `office_name` is provided, returns the matching row case-insensitively.
+    When omitted, returns the row marked is_default=True for that payer.
+    Returns None if nothing matches — caller should fall back to the
+    `payer_config.PayerConfig.submission_email` default.
+
+    Why this is keyed by name+payer rather than a per-artist FK to a row:
+    artists pick a region (e.g. "Nashville") at onboarding, the choice is
+    stored as the region name on Artist, and we resolve to the row at
+    filing time. Indirection keeps onboarding light (no foreign-key wiring
+    to seed data) and lets us refresh seed addresses without rewriting
+    artist rows.
+    """
+    from XR7.models.payer_office import PayerOffice  # local import to avoid cycle
+
+    canonical = payer_id.strip().upper() if payer_id else ""
+    if not canonical:
+        return None
+    q = db.query(PayerOffice).filter(PayerOffice.payer_id == canonical)
+    if office_name:
+        return q.filter(PayerOffice.name.ilike(office_name.strip())).first()
+    return q.filter(PayerOffice.is_default.is_(True)).first()

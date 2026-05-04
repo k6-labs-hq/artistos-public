@@ -41,6 +41,7 @@ import XR7.models.metadata_issue  # noqa: F401
 import XR7.models.ml_feedback  # noqa: F401
 import XR7.models.model_registry  # noqa: F401
 import XR7.models.notification_delivery_log  # noqa: F401
+import XR7.models.payer_office  # noqa: F401
 import XR7.models.platform_config  # noqa: F401
 import XR7.models.review_queue  # noqa: F401
 import XR7.models.rights_scan  # noqa: F401
@@ -74,6 +75,41 @@ TestSession = sessionmaker(
 
 # Create all tables once
 Base.metadata.create_all(bind=test_engine)
+
+
+# Seed payer_offices with the BMI rows that the alembic migration would
+# populate in production. Tests rely on this baseline being present
+# (e.g. tests/test_payer_office.py) and the create_all() above doesn't
+# run data migrations.
+def _seed_test_payer_offices() -> None:
+    import uuid as _uuid
+    from datetime import date as _date
+
+    from XR7.models.payer_office import BMI_OFFICES_SEED, PayerOffice
+
+    db = TestSession()
+    try:
+        if db.query(PayerOffice).filter(PayerOffice.payer_id == "BMI").count() == 0:
+            for office in BMI_OFFICES_SEED:
+                db.add(
+                    PayerOffice(
+                        id=str(_uuid.uuid4()),
+                        payer_id="BMI",
+                        name=office["name"],
+                        submission_email=office["submission_email"],
+                        mailing_address=office["mailing_address"],
+                        phone=office["phone"],
+                        is_default=office["is_default"],
+                        last_verified=_date(2026, 5, 4),
+                        notes=office["notes"],
+                    )
+                )
+            db.commit()
+    finally:
+        db.close()
+
+
+_seed_test_payer_offices()
 
 
 def override_get_db():
