@@ -1,9 +1,12 @@
 # BMI dispute filing — attorney review brief
 
 **Status:** Draft for Matt's music-rights attorney. Do NOT file disputes against
-BMI in this format until the questions in §4 are resolved.
+BMI's real submission addresses until the questions in §4 are resolved. We CAN
+fly the full pipeline to a test inbox (see §3.10) — set
+`XR7_DISPUTE_REDIRECT_EMAIL` and the system reroutes every send to that address.
 
 **Date drafted:** 2026-05-04
+**Last updated:** 2026-05-04 (post-#246/#247 implementation pass)
 **Authors:** Jason Trent (CTO) + Claude
 
 ---
@@ -15,14 +18,34 @@ ratios, missing distributions) and prepares a dispute packet — a PDF + email b
 — intended for BMI's Writer/Publisher Relations team. Before we send a real
 dispute on behalf of a real artist, we need an attorney to confirm:
 
-- The submission channel + address are correct.
-- The contractual citations we invoke are accurate.
+- The submission channel + address are correct. **(Implementation done; review
+  the rendered output.)**
+- The contractual citations we invoke are accurate. **(Citation now in the email
+  body — paragraph 6(b)(iv); review the language.)**
 - A third-party service (XR7 / K6 Labs) operating under a Limited Power of
-  Attorney is an acceptable submitter under BMI's writer agreement.
+  Attorney is an acceptable submitter under BMI's writer agreement. **(Open —
+  §4.1.)**
 - The packet content is sufficient and appropriately framed (not aggressive,
-  not under-supported).
+  not under-supported). **(Open — §4.4. Sample PDF attached.)**
+
+### Implementation status (2026-05-04)
+
+| Item | Brief § | Status |
+|---|---|---|
+| Submission email — drop bouncing placeholder, route via DB-backed regional offices | 3.1 | **Fixed** — `payer_offices` table seeded with all 6 BMI regions; filing pipeline reads artist's `bmi_office_name` (default Nashville) |
+| Salutation — replace fake "Member Disputes Team" | 3.2 | **Fixed** — now "Writer/Publisher Relations Team — `<office>` Office" |
+| SLA framing — stop asserting BMI's "published procedure" | 3.3 | **Fixed** — now "we respectfully request a response by `<date>`" framed as our request, not their commitment |
+| Contractual citation — paragraph 6(b)(iv) | 3.4 | **Fixed** — citation block in every BMI dispute email body |
+| Per-row identifiers — BMI account #, IPI, Work ID, distribution period | 3.5 | **Partial** — fields captured at ingestion (`Payment.payer_account_id`, `payer_ip_number`, `payer_work_id`), not yet rendered on the packet PDF |
+| Internal taxonomy in email body (`HIGH_RETROACTIVE_PAYMENT_RATIO`) | 3.6 | **Not fixed** — still leaks the rule_id; needs a plain-English mapping |
+| LPOA framing | 3.7 | **Open** — language slightly improved but the legal gate is §4.1 |
+| Cryptographic Provenance section in PDF | 3.8 | **Open** — §4.4 |
+| Foreign vs. domestic differentiation | 3.9 | **Open** — single-template still; rule-evaluation branching deferred |
+| Test-mode redirect (fly the pipeline to ourselves) | 3.10 | **Implemented** — `XR7_DISPUTE_REDIRECT_EMAIL` env var |
 
 Sample rendered packet attached separately as `xr7-evidence-<claim_id>.pdf`.
+Sample rendered email body available on request — file a redirect-mode test
+send and check the inbox.
 
 ---
 
@@ -88,87 +111,126 @@ From the FAQ + writer kit:
 
 ---
 
-## 3. What we currently have, and what's wrong with it
+## 3. What we currently send (post-#246/#247)
 
-### 3.1 Submission email
-- **What we have:** `member-disputes@bmi.com` (invented placeholder in
-  `XR7/recovery/payer_config.py:71`).
-- **Problem:** That address does not exist. A real send would bounce — and
-  bouncebacks against our verified Postmark sender hurt our deliverability
-  reputation.
-- **Fix (pending attorney sign-off):** Default to `nashville@bmi.com`. Add a
-  per-artist "BMI region" override when we onboard non-Nashville artists.
+### 3.1 Submission email — Fixed
+- **Before:** `member-disputes@bmi.com` (invented placeholder; would have
+  bounced).
+- **Now:** Submission goes to a regional Writer/Publisher Relations office
+  resolved at filing time from our `payer_offices` table. The artist's
+  region preference (`Artist.bmi_office_name`) controls routing; default
+  is **Nashville (`nashville@bmi.com`)** for our country/Americana
+  cohort. All six BMI offices are seeded with their published email +
+  mailing address from the BMI Writer Kit (form 3-2025).
+- **Implementation:** `XR7/models/payer_office.py`, alembic migration
+  `20260504_0038`, `XR7/recovery/payer_config.py:get_payer_office()`.
+- **Attorney check needed:** verify the Nashville address is the right
+  default for our writer cohort, and confirm the address-resolution
+  scheme (writer self-selects region at signup) is acceptable.
 
-### 3.2 Salutation
-- **What we have:** "To the BMI Member Disputes Team,"
-- **Problem:** That team does not exist by that name. BMI's process directs
-  inquiries to the regional Writer/Publisher Relations office.
-- **Fix (pending attorney sign-off):** "To the BMI Writer/Publisher Relations
-  Team — Nashville Office,"
+### 3.2 Salutation — Fixed
+- **Before:** "To the BMI Member Disputes Team," — a team that doesn't
+  exist by that name.
+- **Now:** "To the Broadcast Music, Inc. Writer/Publisher Relations Team
+  — Nashville Office," (the office name varies per artist's region).
+  Falls back to a generic "Writer/Publisher Relations Team," for any
+  payer without an office record.
+- **Attorney check needed:** confirm the regional-office form is
+  appropriate; flag if a different in-house naming convention is more
+  conventional.
 
-### 3.3 SLA framing
-- **What we have:** "We respectfully request acknowledgement of receipt within
-  30 days, and a substantive response within 90 days, in line with BMI's
-  published member-relations procedure."
-- **Problem:** BMI does NOT publish a member-relations response SLA. Asserting
-  one as their commitment is factually wrong and could undermine credibility.
-  Our 30/90 days are our *internal* escalation timer, not their commitment.
-- **Fix (pending attorney sign-off):** Reframe as our request, not their
-  obligation. "We respectfully request a response by [date], which we will
-  treat as the customary response window for the Nashville Writer/Publisher
-  Relations office."
+### 3.3 SLA framing — Fixed
+- **Before:** "in line with BMI's published member-relations procedure"
+  — factually wrong, BMI doesn't publish one.
+- **Now:** "We respectfully request a response by `<filing date + 30
+  days>`. We understand response times can vary; this date is provided
+  as our internal escalation reference and is not asserted as your
+  published commitment." (Concrete date, framed as our request not their
+  commitment.)
+- **Attorney check needed:** is 30 days too aggressive? Too soft? The
+  brief's recommendation was generic; a concrete view from someone who's
+  worked actual BMI inquiries would help.
 
-### 3.4 Contractual citation — currently absent
-- **What we have:** No reference to the writer agreement.
-- **Problem:** BMI's 9-month claim window is the binding rule. Citing it
-  directly (paragraph 6(b)(iv) of the BMI writer agreement) signals to the
-  investigator that we know the contractual basis and are filing within the
-  window. Without it, our notice could be processed as a generic complaint
-  rather than a contractually-timely claim.
-- **Fix (pending attorney sign-off):** Add: "Pursuant to paragraph 6(b)(iv)
-  of the BMI writer affiliation agreement, this constitutes timely written
-  notice of claimed omission/miscalculation within nine (9) months of the
-  [DISTRIBUTION DATE] royalty distribution."
+### 3.4 Contractual citation — Fixed
+- **Before:** absent.
+- **Now:** For every BMI claim, the email body includes:
+  > "Pursuant to paragraph 6(b)(iv) of the BMI writer affiliation
+  > agreement, this constitutes timely written notice of claimed
+  > omission or miscalculation. The 9-month claim window from the
+  > subject distribution date applies; we are filing within that
+  > window."
+- **Attorney check needed:** is paragraph 6(b)(iv) the right citation?
+  Is the language overconfident or underconfident? Are we adequately
+  identifying which distribution we're disputing? (Today the language
+  doesn't name a specific period — the packet shows it but the email
+  body just says "the subject distribution.")
 
-### 3.5 Required member-identifying fields — currently absent
-- **What we have:** Artist name + claim ID. Optionally `artist_pro_id` (which
-  we don't actually populate today).
-- **Problem:** BMI's required fields aren't in our model: BMI account number,
-  song title, BMI Work ID, distribution date being disputed.
-- **Fix (pending attorney sign-off):** Extend the Artist + Claim model to
-  capture these, surface them in the dispute packet. Block "File via email"
-  in the operator dashboard if any required field is missing.
+### 3.5 Required member-identifying fields — Partial
+- **Before:** Just artist name + claim ID; no member account number,
+  Work ID, or distribution period.
+- **Now (data layer):** Every Payment row carries:
+  - `payer_account_id` (BMI `PARTICIPANT #`)
+  - `payer_ip_number` (`IP #` / IPI)
+  - `payer_work_id` (BMI `TITLE #` / BWID)
+  Plus `period_start`/`period_end` decoded from the `PERIOD` column.
+  Captured at ingestion from BMI's 28-column Royalty Distribution
+  Statement CSV.
+- **Still pending:** the packet PDF doesn't yet render these
+  identifiers in a "Subject distribution" or "Member of record" block.
+  The data is on hand; the template just doesn't surface it. Half-day
+  follow-up to add the section once the attorney confirms what BMI
+  expects to see prominently.
 
-### 3.6 Internal taxonomy bleeding through
-- **What we have:** `Finding: HIGH_RETROACTIVE_PAYMENT_RATIO` in the email body.
-- **Problem:** That's our internal rule_id. BMI investigators want plain
-  English, not our category labels.
-- **Fix (pending attorney sign-off):** Replace with a one-sentence plain-English
-  summary keyed off the rule. The `description` field on the Anomaly already
-  has plain English; we should lead with it.
+### 3.6 Internal taxonomy bleeding — NOT fixed
+- **Before:** `Finding: HIGH_RETROACTIVE_PAYMENT_RATIO` in email body.
+- **Now:** Same. The template still does `Finding: {{ finding_subtype
+  }}` where `finding_subtype` resolves to the rule_id.
+- **Why not fixed yet:** rule_ids map to plain-English descriptions per
+  rule, not per dispute, and choosing the right framing per rule is
+  better done with attorney input on tone. Probably a sentence per rule,
+  e.g. "We have identified an unusually high proportion of retroactive
+  payments to this writer — 72% of BMI distributions in the past 12
+  months arrived 4-9 months after the statement period."
+- **Attorney check needed:** language for each rule's "plain English
+  framing." Quick to land once we have attorney-blessed phrasing.
 
-### 3.7 LPOA framing
-- **What we have:** "A signed Limited Power of Attorney is available on request."
-- **Problem:** Whether BMI accepts an LPOA-authorized third-party submitter is
-  the **central legal question** of our service-bureau model. BMI's writer
-  agreement is bilateral (writer ↔ BMI). A third party (K6 Labs) submitting on
-  behalf of the writer is not explicitly contemplated.
-- **Question for attorney:** §4.1 below.
+### 3.7 LPOA framing — Marginally improved; legal gate still open
+- **Before:** "A signed Limited Power of Attorney is available on
+  request."
+- **Now:** "`<artist>` has authorised XR7 (a service of K6 Labs, Inc.)
+  under a signed Limited Power of Attorney to submit royalty audit
+  findings on their behalf and to receive correspondence in response. A
+  copy of the LPOA is available on request."
+- **Whether BMI accepts a third-party LPOA-authorized submitter at all
+  remains §4.1 — central legal question.**
 
-### 3.8 Cryptographic Provenance section in PDF
-- **What we have:** SHA-256 hash chain references in the rendered packet.
-- **Problem:** Probably overkill for a BMI member-relations review. Useful if
-  the matter ever escalates to discovery, but at the initial-inquiry stage it
-  may signal "this is litigation-prep" rather than "we want to resolve this."
-- **Question for attorney:** §4.4 below.
+### 3.8 Cryptographic Provenance section in PDF — Unchanged
+- **What we have:** SHA-256 hash of the rendered packet contents
+  embedded on the cover and on a "Cryptographic Provenance" section
+  near the end.
+- **Question for attorney:** §4.4 below. Easy to drop the section if it
+  signals litigation-prep; trivially restored later if we ever escalate.
 
-### 3.9 Foreign vs. domestic
-- **What we have:** One template for all BMI claims.
-- **Problem:** BMI's procedure differentiates foreign performances. Foreign
-  claims include territory + performance source detail and may go to a
-  different team (`statement@bmi.com` is mentioned for foreign).
-- **Fix (pending attorney sign-off):** Branch on whether the underlying
-  payments are domestic or foreign at the rule-evaluation step.
+### 3.9 Foreign vs. domestic — Unchanged
+- **What we have:** Single template for all BMI claims.
+- **Pending attorney input.** Per BMI's docs, foreign claims may go to
+  `statement@bmi.com` instead of the regional office; we'd need to
+  branch on the underlying payments' territory.
+
+### 3.10 Test-mode redirect — Implemented
+- **What we built (#247):** `XR7_DISPUTE_REDIRECT_EMAIL` env var. When
+  set, every outbound dispute is rerouted from the payer's real
+  submission inbox to that test address. The full Postmark pipeline
+  still runs (MessageID persisted, claim advances to `FILED`, inbound
+  webhook can correlate replies), but BMI never sees anything. The
+  email subject gets a `[XR7 INTERNAL REVIEW]` prefix and a footer
+  block flags the redirect for whoever opens it.
+- **Why this exists:** so the attorney (or you, or Matt) can review the
+  rendered email by triggering a real dispute file from `/ops` and
+  checking the resulting inbox, without exposing BMI to anything. Unset
+  the env var when ready to fly real disputes.
+- **Currently set to:** `jtrent@k6-labs.com` on local dev; not yet set
+  on QA (will be set as part of the QA deploy for #246/#247).
 
 ---
 
@@ -228,27 +290,51 @@ will BMI reject as insufficient?
 ## 5. What we'll do based on attorney response
 
 ### If attorney approves third-party submission with LPOA:
-1. Update `payer_config.py` BMI entry: `submission_email`, `salutation`,
-   add region awareness.
-2. Update `dispute_email.txt`: add contractual citation, fix SLA framing,
-   replace internal rule_id with plain English.
-3. Extend `Claim` model to capture BMI account number + Work ID + distribution
-   date being disputed.
+
+Most of the structural work is already shipped (#245/#246/#247) and is
+visible to the attorney via the test-mode redirect. What remains is
+language polish + the deadline calculator + flying real disputes.
+
+1. ~~Update `payer_config.py` BMI entry: `submission_email`, `salutation`,
+   add region awareness.~~ **Done** — empty placeholder, regional offices in
+   `payer_offices` table, lookup in `get_payer_office()`.
+2. Update `dispute_email.txt`: ~~add contractual citation~~ ✅ done,
+   ~~fix SLA framing~~ ✅ done, **still pending: replace the internal
+   `rule_id` with plain English (§3.6).** Need attorney-blessed phrasing.
+3. ~~Extend `Claim` model to capture BMI account number + Work ID +
+   distribution date being disputed.~~ **Done** at the Payment level —
+   `Payment.payer_account_id`, `payer_ip_number`, `payer_work_id`,
+   `period_start/end`. **Still pending: render those fields in a
+   "Subject distribution" block on the packet PDF (§3.5).**
 4. Add a 9-month deadline calculator that supersedes SOL for BMI claims.
+   **Not started.**
 5. Block "File via email" in `/ops` until required fields populated.
-6. Send first real test filing for a Nashville-network artist with attorney CC'd.
+   **Not started** — currently only validates that `payer_name` is set.
+6. Send first real test filing for a Nashville-network artist with
+   attorney CC'd. **Ready** — unset `XR7_DISPUTE_REDIRECT_EMAIL` and click
+   "File via email" on the operator dashboard.
 
 ### If attorney requires writer-direct submission:
+Most of the existing pipeline can be repurposed; the change is in who
+the email is addressed to.
+
 1. Repurpose `/admin/claims/{id}/file-via-email` from "send to BMI" to
-   "send the packet to the writer for them to forward." Single mail-to-self
-   send, no LPOA flow needed.
+   "send the packet to the writer for them to forward." Single
+   mail-to-self send, no LPOA flow needed.
 2. Adjust the operator dashboard: instead of "File via email" we have
    "Send packet to writer for filing."
 3. Inbound webhook still works — the writer can BCC us when forwarding.
 
 ### If attorney requires a CC to BMI's legal/compliance team:
-1. Add CC field to `payer_config.py`.
-2. Update the email send logic to CC.
+1. Add CC field to the `payer_office` schema (a new column, generic
+   across payers — not all payers need a CC).
+2. Update the email send logic to CC when present.
+
+### If attorney rejects the contractual citation language (§3.4):
+1. Update the `contractual_citation` block in
+   `XR7/recovery/dispute_delivery.py:_render_email_body()` per attorney
+   guidance. Keep the structure (the citation is per-payer logic, not
+   per-call).
 
 ---
 
