@@ -1,8 +1,12 @@
 {{ salutation }}
 
-I am writing on behalf of {{ artist_name }}{% if artist_pro_id %} ({{ payer_id }} #{{ artist_pro_id }}){% endif %} to formally dispute royalty payment activity captured in your records and to request review of the attached audit finding.
+I am writing on behalf of {{ artist_name }}{% if artist_pro_id %} ({{ payer_id }} #{{ artist_pro_id }}){% endif %} to formally submit a royalty audit finding for review and to request adjustment of the affected distribution(s).
 
-{{ artist_name }} authorises XR7 (a service of K6 Labs, Inc.) to act on their behalf for the limited purpose of submitting royalty audit findings and receiving correspondence in response. A signed Limited Power of Attorney is available on request.
+{{ artist_name }} has authorised XR7 (a service of K6 Labs, Inc.) under a signed Limited Power of Attorney to submit royalty audit findings on their behalf and to receive correspondence in response. A copy of the LPOA is available on request.
+
+{% if contractual_citation %}
+{{ contractual_citation }}
+{% endif %}
 
 The attached evidence packet documents the following finding:
 
@@ -17,13 +21,13 @@ The attached evidence packet documents the following finding:
 {{ finding_description }}
 
 The packet (PDF attachment) includes:
-  - A summary cover page with the artist identifier and finding scope
-  - The full audit determination, including rule logic and confidence band
+  - A summary cover page identifying the artist and the destination office
+  - The full audit determination, including methodology and confidence band
   - Aggregated supporting evidence
-  - Line-item detail of the underlying payment records contributing to this finding, sorted by amount
+  - Line-item detail of the underlying payment records
   - A SHA-256 cryptographic signature of the packet contents
 
-We respectfully request acknowledgement of receipt within {{ sla_acknowledge_days }} days, and a substantive response within {{ sla_decision_days }} days, in line with {{ payer_display_name }}'s published member-relations procedure.
+We respectfully request a response by {{ response_requested_by }}. We understand response times can vary; this date is provided as our internal escalation reference and is not asserted as your published commitment.
 
 If you have questions about the audit methodology, the underlying source data, or require additional documentation, please reply to this email — replies are routed to our claims-management system and will be associated with this filing automatically.
 
@@ -36,4 +40,8 @@ K6 Labs, Inc.
 — — —
 Reference: claim {{ claim_id }}
 Filing date: {{ filing_date }}
-Outbound message id: (set by mail provider on send)
+{% if redirected %}
+[INTERNAL REVIEW MODE] This message was redirected to {{ redirect_recipient }}; the
+intended recipient was {{ intended_recipient }}. Unset XR7_DISPUTE_REDIRECT_EMAIL to
+fly real disputes.
+{% endif %}

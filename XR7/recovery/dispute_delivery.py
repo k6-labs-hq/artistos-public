@@ -31,7 +31,8 @@ and by the operator dashboard's "file now" button (#181 territory).
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+import os
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -59,27 +60,68 @@ def _render_email_body(
     claim: dict[str, Any],
     artist: dict[str, Any],
     anomaly: dict[str, Any],
+    office: dict[str, Any] | None = None,
+    redirected: bool = False,
+    intended_recipient: str | None = None,
+    redirect_recipient: str | None = None,
 ) -> str:
     """Render the dispute email body from the Jinja template."""
     confidence = anomaly.get("confidence_score")
     confidence_pct = f"{int(round(float(confidence) * 100))}" if confidence is not None else None
 
+    # Compose the salutation. If we have a regional office, address the team
+    # by office name (e.g. "BMI Writer/Publisher Relations Team — Nashville
+    # Office") rather than the generic salutation in payer_config. The
+    # generic one is the fallback for payers without office records.
+    salutation = payer.salutation
+    if office and office.get("name"):
+        salutation = (
+            f"To the {payer.display_name} Writer/Publisher Relations Team "
+            f"— {office['name']} Office,"
+        )
+
+    # Contractual citation. Per docs/runbooks/bmi-dispute-attorney-brief.md
+    # §3.4, citing paragraph 6(b)(iv) of the BMI writer agreement signals
+    # that we know the contractual basis and are filing within the 9-month
+    # window. Other payers don't have an equivalent citation we've vetted
+    # yet — they get no citation block until the attorney brief covering
+    # them is reviewed.
+    contractual_citation = None
+    if payer.canonical_id == "BMI":
+        contractual_citation = (
+            "Pursuant to paragraph 6(b)(iv) of the BMI writer affiliation "
+            "agreement, this constitutes timely written notice of claimed "
+            "omission or miscalculation. The 9-month claim window from the "
+            "subject distribution date applies; we are filing within that "
+            "window."
+        )
+
+    # Response date — 30 days out from filing as our internal escalation
+    # marker. Per attorney brief §3.3, framed as our request, not the
+    # payer's published commitment.
+    response_requested_by = (
+        datetime.now(timezone.utc) + timedelta(days=payer.sla_acknowledge_days)
+    ).strftime("%Y-%m-%d")
+
     template = _jinja_env.get_template("dispute_email.txt")
     return template.render(
-        salutation=payer.salutation,
+        salutation=salutation,
         artist_name=artist.get("name") or "(artist name not on file)",
         artist_pro_id=artist.get("pro_id_for_payer"),
         payer_id=payer.canonical_id,
         payer_display_name=payer.display_name,
+        contractual_citation=contractual_citation,
         finding_subtype=anomaly.get("subtype") or anomaly.get("rule_id") or "Royalty audit finding",
         finding_description=anomaly.get("description")
         or "See attached evidence packet for the full audit determination.",
         estimated_recoverable=anomaly.get("estimated_recoverable"),
         confidence_pct=confidence_pct,
-        sla_acknowledge_days=payer.sla_acknowledge_days,
-        sla_decision_days=payer.sla_decision_days,
+        response_requested_by=response_requested_by,
         claim_id=claim.get("id") or "(unset)",
         filing_date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        redirected=redirected,
+        intended_recipient=intended_recipient or "",
+        redirect_recipient=redirect_recipient or "",
     )
 
 
@@ -169,12 +211,42 @@ def deliver_dispute(
             "stubbed": False,
         }
 
-    body = _render_email_body(payer=payer, claim=claim, artist=artist, anomaly=anomaly)
+    # Test-mode redirect. When XR7_DISPUTE_REDIRECT_EMAIL is set, every
+    # outbound dispute is rerouted to that address instead of the payer's
+    # real submission inbox. Use this while the packet/email body is
+    # under review (attorney, internal QA) so we can fly the full pipeline
+    # — Postmark send, MessageID persistence, status advance — without
+    # actually contacting the payer. Unset the env var to fly real
+    # disputes.
+    redirect_email = (os.environ.get("XR7_DISPUTE_REDIRECT_EMAIL") or "").strip()
+    intended_recipient = submission_email
+    redirected = bool(redirect_email)
+    if redirected:
+        logger.info(
+            "Dispute redirect active: %s -> %s (claim=%s)",
+            intended_recipient,
+            redirect_email,
+            claim.get("id"),
+        )
+        submission_email = redirect_email
+
+    body = _render_email_body(
+        payer=payer,
+        claim=claim,
+        artist=artist,
+        anomaly=anomaly,
+        office=office,
+        redirected=redirected,
+        intended_recipient=intended_recipient,
+        redirect_recipient=redirect_email if redirected else None,
+    )
 
     metadata: dict[str, str] = {
         "claim_id": str(claim.get("id") or ""),
         "artist_id": str(artist.get("id") or ""),
         "payer_id": payer.canonical_id,
+        "intended_recipient": intended_recipient,
+        "redirected": "true" if redirect_email else "false",
     }
     if metadata_extra:
         for k, v in metadata_extra.items():
@@ -187,8 +259,10 @@ def deliver_dispute(
         content_type="application/pdf",
     )
 
+    subject_prefix = "[XR7 INTERNAL REVIEW] " if redirected else ""
     subject = (
-        f"Royalty audit finding for {artist.get('name') or 'XR7-represented artist'} — "
+        f"{subject_prefix}Royalty audit finding for "
+        f"{artist.get('name') or 'XR7-represented artist'} — "
         f"claim {claim.get('id') or '(pending)'}"
     )
 
@@ -209,6 +283,8 @@ def deliver_dispute(
         "channel": "email",
         "payer_id": payer.canonical_id,
         "submission_address": submission_email,
+        "intended_recipient": intended_recipient,
+        "redirected": redirected,
         "message_id": result.message_id,
         "error_code": result.error_code,
         "error_message": result.error_message,
