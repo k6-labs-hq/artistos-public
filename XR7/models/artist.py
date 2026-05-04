@@ -65,6 +65,16 @@ class Artist(Base):
     tvfilm_role: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     organization_type: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     enterprise_mode_enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    # Which PROs/collectives this artist receives statements from. Drives
+    # dispute filing routing. Stored as a JSON list of canonical payer ids
+    # (e.g. ["BMI", "MLC"]). Null = unset (artist hasn't completed payer
+    # selection at onboarding yet).
+    pro_affiliations: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    # When pro_affiliations includes "BMI", which BMI Writer/Publisher
+    # Relations regional office handles this artist. Matches the `name`
+    # column on `payer_offices` (e.g. "Nashville", "New York"). Null =
+    # use BMI default office (Nashville) until the artist sets it.
+    bmi_office_name: Mapped[str | None] = mapped_column(String, nullable=True)
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
 
     @validates("contingency_fee_percent")

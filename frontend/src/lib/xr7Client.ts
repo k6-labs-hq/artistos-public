@@ -53,6 +53,15 @@ export async function xr7PostJson<T>(path: string, body: unknown): Promise<T> {
   return handle<T>(resp);
 }
 
+export async function xr7PutJson<T>(path: string, body: unknown): Promise<T> {
+  const resp = await fetch(`${API_BASE}${path}`, {
+    method: "PUT",
+    headers: { ...authHeader(), "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return handle<T>(resp);
+}
+
 export async function xr7PostMultipart<T>(path: string, form: FormData): Promise<T> {
   const resp = await fetch(`${API_BASE}${path}`, {
     method: "POST",
@@ -68,9 +77,18 @@ export type Me = {
   artist_id: string | null;
   artist_name: string | null;
   artist_email: string | null;
+  admin_email: string | null;
+  pro_affiliations: string[] | null;
+  bmi_office_name: string | null;
   tenant_id: string | null;
   issued_at: number | null;
   expires_at: number | null;
+};
+
+export type PayerRouting = {
+  artist_id: string;
+  pro_affiliations: string[] | null;
+  bmi_office_name: string | null;
 };
 
 export type Anomaly = {
@@ -106,4 +124,14 @@ export const xr7 = {
       terms_version: version,
       agreed: true,
     }),
+  getPayerRouting: (artistId: string) =>
+    xr7Get<PayerRouting>(`/artists/${encodeURIComponent(artistId)}/payer-routing`),
+  updatePayerRouting: (
+    artistId: string,
+    payload: { pro_affiliations: string[] | null; bmi_office_name: string | null },
+  ) =>
+    xr7PutJson<PayerRouting>(
+      `/artists/${encodeURIComponent(artistId)}/payer-routing`,
+      payload,
+    ),
 };

@@ -90,6 +90,7 @@ def deliver_dispute(
     anomaly: dict[str, Any],
     pdf_bytes: bytes,
     payer_id: str,
+    office: dict[str, Any] | None = None,
     metadata_extra: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     """File a dispute with the payer via email + PDF attachment.
@@ -143,6 +144,31 @@ def deliver_dispute(
             "stubbed": False,
         }
 
+    # Submission email source-of-truth ranking:
+    #   1. The payer_office row passed in by the caller (per-artist routing —
+    #      e.g. an artist whose BMI region is "New York" gets newyork@bmi.com)
+    #   2. payer_config.PayerConfig.submission_email (legacy default — we're
+    #      moving away from this for BMI since the placeholder bounces, but
+    #      it remains the fallback for payers we don't have office records
+    #      seeded for yet)
+    submission_email = (
+        (office or {}).get("submission_email") or payer.submission_email
+    )
+    if not submission_email:
+        return {
+            "success": False,
+            "channel": "none",
+            "payer_id": payer_id,
+            "submission_address": None,
+            "message_id": None,
+            "error_code": -2,
+            "error_message": (
+                f"No submission_email available for payer '{payer_id}' — caller must "
+                "supply a payer_office or the payer_config default must be set"
+            ),
+            "stubbed": False,
+        }
+
     body = _render_email_body(payer=payer, claim=claim, artist=artist, anomaly=anomaly)
 
     metadata: dict[str, str] = {
@@ -168,7 +194,7 @@ def deliver_dispute(
 
     client = get_postmark_client()
     result = client.send_email(
-        to=payer.submission_email,
+        to=submission_email,
         subject=subject,
         text_body=body,
         from_email=settings.POSTMARK_DISPUTES_FROM_EMAIL,
@@ -182,7 +208,7 @@ def deliver_dispute(
         "success": result.delivered,
         "channel": "email",
         "payer_id": payer.canonical_id,
-        "submission_address": payer.submission_email,
+        "submission_address": submission_email,
         "message_id": result.message_id,
         "error_code": result.error_code,
         "error_message": result.error_message,

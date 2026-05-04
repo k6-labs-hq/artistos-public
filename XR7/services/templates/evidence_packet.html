@@ -169,6 +169,24 @@
   {% endif %}
 </section>
 
+{% if payer_office %}
+<section class="filed-with">
+  <h2 style="margin-top: 12pt;">Filed with</h2>
+  <div style="border: 1px solid #d4d4dc; border-radius: 4pt; padding: 10pt 14pt; background: #fafafd;">
+    <strong>{{ claim.payer_name|default('Payer') }} — {{ payer_office.name }} Office</strong>
+    {% if payer_office.mailing_address %}
+    <pre style="font-family: Georgia, 'Times New Roman', serif; font-size: 10pt; margin: 6pt 0 0; white-space: pre-wrap;">{{ payer_office.mailing_address }}</pre>
+    {% endif %}
+    {% if payer_office.submission_email %}
+    <div style="margin-top: 4pt; font-size: 10pt;">Submission email: {{ payer_office.submission_email }}</div>
+    {% endif %}
+    {% if payer_office.phone %}
+    <div style="font-size: 10pt;">Phone: {{ payer_office.phone }}</div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
 <section>
   <h2>1. Royalty Audit Finding</h2>
   <p class="muted small">

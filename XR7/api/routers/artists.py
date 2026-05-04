@@ -176,6 +176,77 @@ def update_artist_preferences(
     return inject_branding_metadata(db, _attorney_grace_period_settings_payload(artist))
 
 
+class PayerRoutingUpdateRequest(BaseModel):
+    pro_affiliations: list[str] | None = None
+    bmi_office_name: str | None = None
+
+
+@router.get("/{artist_id}/payer-routing")
+def get_payer_routing(artist_id: str, db: Session = Depends(get_db)):
+    artist = _router_service.get_artist_or_404(artist_id, db)
+    return {
+        "artist_id": artist.id,
+        "pro_affiliations": artist.pro_affiliations,
+        "bmi_office_name": artist.bmi_office_name,
+    }
+
+
+@router.put("/{artist_id}/payer-routing")
+def update_payer_routing(
+    artist_id: str,
+    payload: PayerRoutingUpdateRequest,
+    db: Session = Depends(get_db),
+):
+    """Set the artist's PRO affiliations and (if BMI) regional office.
+
+    Validates the BMI office name against `payer_offices` to prevent
+    operators from saving a typo'd region. Empty / null fields are
+    allowed — they unset the field.
+    """
+    from XR7.models.payer_office import PayerOffice  # noqa: PLC0415
+
+    artist = _router_service.get_artist_or_404(artist_id, db)
+
+    affiliations = payload.pro_affiliations or []
+    canonical = sorted({a.strip().upper() for a in affiliations if a and a.strip()})
+    artist.pro_affiliations = canonical or None
+
+    bmi_office = (payload.bmi_office_name or "").strip()
+    if bmi_office:
+        match = (
+            db.query(PayerOffice)
+            .filter(PayerOffice.payer_id == "BMI", PayerOffice.name.ilike(bmi_office))
+            .first()
+        )
+        if match is None:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unknown BMI office '{bmi_office}'",
+            )
+        artist.bmi_office_name = match.name
+    else:
+        artist.bmi_office_name = None
+
+    _audit(
+        db,
+        actor=f"artist:{artist_id}",
+        action="payer_routing_updated",
+        resource_type="artist",
+        resource_id=artist_id,
+        details={
+            "pro_affiliations": artist.pro_affiliations,
+            "bmi_office_name": artist.bmi_office_name,
+        },
+    )
+    db.commit()
+    db.refresh(artist)
+    return {
+        "artist_id": artist.id,
+        "pro_affiliations": artist.pro_affiliations,
+        "bmi_office_name": artist.bmi_office_name,
+    }
+
+
 @router.post("/{artist_id}/connect")
 def connect_artist(artist_id: str, db: Session = Depends(get_db)):
     """

@@ -917,7 +917,28 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
 
     from XR7.recovery.dispute_correlation import record_outbound_filing  # noqa: PLC0415
     from XR7.recovery.dispute_delivery import deliver_dispute  # noqa: PLC0415
+    from XR7.recovery.payer_config import get_payer_office  # noqa: PLC0415
     from XR7.services.evidence_packet_pdf import render_evidence_packet_pdf  # noqa: PLC0415
+
+    # Resolve the payer office for routing. For BMI, this picks the
+    # artist's chosen regional office (or Nashville default). For other
+    # payers, returns None for now and dispute_delivery falls back to
+    # the payer_config default email.
+    office_obj = None
+    if payer_id and payer_id.upper() == "BMI":
+        office_obj = get_payer_office(db, "BMI", artist.bmi_office_name) or get_payer_office(
+            db, "BMI"
+        )
+    office_dict = (
+        {
+            "name": office_obj.name,
+            "submission_email": office_obj.submission_email,
+            "mailing_address": office_obj.mailing_address,
+            "phone": office_obj.phone,
+        }
+        if office_obj is not None
+        else None
+    )
 
     snapshot = json.loads(anomaly.feature_snapshot or "{}")
     pdf_bytes = render_evidence_packet_pdf(
@@ -945,6 +966,7 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
             "description": anomaly.description,
             "evidence": snapshot.get("evidence"),
         },
+        payer_office=office_dict,
     )
 
     result = deliver_dispute(
@@ -964,6 +986,7 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
         },
         pdf_bytes=pdf_bytes,
         payer_id=payer_id,
+        office=office_dict,
     )
 
     if result.get("success"):
@@ -1145,7 +1168,25 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
         else None
     )
 
+    from XR7.recovery.payer_config import get_payer_office  # noqa: PLC0415
     from XR7.services.evidence_packet_pdf import render_evidence_packet_pdf  # noqa: PLC0415
+
+    # Resolve payer office for the destination block on the packet. For
+    # BMI we look up the artist's chosen regional office (or Nashville
+    # default); other payers don't have offices seeded yet.
+    office_dict = None
+    payer_name_upper = (getattr(claim, "payer_name", None) or "").upper()
+    if "BMI" in payer_name_upper:
+        office = get_payer_office(
+            db, "BMI", getattr(artist, "bmi_office_name", None) if artist else None
+        ) or get_payer_office(db, "BMI")
+        if office is not None:
+            office_dict = {
+                "name": office.name,
+                "submission_email": office.submission_email,
+                "mailing_address": office.mailing_address,
+                "phone": office.phone,
+            }
 
     # Pull underlying line items so the dispute team can verify the math, not
     # just trust the aggregate. Currently scoped to HIGH_RETROACTIVE_RATIO since
@@ -1236,6 +1277,7 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
         ),
         line_items=line_items,
         line_items_meta=line_items_meta,
+        payer_office=office_dict,
     )
     return pdf_bytes
 

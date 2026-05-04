@@ -64,15 +64,18 @@ PAYER_CONFIGS: dict[str, PayerConfig] = {
     "BMI": PayerConfig(
         canonical_id="BMI",
         display_name="Broadcast Music, Inc.",
-        # Note: BMI's actual member-relations email needs to be verified per
-        # the current member portal. The address below is a reasonable default
-        # but operators should confirm before each filing until #179 wires
-        # the verification check into the operator dashboard.
-        submission_email="member-disputes@bmi.com",
+        # NOTE: empty by design. BMI dispute submissions go to the
+        # regional Writer/Publisher Relations office, not a single global
+        # address. Look up the right office via
+        # `XR7.recovery.payer_config.get_payer_office(db, "BMI", artist.bmi_office_name)`
+        # at filing time and pass it to `deliver_dispute(office=...)`.
+        # If we ever start defaulting to a single address again, update
+        # this string AND the comment.
+        submission_email="",
         sla_acknowledge_days=30,
         sla_decision_days=90,
-        salutation="To the BMI Member Disputes Team,",
-        last_verified="2026-04-30",
+        salutation="To the BMI Writer/Publisher Relations Team,",
+        last_verified="2026-05-04",
     ),
     "ASCAP": PayerConfig(
         canonical_id="ASCAP",

@@ -188,6 +188,7 @@ def render_evidence_packet_pdf(
     signature: str | None = None,
     line_items: list[dict[str, Any]] | None = None,
     line_items_meta: dict[str, Any] | None = None,
+    payer_office: dict[str, Any] | None = None,
 ) -> bytes:
     """Render an evidence packet to PDF bytes.
 
@@ -250,32 +251,23 @@ def render_evidence_packet_pdf(
     line_items = line_items or []
     line_items_meta = line_items_meta or {}
 
-    first_pass_html = template.render(
-        generated_at=generated_at,
-        claim=claim,
-        anomaly=anomaly,
-        artist=artist,
-        cover_page=cover_page,
-        evidence_sections=evidence_sections,
-        line_items=line_items,
-        line_items_meta=line_items_meta,
-        packet_hash="(computing)",
-        signature=signature,
-    )
+    render_ctx = {
+        "generated_at": generated_at,
+        "claim": claim,
+        "anomaly": anomaly,
+        "artist": artist,
+        "cover_page": cover_page,
+        "evidence_sections": evidence_sections,
+        "line_items": line_items,
+        "line_items_meta": line_items_meta,
+        "payer_office": payer_office,
+        "signature": signature,
+    }
+
+    first_pass_html = template.render(**render_ctx, packet_hash="(computing)")
     packet_hash = hashlib.sha256(first_pass_html.encode("utf-8")).hexdigest()
 
-    final_html = template.render(
-        generated_at=generated_at,
-        claim=claim,
-        anomaly=anomaly,
-        artist=artist,
-        cover_page=cover_page,
-        evidence_sections=evidence_sections,
-        line_items=line_items,
-        line_items_meta=line_items_meta,
-        packet_hash=packet_hash,
-        signature=signature,
-    )
+    final_html = template.render(**render_ctx, packet_hash=packet_hash)
 
     pdf_bytes = HTML(string=final_html).write_pdf()
     return pdf_bytes

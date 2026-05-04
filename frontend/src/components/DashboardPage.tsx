@@ -94,7 +94,17 @@ function EmptyAnomaliesGuidance() {
   );
 }
 
-type LoadState = "loading" | "ready" | "needs_terms" | "error";
+type LoadState = "loading" | "ready" | "needs_terms" | "needs_payer_setup" | "error";
+
+const SUPPORTED_PROS = ["BMI", "ASCAP", "MLC", "SoundExchange"] as const;
+const BMI_OFFICES = [
+  "Nashville",
+  "New York",
+  "Los Angeles",
+  "Atlanta",
+  "Austin",
+  "London",
+];
 
 export function DashboardPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -104,6 +114,9 @@ export function DashboardPage() {
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const [selectedPros, setSelectedPros] = useState<string[]>([]);
+  const [selectedBmiOffice, setSelectedBmiOffice] = useState<string>("Nashville");
+  const [savingRouting, setSavingRouting] = useState(false);
 
   const refreshAnomalies = useCallback(async (artistId: string) => {
     const rows = await xr7.listAnomalies(artistId);
@@ -128,6 +141,13 @@ export function DashboardPage() {
           setState("needs_terms");
           return;
         }
+        // After terms, gate on payer routing — we need to know which PROs
+        // the artist receives statements from before any anomaly we
+        // surface can be filed correctly.
+        if (!meResp.pro_affiliations || meResp.pro_affiliations.length === 0) {
+          setState("needs_payer_setup");
+          return;
+        }
         await refreshAnomalies(meResp.artist_id);
         setState("ready");
       } catch (err) {
@@ -137,6 +157,39 @@ export function DashboardPage() {
       }
     })();
   }, [refreshAnomalies]);
+
+  const handleSavePayerRouting = async () => {
+    if (!me?.artist_id) return;
+    if (selectedPros.length === 0) {
+      setError("Pick at least one PRO/collective.");
+      return;
+    }
+    setSavingRouting(true);
+    setError(null);
+    try {
+      const includesBmi = selectedPros.includes("BMI");
+      await xr7.updatePayerRouting(me.artist_id, {
+        pro_affiliations: selectedPros,
+        bmi_office_name: includesBmi ? selectedBmiOffice : null,
+      });
+      // Refresh /me so the cached state matches.
+      const refreshed = await xr7.me();
+      setMe(refreshed);
+      await refreshAnomalies(me.artist_id);
+      setState("ready");
+    } catch (err) {
+      if (err instanceof UnauthorizedError) return;
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSavingRouting(false);
+    }
+  };
+
+  const togglePro = (pro: string) => {
+    setSelectedPros((prev) =>
+      prev.includes(pro) ? prev.filter((p) => p !== pro) : [...prev, pro],
+    );
+  };
 
   const handleAcceptTerms = async () => {
     if (!me?.artist_id) return;
@@ -252,6 +305,79 @@ export function DashboardPage() {
             </p>
             <button type="button" className="cta" onClick={handleAcceptTerms}>
               I accept the agreement
+            </button>
+          </section>
+        ) : null}
+
+        {state === "needs_payer_setup" ? (
+          <section
+            style={{
+              marginTop: "32px",
+              padding: "24px",
+              borderRadius: "16px",
+              border: "1px solid rgba(168, 85, 247, 0.3)",
+              background: "rgba(16, 16, 28, 0.6)",
+            }}
+          >
+            <h2>Where do your statements come from?</h2>
+            <p style={{ marginTop: "0", color: "#cbd5e1" }}>
+              Pick the PROs/collectives you receive royalty statements from. We use this to
+              route any disputes to the right submission address.
+            </p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
+              {SUPPORTED_PROS.map((pro) => (
+                <label key={pro} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedPros.includes(pro)}
+                    onChange={() => togglePro(pro)}
+                  />
+                  <span>{pro}</span>
+                </label>
+              ))}
+            </div>
+
+            {selectedPros.includes("BMI") ? (
+              <div style={{ marginTop: "20px" }}>
+                <label style={{ display: "block" }}>
+                  <span style={{ display: "block", marginBottom: "6px", color: "#cbd5e1" }}>
+                    BMI regional office
+                  </span>
+                  <select
+                    value={selectedBmiOffice}
+                    onChange={(e) => setSelectedBmiOffice(e.target.value)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "8px",
+                      background: "#0b0b14",
+                      color: "#e8e8ee",
+                      border: "1px solid rgba(168, 85, 247, 0.3)",
+                      minWidth: "240px",
+                    }}
+                  >
+                    {BMI_OFFICES.map((office) => (
+                      <option key={office} value={office}>
+                        {office}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p style={{ fontSize: "12px", color: "#777", marginTop: "6px" }}>
+                  Pick the office nearest your home base — this is where BMI's Writer/Publisher
+                  Relations team routes member inquiries. Default is Nashville.
+                </p>
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              className="cta"
+              onClick={handleSavePayerRouting}
+              disabled={savingRouting || selectedPros.length === 0}
+              style={{ marginTop: "20px" }}
+            >
+              {savingRouting ? "Saving…" : "Save and continue"}
             </button>
           </section>
         ) : null}

@@ -267,10 +267,14 @@ def auth_me(
 
     artist_id = payload.get("artist_id")
     artist_name: str | None = None
+    pro_affiliations: list[str] | None = None
+    bmi_office_name: str | None = None
     if artist_id and payload.get("role") == "artist":
         row = db.query(Artist).filter(Artist.id == artist_id).first()
         if row is not None:
             artist_name = row.name
+            pro_affiliations = row.pro_affiliations
+            bmi_office_name = row.bmi_office_name
 
     return inject_branding_metadata(
         db,
@@ -281,6 +285,8 @@ def auth_me(
             "artist_name": artist_name,
             "artist_email": payload.get("artist_email"),
             "admin_email": payload.get("admin_email"),
+            "pro_affiliations": pro_affiliations,
+            "bmi_office_name": bmi_office_name,
             "tenant_id": payload.get("tenant_id"),
             "issued_at": payload.get("iat"),
             "expires_at": payload.get("exp"),
