@@ -241,6 +241,9 @@ def _save_payments(db: Session, payments: list[dict]) -> int:
             period_end=p.get("period_end"),
             reference_id=p.get("reference_id"),
             received_at=datetime.now(timezone.utc),
+            payer_account_id=p.get("payer_account_id"),
+            payer_ip_number=p.get("payer_ip_number"),
+            payer_work_id=p.get("payer_work_id"),
         )
         try:
             with db.begin_nested():

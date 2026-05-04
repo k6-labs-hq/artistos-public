@@ -37,6 +37,19 @@ class Payment(Base):
     received_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
+    # Payer-provided identifiers extracted at ingestion time. Used when
+    # generating dispute packets that need to reference the payer's own
+    # records by their internal IDs (e.g. BMI requires Work ID + member
+    # account number on dispute submissions).
+    #
+    # `payer_account_id` — the payer's identifier for the artist's account
+    #   (BMI PARTICIPANT #, ASCAP member #, MLC payee number, etc.).
+    # `payer_ip_number`  — the writer/publisher IPI/CAE number (cross-PRO).
+    # `payer_work_id`    — the payer's identifier for the song/work
+    #   (BMI TITLE #, ASCAP Work ID, MLC Song Code, etc.).
+    payer_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    payer_ip_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    payer_work_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class PaymentSchema(BaseModel):
@@ -52,3 +65,6 @@ class PaymentSchema(BaseModel):
     source: str | None = None
     reference_id: str | None = None
     received_at: datetime
+    payer_account_id: str | None = None
+    payer_ip_number: str | None = None
+    payer_work_id: str | None = None

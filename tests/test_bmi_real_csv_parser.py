@@ -123,6 +123,11 @@ def test_parse_writer_streaming_row():
     assert p["period_start"] == date(2025, 7, 1)
     assert p["period_end"] == date(2025, 9, 30)
     assert p["source"] == "BMI / SPOTIFY PREM"
+    # Per-row payer identifiers — required for dispute submissions per
+    # docs/runbooks/bmi-dispute-attorney-brief.md.
+    assert p["payer_account_id"] == "9999999"
+    assert p["payer_ip_number"] == "00000000000"
+    assert p["payer_work_id"] == "42424242"
 
 
 def test_parse_radio_row_keeps_source_in_platform():

@@ -1125,6 +1125,13 @@ def _parse_bmi_real(row: dict, artist_id: str) -> tuple[dict | None, dict | None
         "period_end": period_end,
         "received_at": received_at,
         "reference_id": _row_hash(row, "bmi_real"),
+        # BMI's per-row identifiers — required on dispute submissions, so
+        # we denormalize them onto Payment at ingestion rather than asking
+        # the artist to look them up later. See
+        # docs/runbooks/bmi-dispute-attorney-brief.md §3.5 for context.
+        "payer_account_id": _col(row, "participant #", "participant#") or None,
+        "payer_ip_number": _col(row, "ip #", "ip#") or None,
+        "payer_work_id": _col(row, "title #", "title#") or None,
     }
     return event, payment
 
@@ -1196,6 +1203,10 @@ def _parse_mlc(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
         "period_end": period_end_d,
         "received_at": received_at,
         "reference_id": _row_hash(row, "mlc"),
+        # MLC's per-row identifiers — captured for dispute-packet rendering.
+        # See docs/runbooks/mlc-dispute-attorney-brief.md.
+        "payer_account_id": _col(row, "payee mlc number") or None,
+        "payer_work_id": _col(row, "mlc song code") or None,
     }
     return event, payment
 
