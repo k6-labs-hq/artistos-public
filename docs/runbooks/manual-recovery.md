@@ -1,160 +1,110 @@
-# Manual recovery runbook (beta)
+# Operator runbook — recovery loop
 
-**Status:** Active for the closed-beta period. Will be retired piece by piece as
-[#176](https://github.com/k6-labs-hq/ArtistOS/issues/176) lands.
+**Last updated:** 2026-05-05
+**Audience:** K6 Labs operators (Jason, Matt) + the music-rights attorney during review
 
-## Why this runbook exists
+This runbook is the daily playbook for running the recovery loop — file disputes, track replies, record remittances. Most of what was manual in the original 2026-04 version of this doc is now driven by the operator dashboard at `/ops`.
 
-ArtistOS automates the upstream half of royalty recovery: ingestion, anomaly
-detection, claim drafting, evidence packet generation, claim state machine,
-and (once a remittance is recorded) fee calculation + Trolley payout.
+---
 
-It does **not yet** automate the middle: actually contacting payers (PROs /
-DSPs), filing the dispute, tracking the response, and recording the inbound
-payment. Today that work is done by hand by a K6 Labs operator. This runbook
-is the checklist for that work.
+## 1. What's automated vs. manual today
 
-**Status as of 2026-04-30:**
-
-| Layer | State |
+| Step | State |
 |---|---|
-| Email provider | ✅ Postmark provisioned, domain verified, env vars wired (#180 / #219 / #220) |
-| Outbound dispute send via Postmark | ✅ infrastructure live; dispute_delivery.py wiring is #179 |
-| Inbound dispute reply parse | ✅ webhook live at `/webhooks/postmark/inbound`; correlation logic is #179 |
-| Per-payer dispute templates | ⏳ #179 — the next major PR |
-| `XR7/recovery/dispute_delivery.py` | ⏳ still returns `"detail": "simulated"` until #179 wires it through |
-| `XR7/recovery/auto_filing_engine.py` | ⏳ still returns a payload dict; #179 wires the queue + delivery |
-| `XR7/tasks/pipeline.py::submit_recovery_action` | ⏳ still only flips `Claim.status` to `IN_REVIEW`; #179 advances it through real states |
-| Ops dashboard for filing queue | ⏳ [#181](https://github.com/k6-labs-hq/ArtistOS/issues/181) |
-| Postmark account approval status | ⏳ pending (Postmark policy review for new accounts; outbound to non-domain recipients sandboxed until cleared) |
+| Statement ingestion + parse | ✅ automated (POST /artists/{id}/statements/upload) |
+| Anomaly detection | ✅ automated, runs after every successful upload |
+| Claim drafting | ✅ automated, runs as part of detection |
+| Evidence packet (PDF) generation | ✅ automated, on demand via Preview button or at file-via-email time |
+| Dispute outbound (Postmark + per-payer regional office) | ✅ automated (operator clicks button) |
+| Inbound reply correlation | ✅ automated (Postmark inbound webhook → claim communications timeline) |
+| Status advance: PREPARED → FILED → IN_REVIEW | ✅ automated by the file/reply events |
+| Remittance recording | ✅ operator-triggered (button in /ops) |
+| Trolley payout to artist | ✅ wired but operator-triggered (not auto-fired post-remittance, by design — sanity check before money moves) |
+| Per-payer language polish | ⏳ pending attorney review of the four briefs in `docs/runbooks/*-dispute-attorney-brief.md` |
+| LPOA template | ⏳ Matt's attorney drafts |
+| Render BMI required identifiers on packet PDF (account #, Work ID, distribution period) | ⏳ data captured at ingestion; PDF rendering pending |
+| 9-month BMI deadline calculator (instead of generic SOL) | ⏳ pending |
 
-So the **email pipe** is wired and verified end-to-end on QA. What's left
-is the **per-payer playbook content** (what the dispute email actually says,
-which payer accepts which attachments, how we render the evidence packet to
-PDF, how we correlate replies back to specific Claims). That's #179 work and
-ships next.
+---
 
-Until #179 lands, the operator follows the steps below.
+## 2. Daily flow at `/ops`
 
-## What the system has already done before you start
+### 2.1 Sign in
+- Browse to `https://app.qa.xr7.k6-labs.com/login` (or `localhost:5173/login` for dev).
+- Sign in with an admin email — `XR7_ADMIN_USER_EMAILS` env var on the API host controls the allowlist; today it's `jtrent@k6-labs.com,mkallberg@k6-labs.com`.
+- Admin sign-ins skip artist auto-provisioning and route directly to `/ops`.
 
-For each artist with at least one statement uploaded:
+### 2.2 Load the queue
+- Click **Load queue**. The dashboard shows all claims across all artists, grouped into tabs:
+  - **Ready to file** — `PREPARED` status, evidence packet attached, awaiting filing
+  - **Filed (awaiting reply)** — `FILED`, no inbound yet
+  - **In review** — `IN_REVIEW`, payer has replied
+  - **All** — everything
+- Each row shows artist name, payer, anomaly subtype, estimated recoverable, SOL countdown, status, claim reference (`XR7-YYYY-XXXXXX`).
 
-- Events + payments persisted (`events`, `payments` tables)
-- Anomalies detected, gated by confidence, persisted (`anomalies` table) — once
-  [#196](https://github.com/k6-labs-hq/ArtistOS/pull/196) is in
-- A draft `Claim` row in state `IDENTIFIED` (the `ClaimsOrchestrator` auto-drafts
-  the first one on upload)
-- A signed evidence packet attached to the claim
+### 2.3 Preview the packet
+- **Preview** button per row → opens the rendered evidence packet PDF in a new tab.
+- The PDF includes destination office (e.g. "BMI — Nashville Office, 10 Music Square East..."), audit determination, supporting evidence, line-item detail, and a SHA-256 cryptographic signature.
 
-## Operator steps (per artist, weekly cadence)
+### 2.4 File via email
+- **File via email** button per row in `Ready to file`.
+- Click → confirm dialog → POST to `/admin/claims/{id}/file-via-email`.
+- The system: renders the evidence PDF, looks up the right regional office (BMI: from `Artist.bmi_office_name`, default Nashville), composes the email (HTML + plaintext), sends via Postmark, stores the outbound MessageID on the Claim's `communications` array, advances status to `FILED`.
+- **Test mode:** when `XR7_DISPUTE_REDIRECT_EMAIL` is set on the API host, every send is rerouted to that test address. Subject is prefixed `[XR7 INTERNAL REVIEW]`. Use this until the attorney signs off on the language. Today it's set on local dev (`jtrent@k6-labs.com`); QA will be set when ready for the first real attorney walkthrough.
+- Stub mode: if `POSTMARK_API_TOKEN` isn't set, the result panel shows `(stub — POSTMARK_API_TOKEN not set)` and no email is actually sent. Default for local without copying the token in.
 
-### 1. Find what's ready to file
+### 2.5 Watch for replies
+- Click the chevron on any row to expand the comms timeline. Outbound entries show MessageID + submission address. Inbound replies (when BMI responds) show From / Subject / body excerpt — Postmark's inbound webhook correlates them by `InReplyTo` header pointing at our outbound MessageID.
+- Status auto-advances `FILED` → `IN_REVIEW` on first inbound.
 
-Until the dashboard ships, query the DB directly:
+### 2.6 Record remittance
+- When the bank statement shows a wire / check from the payer, click **Record remittance** on the claim row.
+- Inline form: gross amount, method (ACH / wire / check / other), reference number.
+- Submit → POST to `/admin/claims/{id}/record-remittance`.
+- The system: validates `gross_amount > 0`, computes platform fee (12% Founders rate) + artist net, sets `recovered_amount` + `remittance_*` fields, advances status to `FUNDS_RECEIVED`, writes a `TrolleyTransaction` row (type=REMITTANCE), appends to the immutable ledger.
+- Trolley disbursement to the artist is **a separate manual step** — sanity-check the amount before money actually moves. Use `BillingEngine.disburse_via_trolley(claim_id)` (no UI button yet).
 
-```sql
-SELECT c.id, c.artist_id, a.name, c.payer_name, c.amount,
-       c.sol_deadline, c.status, c.created_at
-FROM claims c JOIN artists a ON a.id = c.artist_id
-WHERE c.status = 'IDENTIFIED'
-ORDER BY c.sol_deadline NULLS LAST, c.created_at;
-```
+---
 
-Prioritise by `sol_deadline` ascending — anything within 60 days of statute is
-urgent.
+## 3. Per-payer specifics
 
-### 2. Pull the evidence packet
-
-```bash
-curl -H "Authorization: Bearer $XR7_TOKEN" \
-  https://api.qa.xr7.k6-labs.com/artists/$ARTIST/claims/$CLAIM/evidence-packet \
-  -o packet-$CLAIM.json
-```
-
-The packet is JSON with the signed forensic record. PDF rendering is not
-automated yet — paste the relevant sections into the dispute email manually,
-or convert with `pandoc` if the payer accepts markdown attachments.
-
-### 3. Open the dispute with the payer
-
-Each payer has a different process. Keep the per-payer details in your own
-notes until the `PayerPlaybook` model lands (part of #176):
-
-| Payer | Channel | Submission point | Notes |
+| Payer | Channel | Submission target | Notes |
 |---|---|---|---|
-| BMI | Email | `disputes@bmi.com` | Include BMI work IDs; 30-day ack, 90-day decision |
-| ASCAP | Portal + email | Member portal "Inquiry" form | Attach evidence packet PDF |
-| MLC | Portal | TheMLC.com member portal | Use their dispute form; reference the song-code (`M####H`) |
-| SoundExchange | Portal | soundexchange.com `My SX Account` | Letter of representation may be required |
+| **BMI** | Email | Regional Writer/Publisher Relations office (Nashville default) | 6 offices in `payer_offices` table; per-artist preference via `Artist.bmi_office_name`. Email body cites paragraph 6(b)(iv) of the writer agreement (9-month claim window). See [bmi-dispute-attorney-brief.md](bmi-dispute-attorney-brief.md). |
+| **ASCAP** | Portal-only (Member Access Messages) | N/A — not yet supported | Attorney brief flags portal-handoff or Designated User as the path. See [ascap-dispute-attorney-brief.md](ascap-dispute-attorney-brief.md). Filing pipeline doesn't support ASCAP claims yet. |
+| **MLC** | Email (`finance@themlc.com`) or Statutory audit | Not yet seeded | Attorney brief covers contractual basis. See [mlc-dispute-attorney-brief.md](mlc-dispute-attorney-brief.md). No regional offices — single team. |
+| **SoundExchange** | SXDirect Contact form (authenticated) or `info@soundexchange.com` | Not yet seeded | Three payee classes (Featured Artist / SRCO / non-featured). LOD ≠ dispute authority. See [soundexchange-dispute-attorney-brief.md](soundexchange-dispute-attorney-brief.md). |
 
-For email channels: today, still send from your personal/ops mailbox. The
-Postmark outbound infrastructure is live (#219), but `dispute_delivery.py`
-hasn't been wired to call it yet — that's #179. **Don't manually compose
-dispute emails through Postmark either** — once #179 lands, every dispute
-needs to flow through the system to capture the outbound MessageID for
-reply correlation. Mixing manual + automated sends breaks the audit chain.
+---
 
-### 4. Mark the claim as filed in XR7
+## 4. Data retention & dedup notes (operator-relevant)
 
-After you send, record the case reference returned by the payer:
+These apply at upload time but operators should know about them when an artist asks "what happens if I upload the same file twice?":
 
-```bash
-curl -X POST -H "Authorization: Bearer $XR7_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"payer_case_reference":"BMI-DR-12345","filed_at":"2026-04-27T15:00:00Z"}' \
-  https://api.qa.xr7.k6-labs.com/artists/$ARTIST/claims/$CLAIM/mark-filed
-```
+- **Same file uploaded twice** → 409 with the existing statement ID (file_hash dedup).
+- **Different file with overlapping rows** → only the new rows are persisted (row-level reference_id dedup).
+- **Re-running detection on existing data** → existing anomalies get updated, no duplicates created (anomaly-level deterministic ID).
+- **Restated statement (BMI sends a corrected Q3)** → both old and new payments coexist in the database. Period totals double. **Operator should manually flag this** until the restatement-detection feature ships. Reference: [data_retention_privacy_compliance.md §3.4](../data_retention_privacy_compliance.md).
 
-(If that endpoint isn't wired yet, drop into the DB and update
-`claims.status = 'FILED'`, `claims.payer_case_reference = '...'`,
-`claims.proof_submitted_at = now()`.)
+Original statement files are saved in S3-compatible storage (MinIO today) for 7 years to support reprocessing under updated parsers and audit defensibility. ADR: [statement-storage-and-retention.md](../decisions/statement-storage-and-retention.md). **Implementation is pending** — at the time of this update, the upload pipeline still hashes and parses but doesn't write the original bytes. To be wired next.
 
-### 5. Track the response
+---
 
-Until the dashboard ships, keep a spreadsheet keyed by `claim_id` with:
-- Filed date
-- Payer case reference
-- Expected acknowledgment date (filed + payer SLA)
-- Expected decision date
-- Status of last inbound communication
+## 5. Things to escalate (don't handle alone)
 
-Re-check weekly. If a payer goes past their stated decision SLA, escalate per
-their portal's rules — there's no automated nudge today.
+- A payer disputes the underlying anomaly methodology — engineering sign-off before responding.
+- A claim approaches `sol_deadline - 30d` with no acknowledgment — legal review to decide whether to escalate. **For BMI specifically, the 9-month claim window is much shorter than SOL — bring forward to attorney earlier.**
+- A remittance amount differs materially from the claimed amount — open a follow-up with the payer to itemize, then either accept-and-close or escalate to attorney.
+- A payer responds with a refusal that cites contractual language — pause filing further claims against that payer until the attorney has reviewed the refusal language.
 
-### 6. Record the remittance when it arrives
+---
 
-When the bank statement shows the wire/check from the payer:
+## 6. Linked work
 
-```bash
-curl -X POST -H "Authorization: Bearer $XR7_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"amount":1234.56,"currency":"USD","received_at":"2026-05-15T00:00:00Z","reference":"BMI wire 0428"}' \
-  https://api.qa.xr7.k6-labs.com/artists/$ARTIST/claims/$CLAIM/manual-remittance
-```
-
-This is the one part of the loop that's already wired end-to-end:
-`record_manual_remittance` triggers `BillingEngine` (12% Founders fee) and
-queues the Trolley disbursement to the artist. The audit ledger logs every
-state transition.
-
-## Things to escalate (don't try to handle alone)
-
-- A payer disputes the underlying anomaly methodology — engineering sign-off
-  before responding.
-- A claim approaches `sol_deadline - 30d` with no acknowledgment — legal review
-  to decide whether to escalate to outside counsel (`attorney_escalation.py`
-  has hardcoded firm names; treat them as placeholders).
-- A remittance amount differs materially from the claimed amount — open an issue
-  on the recovery loop EPIC #176 with the discrepancy.
-
-## Linked work
-
-- Parent epic: [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176) —
-  replace simulated claim filing with real per-payer execution
-- Ops dashboard: [#181](https://github.com/k6-labs-hq/ArtistOS/issues/181)
-- SMTP delivery: [#178](https://github.com/k6-labs-hq/ArtistOS/issues/178) —
-  infrastructure wired by #219; per-payer wiring of `dispute_delivery.py` is #179
-- Per-payer playbook framework: [#179](https://github.com/k6-labs-hq/ArtistOS/issues/179) — **the next major PR; closes most of this runbook**
-- Email provider provisioning: [#180](https://github.com/k6-labs-hq/ArtistOS/issues/180) — **closed by #219 + #220 on 2026-04-30**
-- Postmark setup runbook: [docs/runbooks/postmark-setup.md](postmark-setup.md)
+- [Statement storage + retention ADR](../decisions/statement-storage-and-retention.md)
+- [Data retention & privacy compliance](../data_retention_privacy_compliance.md)
+- [Postmark setup runbook](postmark-setup.md)
+- [BMI / MLC / ASCAP / SoundExchange attorney briefs](.) (in this directory)
+- [Strategic 30-day plan](../strategy/next-30-days.md)
+- Parent epic: [#176](https://github.com/k6-labs-hq/ArtistOS/issues/176) (now substantially complete; remaining items live in the attorney briefs)
+- Operator dashboard: [#181](https://github.com/k6-labs-hq/ArtistOS/issues/181) (closed by #230 / #232 / #233 / #234 / #243)
