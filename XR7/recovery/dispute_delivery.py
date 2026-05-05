@@ -64,11 +64,13 @@ def _render_email_body(
     redirected: bool = False,
     intended_recipient: str | None = None,
     redirect_recipient: str | None = None,
-) -> str:
-    """Render the dispute email body from the Jinja template."""
-    confidence = anomaly.get("confidence_score")
-    confidence_pct = f"{int(round(float(confidence) * 100))}" if confidence is not None else None
+) -> tuple[str, str]:
+    """Render both plain-text and HTML bodies for the dispute email.
 
+    Returns (text_body, html_body). Postmark prefers when both are
+    supplied — clients with HTML rendering see the rich version; clients
+    that prefer or only support plain text get the flowing-prose version.
+    """
     # Compose the salutation. If we have a regional office, address the team
     # by office name (e.g. "BMI Writer/Publisher Relations Team — Nashville
     # Office") rather than the generic salutation in payer_config. The
@@ -103,26 +105,30 @@ def _render_email_body(
         datetime.now(timezone.utc) + timedelta(days=payer.sla_acknowledge_days)
     ).strftime("%Y-%m-%d")
 
-    template = _jinja_env.get_template("dispute_email.txt")
-    return template.render(
-        salutation=salutation,
-        artist_name=artist.get("name") or "(artist name not on file)",
-        artist_pro_id=artist.get("pro_id_for_payer"),
-        payer_id=payer.canonical_id,
-        payer_display_name=payer.display_name,
-        contractual_citation=contractual_citation,
-        finding_subtype=anomaly.get("subtype") or anomaly.get("rule_id") or "Royalty audit finding",
-        finding_description=anomaly.get("description")
-        or "See attached evidence packet for the full audit determination.",
-        estimated_recoverable=anomaly.get("estimated_recoverable"),
-        confidence_pct=confidence_pct,
-        response_requested_by=response_requested_by,
-        claim_id=claim.get("id") or "(unset)",
-        filing_date=datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-        redirected=redirected,
-        intended_recipient=intended_recipient or "",
-        redirect_recipient=redirect_recipient or "",
-    )
+    # Common context for both renders. Confidence percentage is intentionally
+    # omitted — surfacing a "78% confidence" number to the recipient reads as
+    # spammy / algorithmic and undermines the audit framing per Matt's review.
+    ctx = {
+        "salutation": salutation,
+        "artist_name": artist.get("name") or "(artist name not on file)",
+        "artist_pro_id": artist.get("pro_id_for_payer"),
+        "payer_id": payer.canonical_id,
+        "payer_display_name": payer.display_name,
+        "contractual_citation": contractual_citation,
+        "finding_description": anomaly.get("description")
+        or "an audit finding affecting recent royalty distributions to this writer.",
+        "estimated_recoverable": anomaly.get("estimated_recoverable"),
+        "response_requested_by": response_requested_by,
+        "claim_id": claim.get("id") or "(unset)",
+        "filing_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "redirected": redirected,
+        "intended_recipient": intended_recipient or "",
+        "redirect_recipient": redirect_recipient or "",
+    }
+
+    text_body = _jinja_env.get_template("dispute_email.txt").render(**ctx)
+    html_body = _jinja_env.get_template("dispute_email.html").render(**ctx)
+    return text_body, html_body
 
 
 def deliver_dispute(
@@ -230,7 +236,7 @@ def deliver_dispute(
         )
         submission_email = redirect_email
 
-    body = _render_email_body(
+    text_body, html_body = _render_email_body(
         payer=payer,
         claim=claim,
         artist=artist,
@@ -270,7 +276,8 @@ def deliver_dispute(
     result = client.send_email(
         to=submission_email,
         subject=subject,
-        text_body=body,
+        text_body=text_body,
+        html_body=html_body,
         from_email=settings.POSTMARK_DISPUTES_FROM_EMAIL,
         reply_to=settings.POSTMARK_DISPUTES_FROM_EMAIL,
         tag=f"dispute-{payer.canonical_id.lower()}",
