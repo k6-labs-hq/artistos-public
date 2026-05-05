@@ -1,4 +1,5 @@
 import enum
+import secrets
 import uuid
 from datetime import datetime, timezone
 from typing import Any
@@ -19,6 +20,23 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
 from XR7.validators.currency import ISO_4217_CODES
+
+
+def _generate_claim_reference() -> str:
+    """Human-readable claim reference: ``XR7-YYYY-XXXXXX``.
+
+    Year for at-a-glance recency + 6 random uppercase hex chars (~16M
+    values per year) for uniqueness without revealing volume. This is
+    what BMI / the artist / the operator dashboard quote when
+    referencing a specific filing — the UUID stays as the internal
+    primary key.
+
+    Collision probability at 1k claims/year: ~0.00003%. We rely on
+    application-side retry on the unique constraint if the
+    astronomically unlikely happens.
+    """
+    return f"XR7-{datetime.now(timezone.utc).year}-{secrets.token_hex(3).upper()}"
+
 
 # ISO 4217 currency codes supported by Trolley for international payouts
 # Ref: https://docs.trolley.com/api/#supported-currencies
@@ -91,6 +109,12 @@ class Claim(Base):
     )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    # Human-readable reference for emails, PDFs, and the operator
+    # dashboard. Format: XR7-YYYY-XXXXXX. See _generate_claim_reference.
+    # Unique across the whole table; nullable for backfill compatibility.
+    reference_number: Mapped[str | None] = mapped_column(
+        String, unique=True, nullable=True, default=_generate_claim_reference
+    )
     artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False)
     anomaly_id: Mapped[str] = mapped_column(String, ForeignKey("anomalies.id"), nullable=False)
     claim_type: Mapped[str] = mapped_column(String, nullable=False)
@@ -148,6 +172,7 @@ class ClaimSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
+    reference_number: str | None = None
     artist_id: str
     anomaly_id: str
     claim_type: str

@@ -944,6 +944,7 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
     pdf_bytes = render_evidence_packet_pdf(
         claim={
             "id": claim.id,
+            "reference_number": claim.reference_number,
             "payer_name": claim.payer_name,
             "sol_deadline": (claim.sol_deadline.isoformat() if claim.sol_deadline else None),
         },
@@ -970,7 +971,11 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
     )
 
     result = deliver_dispute(
-        claim={"id": claim.id, "payer_name": claim.payer_name},
+        claim={
+            "id": claim.id,
+            "reference_number": claim.reference_number,
+            "payer_name": claim.payer_name,
+        },
         artist={"id": artist.id, "name": artist.name},
         anomaly={
             "subtype": str(anomaly.subtype) if anomaly.subtype else None,
@@ -1066,6 +1071,7 @@ def admin_claims_queue(
         rows.append(
             {
                 "claim_id": c.id,
+                "reference_number": c.reference_number,
                 "artist_id": c.artist_id,
                 "artist_name": artist.name if artist else None,
                 "payer_name": c.payer_name,
@@ -1236,6 +1242,7 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
     pdf_bytes = render_evidence_packet_pdf(
         claim={
             "id": claim.id,
+            "reference_number": getattr(claim, "reference_number", None),
             "payer_name": getattr(claim, "payer_name", None),
             "sol_deadline": (
                 claim.sol_deadline.isoformat() if getattr(claim, "sol_deadline", None) else None

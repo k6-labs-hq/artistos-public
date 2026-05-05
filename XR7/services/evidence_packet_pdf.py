@@ -217,7 +217,7 @@ def render_evidence_packet_pdf(
     # crash the render. Missing values resolve to None and the template's
     # `is not none` checks short-circuit cleanly. Without this, a missing
     # field triggers UndefinedError downstream of the `|float` filter.
-    _claim_keys = {"id", "payer_name", "sol_deadline", "amount"}
+    _claim_keys = {"id", "reference_number", "payer_name", "sol_deadline", "amount"}
     _anomaly_keys = {
         "id",
         "subtype",

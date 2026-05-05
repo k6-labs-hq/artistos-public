@@ -21,7 +21,7 @@ on behalf of {{ artist_name }}
 K6 Labs, Inc.
 
 —
-Reference: claim {{ claim_id }}
+Reference: {{ claim_reference }}
 Filing date: {{ filing_date }}{% if redirected %}
 
 [INTERNAL REVIEW MODE] This message was redirected to {{ redirect_recipient }}; the intended recipient was {{ intended_recipient }}. Unset XR7_DISPUTE_REDIRECT_EMAIL to fly real disputes.{% endif %}

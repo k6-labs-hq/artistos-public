@@ -108,6 +108,12 @@ def _render_email_body(
     # Common context for both renders. Confidence percentage is intentionally
     # omitted — surfacing a "78% confidence" number to the recipient reads as
     # spammy / algorithmic and undermines the audit framing per Matt's review.
+    #
+    # Human-facing reference is `reference_number` (XR7-2026-ABCDEF); the
+    # UUID stays internal for metadata + attachment naming. Falls back to
+    # the UUID for back-compat if a caller passes a claim dict without a
+    # reference_number set.
+    claim_reference = claim.get("reference_number") or claim.get("id") or "(unset)"
     ctx = {
         "salutation": salutation,
         "artist_name": artist.get("name") or "(artist name not on file)",
@@ -119,7 +125,10 @@ def _render_email_body(
         or "an audit finding affecting recent royalty distributions to this writer.",
         "estimated_recoverable": anomaly.get("estimated_recoverable"),
         "response_requested_by": response_requested_by,
-        "claim_id": claim.get("id") or "(unset)",
+        "claim_reference": claim_reference,
+        # Kept for back-compat with templates that still reference {{ claim_id }};
+        # new templates should use {{ claim_reference }}.
+        "claim_id": claim_reference,
         "filing_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         "redirected": redirected,
         "intended_recipient": intended_recipient or "",
@@ -247,8 +256,10 @@ def deliver_dispute(
         redirect_recipient=redirect_email if redirected else None,
     )
 
+    claim_reference = claim.get("reference_number") or claim.get("id") or ""
     metadata: dict[str, str] = {
         "claim_id": str(claim.get("id") or ""),
+        "claim_reference": claim_reference,
         "artist_id": str(artist.get("id") or ""),
         "payer_id": payer.canonical_id,
         "intended_recipient": intended_recipient,
@@ -260,7 +271,7 @@ def deliver_dispute(
                 metadata[k] = str(v)
 
     attachment = PostmarkAttachment(
-        name=f"xr7-evidence-{claim.get('id') or 'packet'}.pdf",
+        name=f"xr7-evidence-{claim_reference or 'packet'}.pdf",
         content=pdf_bytes,
         content_type="application/pdf",
     )
@@ -269,7 +280,7 @@ def deliver_dispute(
     subject = (
         f"{subject_prefix}Royalty audit finding for "
         f"{artist.get('name') or 'XR7-represented artist'} — "
-        f"claim {claim.get('id') or '(pending)'}"
+        f"{claim_reference or '(pending)'}"
     )
 
     client = get_postmark_client()

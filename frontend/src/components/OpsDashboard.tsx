@@ -27,6 +27,7 @@ type Communication = {
 
 type ClaimRow = {
   claim_id: string;
+  reference_number: string | null;
   artist_id: string;
   artist_name: string | null;
   payer_name: string | null;
@@ -97,9 +98,11 @@ export function OpsDashboard() {
     reference_number: "",
   });
   const [submittingRemittance, setSubmittingRemittance] = useState(false);
-  const [lastResult, setLastResult] = useState<{ claim_id: string; result: FilingResult } | null>(
-    null,
-  );
+  const [lastResult, setLastResult] = useState<{
+    claim_id: string;
+    reference: string;
+    result: FilingResult;
+  } | null>(null);
 
   useEffect(() => {
     const saved = window.localStorage.getItem(STORAGE_ADMIN_KEY);
@@ -250,12 +253,12 @@ export function OpsDashboard() {
     }
   };
 
-  const fileClaim = async (claimId: string) => {
+  const fileClaim = async (claimId: string, reference: string) => {
     if (!isAuthed) {
       setError("Admin auth required — sign in or paste an admin key.");
       return;
     }
-    if (!window.confirm(`File claim ${claimId} via email? This sends a real dispute to the payer.`)) {
+    if (!window.confirm(`File ${reference} via email? This sends a real dispute to the payer.`)) {
       return;
     }
     setFilingClaimId(claimId);
@@ -267,7 +270,7 @@ export function OpsDashboard() {
         headers,
       });
       const result = (await res.json()) as FilingResult;
-      setLastResult({ claim_id: claimId, result });
+      setLastResult({ claim_id: claimId, reference, result });
       if (!res.ok || !result.success) {
         setError(result.error || `Filing failed (${res.status}).`);
       } else {
@@ -425,7 +428,7 @@ export function OpsDashboard() {
                           </td>
                           <td style={styles.td}>
                             <strong>{r.artist_name || r.artist_id}</strong>
-                            <div style={styles.subtle}>{r.claim_id}</div>
+                            <div style={styles.subtle}>{r.reference_number || r.claim_id}</div>
                           </td>
                           <td style={styles.td}>{r.payer_name || "—"}</td>
                           <td style={styles.td}>{r.anomaly_subtype || "—"}</td>
@@ -456,7 +459,7 @@ export function OpsDashboard() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => fileClaim(r.claim_id)}
+                                onClick={() => fileClaim(r.claim_id, r.reference_number || r.claim_id)}
                                 disabled={!canFile || filingClaimId === r.claim_id}
                                 style={{
                                   ...styles.button,
@@ -533,7 +536,7 @@ export function OpsDashboard() {
                 }}
               >
                 <strong>
-                  {lastResult.result.success ? "Filed" : "Failed"}: {lastResult.claim_id}
+                  {lastResult.result.success ? "Filed" : "Failed"}: {lastResult.reference}
                 </strong>
                 {lastResult.result.message_id ? (
                   <div style={styles.subtle}>MessageID: {lastResult.result.message_id}</div>
