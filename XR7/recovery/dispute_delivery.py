@@ -121,8 +121,9 @@ def _render_email_body(
         "payer_id": payer.canonical_id,
         "payer_display_name": payer.display_name,
         "contractual_citation": contractual_citation,
+        "finding_subtype": anomaly.get("subtype") or anomaly.get("rule_id") or "Royalty audit finding",
         "finding_description": anomaly.get("description")
-        or "an audit finding affecting recent royalty distributions to this writer.",
+        or "See attached evidence packet for the full audit determination.",
         "estimated_recoverable": anomaly.get("estimated_recoverable"),
         "response_requested_by": response_requested_by,
         "claim_reference": claim_reference,
@@ -137,6 +138,7 @@ def _render_email_body(
 
     text_body = _jinja_env.get_template("dispute_email.txt").render(**ctx)
     html_body = _jinja_env.get_template("dispute_email.html").render(**ctx)
+    
     return text_body, html_body
 
 

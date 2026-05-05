@@ -1,27 +1,46 @@
 {{ salutation }}
 
-I am writing on behalf of {{ artist_name }}{% if artist_pro_id %} ({{ payer_id }} #{{ artist_pro_id }}){% endif %} to formally submit a royalty audit finding for your review and to request adjustment of the affected distribution(s).
+RE: ROYALTY UNDERPAYMENT CLAIM — {{ artist_name }}{% if artist_pro_id %} (Account #{{ artist_pro_id }}){% endif %}
+Claim Reference: {{ claim_id }}
 
-{{ artist_name }} has authorised XR7 (a service of K6 Labs, Inc.) under a signed Limited Power of Attorney to submit royalty audit findings on their behalf and to receive correspondence in response. A copy of the LPOA is available on request.
+This letter formally notifies you of a royalty underpayment identified through forensic audit of {{ payer_id }} statements for {{ artist_name }}. XR7, acting under signed Limited Power of Attorney, submits this claim on behalf of the artist and is authorized to receive all correspondence regarding this matter.
 
 {% if contractual_citation %}{{ contractual_citation }}
 
-{% endif %}Our audit identified {{ finding_description }}{% if estimated_recoverable %} The estimated recoverable amount is approximately ${{ "%.2f"|format(estimated_recoverable|float) }}.{% endif %}
+{% endif %}UNDERPAYMENT DETERMINATION
 
-The full evidence packet is attached as a PDF. It includes the destination office on the cover page, the audit determination and methodology, supporting evidence, line-item detail of the underlying payment records, and a SHA-256 cryptographic signature of the packet contents.
+Type: {{ finding_subtype }}
+{%- if estimated_recoverable %}
+Amount Due: ${{ "%.2f"|format(estimated_recoverable|float) }}
+{%- endif %}
 
-We respectfully request a response by {{ response_requested_by }}. We understand response times can vary; this date is provided as our internal escalation reference and is not asserted as your published commitment.
+{{ finding_description }}
 
-If you have questions about the audit methodology, the underlying source data, or require additional documentation, please reply to this email — replies are routed to our claims-management system and will be associated with this filing automatically.
+SUPPORTING DOCUMENTATION
 
-Sincerely,
+The attached evidence packet provides complete substantiation of this claim:
+
+  ✓ Cryptographically signed audit report (SHA-256)
+  ✓ Line-item transaction detail from your statements
+  ✓ Payment comparison analysis
+  ✓ Contractual rate validation
+  ✓ Source data verification
+
+Each element of this claim is traceable to payment records issued under your authority. The cryptographic signature ensures the integrity and authenticity of all supporting materials.
+
+RESOLUTION TIMELINE
+
+Required Response Date: {{ response_requested_by }}
+
+Please remit payment or provide written explanation of any disputed amounts by the date specified above. Failure to respond will necessitate escalation in accordance with standard audit resolution procedures.
+
+Questions regarding methodology, source data, or documentation should be directed to this email address. All correspondence is automatically tracked within our claims management system (Reference: {{ claim_id }}).
 
 XR7 Recovery Operations
-on behalf of {{ artist_name }}
+Authorized Representative for {{ artist_name }}
 K6 Labs, Inc.
 
-—
-Reference: {{ claim_reference }}
-Filing date: {{ filing_date }}{% if redirected %}
-
-[INTERNAL REVIEW MODE] This message was redirected to {{ redirect_recipient }}; the intended recipient was {{ intended_recipient }}. Unset XR7_DISPUTE_REDIRECT_EMAIL to fly real disputes.{% endif %}
+Filing Date: {{ filing_date }}
+{% if redirected %}
+[INTERNAL REVIEW MODE] Redirected to {{ redirect_recipient }}; intended recipient was {{ intended_recipient }}. Unset XR7_DISPUTE_REDIRECT_EMAIL for production.
+{% endif %}

@@ -1,78 +1,291 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Royalty audit finding — {{ claim_reference }}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royalty Underpayment Claim — {{ artist_name }}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .email-container {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .header {
+            border-bottom: 3px solid #2c5282;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .subject-line {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #718096;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .claim-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+            margin: 0;
+        }
+        .claim-reference {
+            font-size: 13px;
+            color: #718096;
+            margin-top: 4px;
+        }
+        .salutation {
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: #2d3748;
+            letter-spacing: 0.3px;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 6px;
+        }
+        .citation-block {
+            background-color: #f7fafc;
+            border-left: 4px solid #4a5568;
+            padding: 16px 20px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #2d3748;
+        }
+        .amount-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+        .amount-table th {
+            background-color: #2c5282;
+            color: #ffffff;
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .amount-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        .amount-table tr:last-child td {
+            border-bottom: none;
+        }
+        .amount-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2c5282;
+        }
+        .description {
+            background-color: #f7fafc;
+            padding: 16px 20px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.7;
+            color: #2d3748;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+        .checklist li {
+            padding: 10px 0;
+            font-size: 14px;
+            color: #2d3748;
+            display: flex;
+            align-items: flex-start;
+        }
+        .checklist li:before {
+            content: "✓";
+            color: #48bb78;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 12px;
+            min-width: 20px;
+        }
+        .signature-block {
+            color: #48bb78;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+        .deadline-box {
+            background-color: #fff5f5;
+            border: 2px solid #fc8181;
+            border-radius: 4px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .deadline-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #c53030;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+        .deadline-date {
+            font-size: 18px;
+            font-weight: 700;
+            color: #742a2a;
+        }
+        .signature {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+        }
+        .signature-line {
+            font-size: 14px;
+            color: #2d3748;
+            margin: 4px 0;
+        }
+        .signature-org {
+            font-weight: 600;
+            color: #1a202c;
+        }
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #718096;
+        }
+        .footer-line {
+            margin: 6px 0;
+        }
+        .redirect-notice {
+            background-color: #fffaf0;
+            border: 2px solid #dd6b20;
+            border-radius: 4px;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #7c2d12;
+        }
+        @media only screen and (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .email-container {
+                padding: 24px;
+            }
+            .claim-title {
+                font-size: 16px;
+            }
+            .amount-value {
+                font-size: 18px;
+            }
+        }
+    </style>
 </head>
-<body style="margin:0; padding:0; background-color:#f5f5f7; font-family: 'Helvetica Neue', Arial, sans-serif; color:#1a1a1a;">
-<table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#f5f5f7;">
-  <tr>
-    <td align="center" style="padding:24px 12px;">
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width:640px; background-color:#ffffff; border-radius:6px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-        <tr>
-          <td style="padding:28px 32px 8px 32px;">
-            {% if redirected %}
-            <div style="margin-bottom:18px; padding:10px 14px; background-color:#fff8e0; border:1px solid #f0d878; border-radius:4px; font-size:13px; color:#5a4a14;">
-              <strong>Internal review mode.</strong> This message was redirected to {{ redirect_recipient }}; the intended recipient was {{ intended_recipient }}.
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="subject-line">RE: Royalty Underpayment Claim</div>
+            <h1 class="claim-title">{{ artist_name }}{% if artist_pro_id %} (Account #{{ artist_pro_id }}){% endif %}</h1>
+            <div class="claim-reference">Claim Reference: {{ claim_id }}</div>
+        </div>
+
+        <div class="salutation">{{ salutation }}</div>
+
+        <p>This letter formally notifies you of a royalty underpayment identified through forensic audit of {{ payer_id }} statements for {{ artist_name }}. XR7, acting under signed Limited Power of Attorney, submits this claim on behalf of the artist and is authorized to receive all correspondence regarding this matter.</p>
+
+        {% if contractual_citation %}
+        <div class="citation-block">
+            {{ contractual_citation }}
+        </div>
+        {% endif %}
+
+        <div class="section">
+            <div class="section-title">Underpayment Determination</div>
+            
+            <table class="amount-table">
+                <tr>
+                    <th>Type</th>
+                    <td>{{ finding_subtype }}</td>
+                </tr>
+                {%- if estimated_recoverable %}
+                <tr>
+                    <th>Amount Due</th>
+                    <td class="amount-value">${{ "%.2f"|format(estimated_recoverable|float) }}</td>
+                </tr>
+                {%- endif %}
+            </table>
+
+            <div class="description">
+                {{ finding_description }}
             </div>
-            {% endif %}
-            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.5;">{{ salutation }}</p>
+        </div>
 
-            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.6;">
-              I am writing on behalf of <strong>{{ artist_name }}</strong>{% if artist_pro_id %} ({{ payer_id }} #{{ artist_pro_id }}){% endif %} to formally submit a royalty audit finding for your review and to request adjustment of the affected distribution(s).
-            </p>
-
-            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.6;">
-              {{ artist_name }} has authorised XR7 (a service of K6 Labs, Inc.) under a signed Limited Power of Attorney to submit royalty audit findings on their behalf and to receive correspondence in response. A copy of the LPOA is available on request.
-            </p>
-
-            {% if contractual_citation %}
-            <p style="margin:0 0 16px 0; padding:12px 16px; background-color:#f7f4fc; border-left:3px solid #6520BD; font-size:14px; line-height:1.55; color:#2a2a2a;">
-              {{ contractual_citation }}
-            </p>
-            {% endif %}
-
-            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.6;">
-              Our audit identified {{ finding_description }}{% if estimated_recoverable %} The estimated recoverable amount is approximately <strong>${{ "%.2f"|format(estimated_recoverable|float) }}</strong>.{% endif %}
-            </p>
-
-            <p style="margin:0 0 12px 0; font-size:15px; line-height:1.6;">
-              The full evidence packet is attached as a PDF. It includes:
-            </p>
-            <ul style="margin:0 0 16px 24px; padding:0; font-size:15px; line-height:1.6;">
-              <li>The destination office on the cover page</li>
-              <li>The audit determination and methodology</li>
-              <li>Aggregated supporting evidence</li>
-              <li>Line-item detail of the underlying payment records</li>
-              <li>A SHA-256 cryptographic signature of the packet contents</li>
+        <div class="section">
+            <div class="section-title">Supporting Documentation</div>
+            
+            <p>The attached evidence packet provides complete substantiation of this claim:</p>
+            
+            <ul class="checklist">
+                <li>Cryptographically signed audit report (SHA-256)</li>
+                <li>Line-item transaction detail from your statements</li>
+                <li>Payment comparison analysis</li>
+                <li>Contractual rate validation</li>
+                <li>Source data verification</li>
             </ul>
 
-            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.6;">
-              We respectfully request a response by <strong>{{ response_requested_by }}</strong>. We understand response times can vary; this date is provided as our internal escalation reference and is not asserted as your published commitment.
-            </p>
+            <p>Each element of this claim is traceable to payment records issued under your authority. The cryptographic signature ensures the integrity and authenticity of all supporting materials.</p>
+        </div>
 
-            <p style="margin:0 0 16px 0; font-size:15px; line-height:1.6;">
-              If you have questions about the audit methodology, the underlying source data, or require additional documentation, please reply to this email — replies are routed to our claims-management system and will be associated with this filing automatically.
-            </p>
+        <div class="section">
+            <div class="section-title">Resolution Timeline</div>
+            
+            <div class="deadline-box">
+                <div class="deadline-label">Required Response Date</div>
+                <div class="deadline-date">{{ response_requested_by }}</div>
+            </div>
 
-            <p style="margin:0 0 4px 0; font-size:15px; line-height:1.6;">Sincerely,</p>
-            <p style="margin:0 0 4px 0; font-size:15px; line-height:1.5;"><strong>XR7 Recovery Operations</strong></p>
-            <p style="margin:0 0 4px 0; font-size:14px; line-height:1.5; color:#555;">on behalf of {{ artist_name }}</p>
-            <p style="margin:0 0 24px 0; font-size:14px; line-height:1.5; color:#555;">K6 Labs, Inc.</p>
+            <p>Please remit payment or provide written explanation of any disputed amounts by the date specified above. Failure to respond will necessitate escalation in accordance with standard audit resolution procedures.</p>
 
-            <hr style="border:none; border-top:1px solid #e4e4e8; margin:0 0 14px 0;">
-            <p style="margin:0 0 4px 0; font-size:12px; line-height:1.5; color:#888;">
-              Reference: {{ claim_reference }}
-            </p>
-            <p style="margin:0 0 14px 0; font-size:12px; line-height:1.5; color:#888;">
-              Filing date: {{ filing_date }}
-            </p>
-          </td>
-        </tr>
-      </table>
-    </td>
-  </tr>
-</table>
+            <p>Questions regarding methodology, source data, or documentation should be directed to this email address. All correspondence is automatically tracked within our claims management system (Reference: {{ claim_id }}).</p>
+        </div>
+
+        <div class="signature">
+            <div class="signature-line signature-org">XR7 Recovery Operations</div>
+            <div class="signature-line">Authorized Representative for {{ artist_name }}</div>
+            <div class="signature-line">K6 Labs, Inc.</div>
+        </div>
+
+        <div class="footer">
+            <div class="footer-line"><strong>Filing Date:</strong> {{ filing_date }}</div>
+            <div class="footer-line"><strong>Claim Reference:</strong> {{ claim_id }}</div>
+        </div>
+
+        {% if redirected %}
+        <div class="redirect-notice">
+            <strong>[INTERNAL REVIEW MODE]</strong> Redirected to {{ redirect_recipient }}; intended recipient was {{ intended_recipient }}. Unset XR7_DISPUTE_REDIRECT_EMAIL for production.
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>
