@@ -1175,6 +1175,7 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
     line_items: list[dict] = []
     line_items_meta: dict = {}
     bmi_identifiers: dict = {}
+    payer_claim_deadline = None
     if anomaly is not None:
         snapshot = json.loads(anomaly.feature_snapshot or "{}")
         rule_id = snapshot.get("rule_id") or str(anomaly.subtype or "")
@@ -1197,9 +1198,9 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
             account_ids = sorted({p.payer_account_id for p in bmi_payments if p.payer_account_id})
             ip_numbers = sorted({p.payer_ip_number for p in bmi_payments if p.payer_ip_number})
             work_ids = sorted({p.payer_work_id for p in bmi_payments if p.payer_work_id})
-            periods = [p.period_start for p in bmi_payments if p.period_start] + [
-                p.period_end for p in bmi_payments if p.period_end
-            ]
+            period_starts = [p.period_start for p in bmi_payments if p.period_start]
+            period_ends = [p.period_end for p in bmi_payments if p.period_end]
+            periods = period_starts + period_ends
             bmi_identifiers = {
                 "participant_numbers": account_ids,
                 "ipi_numbers": ip_numbers,
@@ -1208,6 +1209,36 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
                 "period_end": max(periods).isoformat() if periods else None,
                 "payment_count": len(bmi_payments),
             }
+
+            # BMI-specific 9-month claim deadline per writer agreement
+            # paragraph 6(b)(iv). This supersedes the generic SOL on the
+            # cover for BMI claims — the contractual window is the binding
+            # rule and is much shorter than typical state SOLs.
+            from XR7.recovery.payer_config import (  # noqa: PLC0415
+                compute_payer_claim_deadline,
+            )
+
+            if period_ends:
+                # Earliest contractually-deadlining period — the one closest
+                # to the 9-month wall.
+                earliest_deadline = None
+                latest_period_end = max(period_ends)
+                for pe in sorted(period_ends):
+                    candidate = compute_payer_claim_deadline("BMI", pe)
+                    if candidate is None:
+                        continue
+                    if earliest_deadline is None or candidate < earliest_deadline:
+                        earliest_deadline = candidate
+                latest_deadline = compute_payer_claim_deadline("BMI", latest_period_end)
+                payer_claim_deadline = {
+                    "rule": "BMI writer agreement paragraph 6(b)(iv) — 9 months from each distribution date",
+                    "earliest_deadline": (
+                        earliest_deadline.isoformat() if earliest_deadline else None
+                    ),
+                    "latest_deadline": (
+                        latest_deadline.isoformat() if latest_deadline else None
+                    ),
+                }
 
         if rule_id == "HIGH_RETROACTIVE_RATIO":
             worst_payer = (snapshot.get("evidence") or {}).get("worst_payer")
@@ -1292,6 +1323,7 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
         line_items_meta=line_items_meta,
         payer_office=office_dict,
         payer_identifiers=bmi_identifiers or None,
+        payer_claim_deadline=payer_claim_deadline,
     )
     return pdf_bytes
 

@@ -156,11 +156,21 @@
     <dd>{{ claim.payer_name }}</dd>
     {% endif %}
 
-    {% if claim.sol_deadline %}
+    {% if payer_claim_deadline %}
+    <dt>Contractual Claim Deadline</dt>
+    <dd class="numeric">{{ payer_claim_deadline.earliest_deadline }}</dd>
+    {% elif claim.sol_deadline %}
     <dt>Statute of Limitations Deadline</dt>
     <dd class="numeric">{{ claim.sol_deadline }}</dd>
     {% endif %}
   </dl>
+
+  {% if payer_claim_deadline %}
+  <p class="muted small" style="margin-top: 4pt; font-size: 9pt;">
+    Per {{ payer_claim_deadline.rule }}. Earliest period in scope deadlines on
+    {{ payer_claim_deadline.earliest_deadline }}; latest on {{ payer_claim_deadline.latest_deadline }}.
+  </p>
+  {% endif %}
 
   {% if cover_page.sol_deadline_warning %}
   <div class="urgent {% if 'URGENT' in cover_page.sol_deadline_warning %}high{% endif %}">

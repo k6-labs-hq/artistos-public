@@ -127,6 +127,47 @@ def get_payer_config(payer_id: str | None) -> PayerConfig | None:
     return None
 
 
+def compute_payer_claim_deadline(
+    payer_id: str,
+    distribution_date,  # noqa: ANN001 — datetime.date or datetime.datetime
+):
+    """Return the contractual claim deadline for a single distribution date.
+
+    BMI: 9 months from the distribution date per writer agreement
+    paragraph 6(b)(iv) — the binding rule that supersedes the generic
+    SOL on the cover page. Other payers don't have a vetted contractual
+    deadline yet (ASCAP brief flags Article XIV, MLC has the statutory
+    audit right with different math, SoundExchange has its own framework
+    — pending attorney review of the four briefs in docs/runbooks/).
+
+    Returns None when no contractual deadline applies to this payer
+    (caller should fall back to the SOL deadline).
+    """
+    if not payer_id or not distribution_date:
+        return None
+    canonical = payer_id.strip().upper()
+    if canonical != "BMI":
+        # Other payers: defer until the attorney reviews the briefs.
+        return None
+    # Add 9 calendar months. Using simple month arithmetic (vs. a 270-day
+    # heuristic) so e.g. Q3 2025 (period_end 2025-09-30) → 2026-06-30 reads
+    # as a full quarter-aligned deadline.
+    from datetime import date as _date  # noqa: PLC0415
+
+    if hasattr(distribution_date, "date"):
+        d = distribution_date.date()
+    else:
+        d = distribution_date
+    year = d.year + (d.month + 9 - 1) // 12
+    month = (d.month + 9 - 1) % 12 + 1
+    # Clamp the day to the last day of the target month (e.g. Aug 31 + 9mo).
+    import calendar as _cal  # noqa: PLC0415
+
+    last_day = _cal.monthrange(year, month)[1]
+    day = min(d.day, last_day)
+    return _date(year, month, day)
+
+
 def get_payer_office(
     db,  # noqa: ANN001 — typing as Session would create a circular import in some test setups
     payer_id: str,
