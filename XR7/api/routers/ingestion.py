@@ -325,11 +325,11 @@ async def upload_statement(
     require_terms_accepted(artist_id, db)
 
     if not file.filename or not file.filename.lower().endswith(
-        (".csv", ".tsv", ".xlsx", ".numbers")
+        (".csv", ".tsv", ".xlsx", ".numbers", ".pdf")
     ):
         raise HTTPException(
             status_code=400,
-            detail="Only CSV/TSV/XLSX/Numbers files are accepted.  "
+            detail="Only CSV/TSV/XLSX/Numbers/PDF files are accepted.  "
             "Export your statement from your distributor or PRO portal.",
         )
 
@@ -424,22 +424,47 @@ async def upload_statement(
         if (file.filename or "").lower().endswith(".numbers")
         else (file.filename or "statement.csv")
     )
-    try:
-        result = parse_with_timeout(
-            parse_statement_file,
-            content,
-            artist_id,
-            filename=parse_filename,
+
+    # PDF route: BMI Royalty Statement PDFs go through the dedicated
+    # bmi_pdf parser. Other PDFs aren't currently supported.
+    if (file.filename or "").lower().endswith(".pdf"):
+        from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
+            bmi_pdf_to_events_and_payments,
+            is_bmi_pdf,
         )
-    except StatementParseTimeoutError as timeout_err:
-        raise HTTPException(
-            status_code=422,
-            detail=(
-                f"Statement parsing timed out after {timeout_err.timeout_seconds} seconds. "
-                "The file may be malformed or too complex to process. "
-                "Please check the file format and try uploading a smaller date range."
-            ),
+        from XR7.ingestion.statement_parser import ParseResult  # noqa: PLC0415
+
+        if not is_bmi_pdf(original_content):
+            raise HTTPException(
+                status_code=422,
+                detail="Only BMI Royalty Statement PDFs are supported today.",
+            )
+        events, payments, errors = bmi_pdf_to_events_and_payments(original_content, artist_id)
+        result = ParseResult(
+            events=events,
+            payments=payments,
+            errors=errors,
+            row_count=len(events),
+            skipped_rows=0,
+            format_detected="bmi_pdf",
         )
+    else:
+        try:
+            result = parse_with_timeout(
+                parse_statement_file,
+                content,
+                artist_id,
+                filename=parse_filename,
+            )
+        except StatementParseTimeoutError as timeout_err:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Statement parsing timed out after {timeout_err.timeout_seconds} seconds. "
+                    "The file may be malformed or too complex to process. "
+                    "Please check the file format and try uploading a smaller date range."
+                ),
+            ) from timeout_err
 
     statement_signals = extract_statement_signals(
         content, file.filename or "statement.csv", format_detected=result.format_detected
@@ -745,13 +770,30 @@ async def upload_statement_batch(
                 continue
 
             if filename.lower().endswith(".pdf"):
-                result = parse_csv(b"", artist_id)
-                result.events = []
-                result.payments = []
-                result.errors = [
-                    "PDF parsing deferred to OCR pipeline; metadata-only statement record created"
-                ]
-                result.format_detected = "pdf"
+                from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
+                    bmi_pdf_to_events_and_payments,
+                    is_bmi_pdf,
+                )
+
+                if is_bmi_pdf(content):
+                    pdf_events, pdf_payments, pdf_errors = bmi_pdf_to_events_and_payments(
+                        content, artist_id
+                    )
+                    result = parse_csv(b"", artist_id)
+                    result.events = pdf_events
+                    result.payments = pdf_payments
+                    result.errors = pdf_errors
+                    result.row_count = len(pdf_events)
+                    result.format_detected = "bmi_pdf"
+                else:
+                    # Non-BMI PDF: keep the metadata-only stub for now.
+                    result = parse_csv(b"", artist_id)
+                    result.events = []
+                    result.payments = []
+                    result.errors = [
+                        "PDF format not recognized; only BMI Royalty Statement PDFs parse today"
+                    ]
+                    result.format_detected = "pdf"
             else:
                 try:
                     result = parse_with_timeout(

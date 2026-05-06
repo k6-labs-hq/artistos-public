@@ -588,14 +588,15 @@ export function DashboardPage() {
             >
               <h2 style={{ marginTop: 0 }}>Upload a statement</h2>
               <p style={{ opacity: 0.8 }}>
-                Accepted formats: CSV, TSV, XLSX, Numbers. BMI, MLC, ASCAP, DistroKid, TuneCore,
-                and others are auto-detected — including MLC's native Apple Numbers exports.
+                Accepted formats: CSV, TSV, XLSX, Numbers, PDF. BMI, MLC, ASCAP, DistroKid,
+                TuneCore, and others are auto-detected — including MLC's native Apple Numbers
+                exports and BMI Royalty Statement PDFs.
               </p>
               <form onSubmit={handleUpload}>
                 <input
                   type="file"
                   multiple
-                  accept=".csv,.tsv,.xlsx,.numbers"
+                  accept=".csv,.tsv,.xlsx,.numbers,.pdf"
                   onChange={(e) => {
                     // Append on every selection rather than replace. Browser
                     // file dialogs return one batch at a time, so picking
