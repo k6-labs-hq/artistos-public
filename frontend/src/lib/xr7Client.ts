@@ -115,6 +115,20 @@ export const xr7 = {
       fd,
     );
   },
+  uploadStatementBatch: (artistId: string, files: File[]) => {
+    const fd = new FormData();
+    for (const f of files) fd.append("files", f);
+    return xr7PostMultipart<{
+      processed: Array<{ id: string; filename: string; format_detected: string }>;
+      failed: Array<{ filename: string; error: string }>;
+      duplicates: number;
+    }>(
+      `/artists/${encodeURIComponent(artistId)}/statements/upload-batch`,
+      fd,
+    );
+  },
+  getTerms: () =>
+    xr7Get<{ version: string; sha256: string; text: string }>("/terms"),
   getTermsStatus: (artistId: string) =>
     xr7Get<{ accepted: boolean; pending_version: string | null }>(
       `/artists/${encodeURIComponent(artistId)}/terms/status`,

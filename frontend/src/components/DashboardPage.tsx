@@ -111,9 +111,13 @@ export function DashboardPage() {
   const [state, setState] = useState<LoadState>("loading");
   const [error, setError] = useState<string | null>(null);
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const [termsText, setTermsText] = useState<string | null>(null);
+  const [termsVersion, setTermsVersion] = useState<string | null>(null);
+  const [termsLoading, setTermsLoading] = useState(false);
+  const [termsAcknowledged, setTermsAcknowledged] = useState(false);
   const [selectedPros, setSelectedPros] = useState<string[]>([]);
   const [selectedBmiOffice, setSelectedBmiOffice] = useState<string>("Nashville");
   const [savingRouting, setSavingRouting] = useState(false);
@@ -157,6 +161,24 @@ export function DashboardPage() {
       }
     })();
   }, [refreshAnomalies]);
+
+  // Fetch the full Terms text once, when we transition into needs_terms.
+  // Without this the screen had only a button — nothing to actually read.
+  useEffect(() => {
+    if (state !== "needs_terms" || termsText !== null) return;
+    setTermsLoading(true);
+    xr7
+      .getTerms()
+      .then((resp) => {
+        setTermsText(resp.text);
+        setTermsVersion(resp.version);
+      })
+      .catch((err) => {
+        if (err instanceof UnauthorizedError) return;
+        setError(err instanceof Error ? err.message : String(err));
+      })
+      .finally(() => setTermsLoading(false));
+  }, [state, termsText]);
 
   const handleSavePayerRouting = async () => {
     if (!me?.artist_id) return;
@@ -220,17 +242,47 @@ export function DashboardPage() {
 
   const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!me?.artist_id || !uploadFile) return;
+    if (!me?.artist_id || uploadFiles.length === 0) return;
     setUploading(true);
     setUploadResult(null);
     setError(null);
     try {
-      const result = await xr7.uploadStatement(me.artist_id, uploadFile);
-      setUploadResult(
-        `Uploaded ${uploadFile.name} — format ${result.format_detected}, ` +
-          `${result.events_created} events, ${result.payments_created} payments.`,
-      );
-      setUploadFile(null);
+      // Single-file path keeps the format-detected + counts feedback;
+      // multi-file path uses the batch endpoint and reports aggregate
+      // results. Backend caps at 100 files per batch.
+      if (uploadFiles.length === 1) {
+        const onlyFile = uploadFiles[0];
+        if (!onlyFile) return;
+        const result = await xr7.uploadStatement(me.artist_id, onlyFile);
+        setUploadResult(
+          `Uploaded ${onlyFile.name} — format ${result.format_detected}, ` +
+            `${result.events_created} events, ${result.payments_created} payments.`,
+        );
+      } else {
+        const CHUNK = 80; // stay under the server's 100 cap
+        let processed = 0;
+        let failed = 0;
+        let duplicates = 0;
+        const failedNames: string[] = [];
+        for (let i = 0; i < uploadFiles.length; i += CHUNK) {
+          const slice = uploadFiles.slice(i, i + CHUNK);
+          const result = await xr7.uploadStatementBatch(me.artist_id, slice);
+          processed += result.processed?.length || 0;
+          failed += result.failed?.length || 0;
+          duplicates += result.duplicates || 0;
+          for (const f of (result.failed || []).slice(0, 5)) {
+            failedNames.push(`${f.filename}: ${f.error}`);
+          }
+        }
+        setUploadResult(
+          `Uploaded ${uploadFiles.length} files: ${processed} processed, ` +
+            `${duplicates} duplicates, ${failed} failed.` +
+            (failedNames.length
+              ? `\nFirst failures: ${failedNames.join("; ")}`
+              : ""),
+        );
+      }
+      setUploadFiles([]);
       await refreshAnomalies(me.artist_id);
     } catch (err) {
       if (err instanceof UnauthorizedError) return;
@@ -308,12 +360,69 @@ export function DashboardPage() {
               background: "rgba(16, 16, 28, 0.6)",
             }}
           >
-            <h2>One quick step before you upload</h2>
-            <p>
-              You need to accept the Artist Recovery Services Agreement before XR7 can ingest a
-              statement on your behalf.
+            <h2 style={{ marginTop: 0 }}>Artist Recovery Services Agreement</h2>
+            <p style={{ color: "#cbd5e1" }}>
+              Please review the agreement below before continuing. By accepting, you grant XR7
+              limited authority to file royalty audit findings on your behalf and acknowledge the
+              12% contingency-fee compensation model.
+              {termsVersion ? (
+                <span style={{ display: "block", marginTop: "4px", fontSize: "12px", opacity: 0.7 }}>
+                  Version {termsVersion}
+                </span>
+              ) : null}
             </p>
-            <button type="button" className="cta" onClick={handleAcceptTerms}>
+            <div
+              style={{
+                maxHeight: "420px",
+                overflow: "auto",
+                padding: "16px 20px",
+                marginTop: "12px",
+                background: "#0b0b14",
+                border: "1px solid rgba(168, 85, 247, 0.2)",
+                borderRadius: "8px",
+                fontFamily: "Georgia, 'Times New Roman', serif",
+                fontSize: "13px",
+                lineHeight: 1.55,
+                color: "#e2e8f0",
+                whiteSpace: "pre-wrap",
+              }}
+              tabIndex={0}
+              aria-label="Artist Recovery Services Agreement text"
+            >
+              {termsLoading ? "Loading…" : termsText || "(Terms unavailable — please refresh.)"}
+            </div>
+
+            <label
+              style={{
+                display: "flex",
+                gap: "8px",
+                alignItems: "flex-start",
+                marginTop: "16px",
+                color: "#cbd5e1",
+                fontSize: "14px",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={termsAcknowledged}
+                onChange={(e) => setTermsAcknowledged(e.target.checked)}
+                style={{ marginTop: "4px" }}
+              />
+              <span>
+                I have read and understood the Artist Recovery Services Agreement above and agree
+                to be bound by its terms, including the 12% contingency fee on Recovered Funds and
+                the limited power of attorney described in Section 3.
+              </span>
+            </label>
+
+            <button
+              type="button"
+              className="cta"
+              onClick={handleAcceptTerms}
+              disabled={!termsAcknowledged || termsLoading}
+              style={{ marginTop: "16px" }}
+            >
               I accept the agreement
             </button>
           </section>
@@ -411,18 +520,28 @@ export function DashboardPage() {
               <form onSubmit={handleUpload}>
                 <input
                   type="file"
+                  multiple
                   accept=".csv,.tsv,.xlsx,.numbers"
-                  onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)}
-                  aria-label="Royalty statement file"
+                  onChange={(e) => setUploadFiles(Array.from(e.target.files ?? []))}
+                  aria-label="Royalty statement files"
                 />
                 <button
                   type="submit"
                   className="cta"
-                  disabled={!uploadFile || uploading}
+                  disabled={uploadFiles.length === 0 || uploading}
                   style={{ marginLeft: "12px" }}
                 >
-                  {uploading ? "Uploading…" : "Upload"}
+                  {uploading
+                    ? "Uploading…"
+                    : uploadFiles.length > 1
+                      ? `Upload ${uploadFiles.length} files`
+                      : "Upload"}
                 </button>
+                {uploadFiles.length > 1 ? (
+                  <p style={{ marginTop: "8px", color: "#94a3b8", fontSize: "13px" }}>
+                    {uploadFiles.length} files selected. Up to 100 per batch.
+                  </p>
+                ) : null}
               </form>
               {uploadResult ? (
                 <p style={{ marginTop: "16px", color: "#86efac" }}>{uploadResult}</p>
