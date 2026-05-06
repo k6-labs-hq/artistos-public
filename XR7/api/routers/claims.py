@@ -1131,6 +1131,31 @@ def admin_file_claim_via_email(
     return _file_claim_via_email_impl(claim, db)
 
 
+@router.post("/admin/claims/{claim_id}/advance", response_model=ClaimSchema)
+def admin_advance_claim(
+    claim_id: str,
+    db: Session = Depends(get_db),
+    _: None = Depends(require_admin_session),
+):
+    """Operator escape hatch to walk a claim forward in the state machine.
+
+    Auto-draft promotes IDENTIFIED → PREPARED only when the payer can be
+    inferred. For multi-affiliation artists or rules that don't carry a
+    payer in evidence, the claim parks at IDENTIFIED and an operator has
+    to advance it manually after picking the right payer (TODO: payer
+    picker UI; today they patch via admin SQL or the per-claim PATCH
+    endpoint).
+    """
+    claim = db.query(Claim).filter(Claim.id == claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=404, detail="Claim not found")
+    try:
+        updated = ClaimsOrchestrator(db).advance_claim(claim_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    return updated
+
+
 class RecordRemittanceRequest(BaseModel):
     gross_amount: float
     remittance_method: str

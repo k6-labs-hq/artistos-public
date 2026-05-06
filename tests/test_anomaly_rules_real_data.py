@@ -208,10 +208,11 @@ def test_stream_month_still_fires_for_old_unpaid_months():
     subtypes = {f["subtype"] for f in findings}
     assert "STREAM_MONTH_WITHOUT_PAYMENT" in subtypes
     f = next(x for x in findings if x["subtype"] == "STREAM_MONTH_WITHOUT_PAYMENT")
-    # Recoverable should be the conservative 30% of unpaid stream value, not the full amount.
-    gross = f["evidence"]["gross_unpaid_estimate"]
-    assert f["estimated_recoverable"] < gross
-    assert abs(f["estimated_recoverable"] - gross * 0.30) < 0.01
+    # Recoverable equals the full unpaid stream value. We removed the 30%
+    # likelihood discount — until we have settlement data to fit, any fixed
+    # multiplier is arbitrary, so we file for the actual gap.
+    unpaid = f["evidence"]["unpaid_estimate"]
+    assert abs(f["estimated_recoverable"] - unpaid) < 0.01
 
 
 def test_stream_month_without_payment_falls_back_to_received_at_when_period_missing():

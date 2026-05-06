@@ -253,6 +253,31 @@ export function OpsDashboard() {
     }
   };
 
+  const advanceClaim = async (claimId: string, reference: string, currentStatus: string) => {
+    if (!isAuthed) {
+      setError("Admin auth required — sign in or paste an admin key.");
+      return;
+    }
+    if (!window.confirm(`Advance ${reference} from ${currentStatus} to the next state?`)) {
+      return;
+    }
+    setError("");
+    try {
+      const res = await fetch(`${basePath}/admin/claims/${claimId}/advance`, {
+        method: "POST",
+        headers,
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        setError(payload.detail || `Advance failed (${res.status}).`);
+        return;
+      }
+      await loadQueue();
+    } catch (e) {
+      setError(String(e));
+    }
+  };
+
   const fileClaim = async (claimId: string, reference: string) => {
     if (!isAuthed) {
       setError("Admin auth required — sign in or paste an admin key.");
@@ -457,6 +482,22 @@ export function OpsDashboard() {
                               >
                                 {previewingClaimId === r.claim_id ? "Loading…" : "Preview"}
                               </button>
+                              {r.status === "IDENTIFIED" ? (
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    advanceClaim(
+                                      r.claim_id,
+                                      r.reference_number || r.claim_id,
+                                      r.status,
+                                    )
+                                  }
+                                  style={{ ...styles.button, ...styles.buttonGhost }}
+                                  title="Walk this claim from IDENTIFIED to PREPARED. Use when auto-promote couldn't pick a payer (e.g. multi-affiliation artist)."
+                                >
+                                  Advance to PREPARED
+                                </button>
+                              ) : null}
                               <button
                                 type="button"
                                 onClick={() => fileClaim(r.claim_id, r.reference_number || r.claim_id)}

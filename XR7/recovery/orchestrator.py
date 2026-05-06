@@ -101,7 +101,13 @@ class ClaimsOrchestrator:
         }
         return proof_lines, totals
 
-    def create_claim(self, anomaly_id: str, claim_type: str, evidence: dict | None = None) -> Claim:
+    def create_claim(
+        self,
+        anomaly_id: str,
+        claim_type: str,
+        evidence: dict | None = None,
+        payer_name: str | None = None,
+    ) -> Claim:
         anomaly = self.db_session.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
         if not anomaly:
             raise ValueError(f"Anomaly {anomaly_id} not found")
@@ -120,6 +126,7 @@ class ClaimsOrchestrator:
             claim_type=claim_type,
             status=ClaimStatus.IDENTIFIED,
             evidence=evidence or {},
+            payer_name=payer_name,
             governing_law_state=sol.get("governing_law_state") or "USA",
             contract_type=sol.get("contract_type") or "recording",
             infringement_date=infringement_date,

@@ -22,12 +22,6 @@ PAYMENT_LAG_DAYS = 90
 # months gives the rule something to compare against.
 MIN_COVERAGE_MONTHS = 3
 
-# Realistic recovery fraction. Even when a missing-payment gap is real, full
-# recovery is rare due to SOL windows, partial settlements, and audit ranges.
-# Under-promise the recoverable amount until we have settlement data to
-# calibrate against.
-RECOVERY_LIKELIHOOD = 0.30
-
 
 def _mean(values: list[float]) -> float:
     return sum(values) / len(values) if values else 0.0
@@ -242,10 +236,12 @@ def run_transparent_rules(
                 "severity": "HIGH",
                 "expected_amount": None,
                 "actual_amount": None,
-                # Multiply by RECOVERY_LIKELIHOOD: full recovery is rare even
-                # when the gap is real (SOL windows, partial settlements). Don't
-                # inflate the dashboard headline number with optimistic claims.
-                "estimated_recoverable": round(gross_for_missing * RECOVERY_LIKELIHOOD, 2),
+                # The full unpaid amount is the recoverable. We don't apply a
+                # recovery-likelihood discount: until we have settlement data
+                # to fit a real distribution against, any fixed multiplier is
+                # arbitrary. File for the gap; let actual settlement outcomes
+                # populate the model later.
+                "estimated_recoverable": round(gross_for_missing, 2),
                 "confidence_score": 0.86,
                 "status": "OPEN",
                 "description": (
@@ -262,8 +258,7 @@ def run_transparent_rules(
                     "months_skipped_due_to_lag": months_skipped_due_to_lag,
                     "payment_lag_days": PAYMENT_LAG_DAYS,
                     "min_coverage_months": MIN_COVERAGE_MONTHS,
-                    "recovery_likelihood": RECOVERY_LIKELIHOOD,
-                    "gross_unpaid_estimate": round(gross_for_missing, 2),
+                    "unpaid_estimate": round(gross_for_missing, 2),
                 },
             }
         )

@@ -360,6 +360,33 @@ def run_detection_and_persist(artist_id: str, db: Session) -> list[dict]:
 
     db.commit()
 
+    # Auto-draft + auto-promote a Claim per persisted anomaly. Idempotent
+    # by anomaly_id, so re-running detection won't duplicate. Runs after
+    # the bulk commit so the anomaly rows are already visible to the
+    # orchestrator's queries. Failures here are non-blocking — the
+    # anomalies are already persisted; operators can drive the queue
+    # manually if auto-draft has a bad day.
+    from XR7.recovery.auto_draft import auto_draft_and_promote  # noqa: PLC0415
+
+    drafted_count = 0
+    promoted_count = 0
+    for row in enriched:
+        anomaly_obj = db.query(Anomaly).filter(Anomaly.id == row["id"]).first()
+        if anomaly_obj is None:
+            continue
+        try:
+            claim = auto_draft_and_promote(db, anomaly_obj)
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "auto_draft_and_promote raised; continuing",
+                extra={"artist_id": artist_id, "anomaly_id": row["id"]},
+            )
+            continue
+        if claim is not None:
+            drafted_count += 1
+            if str(claim.status.value if hasattr(claim.status, "value") else claim.status) == "PREPARED":
+                promoted_count += 1
+
     # Log gating metrics
     gating_metrics = gating.get_metrics()
     logger.info(
@@ -370,6 +397,8 @@ def run_detection_and_persist(artist_id: str, db: Session) -> list[dict]:
             "enriched_count": len(enriched),
             "rejected_count": rejected_count,
             "auto_accepted_count": auto_accepted_count,
+            "claims_drafted": drafted_count,
+            "claims_promoted_to_prepared": promoted_count,
             "gating_metrics": gating_metrics,
         },
     )

@@ -52,12 +52,10 @@ from XR7.ingestion.statement_signal_extractor import (
 )
 from XR7.models.anomaly import Anomaly
 from XR7.models.base import get_db
-from XR7.models.claim import Claim
 from XR7.models.event import Event, EventType
 from XR7.models.notification_preference import NotificationPreference
 from XR7.models.payment import Payment, PaymentType
 from XR7.models.statement import Statement, StatementSchema
-from XR7.recovery.orchestrator import ClaimsOrchestrator
 from XR7.recovery.statute_tracker import classify_anomalies
 from XR7.services.artist_lifecycle import promote_to_active
 from XR7.services.branding import inject_branding_metadata
@@ -723,25 +721,10 @@ async def upload_statement(
             },
         )
 
-    if status != "FAILED" and new_anomalies > 0:
-        existing_claims = (
-            db.query(func.count(Claim.id)).filter(Claim.artist_id == artist_id).scalar() or 0
-        )
-        if int(existing_claims) == 0:
-            first_anomaly = (
-                db.query(Anomaly)
-                .filter(Anomaly.artist_id == artist_id)
-                .order_by(Anomaly.created_at.desc())
-                .first()
-            )
-            if first_anomaly:
-                try:
-                    ClaimsOrchestrator(db).create_claim(first_anomaly.id, claim_type="AUTO_DRAFT")
-                except Exception:  # noqa: BLE001
-                    logger.exception(
-                        "Failed to auto-draft first claim after statement upload",
-                        extra={"artist_id": artist_id, "anomaly_id": first_anomaly.id},
-                    )
+    # Auto-drafting now happens inside `run_detection_and_persist` per
+    # anomaly (see XR7.recovery.auto_draft.auto_draft_and_promote). The
+    # previous "first anomaly only" gate here meant batch BMI uploads
+    # produced zero claims and the operator queue stayed empty.
     statement_payload = StatementSchema.model_validate(statement).model_dump(mode="json")
     if identity_match is not None:
         statement_payload["identity_match"] = {

@@ -122,21 +122,20 @@ function fmtMoney(n: number | null | undefined): string {
 }
 
 /**
- * If the evidence dict carries the keys for a known recovery-likelihood
- * derivation, return a one-liner that shows the math behind
- * `estimated_recoverable`. Returns null when the rule's evidence shape
- * doesn't fit a derivation we know how to explain — better to stay silent
- * than to invent a story.
+ * If the evidence dict carries an `unpaid_estimate`, return a one-liner
+ * confirming it equals the recoverable. (We removed the prior 30%
+ * recovery-likelihood discount — recoverable now equals unpaid until we
+ * have settlement data to fit a real distribution.) Returns null when
+ * the rule's evidence shape doesn't fit a derivation we know how to
+ * explain — better to stay silent than invent a story.
  */
 function evidenceHeadline(
   ev: Record<string, unknown>,
   recoverable: number | null,
 ): string | null {
-  const gross = typeof ev.gross_unpaid_estimate === "number" ? ev.gross_unpaid_estimate : null;
-  const likelihood = typeof ev.recovery_likelihood === "number" ? ev.recovery_likelihood : null;
-  if (gross != null && likelihood != null) {
-    const pct = (likelihood * 100).toFixed(0);
-    return `${fmtMoney(gross)} estimated unpaid × ${pct}% recovery likelihood ≈ ${fmtMoney(recoverable)}`;
+  const unpaid = typeof ev.unpaid_estimate === "number" ? ev.unpaid_estimate : null;
+  if (unpaid != null) {
+    return `${fmtMoney(unpaid)} unpaid stream activity → ${fmtMoney(recoverable)} recoverable`;
   }
   return null;
 }
