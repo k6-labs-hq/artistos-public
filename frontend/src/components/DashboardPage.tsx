@@ -124,6 +124,13 @@ export function DashboardPage() {
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<{
+    completed: number;
+    total: number;
+    processed: number;
+    failed: number;
+    duplicates: number;
+  } | null>(null);
   const [termsText, setTermsText] = useState<string | null>(null);
   const [termsVersion, setTermsVersion] = useState<string | null>(null);
   const [termsLoading, setTermsLoading] = useState(false);
@@ -255,11 +262,9 @@ export function DashboardPage() {
     if (!me?.artist_id || uploadFiles.length === 0) return;
     setUploading(true);
     setUploadResult(null);
+    setUploadProgress(null);
     setError(null);
     try {
-      // Single-file path keeps the format-detected + counts feedback;
-      // multi-file path uses the batch endpoint and reports aggregate
-      // results. Backend caps at 100 files per batch.
       if (uploadFiles.length === 1) {
         const onlyFile = uploadFiles[0];
         if (!onlyFile) return;
@@ -269,11 +274,22 @@ export function DashboardPage() {
             `${result.events_created} events, ${result.payments_created} payments.`,
         );
       } else {
-        const CHUNK = 80; // stay under the server's 100 cap
+        // Smaller chunks (10/req) so the progress counter actually moves
+        // for the user instead of staring at "Uploading…" for a minute on
+        // a 79-file batch. Backend caps each batch at 100; 10 keeps each
+        // round-trip fast and gives us 8 progress updates per 80 files.
+        const CHUNK = 10;
         let processed = 0;
         let failed = 0;
         let duplicates = 0;
         const failedNames: string[] = [];
+        setUploadProgress({
+          completed: 0,
+          total: uploadFiles.length,
+          processed: 0,
+          failed: 0,
+          duplicates: 0,
+        });
         for (let i = 0; i < uploadFiles.length; i += CHUNK) {
           const slice = uploadFiles.slice(i, i + CHUNK);
           const result = await xr7.uploadStatementBatch(me.artist_id, slice);
@@ -281,8 +297,17 @@ export function DashboardPage() {
           failed += result.failed?.length || 0;
           duplicates += result.duplicates || 0;
           for (const f of (result.failed || []).slice(0, 5)) {
-            failedNames.push(`${f.filename}: ${f.error}`);
+            if (failedNames.length < 5) {
+              failedNames.push(`${f.filename}: ${f.error}`);
+            }
           }
+          setUploadProgress({
+            completed: Math.min(i + CHUNK, uploadFiles.length),
+            total: uploadFiles.length,
+            processed,
+            failed,
+            duplicates,
+          });
         }
         setUploadResult(
           `Uploaded ${uploadFiles.length} files: ${processed} processed, ` +
@@ -299,6 +324,7 @@ export function DashboardPage() {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setUploading(false);
+      setUploadProgress(null);
     }
   };
 
@@ -672,8 +698,59 @@ export function DashboardPage() {
                   </div>
                 ) : null}
               </form>
+              {uploadProgress ? (
+                <div style={{ marginTop: "16px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginBottom: "6px",
+                      fontSize: "13px",
+                      color: "#cbd5e1",
+                    }}
+                  >
+                    <span>
+                      Uploaded {uploadProgress.completed} of {uploadProgress.total}
+                    </span>
+                    <span style={{ color: "#94a3b8" }}>
+                      {uploadProgress.processed} processed
+                      {uploadProgress.duplicates > 0
+                        ? ` · ${uploadProgress.duplicates} duplicates`
+                        : ""}
+                      {uploadProgress.failed > 0
+                        ? ` · ${uploadProgress.failed} failed`
+                        : ""}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      height: "8px",
+                      borderRadius: "4px",
+                      background: "rgba(168, 85, 247, 0.15)",
+                      overflow: "hidden",
+                    }}
+                  >
+                    <div
+                      style={{
+                        height: "100%",
+                        width: `${(uploadProgress.completed / uploadProgress.total) * 100}%`,
+                        background: "linear-gradient(90deg, #a855f7, #6520BD)",
+                        transition: "width 0.3s ease",
+                      }}
+                    />
+                  </div>
+                </div>
+              ) : null}
               {uploadResult ? (
-                <p style={{ marginTop: "16px", color: "#86efac" }}>{uploadResult}</p>
+                <p
+                  style={{
+                    marginTop: "16px",
+                    color: "#86efac",
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {uploadResult}
+                </p>
               ) : null}
               {error ? (
                 <p role="alert" style={{ marginTop: "16px", color: "#fca5a5" }}>
