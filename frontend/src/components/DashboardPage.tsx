@@ -96,7 +96,17 @@ function EmptyAnomaliesGuidance() {
 
 type LoadState = "loading" | "ready" | "needs_terms" | "needs_payer_setup" | "error";
 
-const SUPPORTED_PROS = ["BMI", "ASCAP", "MLC", "SoundExchange"] as const;
+// Affiliations covers both PROs (BMI/ASCAP/MLC/SoundExchange) and
+// distributors (DistroKid/TuneCore/CD Baby/Amuse). The model column is
+// named `pro_affiliations` for legacy reasons; the question we're
+// actually asking is "where do you receive royalty statements from."
+const PRO_AFFILIATIONS = ["BMI", "ASCAP", "MLC", "SoundExchange"] as const;
+const DISTRIBUTOR_AFFILIATIONS = [
+  "DistroKid",
+  "TuneCore",
+  "CD Baby",
+  "Amuse",
+] as const;
 const BMI_OFFICES = [
   "Nashville",
   "New York",
@@ -440,21 +450,59 @@ export function DashboardPage() {
           >
             <h2>Where do your statements come from?</h2>
             <p style={{ marginTop: "0", color: "#cbd5e1" }}>
-              Pick the PROs/collectives you receive royalty statements from. We use this to
-              route any disputes to the right submission address.
+              Pick everyone who pays you royalties — performance rights organisations,
+              mechanical collectives, and digital distributors. We use this to route any
+              disputes to the right submission address.
             </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "16px" }}>
-              {SUPPORTED_PROS.map((pro) => (
-                <label key={pro} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedPros.includes(pro)}
-                    onChange={() => togglePro(pro)}
-                  />
-                  <span>{pro}</span>
-                </label>
-              ))}
+            <div style={{ marginTop: "16px" }}>
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  marginBottom: "8px",
+                }}
+              >
+                PROs &amp; collectives
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {PRO_AFFILIATIONS.map((pro) => (
+                  <label key={pro} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedPros.includes(pro)}
+                      onChange={() => togglePro(pro)}
+                    />
+                    <span>{pro}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div
+                style={{
+                  fontSize: "13px",
+                  color: "#94a3b8",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  margin: "20px 0 8px",
+                }}
+              >
+                Distributors
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {DISTRIBUTOR_AFFILIATIONS.map((d) => (
+                  <label key={d} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="checkbox"
+                      checked={selectedPros.includes(d)}
+                      onChange={() => togglePro(d)}
+                    />
+                    <span>{d}</span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             {selectedPros.includes("BMI") ? (
