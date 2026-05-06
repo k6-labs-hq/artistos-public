@@ -77,11 +77,27 @@ def _persist_anomaly(db: Session, artist_id: str, row: dict, confidence: float) 
 
     existing = db.query(Anomaly).filter(Anomaly.id == anomaly_id).first()
     if existing is not None:
+        # Refresh every field the rule output owns. Without `feature_snapshot`
+        # / `description` here, repeat detections kept the stale evidence dict
+        # from the FIRST run while overwriting `estimated_recoverable` from
+        # the LATEST — so the dashboard's "$X × Y% ≈ $Z" math no longer
+        # reconciled because the displayed gross was frozen in time.
         existing.confidence_score = confidence
         existing.estimated_recoverable = row.get("estimated_recoverable")
         existing.expected_amount = row.get("expected_amount")
         existing.actual_amount = row.get("actual_amount")
         existing.urgent_flag = bool(row.get("urgent_flag"))
+        existing.description = row.get("description")
+        if row.get("severity"):
+            existing.severity = AnomalySeverity(str(row.get("severity")))
+        existing.feature_snapshot = json.dumps(
+            {
+                "rule_id": rule_id,
+                "rule_name": row.get("rule_name"),
+                "evidence": evidence,
+            },
+            default=str,
+        )
         return existing
 
     anomaly = Anomaly(
@@ -405,6 +421,7 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
     if isinstance(result, dict):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})
     return inject_branding_metadata(db, {"artist_id": artist_id, "result": result})
+
 
 
 @router.get("/anomalies/{anomaly_id}/explain")

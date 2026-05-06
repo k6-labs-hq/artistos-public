@@ -299,8 +299,10 @@ def is_bmi_pdf(pdf_bytes: bytes) -> bool:
     """Heuristic: does this look like a BMI Royalty Statement PDF?
 
     Used by the dispatcher to route .pdf uploads to this parser. Cheap
-    text extraction on the first page checking for both `Account No:`
-    and `BMI` / `Royalty Statement` markers.
+    text extraction on the first page checking for the BMI cover-page
+    layout: a `ROYALTY STATEMENT` header plus a member account marker
+    (`ACCT NO:` / `ACCOUNT NO:`). The Tolliver corpus uses the
+    abbreviated `ACCT NO:` form, so we accept either.
     """
     try:
         import pdfplumber  # noqa: PLC0415
@@ -309,7 +311,9 @@ def is_bmi_pdf(pdf_bytes: bytes) -> bool:
             if not pdf.pages:
                 return False
             head = (pdf.pages[0].extract_text() or "")[:1500].upper()
-        return "ACCOUNT NO:" in head and ("BMI" in head or "ROYALTY STATEMENT" in head)
+        has_account = "ACCT NO:" in head or "ACCOUNT NO:" in head
+        has_marker = "BMI" in head or "ROYALTY STATEMENT" in head
+        return has_account and has_marker
     except Exception:  # noqa: BLE001
         return False
 

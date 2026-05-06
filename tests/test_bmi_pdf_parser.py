@@ -17,6 +17,7 @@ from XR7.ingestion.bmi_pdf import (
     _decode_period,
     _parse_amount,
     bmi_pdf_to_events_and_payments,
+    is_bmi_pdf,
     parse_bmi_pdf_bytes,
 )
 
@@ -97,6 +98,17 @@ def test_parses_2015_q4_statement():
     assert result.period_year == 2015
     assert result.period_quarter == 4
     assert len(result.rows) > 50
+
+
+@pytest.mark.skipif(not _CORPUS_AVAILABLE, reason="Tolliver BMI corpus not present")
+def test_is_bmi_pdf_recognises_full_corpus():
+    """Every PDF in Tolliver's corpus must be recognised by the dispatcher
+    detector. The Tolliver covers use the abbreviated `ACCT NO:` header,
+    so a stricter `ACCOUNT NO:`-only check would silently route the
+    entire corpus into the unsupported-PDF branch."""
+    pdfs = sorted(_CORPUS.glob("royalty_885077_*.pdf"))
+    missed = [p.name for p in pdfs if not is_bmi_pdf(p.read_bytes())]
+    assert not missed, f"is_bmi_pdf rejected {len(missed)} BMI PDFs: {missed[:5]}"
 
 
 @pytest.mark.skipif(not _CORPUS_AVAILABLE, reason="Tolliver BMI corpus not present")
