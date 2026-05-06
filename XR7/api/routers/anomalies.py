@@ -2,6 +2,7 @@ import hashlib
 import json
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from XR7.ai_music.influence_detector import InfluenceDetector
@@ -422,6 +423,128 @@ def fraud_scan(artist_id: str, db: Session = Depends(get_db)):
         return inject_branding_metadata(db, {"artist_id": artist_id, **result})
     return inject_branding_metadata(db, {"artist_id": artist_id, "result": result})
 
+
+@router.get("/artists/{artist_id}/anomalies/{anomaly_id}/evidence")
+def anomaly_evidence(artist_id: str, anomaly_id: str, db: Session = Depends(get_db)):
+    """Structured evidence for an anomaly so the artist (or operator) can
+    self-verify before filing.
+
+    Unlike `/explain`, this is deterministic and cheap — it returns the
+    rule that fired, the raw evidence dict, and a sample of the source
+    events + payments that fed the calculation. The caller can read the
+    sample, compare quantities/amounts to the rule's expected/actual
+    figures, and judge for themselves whether the gap is real.
+    """
+    from XR7.models.event import Event  # noqa: PLC0415
+    from XR7.models.payment import Payment  # noqa: PLC0415
+
+    anomaly = (
+        db.query(Anomaly)
+        .filter(Anomaly.id == anomaly_id, Anomaly.artist_id == artist_id)
+        .first()
+    )
+    if anomaly is None:
+        raise HTTPException(status_code=404, detail="Anomaly not found for this artist")
+
+    rule_id: str | None = None
+    rule_name: str | None = None
+    evidence_dict: dict = {}
+    if anomaly.feature_snapshot:
+        try:
+            parsed = json.loads(anomaly.feature_snapshot)
+            rule_id = parsed.get("rule_id")
+            rule_name = parsed.get("rule_name")
+            evidence_dict = parsed.get("evidence") or {}
+        except (TypeError, ValueError):
+            evidence_dict = {"_raw": anomaly.feature_snapshot}
+
+    # Filter source rows to the anomaly's time window so the sample is
+    # actually relevant to the gap. If no window is set, use all rows.
+    event_q = db.query(Event).filter(Event.artist_id == artist_id)
+    payment_q = db.query(Payment).filter(Payment.artist_id == artist_id)
+    if anomaly.time_window_start is not None:
+        event_q = event_q.filter(Event.timestamp >= anomaly.time_window_start)
+        payment_q = payment_q.filter(
+            (Payment.period_end >= anomaly.time_window_start)
+            | (Payment.received_at >= anomaly.time_window_start)
+        )
+    if anomaly.time_window_end is not None:
+        event_q = event_q.filter(Event.timestamp <= anomaly.time_window_end)
+        payment_q = payment_q.filter(
+            (Payment.period_start <= anomaly.time_window_end)
+            | (Payment.received_at <= anomaly.time_window_end)
+        )
+    if anomaly.territory:
+        event_q = event_q.filter(Event.territory == anomaly.territory)
+
+    events_count = event_q.count()
+    events_quantity = event_q.with_entities(func.coalesce(func.sum(Event.quantity), 0)).scalar() or 0
+    payments_count = payment_q.count()
+    payments_total = (
+        payment_q.with_entities(func.coalesce(func.sum(Payment.amount), 0.0)).scalar() or 0.0
+    )
+
+    sample_events = [
+        {
+            "id": e.id,
+            "timestamp": e.timestamp.isoformat() if e.timestamp else None,
+            "platform": e.platform,
+            "territory": e.territory,
+            "work_title": e.work_title,
+            "quantity": e.quantity,
+            "unit_value": e.unit_value,
+            "currency": e.currency,
+        }
+        for e in event_q.order_by(Event.timestamp.desc()).limit(10).all()
+    ]
+    sample_payments = [
+        {
+            "id": p.id,
+            "received_at": p.received_at.isoformat() if p.received_at else None,
+            "source": p.source,
+            "amount": float(p.amount) if p.amount is not None else None,
+            "currency": p.currency,
+            "period_start": p.period_start.isoformat() if p.period_start else None,
+            "period_end": p.period_end.isoformat() if p.period_end else None,
+            "reference_id": p.reference_id,
+            "payer_work_id": p.payer_work_id,
+        }
+        for p in payment_q.order_by(Payment.received_at.desc()).limit(10).all()
+    ]
+
+    return {
+        "anomaly": {
+            "id": anomaly.id,
+            "subtype": anomaly.subtype,
+            "category": str(anomaly.category),
+            "severity": str(anomaly.severity),
+            "description": anomaly.description,
+            "expected_amount": anomaly.expected_amount,
+            "actual_amount": anomaly.actual_amount,
+            "estimated_recoverable": anomaly.estimated_recoverable,
+            "confidence_score": anomaly.confidence_score,
+            "time_window_start": (
+                anomaly.time_window_start.isoformat() if anomaly.time_window_start else None
+            ),
+            "time_window_end": (
+                anomaly.time_window_end.isoformat() if anomaly.time_window_end else None
+            ),
+            "territory": anomaly.territory,
+        },
+        "rule": {
+            "rule_id": rule_id,
+            "rule_name": rule_name,
+            "evidence": evidence_dict,
+        },
+        "source_data": {
+            "events_count": int(events_count),
+            "events_total_quantity": int(events_quantity),
+            "payments_count": int(payments_count),
+            "payments_total_amount": float(payments_total),
+            "sample_events": sample_events,
+            "sample_payments": sample_payments,
+        },
+    }
 
 
 @router.get("/anomalies/{anomaly_id}/explain")

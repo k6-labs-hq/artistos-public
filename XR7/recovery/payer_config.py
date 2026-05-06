@@ -196,3 +196,49 @@ def get_payer_office(
     if office_name:
         return q.filter(PayerOffice.name.ilike(office_name.strip())).first()
     return q.filter(PayerOffice.is_default.is_(True)).first()
+
+
+# Map US state two-letter codes to the BMI Writer/Publisher Relations regional
+# office that handles affiliates with mailing addresses in that state. Sourced
+# from BMI's published regional territory map. We use this to skip the manual
+# "where do your statements come from?" onboarding gate when we can pull the
+# affiliate's address out of the BMI PDF cover ourselves.
+#
+# When a state isn't covered (e.g. an artist with a foreign address, or a state
+# we haven't mapped) we fall back to Nashville — the highest-volume office and
+# the best default for unknown country/songwriters.
+_STATE_TO_BMI_OFFICE: dict[str, str] = {
+    # Nashville — Southeast + most of the country/folk corridor
+    "TN": "Nashville", "KY": "Nashville", "AL": "Nashville", "MS": "Nashville",
+    "AR": "Nashville", "WV": "Nashville", "VA": "Nashville", "NC": "Nashville",
+    "SC": "Nashville", "IN": "Nashville", "OH": "Nashville", "MI": "Nashville",
+    "IL": "Nashville", "WI": "Nashville", "MO": "Nashville", "IA": "Nashville",
+    "MN": "Nashville", "ND": "Nashville", "SD": "Nashville", "NE": "Nashville",
+    "KS": "Nashville", "OK": "Nashville",
+    # Atlanta — Southeast pop/R&B/hip-hop
+    "GA": "Atlanta", "FL": "Atlanta",
+    # New York — Northeast + mid-Atlantic
+    "NY": "New York", "NJ": "New York", "PA": "New York", "CT": "New York",
+    "MA": "New York", "RI": "New York", "VT": "New York", "NH": "New York",
+    "ME": "New York", "MD": "New York", "DE": "New York", "DC": "New York",
+    # Los Angeles — West Coast + Mountain
+    "CA": "Los Angeles", "OR": "Los Angeles", "WA": "Los Angeles",
+    "NV": "Los Angeles", "AZ": "Los Angeles", "UT": "Los Angeles",
+    "ID": "Los Angeles", "MT": "Los Angeles", "WY": "Los Angeles",
+    "CO": "Los Angeles", "NM": "Los Angeles", "AK": "Los Angeles",
+    "HI": "Los Angeles",
+    # Austin — Texas + Louisiana
+    "TX": "Austin", "LA": "Austin",
+}
+
+
+def infer_bmi_office_from_state(state_code: str | None) -> str:
+    """Map a US state code to the BMI regional office handling that territory.
+
+    Falls back to Nashville for unknown / missing states — Nashville is the
+    largest BMI office and a safe default when an artist's PDF cover doesn't
+    include a parseable mailing address.
+    """
+    if not state_code:
+        return "Nashville"
+    return _STATE_TO_BMI_OFFICE.get(state_code.strip().upper(), "Nashville")

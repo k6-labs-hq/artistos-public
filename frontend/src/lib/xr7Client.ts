@@ -103,10 +103,63 @@ export type Anomaly = {
   created_at: string | null;
 };
 
+export type AnomalyEvidence = {
+  anomaly: {
+    id: string;
+    subtype: string | null;
+    category: string | null;
+    severity: string | null;
+    description: string | null;
+    expected_amount: number | null;
+    actual_amount: number | null;
+    estimated_recoverable: number | null;
+    confidence_score: number | null;
+    time_window_start: string | null;
+    time_window_end: string | null;
+    territory: string | null;
+  };
+  rule: {
+    rule_id: string | null;
+    rule_name: string | null;
+    evidence: Record<string, unknown>;
+  };
+  source_data: {
+    events_count: number;
+    events_total_quantity: number;
+    payments_count: number;
+    payments_total_amount: number;
+    sample_events: Array<{
+      id: string;
+      timestamp: string | null;
+      platform: string | null;
+      territory: string | null;
+      work_title: string | null;
+      quantity: number;
+      unit_value: number;
+      currency: string;
+    }>;
+    sample_payments: Array<{
+      id: string;
+      received_at: string | null;
+      source: string | null;
+      amount: number | null;
+      currency: string | null;
+      period_start: string | null;
+      period_end: string | null;
+      reference_id: string | null;
+      payer_work_id: string | null;
+    }>;
+  };
+};
+
 export const xr7 = {
   me: () => xr7Get<Me>("/auth/me"),
   listAnomalies: (artistId: string) =>
     xr7Get<Anomaly[]>(`/artists/${encodeURIComponent(artistId)}/anomalies`),
+  getAnomalyEvidence: (artistId: string, anomalyId: string) =>
+    xr7Get<AnomalyEvidence>(
+      `/artists/${encodeURIComponent(artistId)}/anomalies/${encodeURIComponent(anomalyId)}/evidence`,
+    ),
   uploadStatement: (artistId: string, file: File) => {
     const fd = new FormData();
     fd.append("file", file);

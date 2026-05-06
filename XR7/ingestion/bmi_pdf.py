@@ -134,9 +134,19 @@ class BmiPdfParseResult:
     period_quarter: int | None = None  # 1-4
     period_year: int | None = None
     distribution_date: date | None = None
+    affiliate_name: str | None = None
+    affiliate_state: str | None = None  # 2-letter, e.g. "TN"
+    affiliate_zip: str | None = None
     rows: list[dict] = field(default_factory=list)
     skipped_lines: int = 0
     sections_seen: list[str] = field(default_factory=list)
+
+
+# US state + ZIP capture from a mailing address line. BMI cover pages show
+# the affiliate's address in the form "FRANKLIN TN 37064-8919" on its own
+# line (just before the data sections). Match defensively — line could
+# have a city of any shape, then state, then ZIP.
+_AFFILIATE_ADDR_RE = re.compile(r"\b([A-Z]{2})\s+(\d{5})(?:-\d{4})?\s*$")
 
 
 def _parse_amount(s: str) -> float:
@@ -206,6 +216,22 @@ def parse_bmi_pdf_bytes(pdf_bytes: bytes) -> BmiPdfParseResult:
         result.period_year = int(m.group(2))
     if m := _HEADER_DIST_DATE_RE.search(text):
         result.distribution_date = _parse_distribution_date(m.group(1))
+
+    # Affiliate address — on the first page only, after the bank-deposit
+    # block. Look for "<CITY> <ST> <ZIP>" on a line of its own and prefer
+    # the FIRST match in the document (the affiliate's mailing address,
+    # not BMI office addresses that appear later as page footers).
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        if "BMI" in line or "Writer/Publisher" in line or "Creative Office" in line:
+            continue
+        addr_match = _AFFILIATE_ADDR_RE.search(line)
+        if addr_match:
+            result.affiliate_state = addr_match.group(1)
+            result.affiliate_zip = addr_match.group(2)
+            break
 
     current_section: str | None = None
     current_source: str | None = None  # for Internet Audio / International (sub-headers)

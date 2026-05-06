@@ -6,10 +6,16 @@
  * anomalies. Heavily restrained — anything richer (charts, claim filing,
  * payouts) is post-beta.
  */
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 
 import { clearXR7Token, getXR7Token } from "../lib/supabase";
-import { type Anomaly, type Me, UnauthorizedError, xr7 } from "../lib/xr7Client";
+import {
+  type Anomaly,
+  type AnomalyEvidence,
+  type Me,
+  UnauthorizedError,
+  xr7,
+} from "../lib/xr7Client";
 
 /**
  * Rendered when an artist has uploaded data but the engine has no findings to
@@ -94,27 +100,217 @@ function EmptyAnomaliesGuidance() {
   );
 }
 
-type LoadState = "loading" | "ready" | "needs_terms" | "needs_payer_setup" | "error";
+/**
+ * Drill-down panel for a single anomaly. Rendered when the user expands a
+ * row in the anomalies table. Three sections so the artist can self-verify
+ * the figure before treating it as a real claim:
+ *
+ *   1. The rule that fired + the raw evidence dict the engine emitted.
+ *   2. Aggregate counts of the source events + payments inside the anomaly's
+ *      time window — i.e. the dataset the rule actually consumed.
+ *   3. Sample rows from each side so the artist can spot-check that the
+ *      activity looks real and the payments cover the right period.
+ *
+ * Designed to be readable, not pretty — this is a forensic surface, not a
+ * marketing one.
+ */
+function fmtMoney(n: number | null | undefined): string {
+  return `$${(n ?? 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
 
-// Affiliations covers both PROs (BMI/ASCAP/MLC/SoundExchange) and
-// distributors (DistroKid/TuneCore/CD Baby/Amuse). The model column is
-// named `pro_affiliations` for legacy reasons; the question we're
-// actually asking is "where do you receive royalty statements from."
-const PRO_AFFILIATIONS = ["BMI", "ASCAP", "MLC", "SoundExchange"] as const;
-const DISTRIBUTOR_AFFILIATIONS = [
-  "DistroKid",
-  "TuneCore",
-  "CD Baby",
-  "Amuse",
-] as const;
-const BMI_OFFICES = [
-  "Nashville",
-  "New York",
-  "Los Angeles",
-  "Atlanta",
-  "Austin",
-  "London",
-];
+/**
+ * If the evidence dict carries the keys for a known recovery-likelihood
+ * derivation, return a one-liner that shows the math behind
+ * `estimated_recoverable`. Returns null when the rule's evidence shape
+ * doesn't fit a derivation we know how to explain — better to stay silent
+ * than to invent a story.
+ */
+function evidenceHeadline(
+  ev: Record<string, unknown>,
+  recoverable: number | null,
+): string | null {
+  const gross = typeof ev.gross_unpaid_estimate === "number" ? ev.gross_unpaid_estimate : null;
+  const likelihood = typeof ev.recovery_likelihood === "number" ? ev.recovery_likelihood : null;
+  if (gross != null && likelihood != null) {
+    const pct = (likelihood * 100).toFixed(0);
+    return `${fmtMoney(gross)} estimated unpaid × ${pct}% recovery likelihood ≈ ${fmtMoney(recoverable)}`;
+  }
+  return null;
+}
+
+function EvidencePanel({ evidence }: { evidence: AnomalyEvidence }) {
+  const a = evidence.anomaly;
+  const r = evidence.rule;
+  const s = evidence.source_data;
+  const cellStyle: React.CSSProperties = { padding: "6px 8px", verticalAlign: "top" };
+  const headerStyle: React.CSSProperties = {
+    ...cellStyle,
+    fontSize: "11px",
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+    color: "#94a3b8",
+    fontWeight: 500,
+  };
+  const hasWindow = a.time_window_start != null || a.time_window_end != null;
+  const hasExpectedActual =
+    (a.expected_amount != null && a.expected_amount !== 0) ||
+    (a.actual_amount != null && a.actual_amount !== 0);
+  const headline = evidenceHeadline(r.evidence, a.estimated_recoverable);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div>
+        <h4 style={{ margin: "0 0 8px", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.5px", color: "#a78bfa" }}>
+          Rule + evidence
+        </h4>
+        {a.description ? (
+          <p style={{ margin: "0 0 10px", fontSize: "13px" }}>{a.description}</p>
+        ) : null}
+        {headline ? (
+          <p style={{ margin: "0 0 10px", fontSize: "13px", color: "#cbd5e1" }}>
+            <strong>How we got to {fmtMoney(a.estimated_recoverable)}: </strong>
+            {headline}
+          </p>
+        ) : null}
+        <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "4px 16px", fontSize: "13px" }}>
+          <div style={{ opacity: 0.7 }}>Rule</div>
+          <div style={{ fontFamily: "monospace" }}>
+            {r.rule_id ?? "—"}{r.rule_name ? ` — ${r.rule_name}` : ""}
+          </div>
+          {hasWindow ? (
+            <>
+              <div style={{ opacity: 0.7 }}>Time window</div>
+              <div>
+                {a.time_window_start ?? "—"} → {a.time_window_end ?? "—"}
+                {a.territory ? ` (${a.territory})` : ""}
+              </div>
+            </>
+          ) : a.territory ? (
+            <>
+              <div style={{ opacity: 0.7 }}>Territory</div>
+              <div>{a.territory}</div>
+            </>
+          ) : null}
+          {hasExpectedActual ? (
+            <>
+              <div style={{ opacity: 0.7 }}>Expected vs actual</div>
+              <div>
+                {fmtMoney(a.expected_amount)} expected, {fmtMoney(a.actual_amount)} observed
+              </div>
+            </>
+          ) : null}
+        </div>
+        {Object.keys(r.evidence).length > 0 ? (
+          <details style={{ marginTop: "10px" }}>
+            <summary style={{ cursor: "pointer", fontSize: "12px", opacity: 0.7 }}>
+              Raw evidence (rule output)
+            </summary>
+            <pre
+              style={{
+                marginTop: "8px",
+                padding: "10px",
+                background: "rgba(0,0,0,0.4)",
+                borderRadius: "6px",
+                fontSize: "12px",
+                overflowX: "auto",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+              }}
+            >
+              {JSON.stringify(r.evidence, null, 2)}
+            </pre>
+          </details>
+        ) : null}
+      </div>
+
+      <div>
+        <h4 style={{ margin: "0 0 8px", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.5px", color: "#a78bfa" }}>
+          Source data in window
+        </h4>
+        <div style={{ fontSize: "13px", opacity: 0.85 }}>
+          {s.events_count.toLocaleString()} events ({s.events_total_quantity.toLocaleString()} total units)
+          {" · "}
+          {s.payments_count.toLocaleString()} payments totaling $
+          {s.payments_total_amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </div>
+      </div>
+
+      {s.sample_events.length > 0 ? (
+        <div>
+          <h4 style={{ margin: "0 0 8px", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.5px", color: "#a78bfa" }}>
+            Sample events (most recent 10)
+          </h4>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", textAlign: "left" }}>
+                <th style={headerStyle}>Date</th>
+                <th style={headerStyle}>Platform</th>
+                <th style={headerStyle}>Territory</th>
+                <th style={headerStyle}>Work</th>
+                <th style={{ ...headerStyle, textAlign: "right" }}>Qty</th>
+                <th style={{ ...headerStyle, textAlign: "right" }}>Unit</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.sample_events.map((e) => (
+                <tr key={e.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <td style={cellStyle}>{e.timestamp?.slice(0, 10) ?? "—"}</td>
+                  <td style={cellStyle}>{e.platform ?? "—"}</td>
+                  <td style={cellStyle}>{e.territory ?? "—"}</td>
+                  <td style={cellStyle}>{e.work_title ?? "—"}</td>
+                  <td style={{ ...cellStyle, textAlign: "right" }}>{e.quantity.toLocaleString()}</td>
+                  <td style={{ ...cellStyle, textAlign: "right", fontFamily: "monospace" }}>
+                    {e.unit_value.toFixed(6)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {s.sample_payments.length > 0 ? (
+        <div>
+          <h4 style={{ margin: "0 0 8px", fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.5px", color: "#a78bfa" }}>
+            Sample payments (most recent 10)
+          </h4>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "12px" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)", textAlign: "left" }}>
+                <th style={headerStyle}>Received</th>
+                <th style={headerStyle}>Source</th>
+                <th style={headerStyle}>Period</th>
+                <th style={headerStyle}>Reference</th>
+                <th style={{ ...headerStyle, textAlign: "right" }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.sample_payments.map((p) => (
+                <tr key={p.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                  <td style={cellStyle}>{p.received_at?.slice(0, 10) ?? "—"}</td>
+                  <td style={cellStyle}>{p.source ?? "—"}</td>
+                  <td style={cellStyle}>
+                    {p.period_start?.slice(0, 10) ?? "—"} → {p.period_end?.slice(0, 10) ?? "—"}
+                  </td>
+                  <td style={{ ...cellStyle, fontFamily: "monospace", fontSize: "11px" }}>
+                    {p.reference_id ?? "—"}
+                  </td>
+                  <td style={{ ...cellStyle, textAlign: "right" }}>
+                    ${(p.amount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+type LoadState = "loading" | "ready" | "needs_terms" | "error";
 
 export function DashboardPage() {
   const [me, setMe] = useState<Me | null>(null);
@@ -148,9 +344,44 @@ export function DashboardPage() {
   const [termsVersion, setTermsVersion] = useState<string | null>(null);
   const [termsLoading, setTermsLoading] = useState(false);
   const [termsAcknowledged, setTermsAcknowledged] = useState(false);
-  const [selectedPros, setSelectedPros] = useState<string[]>([]);
-  const [selectedBmiOffice, setSelectedBmiOffice] = useState<string>("Nashville");
-  const [savingRouting, setSavingRouting] = useState(false);
+  const [expandedAnomalyId, setExpandedAnomalyId] = useState<string | null>(null);
+  const [evidenceById, setEvidenceById] = useState<
+    Record<string, { loading: boolean; error: string | null; data: AnomalyEvidence | null }>
+  >({});
+
+  const toggleEvidence = useCallback(
+    async (anomalyId: string) => {
+      if (expandedAnomalyId === anomalyId) {
+        setExpandedAnomalyId(null);
+        return;
+      }
+      setExpandedAnomalyId(anomalyId);
+      if (evidenceById[anomalyId]?.data) return;
+      if (!me?.artist_id) return;
+      setEvidenceById((prev) => ({
+        ...prev,
+        [anomalyId]: { loading: true, error: null, data: null },
+      }));
+      try {
+        const data = await xr7.getAnomalyEvidence(me.artist_id, anomalyId);
+        setEvidenceById((prev) => ({
+          ...prev,
+          [anomalyId]: { loading: false, error: null, data },
+        }));
+      } catch (err) {
+        if (err instanceof UnauthorizedError) return;
+        setEvidenceById((prev) => ({
+          ...prev,
+          [anomalyId]: {
+            loading: false,
+            error: err instanceof Error ? err.message : String(err),
+            data: null,
+          },
+        }));
+      }
+    },
+    [expandedAnomalyId, evidenceById, me],
+  );
 
   const refreshHistory = useCallback(async (artistId: string) => {
     try {
@@ -185,13 +416,6 @@ export function DashboardPage() {
           setState("needs_terms");
           return;
         }
-        // After terms, gate on payer routing — we need to know which PROs
-        // the artist receives statements from before any anomaly we
-        // surface can be filed correctly.
-        if (!meResp.pro_affiliations || meResp.pro_affiliations.length === 0) {
-          setState("needs_payer_setup");
-          return;
-        }
         await refreshAnomalies(meResp.artist_id); await refreshHistory(meResp.artist_id);
         setState("ready");
       } catch (err) {
@@ -220,39 +444,6 @@ export function DashboardPage() {
       .finally(() => setTermsLoading(false));
   }, [state, termsText]);
 
-  const handleSavePayerRouting = async () => {
-    if (!me?.artist_id) return;
-    if (selectedPros.length === 0) {
-      setError("Pick at least one PRO/collective.");
-      return;
-    }
-    setSavingRouting(true);
-    setError(null);
-    try {
-      const includesBmi = selectedPros.includes("BMI");
-      await xr7.updatePayerRouting(me.artist_id, {
-        pro_affiliations: selectedPros,
-        bmi_office_name: includesBmi ? selectedBmiOffice : null,
-      });
-      // Refresh /me so the cached state matches.
-      const refreshed = await xr7.me();
-      setMe(refreshed);
-      await refreshAnomalies(me.artist_id); await refreshHistory(me.artist_id);
-      setState("ready");
-    } catch (err) {
-      if (err instanceof UnauthorizedError) return;
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSavingRouting(false);
-    }
-  };
-
-  const togglePro = (pro: string) => {
-    setSelectedPros((prev) =>
-      prev.includes(pro) ? prev.filter((p) => p !== pro) : [...prev, pro],
-    );
-  };
-
   const handleAcceptTerms = async () => {
     if (!me?.artist_id) return;
     setError(null);
@@ -260,16 +451,6 @@ export function DashboardPage() {
       const terms = await xr7.getTermsStatus(me.artist_id);
       if (terms.pending_version) {
         await xr7.acceptTerms(me.artist_id, terms.pending_version);
-      }
-      // Same gate as the mount handler: after terms, if payer setup hasn't
-      // been completed, bounce into needs_payer_setup before showing the
-      // upload UI. Without this, accepting terms skipped straight to
-      // "ready" and the artist never saw the PRO/region question.
-      const refreshed = await xr7.me();
-      setMe(refreshed);
-      if (!refreshed.pro_affiliations || refreshed.pro_affiliations.length === 0) {
-        setState("needs_payer_setup");
-        return;
       }
       await refreshAnomalies(me.artist_id); await refreshHistory(me.artist_id);
       setState("ready");
@@ -483,117 +664,6 @@ export function DashboardPage() {
               style={{ marginTop: "16px" }}
             >
               I accept the agreement
-            </button>
-          </section>
-        ) : null}
-
-        {state === "needs_payer_setup" ? (
-          <section
-            style={{
-              marginTop: "32px",
-              padding: "24px",
-              borderRadius: "16px",
-              border: "1px solid rgba(168, 85, 247, 0.3)",
-              background: "rgba(16, 16, 28, 0.6)",
-            }}
-          >
-            <h2>Where do your statements come from?</h2>
-            <p style={{ marginTop: "0", color: "#cbd5e1" }}>
-              Pick everyone who pays you royalties — performance rights organisations,
-              mechanical collectives, and digital distributors. We use this to route any
-              disputes to the right submission address.
-            </p>
-
-            <div style={{ marginTop: "16px" }}>
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                  marginBottom: "8px",
-                }}
-              >
-                PROs &amp; collectives
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {PRO_AFFILIATIONS.map((pro) => (
-                  <label key={pro} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedPros.includes(pro)}
-                      onChange={() => togglePro(pro)}
-                    />
-                    <span>{pro}</span>
-                  </label>
-                ))}
-              </div>
-
-              <div
-                style={{
-                  fontSize: "13px",
-                  color: "#94a3b8",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px",
-                  margin: "20px 0 8px",
-                }}
-              >
-                Distributors
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                {DISTRIBUTOR_AFFILIATIONS.map((d) => (
-                  <label key={d} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedPros.includes(d)}
-                      onChange={() => togglePro(d)}
-                    />
-                    <span>{d}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {selectedPros.includes("BMI") ? (
-              <div style={{ marginTop: "20px" }}>
-                <label style={{ display: "block" }}>
-                  <span style={{ display: "block", marginBottom: "6px", color: "#cbd5e1" }}>
-                    BMI regional office
-                  </span>
-                  <select
-                    value={selectedBmiOffice}
-                    onChange={(e) => setSelectedBmiOffice(e.target.value)}
-                    style={{
-                      padding: "8px 12px",
-                      borderRadius: "8px",
-                      background: "#0b0b14",
-                      color: "#e8e8ee",
-                      border: "1px solid rgba(168, 85, 247, 0.3)",
-                      minWidth: "240px",
-                    }}
-                  >
-                    {BMI_OFFICES.map((office) => (
-                      <option key={office} value={office}>
-                        {office}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <p style={{ fontSize: "12px", color: "#777", marginTop: "6px" }}>
-                  Pick the office nearest your home base — this is where BMI's Writer/Publisher
-                  Relations team routes member inquiries. Default is Nashville.
-                </p>
-              </div>
-            ) : null}
-
-            <button
-              type="button"
-              className="cta"
-              onClick={handleSavePayerRouting}
-              disabled={savingRouting || selectedPros.length === 0}
-              style={{ marginTop: "20px" }}
-            >
-              {savingRouting ? "Saving…" : "Save and continue"}
             </button>
           </section>
         ) : null}
@@ -875,6 +945,7 @@ export function DashboardPage() {
                 <table style={{ width: "100%", borderCollapse: "collapse" }}>
                   <thead>
                     <tr style={{ textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.15)" }}>
+                      <th style={{ padding: "8px 4px", width: "20px" }} aria-label="Expand" />
                       <th style={{ padding: "8px 4px" }}>Type</th>
                       <th style={{ padding: "8px 4px" }}>Severity</th>
                       <th style={{ padding: "8px 4px", textAlign: "right" }}>Recoverable</th>
@@ -883,22 +954,58 @@ export function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {anomalies.map((a) => (
-                      <tr key={a.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                        <td style={{ padding: "8px 4px", fontFamily: "monospace" }}>{a.subtype ?? "—"}</td>
-                        <td style={{ padding: "8px 4px" }}>{a.severity ?? "—"}</td>
-                        <td style={{ padding: "8px 4px", textAlign: "right" }}>
-                          ${(a.estimated_recoverable ?? 0).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </td>
-                        <td style={{ padding: "8px 4px", textAlign: "right" }}>
-                          {a.confidence_score != null ? (a.confidence_score * 100).toFixed(0) + "%" : "—"}
-                        </td>
-                        <td style={{ padding: "8px 4px", opacity: 0.85 }}>{a.description ?? ""}</td>
-                      </tr>
-                    ))}
+                    {anomalies.map((a) => {
+                      const expanded = expandedAnomalyId === a.id;
+                      const ev = evidenceById[a.id];
+                      return (
+                        <Fragment key={a.id}>
+                          <tr
+                            onClick={() => toggleEvidence(a.id)}
+                            style={{
+                              borderBottom: "1px solid rgba(255,255,255,0.07)",
+                              cursor: "pointer",
+                            }}
+                          >
+                            <td style={{ padding: "8px 4px", textAlign: "center", opacity: 0.6 }}>
+                              {expanded ? "▾" : "▸"}
+                            </td>
+                            <td style={{ padding: "8px 4px", fontFamily: "monospace" }}>
+                              {a.subtype ?? "—"}
+                            </td>
+                            <td style={{ padding: "8px 4px" }}>{a.severity ?? "—"}</td>
+                            <td style={{ padding: "8px 4px", textAlign: "right" }}>
+                              ${(a.estimated_recoverable ?? 0).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
+                            </td>
+                            <td style={{ padding: "8px 4px", textAlign: "right" }}>
+                              {a.confidence_score != null
+                                ? (a.confidence_score * 100).toFixed(0) + "%"
+                                : "—"}
+                            </td>
+                            <td style={{ padding: "8px 4px", opacity: 0.85 }}>
+                              {a.description ?? ""}
+                            </td>
+                          </tr>
+                          {expanded ? (
+                            <tr style={{ background: "rgba(255,255,255,0.03)" }}>
+                              <td colSpan={6} style={{ padding: "16px" }}>
+                                {ev?.loading ? (
+                                  <p style={{ margin: 0, opacity: 0.7 }}>Loading evidence…</p>
+                                ) : ev?.error ? (
+                                  <p style={{ margin: 0, color: "#f87171" }}>
+                                    Could not load evidence: {ev.error}
+                                  </p>
+                                ) : ev?.data ? (
+                                  <EvidencePanel evidence={ev.data} />
+                                ) : null}
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               )}

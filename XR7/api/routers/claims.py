@@ -915,19 +915,11 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
             detail="Cannot file: claim must have a linked artist + anomaly",
         )
 
-    # Artist-side onboarding guard. Filing pipeline reads
-    # `Artist.bmi_office_name` to route BMI submissions; without onboarding
-    # we'd silently fall back to Nashville for an artist whose actual home
-    # office is somewhere else. Block the send and surface the gap.
-    if not getattr(artist, "pro_affiliations", None):
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "Cannot file: artist has not completed payer-routing setup. "
-                "Have the artist sign in and complete the 'Where do your statements "
-                "come from?' step on the dashboard."
-            ),
-        )
+    # No explicit payer-routing onboarding gate: affiliations are inferred at
+    # statement-upload time (see XR7.api.routers.ingestion._autofill_payer_routing_from_uploads).
+    # When inference hasn't populated anything (e.g. distributor-only data),
+    # the per-payer matching guard below fails open and we trust the claim's
+    # payer; BMI office routing falls back to the Nashville default.
 
     # Resolve payer from claim.payer_name (e.g., "MLC", "BMI") or fall back
     # to the anomaly's worst_payer evidence field.
@@ -942,22 +934,25 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
         )
 
     # Per-payer affiliation guard — refuse to file against a payer the
-    # artist hasn't told us they receive statements from. Catches the
-    # case where an anomaly was inferred from a partial dataset and the
-    # artist isn't actually affiliated with the proposed payer.
+    # artist's uploaded statements don't include. Catches the case where an
+    # anomaly was inferred from a partial dataset and the artist isn't
+    # actually affiliated with the proposed payer. Fails open when
+    # `pro_affiliations` is empty: distributor-only uploads don't imply any
+    # PRO affiliation, but they also don't disprove one — trust the claim.
     canonical_payer = payer_id.strip().upper()
     affiliations = {p.upper() for p in (artist.pro_affiliations or [])}
-    matched = canonical_payer in affiliations or any(
-        canonical_payer in a or a in canonical_payer for a in affiliations
-    )
-    if not matched:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                f"Cannot file: artist is not registered as affiliated with {payer_id}. "
-                f"Current affiliations: {sorted(affiliations) or 'none'}."
-            ),
+    if affiliations:
+        matched = canonical_payer in affiliations or any(
+            canonical_payer in a or a in canonical_payer for a in affiliations
         )
+        if not matched:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    f"Cannot file: artist's uploaded statements show affiliations "
+                    f"{sorted(affiliations)} but this claim targets {payer_id}."
+                ),
+            )
 
     from XR7.recovery.dispute_correlation import record_outbound_filing  # noqa: PLC0415
     from XR7.recovery.dispute_delivery import deliver_dispute  # noqa: PLC0415

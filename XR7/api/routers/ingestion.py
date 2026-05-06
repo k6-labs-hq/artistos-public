@@ -216,6 +216,53 @@ def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
     return {"inserted": inserted, "skipped": skipped}
 
 
+# Map detected statement format → payer canonical IDs that imply a routing
+# affiliation. We don't infer "you're a BMI writer" from a DistroKid statement —
+# only PRO/MLC/SoundExchange statements are direct evidence of an affiliation.
+_FORMAT_TO_AFFILIATIONS: dict[str, tuple[str, ...]] = {
+    "ascap": ("ASCAP",),
+    "bmi": ("BMI",),
+    "bmi_real": ("BMI",),
+    "bmi_pdf": ("BMI",),
+    "mlc": ("MLC",),
+    "soundexchange": ("SoundExchange",),
+}
+
+
+def _infer_affiliations_from_formats(formats: list[str]) -> list[str]:
+    """Collect the canonical payer IDs implied by a list of detected formats."""
+    seen: list[str] = []
+    for fmt in formats:
+        for affiliation in _FORMAT_TO_AFFILIATIONS.get((fmt or "").lower(), ()):
+            if affiliation not in seen:
+                seen.append(affiliation)
+    return seen
+
+
+def _autofill_payer_routing_from_uploads(
+    db: Session,
+    artist,  # noqa: ANN001 — Artist model, avoid circular import in type hints
+    formats_seen: list[str],
+    bmi_affiliate_state: str | None = None,
+) -> None:
+    """Backfill Artist.pro_affiliations + Artist.bmi_office_name from upload signals.
+
+    Idempotent: pre-existing values stay put. Only fills empty fields. This
+    replaces the manual "where do your statements come from?" onboarding gate
+    — once we've parsed a BMI/ASCAP/MLC statement, we already know who pays.
+    """
+    inferred = _infer_affiliations_from_formats(formats_seen)
+    if inferred and not artist.pro_affiliations:
+        artist.pro_affiliations = inferred
+    if (
+        "BMI" in (artist.pro_affiliations or [])
+        and not artist.bmi_office_name
+    ):
+        from XR7.recovery.payer_config import infer_bmi_office_from_state  # noqa: PLC0415
+
+        artist.bmi_office_name = infer_bmi_office_from_state(bmi_affiliate_state)
+
+
 def _save_payments(db: Session, payments: list[dict]) -> int:
     """Persist normalised payment dicts to the DB, returning the count saved.
 
@@ -427,10 +474,12 @@ async def upload_statement(
 
     # PDF route: BMI Royalty Statement PDFs go through the dedicated
     # bmi_pdf parser. Other PDFs aren't currently supported.
+    bmi_affiliate_state: str | None = None
     if (file.filename or "").lower().endswith(".pdf"):
         from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
             bmi_pdf_to_events_and_payments,
             is_bmi_pdf,
+            parse_bmi_pdf_bytes,
         )
         from XR7.ingestion.statement_parser import ParseResult  # noqa: PLC0415
 
@@ -440,6 +489,10 @@ async def upload_statement(
                 detail="Only BMI Royalty Statement PDFs are supported today.",
             )
         events, payments, errors = bmi_pdf_to_events_and_payments(original_content, artist_id)
+        try:
+            bmi_affiliate_state = parse_bmi_pdf_bytes(original_content).affiliate_state
+        except Exception:  # noqa: BLE001
+            bmi_affiliate_state = None
         result = ParseResult(
             events=events,
             payments=payments,
@@ -577,6 +630,12 @@ async def upload_statement(
     founder_assignment = None
     if status != "FAILED":
         became_active, founder_assignment = promote_to_active(db, artist)
+        _autofill_payer_routing_from_uploads(
+            db,
+            artist,
+            [result.format_detected],
+            bmi_affiliate_state=bmi_affiliate_state,
+        )
     db.commit()
     db.refresh(statement)
     if founder_assignment is not None:
@@ -719,6 +778,8 @@ async def upload_statement_batch(
     failed = []
     duplicates = 0
     extracted_signals: list[dict] = []
+    formats_seen: list[str] = []
+    bmi_affiliate_state: str | None = None
 
     def _clamav_scan(content: bytes) -> None:
         # Simulated ClamAV gate for dev/test. Replace with real daemon call in production.
@@ -780,12 +841,18 @@ async def upload_statement_batch(
                 from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
                     bmi_pdf_to_events_and_payments,
                     is_bmi_pdf,
+                    parse_bmi_pdf_bytes,
                 )
 
                 if is_bmi_pdf(content):
                     pdf_events, pdf_payments, pdf_errors = bmi_pdf_to_events_and_payments(
                         content, artist_id
                     )
+                    if bmi_affiliate_state is None:
+                        try:
+                            bmi_affiliate_state = parse_bmi_pdf_bytes(content).affiliate_state
+                        except Exception:  # noqa: BLE001
+                            bmi_affiliate_state = None
                     result = parse_csv(b"", artist_id)
                     result.events = pdf_events
                     result.payments = pdf_payments
@@ -863,12 +930,19 @@ async def upload_statement_batch(
             )
             if statement.status != "FAILED":
                 extracted_signals.append(statement_signals)
+                formats_seen.append(result.format_detected)
         except Exception as exc:  # noqa: BLE001
             failed.append({"filename": filename, "error": str(exc)})
 
     # Trigger anomaly detection once after the full batch.
     if processed:
         became_active, founder_assignment = promote_to_active(db, artist)
+        _autofill_payer_routing_from_uploads(
+            db,
+            artist,
+            formats_seen,
+            bmi_affiliate_state=bmi_affiliate_state,
+        )
         db.commit()
         if founder_assignment is not None:
             handle_founder_notifications(db, artist, founder_assignment)
