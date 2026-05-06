@@ -199,6 +199,16 @@ export function DashboardPage() {
       if (terms.pending_version) {
         await xr7.acceptTerms(me.artist_id, terms.pending_version);
       }
+      // Same gate as the mount handler: after terms, if payer setup hasn't
+      // been completed, bounce into needs_payer_setup before showing the
+      // upload UI. Without this, accepting terms skipped straight to
+      // "ready" and the artist never saw the PRO/region question.
+      const refreshed = await xr7.me();
+      setMe(refreshed);
+      if (!refreshed.pro_affiliations || refreshed.pro_affiliations.length === 0) {
+        setState("needs_payer_setup");
+        return;
+      }
       await refreshAnomalies(me.artist_id);
       setState("ready");
     } catch (err) {
