@@ -107,6 +107,16 @@ _FORMATS = {
         "aliases": {"earnings": "earnings", "isrc": "isrc", "country": "country"},
     },
     "tunecore": {
+        # Modern TuneCore "Music Sales" export columns. Detection requires
+        # the unambiguous-to-TuneCore column names (Sales Period + TC Song
+        # ID + Total Earned), with the legacy "Sale Month" form kept as a
+        # secondary detection path for older exports.
+        "required": {"sales period", "tc song id", "total earned"},
+        "aliases": {"total earned": "amount", "optional isrc": "isrc", "country of sale": "country"},
+    },
+    "tunecore_legacy": {
+        # Older TuneCore exports we still want to detect. Kept separate so
+        # the dispatcher can route both to _parse_tunecore.
         "required": {"sale month", "store", "title", "quantity", "net revenue"},
         "aliases": {"net revenue": "amount", "isrc": "isrc", "country": "country"},
     },
@@ -693,6 +703,28 @@ _DISTRIBUTOR_COLS: dict[str, _DistributorCols] = {
         fmt_key="distrokid",
     ),
     "tunecore": _DistributorCols(
+        # Modern TuneCore "Music Sales" export has these column names. The
+        # legacy aliases ("sale month", "net revenue", etc.) stay for older
+        # exports we may still see. Real header sample (2024 export):
+        #   "Sales Period","Posted Date","Store Name","Country Of Sale",
+        #   "Artist","Release Type","Release Title","Song Title","Label",
+        #   "UPC","Optional UPC","TC Song ID","Optional ISRC","Sales Type",
+        #   "# Units Sold","Per Unit Price","Net Sales","Net Sales Currency",
+        #   "Exchange Rate","Total Earned","Currency","Commission",
+        #   "Youtube Video ID","Youtube Policy Type"
+        date=("sales period", "sale month", "month", "date"),
+        quantity=("# units sold", "units sold", "quantity"),
+        amount=("total earned", "net revenue", "net sales", "amount", "earnings"),
+        platform=("store name", "store", "platform"),
+        territory=("country of sale", "country", "territory"),
+        title=("song title", "release title", "title", "track name", "song"),
+        default_platform="TuneCore",
+        source_label="TuneCore",
+        fmt_key="tunecore",
+    ),
+    # Alias entry so the format dispatcher can route "tunecore_legacy" detections
+    # (older exports — see _FORMATS) to the same tunecore parser.
+    "tunecore_legacy": _DistributorCols(
         date=("sale month", "month", "date"),
         quantity=("quantity",),
         amount=("net revenue", "amount", "earnings"),
@@ -701,7 +733,7 @@ _DISTRIBUTOR_COLS: dict[str, _DistributorCols] = {
         title=("title", "track name", "song"),
         default_platform="TuneCore",
         source_label="TuneCore",
-        fmt_key="tunecore",
+        fmt_key="tunecore_legacy",
     ),
     "cdbaby": _DistributorCols(
         date=("sale date", "date", "month"),

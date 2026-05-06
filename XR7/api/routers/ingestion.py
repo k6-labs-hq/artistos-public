@@ -709,6 +709,18 @@ async def upload_statement_batch(
         elif lower.endswith(".pdf"):
             # PDF support: store as statement record with no parsed events; OCR/parser hook can be added later.
             expanded.append((file.filename, raw))
+        elif lower.endswith(".numbers"):
+            # Apple Numbers files need conversion to CSV before the parser can
+            # touch them. Parity with the single-file upload endpoint above —
+            # without this, .numbers files in a batch silently fall through
+            # and never get into the statements table at all.
+            try:
+                converted = numbers_to_csv_bytes(raw)
+            except ValueError as exc:
+                failed.append({"filename": file.filename, "error": f"numbers conversion: {exc}"})
+                continue
+            csv_name = file.filename.rsplit(".", 1)[0] + ".csv"
+            expanded.append((csv_name, converted))
         else:
             expanded.append((file.filename, raw))
 

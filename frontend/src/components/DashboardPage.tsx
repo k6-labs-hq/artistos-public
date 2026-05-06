@@ -570,7 +570,25 @@ export function DashboardPage() {
                   type="file"
                   multiple
                   accept=".csv,.tsv,.xlsx,.numbers"
-                  onChange={(e) => setUploadFiles(Array.from(e.target.files ?? []))}
+                  onChange={(e) => {
+                    // Append on every selection rather than replace. Browser
+                    // file dialogs return one batch at a time, so picking
+                    // "MLC.numbers" and then "tunecore-*.csv" used to drop
+                    // the first selection. De-dup by name so re-selecting
+                    // the same file twice doesn't double-stage it.
+                    const incoming = Array.from(e.target.files ?? []);
+                    setUploadFiles((prev) => {
+                      const seen = new Set(prev.map((f) => f.name + ":" + f.size));
+                      return [
+                        ...prev,
+                        ...incoming.filter((f) => !seen.has(f.name + ":" + f.size)),
+                      ];
+                    });
+                    // Clear the input so onChange fires again if the user
+                    // re-picks the same file (otherwise the browser
+                    // suppresses the change event for repeat selections).
+                    e.target.value = "";
+                  }}
                   aria-label="Royalty statement files"
                 />
                 <button
@@ -585,10 +603,73 @@ export function DashboardPage() {
                       ? `Upload ${uploadFiles.length} files`
                       : "Upload"}
                 </button>
-                {uploadFiles.length > 1 ? (
-                  <p style={{ marginTop: "8px", color: "#94a3b8", fontSize: "13px" }}>
-                    {uploadFiles.length} files selected. Up to 100 per batch.
-                  </p>
+                {uploadFiles.length > 0 ? (
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      padding: "10px 12px",
+                      background: "rgba(15, 23, 42, 0.6)",
+                      border: "1px solid rgba(168, 85, 247, 0.2)",
+                      borderRadius: "6px",
+                      maxHeight: "180px",
+                      overflowY: "auto",
+                      fontSize: "12px",
+                      color: "#cbd5e1",
+                    }}
+                  >
+                    <div style={{ marginBottom: "6px", fontSize: "11px", color: "#94a3b8" }}>
+                      Staged for upload ({uploadFiles.length}):
+                    </div>
+                    {uploadFiles.map((f) => (
+                      <div
+                        key={`${f.name}:${f.size}`}
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: "8px",
+                          padding: "2px 0",
+                        }}
+                      >
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {f.name}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setUploadFiles((prev) =>
+                              prev.filter((p) => !(p.name === f.name && p.size === f.size)),
+                            )
+                          }
+                          style={{
+                            background: "transparent",
+                            border: "none",
+                            color: "#fca5a5",
+                            cursor: "pointer",
+                            fontSize: "12px",
+                            padding: "0 4px",
+                          }}
+                          aria-label={`Remove ${f.name}`}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setUploadFiles([])}
+                      style={{
+                        marginTop: "6px",
+                        background: "transparent",
+                        border: "none",
+                        color: "#94a3b8",
+                        cursor: "pointer",
+                        fontSize: "11px",
+                        padding: 0,
+                      }}
+                    >
+                      Clear all
+                    </button>
+                  </div>
                 ) : null}
               </form>
               {uploadResult ? (
