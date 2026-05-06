@@ -131,6 +131,19 @@ export function DashboardPage() {
     failed: number;
     duplicates: number;
   } | null>(null);
+  const [statementHistory, setStatementHistory] = useState<
+    Array<{
+      id: string;
+      filename: string;
+      format_detected: string;
+      events_created: number;
+      payments_created: number;
+      skipped_rows: number;
+      status: string;
+      error_summary: string | null;
+      uploaded_at: string;
+    }>
+  >([]);
   const [termsText, setTermsText] = useState<string | null>(null);
   const [termsVersion, setTermsVersion] = useState<string | null>(null);
   const [termsLoading, setTermsLoading] = useState(false);
@@ -138,6 +151,16 @@ export function DashboardPage() {
   const [selectedPros, setSelectedPros] = useState<string[]>([]);
   const [selectedBmiOffice, setSelectedBmiOffice] = useState<string>("Nashville");
   const [savingRouting, setSavingRouting] = useState(false);
+
+  const refreshHistory = useCallback(async (artistId: string) => {
+    try {
+      const rows = await xr7.listStatements(artistId);
+      setStatementHistory(rows);
+    } catch {
+      // Non-critical — history is informational; don't blow up the
+      // whole dashboard if this fails.
+    }
+  }, []);
 
   const refreshAnomalies = useCallback(async (artistId: string) => {
     const rows = await xr7.listAnomalies(artistId);
@@ -169,7 +192,7 @@ export function DashboardPage() {
           setState("needs_payer_setup");
           return;
         }
-        await refreshAnomalies(meResp.artist_id);
+        await refreshAnomalies(meResp.artist_id); await refreshHistory(meResp.artist_id);
         setState("ready");
       } catch (err) {
         if (err instanceof UnauthorizedError) return;
@@ -177,7 +200,7 @@ export function DashboardPage() {
         setState("error");
       }
     })();
-  }, [refreshAnomalies]);
+  }, [refreshAnomalies, refreshHistory]);
 
   // Fetch the full Terms text once, when we transition into needs_terms.
   // Without this the screen had only a button — nothing to actually read.
@@ -214,7 +237,7 @@ export function DashboardPage() {
       // Refresh /me so the cached state matches.
       const refreshed = await xr7.me();
       setMe(refreshed);
-      await refreshAnomalies(me.artist_id);
+      await refreshAnomalies(me.artist_id); await refreshHistory(me.artist_id);
       setState("ready");
     } catch (err) {
       if (err instanceof UnauthorizedError) return;
@@ -248,7 +271,7 @@ export function DashboardPage() {
         setState("needs_payer_setup");
         return;
       }
-      await refreshAnomalies(me.artist_id);
+      await refreshAnomalies(me.artist_id); await refreshHistory(me.artist_id);
       setState("ready");
     } catch (err) {
       if (err instanceof UnauthorizedError) return;
@@ -318,7 +341,7 @@ export function DashboardPage() {
         );
       }
       setUploadFiles([]);
-      await refreshAnomalies(me.artist_id);
+      await refreshAnomalies(me.artist_id); await refreshHistory(me.artist_id);
     } catch (err) {
       if (err instanceof UnauthorizedError) return;
       setError(err instanceof Error ? err.message : String(err));
@@ -759,6 +782,90 @@ export function DashboardPage() {
                 </p>
               ) : null}
             </section>
+
+            {statementHistory.length > 0 ? (
+              <section style={{ marginTop: "32px" }}>
+                <h2 style={{ marginBottom: "12px" }}>Upload history</h2>
+                <p style={{ marginTop: 0, opacity: 0.7, fontSize: "14px" }}>
+                  Last {statementHistory.length} statement{statementHistory.length === 1 ? "" : "s"}{" "}
+                  ingested for your account, newest first.
+                </p>
+                <div
+                  style={{
+                    maxHeight: "320px",
+                    overflowY: "auto",
+                    border: "1px solid rgba(168, 85, 247, 0.2)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+                    <thead>
+                      <tr
+                        style={{
+                          textAlign: "left",
+                          background: "rgba(15, 23, 42, 0.7)",
+                          position: "sticky",
+                          top: 0,
+                        }}
+                      >
+                        <th style={{ padding: "8px 12px" }}>File</th>
+                        <th style={{ padding: "8px 12px" }}>Format</th>
+                        <th style={{ padding: "8px 12px", textAlign: "right" }}>Events</th>
+                        <th style={{ padding: "8px 12px", textAlign: "right" }}>Payments</th>
+                        <th style={{ padding: "8px 12px" }}>Status</th>
+                        <th style={{ padding: "8px 12px" }}>Uploaded</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {statementHistory.slice(0, 200).map((s) => (
+                        <tr
+                          key={s.id}
+                          style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+                        >
+                          <td
+                            style={{
+                              padding: "6px 12px",
+                              maxWidth: "300px",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                            title={s.filename}
+                          >
+                            {s.filename}
+                          </td>
+                          <td style={{ padding: "6px 12px", color: "#94a3b8" }}>
+                            {s.format_detected}
+                          </td>
+                          <td style={{ padding: "6px 12px", textAlign: "right" }}>
+                            {s.events_created.toLocaleString()}
+                          </td>
+                          <td style={{ padding: "6px 12px", textAlign: "right" }}>
+                            {s.payments_created.toLocaleString()}
+                          </td>
+                          <td
+                            style={{
+                              padding: "6px 12px",
+                              color:
+                                s.status === "PROCESSED"
+                                  ? "#86efac"
+                                  : s.status === "FAILED"
+                                    ? "#fca5a5"
+                                    : "#fde68a",
+                            }}
+                          >
+                            {s.status}
+                          </td>
+                          <td style={{ padding: "6px 12px", color: "#94a3b8" }}>
+                            {new Date(s.uploaded_at).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            ) : null}
 
             <section style={{ marginTop: "32px" }}>
               <h2>Detected anomalies</h2>

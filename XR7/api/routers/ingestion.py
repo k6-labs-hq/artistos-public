@@ -466,9 +466,16 @@ async def upload_statement(
                 ),
             ) from timeout_err
 
-    statement_signals = extract_statement_signals(
-        content, file.filename or "statement.csv", format_detected=result.format_detected
-    )
+    # Signal extraction reads the file as a tabular CSV/TSV. PDFs (and
+    # other non-tabular sources) crash the csv reader, so skip them and
+    # fall back to an empty signals dict — non-critical, only used for
+    # HubSpot sync + analytics.
+    if (file.filename or "").lower().endswith(".pdf"):
+        statement_signals = {"source_format": result.format_detected}
+    else:
+        statement_signals = extract_statement_signals(
+            content, file.filename or "statement.csv", format_detected=result.format_detected
+        )
     status = "PROCESSED"
     error_summary: str | None = None
 
@@ -811,9 +818,15 @@ async def upload_statement_batch(
                     ]
                     result.format_detected = "timeout"
 
-            statement_signals = extract_statement_signals(
-                content, filename, format_detected=result.format_detected
-            )
+            # Skip signal extraction for non-tabular formats (PDF) — the
+            # csv reader can't read PDF binary. Same fallback as the
+            # single-file path above.
+            if filename.lower().endswith(".pdf"):
+                statement_signals = {"source_format": result.format_detected}
+            else:
+                statement_signals = extract_statement_signals(
+                    content, filename, format_detected=result.format_detected
+                )
             event_result = _save_events(db, result.events)
             events_created = event_result["inserted"]
             payments_created = _save_payments(db, result.payments)

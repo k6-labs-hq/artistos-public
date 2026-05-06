@@ -115,6 +115,22 @@ export const xr7 = {
       fd,
     );
   },
+  listStatements: (artistId: string) =>
+    xr7Get<
+      Array<{
+        id: string;
+        filename: string;
+        format_detected: string;
+        row_count: number;
+        events_created: number;
+        payments_created: number;
+        skipped_rows: number;
+        status: string;
+        error_summary: string | null;
+        s3_uri: string | null;
+        uploaded_at: string;
+      }>
+    >(`/artists/${encodeURIComponent(artistId)}/statements`),
   uploadStatementBatch: (artistId: string, files: File[]) => {
     const fd = new FormData();
     for (const f of files) fd.append("files", f);
