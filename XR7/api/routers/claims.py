@@ -891,6 +891,18 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
     is the caller's responsibility; this helper assumes access has already
     been verified.
     """
+    # Status guard — only PREPARED claims are filable. Sending again on
+    # FILED/IN_REVIEW/etc. would create a second outbound MessageID for the
+    # same matter and break the inbound-correlation chain.
+    if str(claim.status.value if hasattr(claim.status, "value") else claim.status) != "PREPARED":
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Claim is in status {claim.status} — only PREPARED claims can be filed. "
+                "Use /admin/claims/{id}/record-remittance for follow-up actions."
+            ),
+        )
+
     artist = db.query(Artist).filter(Artist.id == claim.artist_id).first()
     anomaly = (
         db.query(Anomaly).filter(Anomaly.id == claim.anomaly_id).first()
@@ -903,6 +915,20 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
             detail="Cannot file: claim must have a linked artist + anomaly",
         )
 
+    # Artist-side onboarding guard. Filing pipeline reads
+    # `Artist.bmi_office_name` to route BMI submissions; without onboarding
+    # we'd silently fall back to Nashville for an artist whose actual home
+    # office is somewhere else. Block the send and surface the gap.
+    if not getattr(artist, "pro_affiliations", None):
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Cannot file: artist has not completed payer-routing setup. "
+                "Have the artist sign in and complete the 'Where do your statements "
+                "come from?' step on the dashboard."
+            ),
+        )
+
     # Resolve payer from claim.payer_name (e.g., "MLC", "BMI") or fall back
     # to the anomaly's worst_payer evidence field.
     payer_id = claim.payer_name
@@ -913,6 +939,24 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
         raise HTTPException(
             status_code=409,
             detail="Cannot file: claim has no payer_name and the anomaly does not identify one",
+        )
+
+    # Per-payer affiliation guard — refuse to file against a payer the
+    # artist hasn't told us they receive statements from. Catches the
+    # case where an anomaly was inferred from a partial dataset and the
+    # artist isn't actually affiliated with the proposed payer.
+    canonical_payer = payer_id.strip().upper()
+    affiliations = {p.upper() for p in (artist.pro_affiliations or [])}
+    matched = canonical_payer in affiliations or any(
+        canonical_payer in a or a in canonical_payer for a in affiliations
+    )
+    if not matched:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f"Cannot file: artist is not registered as affiliated with {payer_id}. "
+                f"Current affiliations: {sorted(affiliations) or 'none'}."
+            ),
         )
 
     from XR7.recovery.dispute_correlation import record_outbound_filing  # noqa: PLC0415
