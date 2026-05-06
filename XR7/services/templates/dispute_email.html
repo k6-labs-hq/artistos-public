@@ -212,7 +212,7 @@
 
         <div class="salutation">{{ salutation }}</div>
 
-        <p>This letter formally notifies you of a royalty underpayment identified through forensic audit of {{ payer_id }} statements for {{ artist_name }}. XR7, acting under signed Limited Power of Attorney, submits this claim on behalf of the artist and is authorized to receive all correspondence regarding this matter.</p>
+        <p>We are writing on behalf of {{ artist_name }} to formally notify you of a royalty underpayment identified through our forensic audit of {{ payer_id }} statements. We act under a signed Limited Power of Attorney from {{ artist_name }} and are authorized to receive all correspondence regarding this matter.</p>
 
         {% if contractual_citation %}
         <div class="citation-block">
@@ -254,7 +254,7 @@
                 <li>Source data verification</li>
             </ul>
 
-            <p>Each element of this claim is traceable to payment records issued under your authority. The cryptographic signature ensures the integrity and authenticity of all supporting materials.</p>
+            <p>Each element of our finding is traceable to payment records issued under your authority. The cryptographic signature ensures the integrity and authenticity of all supporting materials.</p>
         </div>
 
         <div class="section">
@@ -265,9 +265,9 @@
                 <div class="deadline-date">{{ response_requested_by }}</div>
             </div>
 
-            <p>Please remit payment or provide written explanation of any disputed amounts by the date specified above. Failure to respond will necessitate escalation in accordance with standard audit resolution procedures.</p>
+            <p>Please remit payment or provide written explanation of any disputed amounts by the date specified above. If we do not receive a response, we will escalate in accordance with standard audit resolution procedures.</p>
 
-            <p>Questions regarding methodology, source data, or documentation should be directed to this email address. All correspondence is automatically tracked within our claims management system (Reference: {{ claim_id }}).</p>
+            <p>Please direct questions regarding methodology, source data, or documentation to this email address. We track all correspondence within our claims management system (Reference: {{ claim_id }}).</p>
         </div>
 
         <div class="signature">
