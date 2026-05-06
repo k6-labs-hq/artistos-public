@@ -189,6 +189,7 @@ def render_evidence_packet_pdf(
     line_items: list[dict[str, Any]] | None = None,
     line_items_meta: dict[str, Any] | None = None,
     payer_office: dict[str, Any] | None = None,
+    payer_identifiers: dict[str, Any] | None = None,
 ) -> bytes:
     """Render an evidence packet to PDF bytes.
 
@@ -261,6 +262,7 @@ def render_evidence_packet_pdf(
         "line_items": line_items,
         "line_items_meta": line_items_meta,
         "payer_office": payer_office,
+        "payer_identifiers": payer_identifiers,
         "signature": signature,
     }
 

@@ -187,6 +187,52 @@
 </section>
 {% endif %}
 
+{% if payer_identifiers and (payer_identifiers.participant_numbers or payer_identifiers.work_ids or payer_identifiers.period_start) %}
+<section class="subject-distribution">
+  <h2 style="margin-top: 12pt;">Subject distribution</h2>
+  <div style="border: 1px solid #d4d4dc; border-radius: 4pt; padding: 10pt 14pt; background: #fafafd;">
+    <table style="width: 100%; border-collapse: collapse; font-size: 10pt;">
+      {% if payer_identifiers.participant_numbers %}
+      <tr>
+        <th style="text-align: left; width: 35%; padding: 3pt 0; font-weight: 600; vertical-align: top;">{{ claim.payer_name|default('Payer') }} Account #{% if payer_identifiers.participant_numbers|length > 1 %}s{% endif %}</th>
+        <td style="padding: 3pt 0; font-family: 'Menlo', 'Consolas', monospace;">{{ payer_identifiers.participant_numbers|join(', ') }}</td>
+      </tr>
+      {% endif %}
+      {% if payer_identifiers.ipi_numbers %}
+      <tr>
+        <th style="text-align: left; padding: 3pt 0; font-weight: 600; vertical-align: top;">IPI / CAE #{% if payer_identifiers.ipi_numbers|length > 1 %}s{% endif %}</th>
+        <td style="padding: 3pt 0; font-family: 'Menlo', 'Consolas', monospace;">{{ payer_identifiers.ipi_numbers|join(', ') }}</td>
+      </tr>
+      {% endif %}
+      {% if payer_identifiers.period_start and payer_identifiers.period_end %}
+      <tr>
+        <th style="text-align: left; padding: 3pt 0; font-weight: 600; vertical-align: top;">Distribution period covered</th>
+        <td style="padding: 3pt 0;">{{ payer_identifiers.period_start }} → {{ payer_identifiers.period_end }}</td>
+      </tr>
+      {% endif %}
+      {% if payer_identifiers.payment_count %}
+      <tr>
+        <th style="text-align: left; padding: 3pt 0; font-weight: 600; vertical-align: top;">Payment rows reviewed</th>
+        <td style="padding: 3pt 0;">{{ payer_identifiers.payment_count }}</td>
+      </tr>
+      {% endif %}
+      {% if payer_identifiers.work_ids %}
+      <tr>
+        <th style="text-align: left; padding: 3pt 0; font-weight: 600; vertical-align: top;">Work ID{% if payer_identifiers.work_ids|length > 1 %}s{% endif %} ({{ payer_identifiers.work_ids|length }})</th>
+        <td style="padding: 3pt 0; font-family: 'Menlo', 'Consolas', monospace; font-size: 9pt;">
+          {% if payer_identifiers.work_ids|length > 12 %}
+            {{ payer_identifiers.work_ids[:12]|join(', ') }} <em>(+ {{ payer_identifiers.work_ids|length - 12 }} more)</em>
+          {% else %}
+            {{ payer_identifiers.work_ids|join(', ') }}
+          {% endif %}
+        </td>
+      </tr>
+      {% endif %}
+    </table>
+  </div>
+</section>
+{% endif %}
+
 <section>
   <h2>1. Royalty Audit Finding</h2>
   <p class="muted small">

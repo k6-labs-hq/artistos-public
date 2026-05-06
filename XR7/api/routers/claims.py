@@ -918,7 +918,6 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
     from XR7.recovery.dispute_correlation import record_outbound_filing  # noqa: PLC0415
     from XR7.recovery.dispute_delivery import deliver_dispute  # noqa: PLC0415
     from XR7.recovery.payer_config import get_payer_office  # noqa: PLC0415
-    from XR7.services.evidence_packet_pdf import render_evidence_packet_pdf  # noqa: PLC0415
 
     # Resolve the payer office for routing. For BMI, this picks the
     # artist's chosen regional office (or Nashville default). For other
@@ -940,35 +939,10 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
         else None
     )
 
-    snapshot = json.loads(anomaly.feature_snapshot or "{}")
-    pdf_bytes = render_evidence_packet_pdf(
-        claim={
-            "id": claim.id,
-            "reference_number": claim.reference_number,
-            "payer_name": claim.payer_name,
-            "sol_deadline": (claim.sol_deadline.isoformat() if claim.sol_deadline else None),
-        },
-        artist={"id": artist.id, "name": artist.name},
-        anomaly={
-            "id": anomaly.id,
-            "subtype": str(anomaly.subtype) if anomaly.subtype else None,
-            "rule_id": snapshot.get("rule_id"),
-            "category": str(anomaly.category) if anomaly.category else None,
-            "severity": str(anomaly.severity) if anomaly.severity else None,
-            "confidence_score": (
-                float(anomaly.confidence_score) if anomaly.confidence_score is not None else None
-            ),
-            "estimated_recoverable": (
-                float(anomaly.estimated_recoverable)
-                if anomaly.estimated_recoverable is not None
-                else None
-            ),
-            "created_at": anomaly.created_at.isoformat() if anomaly.created_at else None,
-            "description": anomaly.description,
-            "evidence": snapshot.get("evidence"),
-        },
-        payer_office=office_dict,
-    )
+    # Use the shared helper so the packet sent over email matches what
+    # operators see in the Preview button — line items, BMI identifiers,
+    # everything. Previously this path rendered inline with less detail.
+    pdf_bytes = _render_claim_evidence_pdf(claim, db)
 
     result = deliver_dispute(
         claim={
@@ -1200,9 +1174,41 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
     # the other rules can land alongside their per-payer playbook in #179.
     line_items: list[dict] = []
     line_items_meta: dict = {}
+    bmi_identifiers: dict = {}
     if anomaly is not None:
         snapshot = json.loads(anomaly.feature_snapshot or "{}")
         rule_id = snapshot.get("rule_id") or str(anomaly.subtype or "")
+
+        # Always try to pull payer-side identifiers when the payer is BMI, so
+        # the packet's "Subject distribution" block can quote the actual
+        # PARTICIPANT # / IP # / TITLE # / period that BMI's investigators
+        # need to look the matter up. Per docs/runbooks/bmi-dispute-attorney-
+        # brief.md §3.5.
+        payer_name_upper = (getattr(claim, "payer_name", "") or "").upper()
+        if "BMI" in payer_name_upper:
+            bmi_payments = (
+                db.query(Payment)
+                .filter(
+                    Payment.artist_id == claim.artist_id,
+                    Payment.source.ilike("%BMI%"),
+                )
+                .all()
+            )
+            account_ids = sorted({p.payer_account_id for p in bmi_payments if p.payer_account_id})
+            ip_numbers = sorted({p.payer_ip_number for p in bmi_payments if p.payer_ip_number})
+            work_ids = sorted({p.payer_work_id for p in bmi_payments if p.payer_work_id})
+            periods = [p.period_start for p in bmi_payments if p.period_start] + [
+                p.period_end for p in bmi_payments if p.period_end
+            ]
+            bmi_identifiers = {
+                "participant_numbers": account_ids,
+                "ipi_numbers": ip_numbers,
+                "work_ids": work_ids,
+                "period_start": min(periods).isoformat() if periods else None,
+                "period_end": max(periods).isoformat() if periods else None,
+                "payment_count": len(bmi_payments),
+            }
+
         if rule_id == "HIGH_RETROACTIVE_RATIO":
             worst_payer = (snapshot.get("evidence") or {}).get("worst_payer")
             if worst_payer:
@@ -1285,6 +1291,7 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
         line_items=line_items,
         line_items_meta=line_items_meta,
         payer_office=office_dict,
+        payer_identifiers=bmi_identifiers or None,
     )
     return pdf_bytes
 
