@@ -46,3 +46,24 @@ class ObjectStorageService:
     def build_evidence_key(self, claim_id: str) -> str:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         return f"evidence/{claim_id}/{stamp}.json"
+
+    def build_statement_key(self, artist_id: str, file_hash: str, original_ext: str) -> str:
+        """Content-addressed key for an uploaded statement file.
+
+        Format: ``statements/{artist_id}/{file_hash}.{ext}``. See
+        docs/decisions/statement-storage-and-retention.md §5.
+        """
+        ext = (original_ext or "").lstrip(".").lower() or "bin"
+        return f"statements/{artist_id}/{file_hash}.{ext}"
+
+    def download_bytes(self, key: str) -> bytes:
+        """Read an object's contents as bytes. Raises if the object is absent."""
+        resp = self._client.get_object(Bucket=self.bucket, Key=key)
+        return resp["Body"].read()
+
+    def s3_uri_to_key(self, s3_uri: str) -> str:
+        """Strip the ``s3://<bucket>/`` prefix from a URI we issued."""
+        prefix = f"s3://{self.bucket}/"
+        if not s3_uri.startswith(prefix):
+            raise ValueError(f"URI {s3_uri!r} is not in our bucket {self.bucket!r}")
+        return s3_uri[len(prefix):]

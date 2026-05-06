@@ -47,6 +47,11 @@ class Statement(Base):
     )  # PROCESSED / FAILED / DUPLICATE
     error_summary: Mapped[str | None] = mapped_column(String, nullable=True)
     ingestion_metadata_json: Mapped[str] = mapped_column(Text, nullable=False, default="{}")
+    # S3-style URI (s3://bucket/key) for the original uploaded bytes.
+    # Null = file not stored (legacy uploads from before the storage wiring,
+    # or the rare case where the S3 write failed but parsing succeeded).
+    # See docs/decisions/statement-storage-and-retention.md.
+    s3_uri: Mapped[str | None] = mapped_column(String, nullable=True)
     uploaded_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
@@ -67,4 +72,5 @@ class StatementSchema(BaseModel):
     status: str
     error_summary: str | None
     ingestion_metadata_json: str
+    s3_uri: str | None = None
     uploaded_at: datetime

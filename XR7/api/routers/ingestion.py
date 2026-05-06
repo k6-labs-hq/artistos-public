@@ -29,11 +29,13 @@ from datetime import datetime, timezone
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi.responses import Response
 from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from XR7.api.authz import require_admin_session
 from XR7.api.routers.anomalies import run_detection_and_persist
 from XR7.api.routers.terms import require_terms_accepted
 from XR7.auth.event_notifications import send_event_notification
@@ -347,6 +349,10 @@ async def upload_statement(
     # original bytes are identical.
     file_hash = hashlib.sha256(content).hexdigest()
 
+    # Preserve the un-converted bytes for object-storage persistence below.
+    # `content` may be rewritten by the .numbers → CSV step that follows.
+    original_content = content
+
     # Apple Numbers files (.numbers) are zip-wrapped binary protobuf — the CSV-based
     # parsers can't read them directly. Convert AFTER hashing so dedup is keyed on
     # the original upload, not on post-conversion bytes. See #195.
@@ -370,6 +376,33 @@ async def upload_statement(
                 f"This file has already been uploaded (statement ID: {existing.id}).  "
                 "Upload a different statement or contact support if you believe this is an error."
             ),
+        )
+
+    # Persist the original bytes (pre-conversion) to object storage so we
+    # can reprocess later under updated parsers and produce the source
+    # statement on demand for audit/legal review. See
+    # docs/decisions/statement-storage-and-retention.md. Failure to upload
+    # is logged as a warning but doesn't block ingestion — the parsed data
+    # is still usable; we just won't have the source bytes for that one file.
+    s3_uri: str | None = None
+    try:
+        from XR7.services.storage_service import ObjectStorageService  # noqa: PLC0415
+
+        storage = ObjectStorageService()
+        original_ext = (file.filename or "statement.csv").rsplit(".", 1)[-1]
+        s3_key = storage.build_statement_key(artist_id, file_hash, original_ext)
+        # `original_content` is the un-converted bytes; `content` may have been
+        # rewritten by the .numbers → CSV step above. Always store the original.
+        s3_uri = storage.upload_bytes(
+            s3_key,
+            original_content,
+            content_type="application/octet-stream",
+        )
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "Failed to persist statement bytes to object storage; continuing with parse",
+            extra={"artist_id": artist_id, "file_hash": file_hash, "filename": file.filename},
+            exc_info=True,
         )
 
     anomaly_count_before = (
@@ -504,6 +537,7 @@ async def upload_statement(
         status=status,
         error_summary=error_summary,
         ingestion_metadata_json=to_json(statement_signals),
+        s3_uri=s3_uri,
         uploaded_at=datetime.now(timezone.utc),
     )
     db.add(statement)
@@ -932,3 +966,48 @@ def get_statement(artist_id: str, statement_id: str, db: Session = Depends(get_d
     if not statement:
         raise HTTPException(status_code=404, detail="Statement not found")
     return statement
+
+
+@router.get("/admin/statements/{statement_id}/download")
+def admin_download_statement(
+    statement_id: str,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_admin_session),
+):
+    """Retrieve the original uploaded statement bytes from object storage.
+
+    Admin-only. Returns 404 if the statement doesn't exist or was uploaded
+    before the storage wiring landed (legacy rows have ``s3_uri`` NULL).
+    Used for audit / legal evidence and for the reprocess script.
+    """
+    statement = db.query(Statement).filter(Statement.id == statement_id).first()
+    if statement is None:
+        raise HTTPException(status_code=404, detail="Statement not found")
+    if not statement.s3_uri:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "This statement was uploaded before object storage was wired; "
+                "the original bytes are not retained."
+            ),
+        )
+
+    from XR7.services.storage_service import ObjectStorageService  # noqa: PLC0415
+
+    storage = ObjectStorageService()
+    try:
+        key = storage.s3_uri_to_key(statement.s3_uri)
+        data = storage.download_bytes(key)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Statement download from object storage failed")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Could not retrieve stored statement bytes: {exc}",
+        ) from exc
+
+    filename = statement.filename or f"{statement_id}.bin"
+    return Response(
+        content=data,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
