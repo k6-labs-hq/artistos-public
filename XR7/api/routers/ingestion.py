@@ -426,10 +426,13 @@ async def upload_statement(
     # Persist the original bytes (pre-conversion) to object storage so we
     # can reprocess later under updated parsers and produce the source
     # statement on demand for audit/legal review. See
-    # docs/decisions/statement-storage-and-retention.md. Failure to upload
-    # is logged as a warning but doesn't block ingestion — the parsed data
-    # is still usable; we just won't have the source bytes for that one file.
+    # docs/decisions/statement-storage-and-retention.md. Failure doesn't
+    # block ingestion — the parsed data is still usable — but the warning
+    # is now surfaced in the Statement's error_summary so the dashboard
+    # makes the missing source bytes visible instead of silently losing
+    # them the way the prior log-only handling did.
     s3_uri: str | None = None
+    storage_warning: str | None = None
     try:
         from XR7.services.storage_service import ObjectStorageService  # noqa: PLC0415
 
@@ -443,7 +446,8 @@ async def upload_statement(
             original_content,
             content_type="application/octet-stream",
         )
-    except Exception:  # noqa: BLE001
+    except Exception as exc:  # noqa: BLE001
+        storage_warning = f"Source bytes not persisted to object storage: {exc}"
         logger.warning(
             "Failed to persist statement bytes to object storage; continuing with parse",
             extra={"artist_id": artist_id, "file_hash": file_hash, "filename": file.filename},
@@ -533,6 +537,15 @@ async def upload_statement(
     if result.errors and not result.events:
         status = "FAILED"
         error_summary = "; ".join(result.errors[:5])
+
+    # Append the storage-persist warning so the dashboard's upload history
+    # shows it. We don't downgrade status to FAILED — parsing succeeded,
+    # the audit-trail half is just incomplete — but the user/operator
+    # should be able to see at a glance that the source bytes weren't kept.
+    if storage_warning:
+        error_summary = (
+            f"{error_summary}; {storage_warning}" if error_summary else storage_warning
+        )
 
     # Persist
     event_result = _save_events(db, result.events)
@@ -881,6 +894,37 @@ async def upload_statement_batch(
             events_created = event_result["inserted"]
             payments_created = _save_payments(db, result.payments)
 
+            # Persist source bytes — same path as the single-file endpoint.
+            # Batch was previously skipping this entirely, so every BMI corpus
+            # upload silently lost its source bytes. See parity in upload_statement.
+            s3_uri: str | None = None
+            storage_warning: str | None = None
+            try:
+                from XR7.services.storage_service import ObjectStorageService  # noqa: PLC0415
+
+                storage = ObjectStorageService()
+                original_ext = (filename or "statement.csv").rsplit(".", 1)[-1]
+                s3_key = storage.build_statement_key(artist_id, file_hash, original_ext)
+                s3_uri = storage.upload_bytes(
+                    s3_key, content, content_type="application/octet-stream"
+                )
+            except Exception as exc:  # noqa: BLE001
+                storage_warning = f"Source bytes not persisted to object storage: {exc}"
+                logger.warning(
+                    "Batch upload: failed to persist statement bytes; continuing",
+                    extra={"artist_id": artist_id, "file_hash": file_hash, "filename": filename},
+                    exc_info=True,
+                )
+
+            base_summary = (
+                "; ".join(result.errors[:5]) if result.errors and not result.events else None
+            )
+            error_summary = (
+                f"{base_summary}; {storage_warning}"
+                if base_summary and storage_warning
+                else (base_summary or storage_warning)
+            )
+
             statement = Statement(
                 id=str(uuid.uuid4()),
                 artist_id=artist_id,
@@ -892,10 +936,9 @@ async def upload_statement_batch(
                 payments_created=payments_created,
                 skipped_rows=result.skipped_rows,
                 status="PROCESSED" if result.events or result.payments else "FAILED",
-                error_summary=(
-                    "; ".join(result.errors[:5]) if result.errors and not result.events else None
-                ),
+                error_summary=error_summary,
                 ingestion_metadata_json=to_json(statement_signals),
+                s3_uri=s3_uri,
                 uploaded_at=datetime.now(timezone.utc),
             )
             db.add(statement)

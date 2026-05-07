@@ -179,6 +179,28 @@ async def lifespan(app: FastAPI):
         Base.metadata.create_all(bind=engine)
     configure_structured_logging()
     configure_tracing(app)
+
+    # Ensure the object-storage bucket exists at startup. Lazy-creation on
+    # first upload was racy and silently swallowed by the upload handler's
+    # broad except — every QA + local install ran for weeks without the
+    # bucket actually existing, so source statement bytes were never
+    # persisted. Doing it once at boot makes it deterministic and surfaces
+    # config errors (wrong endpoint, bad creds) before the first request.
+    try:
+        from XR7.services.storage_service import ObjectStorageService  # noqa: PLC0415
+
+        ObjectStorageService().ensure_bucket()
+    except Exception:  # noqa: BLE001
+        # Don't block the API from starting — local dev without MinIO running
+        # should still come up — but log loudly so the failure isn't
+        # invisible the way it has been.
+        import logging  # noqa: PLC0415
+
+        logging.getLogger(__name__).exception(
+            "Object-storage bucket ensure failed at startup; statement source "
+            "bytes will not be persisted until this is fixed.",
+        )
+
     yield
 
 

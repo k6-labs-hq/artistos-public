@@ -463,13 +463,17 @@ export function DashboardPage() {
   const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!me?.artist_id || uploadFiles.length === 0) return;
+    // Snapshot the staged list at submit time. Files added later (while this
+    // upload is in flight) stay queued so the user can keep building the
+    // next batch instead of being locked out until completion.
+    const filesToUpload = uploadFiles;
     setUploading(true);
     setUploadResult(null);
     setUploadProgress(null);
     setError(null);
     try {
-      if (uploadFiles.length === 1) {
-        const onlyFile = uploadFiles[0];
+      if (filesToUpload.length === 1) {
+        const onlyFile = filesToUpload[0];
         if (!onlyFile) return;
         const result = await xr7.uploadStatement(me.artist_id, onlyFile);
         setUploadResult(
@@ -488,13 +492,13 @@ export function DashboardPage() {
         const failedNames: string[] = [];
         setUploadProgress({
           completed: 0,
-          total: uploadFiles.length,
+          total: filesToUpload.length,
           processed: 0,
           failed: 0,
           duplicates: 0,
         });
-        for (let i = 0; i < uploadFiles.length; i += CHUNK) {
-          const slice = uploadFiles.slice(i, i + CHUNK);
+        for (let i = 0; i < filesToUpload.length; i += CHUNK) {
+          const slice = filesToUpload.slice(i, i + CHUNK);
           const result = await xr7.uploadStatementBatch(me.artist_id, slice);
           processed += result.processed?.length || 0;
           failed += result.failed?.length || 0;
@@ -505,22 +509,26 @@ export function DashboardPage() {
             }
           }
           setUploadProgress({
-            completed: Math.min(i + CHUNK, uploadFiles.length),
-            total: uploadFiles.length,
+            completed: Math.min(i + CHUNK, filesToUpload.length),
+            total: filesToUpload.length,
             processed,
             failed,
             duplicates,
           });
         }
         setUploadResult(
-          `Uploaded ${uploadFiles.length} files: ${processed} processed, ` +
+          `Uploaded ${filesToUpload.length} files: ${processed} processed, ` +
             `${duplicates} duplicates, ${failed} failed.` +
             (failedNames.length
               ? `\nFirst failures: ${failedNames.join("; ")}`
               : ""),
         );
       }
-      setUploadFiles([]);
+      // Only remove the snapshot's files. Anything the user staged while
+      // the upload was running stays queued — drop by identity (name+size),
+      // not by clearing wholesale.
+      const uploadedKeys = new Set(filesToUpload.map((f) => f.name + ":" + f.size));
+      setUploadFiles((prev) => prev.filter((f) => !uploadedKeys.has(f.name + ":" + f.size)));
       await refreshAnomalies(me.artist_id); await refreshHistory(me.artist_id);
     } catch (err) {
       if (err instanceof UnauthorizedError) return;
@@ -685,7 +693,15 @@ export function DashboardPage() {
                 exports and BMI Royalty Statement PDFs.
               </p>
               <form onSubmit={handleUpload}>
+                {/*
+                  Hide the native file input — its default "No file chosen"
+                  text is redundant once we have the staged-files list below
+                  and confused early walkthrough users. Trigger the picker
+                  via a styled <label> instead. Input still works for
+                  keyboard nav + screen readers via the label association.
+                */}
                 <input
+                  id="upload-files-input"
                   type="file"
                   multiple
                   accept=".csv,.tsv,.xlsx,.numbers,.pdf"
@@ -709,7 +725,29 @@ export function DashboardPage() {
                     e.target.value = "";
                   }}
                   aria-label="Royalty statement files"
+                  style={{
+                    position: "absolute",
+                    width: "1px",
+                    height: "1px",
+                    padding: 0,
+                    margin: "-1px",
+                    overflow: "hidden",
+                    clip: "rect(0, 0, 0, 0)",
+                    border: 0,
+                  }}
                 />
+                <label
+                  htmlFor="upload-files-input"
+                  className="cta"
+                  style={{
+                    display: "inline-block",
+                    cursor: "pointer",
+                    background: "transparent",
+                    border: "1px solid rgba(168, 85, 247, 0.5)",
+                  }}
+                >
+                  Choose files…
+                </label>
                 <button
                   type="submit"
                   className="cta"
