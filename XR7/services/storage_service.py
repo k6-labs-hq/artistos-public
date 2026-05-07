@@ -29,9 +29,20 @@ class ObjectStorageService:
     def ensure_bucket(self) -> None:
         try:
             self._client.head_bucket(Bucket=self.bucket)
+            return
         except Exception:  # noqa: BLE001
-            logger.info("Creating missing object storage bucket", extra={"bucket": self.bucket})
+            pass
+        logger.info("Creating missing object storage bucket", extra={"bucket": self.bucket})
+        try:
             self._client.create_bucket(Bucket=self.bucket)
+        except Exception as exc:  # noqa: BLE001
+            # Concurrent startup race: api + worker pods both call this on
+            # boot. Whichever loses the head/create gap ends up here. Treat
+            # "already owned" as success since that's what we wanted.
+            name = type(exc).__name__
+            if name in {"BucketAlreadyOwnedByYou", "BucketAlreadyExists"}:
+                return
+            raise
 
     def upload_bytes(
         self, key: str, data: bytes, content_type: str = "application/octet-stream"
