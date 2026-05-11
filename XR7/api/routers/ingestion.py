@@ -261,6 +261,54 @@ def _autofill_payer_routing_from_uploads(
         artist.bmi_office_name = infer_bmi_office_from_state(bmi_affiliate_state)
 
 
+def _enrich_payments_with_iswc(
+    db: Session,
+    artist,  # noqa: ANN001 — Artist model, avoid circular import
+    events: list[dict],
+    payments: list[dict],
+) -> int:
+    """Backfill ISWC on each Payment dict via MusicBrainz lookup.
+
+    Called for BMI-typed uploads only — BMI statements don't carry ISWC,
+    and ISWC is the bridge to MLC's database. Mutates ``payments`` in
+    place. Returns the number of payment dicts that received an ISWC.
+
+    No-op when ``WorkIdentityLookup.is_enabled()`` is false, so the
+    feature is gated by env without changes here. Failures inside the
+    lookup are swallowed inside ``WorkIdentityLookup`` itself; this
+    helper never raises.
+
+    ``events`` and ``payments`` are produced together by the BMI parser
+    and zip 1:1; we read ``work_title`` off the corresponding event so
+    we don't change the parser's payment dict shape.
+    """
+    from XR7.services.work_identity_lookup import (  # noqa: PLC0415
+        WorkIdentityLookup,
+        is_enabled,
+    )
+
+    if not is_enabled():
+        return 0
+    if not (events and payments and len(events) == len(payments)):
+        return 0
+
+    lookup = WorkIdentityLookup(db)
+    artist_name = (artist.name or "").strip()
+    if not artist_name:
+        return 0
+
+    enriched = 0
+    for evt, pay in zip(events, payments):
+        title = (evt.get("work_title") or "").strip()
+        if not title:
+            continue
+        iswc = lookup.find_iswc(artist_name, title)
+        if iswc:
+            pay["iswc"] = iswc
+            enriched += 1
+    return enriched
+
+
 def _save_payments(db: Session, payments: list[dict]) -> int:
     """Persist normalised payment dicts to the DB, returning the count saved.
 
@@ -291,6 +339,7 @@ def _save_payments(db: Session, payments: list[dict]) -> int:
             payer_account_id=p.get("payer_account_id"),
             payer_ip_number=p.get("payer_ip_number"),
             payer_work_id=p.get("payer_work_id"),
+            iswc=p.get("iswc"),
         )
         try:
             with db.begin_nested():
@@ -495,6 +544,15 @@ async def upload_statement(
             bmi_affiliate_state = parse_bmi_pdf_bytes(original_content).affiliate_state
         except Exception:  # noqa: BLE001
             bmi_affiliate_state = None
+        # Optional ISWC enrichment via MusicBrainz. Gated by env flag so
+        # uploads stay self-contained when off. See issue #278.
+        try:
+            _enrich_payments_with_iswc(db, artist, events, payments)
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "iswc enrichment failed (non-blocking)",
+                extra={"artist_id": artist_id},
+            )
         result = ParseResult(
             events=events,
             payments=payments,
@@ -849,6 +907,13 @@ async def upload_statement_batch(
                             bmi_affiliate_state = parse_bmi_pdf_bytes(content).affiliate_state
                         except Exception:  # noqa: BLE001
                             bmi_affiliate_state = None
+                    try:
+                        _enrich_payments_with_iswc(db, artist, pdf_events, pdf_payments)
+                    except Exception:  # noqa: BLE001
+                        logger.exception(
+                            "iswc enrichment failed in batch (non-blocking)",
+                            extra={"artist_id": artist_id, "filename": filename},
+                        )
                     result = parse_csv(b"", artist_id)
                     result.events = pdf_events
                     result.payments = pdf_payments

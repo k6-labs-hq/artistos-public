@@ -56,6 +56,7 @@ import XR7.models.tvfilm_portfolio_job  # noqa: F401
 import XR7.models.vip  # noqa: F401
 import XR7.models.webhook_event  # noqa: F401
 import XR7.models.work  # noqa: F401
+import XR7.models.work_identity_cache  # noqa: F401
 import XR7.models.xr7_idempotency  # noqa: F401
 import XR7.models.xr7_royalty  # noqa: F401
 from XR7.api.app import app

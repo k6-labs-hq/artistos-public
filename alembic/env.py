@@ -30,6 +30,7 @@ import XR7.models.team_access  # noqa: F401
 import XR7.models.terms_acceptance  # noqa: F401
 import XR7.models.universal_royalty_event  # noqa: F401
 import XR7.models.work  # noqa: F401
+import XR7.models.work_identity_cache  # noqa: F401
 import XR7.models.xr7_royalty  # noqa: F401
 from alembic import context
 from XR7.models.base import Base

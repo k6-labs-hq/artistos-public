@@ -50,6 +50,12 @@ class Payment(Base):
     payer_account_id: Mapped[str | None] = mapped_column(String, nullable=True)
     payer_ip_number: Mapped[str | None] = mapped_column(String, nullable=True)
     payer_work_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    # ISWC — the industry-standard composition identifier that bridges
+    # PROs (BMI/ASCAP) with mechanical collectives (MLC). Populated at
+    # ingestion time via WorkIdentityLookup (MusicBrainz) when the source
+    # statement doesn't carry it. The pair (payer_work_id, iswc) is what
+    # turns BMI rows into something MLC's database can be queried against.
+    iswc: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
 
 
 class PaymentSchema(BaseModel):
@@ -68,3 +74,4 @@ class PaymentSchema(BaseModel):
     payer_account_id: str | None = None
     payer_ip_number: str | None = None
     payer_work_id: str | None = None
+    iswc: str | None = None
