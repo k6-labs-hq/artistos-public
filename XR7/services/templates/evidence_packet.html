@@ -259,7 +259,11 @@
       <tr><th>Category</th><td>{{ anomaly.category|default('—') }}</td></tr>
       <tr><th>Subtype</th><td class="numeric">{{ anomaly.subtype|default('—') }}</td></tr>
       <tr><th>Severity</th><td>{{ anomaly.severity|default('—') }}</td></tr>
-      <tr><th>Confidence</th><td>{% if anomaly.confidence_score is not none %}{{ "%.0f"|format(anomaly.confidence_score|float * 100) }}%{% else %}—{% endif %}</td></tr>
+      {# Confidence score intentionally not rendered. Same rationale as the
+         dispute email body (see XR7.recovery.dispute_delivery): an
+         algorithmic-looking "78%" undermines the audit framing for the
+         recipient. The field is still on the anomaly dict for internal
+         callers (ops dashboard, debug tooling). #}
       <tr><th>Estimated recoverable</th><td class="currency">{% if anomaly.estimated_recoverable is not none %}${{ "%.2f"|format(anomaly.estimated_recoverable|float) }}{% else %}—{% endif %}</td></tr>
     </tbody>
   </table>
