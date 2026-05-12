@@ -133,9 +133,12 @@ def _render_email_body(
     # Response date — 30 days out from filing as our internal escalation
     # marker. Per attorney brief §3.3, framed as our request, not the
     # payer's published commitment.
+    # Use US mm/dd/yyyy in the recipient-facing copy. Payer's investigators
+    # are US-based PRO/MLC ops teams; ISO-8601 reads as compliance-bot output.
+    # Internal timestamps in the DB stay ISO regardless.
     response_requested_by = (
         datetime.now(timezone.utc) + timedelta(days=payer.sla_acknowledge_days)
-    ).strftime("%Y-%m-%d")
+    ).strftime("%m/%d/%Y")
 
     # Common context for both renders. Confidence percentage is intentionally
     # omitted — surfacing a "78% confidence" number to the recipient reads as
@@ -164,7 +167,7 @@ def _render_email_body(
         # Kept for back-compat with templates that still reference {{ claim_id }};
         # new templates should use {{ claim_reference }}.
         "claim_id": claim_reference,
-        "filing_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+        "filing_date": datetime.now(timezone.utc).strftime("%m/%d/%Y"),
         "redirected": redirected,
         "intended_recipient": intended_recipient or "",
         "redirect_recipient": redirect_recipient or "",

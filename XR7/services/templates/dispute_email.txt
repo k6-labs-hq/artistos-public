@@ -18,15 +18,15 @@ Amount Due: ${{ "%.2f"|format(estimated_recoverable|float) }}
 
 SUPPORTING DOCUMENTATION
 
-The attached evidence packet provides complete substantiation of this claim:
+The attached evidence packet contains:
 
-  ✓ Cryptographically signed audit report (SHA-256)
-  ✓ Line-item transaction detail from your statements
-  ✓ Payment comparison analysis
-  ✓ Contractual rate validation
-  ✓ Source data verification
+  - Cryptographically signed audit report (SHA-256)
+  - Line-item transaction detail from your statements
+    (participant number, work IDs, distribution period, and per-line amounts)
+  - The rule that produced the finding, with the evidence dictionary
+    the rule emitted
 
-Each element of our finding is traceable to payment records issued under your authority. The cryptographic signature ensures the integrity and authenticity of all supporting materials.
+The cryptographic signature ensures the integrity and authenticity of the attached packet. Each line item is traceable to payment records you issued.
 
 RESOLUTION TIMELINE
 
