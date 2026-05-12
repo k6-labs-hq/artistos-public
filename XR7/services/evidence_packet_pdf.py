@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -45,6 +45,30 @@ _CURRENCY_KEY_HINTS = ("amount", "recoverable", "payment_total", "total_received
 _RATIO_KEY_HINTS = ("ratio", "percent", "_pct", "rate", "concentration", "share")
 # Keys whose values are counts (integer, comma-formatted).
 _COUNT_KEY_HINTS = ("count", "payments", "events", "tracks", "rows", "months", "days")
+
+
+def _format_us_date(value: Any) -> Any:
+    """Coerce a date-ish value to US `mm/dd/yyyy` for recipient-facing copy.
+
+    Accepts ISO strings (``2026-08-15`` or full datetimes), Python ``date`` /
+    ``datetime`` objects, or already-formatted strings. Returns the value
+    unchanged if it can't be parsed — we don't want to silently lose data
+    on an unexpected shape; better to render the original and notice in QA.
+    """
+    if value in (None, ""):
+        return value
+    if isinstance(value, datetime):
+        return value.strftime("%m/%d/%Y")
+    if isinstance(value, date):
+        return value.strftime("%m/%d/%Y")
+    if isinstance(value, str):
+        # Accept the ISO subset we actually emit elsewhere: YYYY-MM-DD or
+        # full ISO datetimes. fromisoformat handles both since 3.11.
+        try:
+            return datetime.fromisoformat(value).strftime("%m/%d/%Y")
+        except ValueError:
+            return value
+    return value
 
 
 def _humanize_key(key: str) -> str:
@@ -240,7 +264,24 @@ def render_evidence_packet_pdf(
     artist = {**{k: None for k in _artist_keys}, **(artist or {})}
     cover_page = {**{k: None for k in _cover_keys}, **(cover_page or {})}
 
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    # Recipient-facing date format: mm/dd/yyyy. Internal callers pass ISO
+    # (`.isoformat()`) so the transform happens here, once, regardless of
+    # source. See the dispute-email date change for the matching policy.
+    if claim.get("sol_deadline"):
+        claim["sol_deadline"] = _format_us_date(claim["sol_deadline"])
+    if cover_page.get("sol_deadline"):
+        cover_page["sol_deadline"] = _format_us_date(cover_page["sol_deadline"])
+    if payer_claim_deadline:
+        if payer_claim_deadline.get("earliest_deadline"):
+            payer_claim_deadline["earliest_deadline"] = _format_us_date(
+                payer_claim_deadline["earliest_deadline"]
+            )
+        if payer_claim_deadline.get("latest_deadline"):
+            payer_claim_deadline["latest_deadline"] = _format_us_date(
+                payer_claim_deadline["latest_deadline"]
+            )
+
+    generated_at = datetime.now(timezone.utc).strftime("%m/%d/%Y %H:%M UTC")
 
     evidence_sections = _format_evidence_sections(anomaly.get("evidence"))
 
