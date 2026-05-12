@@ -45,6 +45,11 @@ type ClaimRow = {
 type QueueResponse = {
   total: number;
   items: ClaimRow[];
+  // True when the API is running with XR7_DISPUTE_REDIRECT_EMAIL set —
+  // outbound dispute emails reroute to a test inbox instead of the
+  // real payer, so re-filing for iteration is safe and the UI relaxes
+  // the PREPARED-only gate on the File button.
+  redirect_mode?: boolean;
 };
 
 type FilingResult = {
@@ -84,6 +89,7 @@ export function OpsDashboard() {
   const [me, setMe] = useState<Me | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
+  const [redirectMode, setRedirectMode] = useState(false);
   const [rows, setRows] = useState<ClaimRow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -177,6 +183,7 @@ export function OpsDashboard() {
       const result = payload as QueueResponse;
       setRows(result.items || []);
       setTotal(result.total || 0);
+      setRedirectMode(Boolean(result.redirect_mode));
     } catch (e) {
       setRows([]);
       setTotal(0);
@@ -425,7 +432,15 @@ export function OpsDashboard() {
                   <tbody>
                     {rows.map((r) => {
                       const sol = solBadge(r.sol_days_remaining);
-                      const canFile = r.status === "PREPARED";
+                      // In test/redirect mode (API has XR7_DISPUTE_REDIRECT_EMAIL
+                      // set), allow re-filing already-sent claims so the operator
+                      // can iterate on the email/packet rendering against their
+                      // own inbox without manually resetting status between loops.
+                      // Production keeps the strict PREPARED-only gate because
+                      // redirect_mode is false there.
+                      const canFile =
+                        r.status === "PREPARED" ||
+                        (redirectMode && ["FILED", "IN_REVIEW"].includes(r.status));
                       const isExpanded = expandedClaimId === r.claim_id;
                       const hasComms = (r.communications?.length || 0) > 0;
                       return (
@@ -508,11 +523,17 @@ export function OpsDashboard() {
                                 }}
                                 title={
                                   canFile
-                                    ? "Send dispute email to payer"
+                                    ? redirectMode && r.status !== "PREPARED"
+                                      ? "Test mode (redirect): re-send to your inbox to preview latest template"
+                                      : "Send dispute email to payer"
                                     : "Only PREPARED claims can be filed"
                                 }
                               >
-                                {filingClaimId === r.claim_id ? "Filing…" : "File via email"}
+                                {filingClaimId === r.claim_id
+                                  ? "Filing…"
+                                  : redirectMode && r.status !== "PREPARED"
+                                    ? "Re-file (test)"
+                                    : "File via email"}
                               </button>
                               {["FILED", "IN_REVIEW", "ACCEPTED"].includes(r.status) ? (
                                 <button

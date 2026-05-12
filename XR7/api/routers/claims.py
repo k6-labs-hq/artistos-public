@@ -891,10 +891,21 @@ def _file_claim_via_email_impl(claim: Claim, db: Session) -> dict:
     is the caller's responsibility; this helper assumes access has already
     been verified.
     """
-    # Status guard — only PREPARED claims are filable. Sending again on
-    # FILED/IN_REVIEW/etc. would create a second outbound MessageID for the
-    # same matter and break the inbound-correlation chain.
-    if str(claim.status.value if hasattr(claim.status, "value") else claim.status) != "PREPARED":
+    # Status guard — only PREPARED claims are filable in production. Sending
+    # again on FILED/IN_REVIEW/etc. would create a second outbound MessageID
+    # for the same matter and break the inbound-correlation chain.
+    #
+    # Skipped in test/redirect mode (XR7_DISPUTE_REDIRECT_EMAIL set) so
+    # operators can iterate on the email + packet rendering against their
+    # own inbox — refile, tweak template, refile, until the formatting is
+    # right — without resetting claim state by hand between every loop.
+    # Production behaviour is unchanged because XR7_DISPUTE_REDIRECT_EMAIL
+    # is unset there.
+    import os  # noqa: PLC0415
+
+    _redirect_mode = bool((os.environ.get("XR7_DISPUTE_REDIRECT_EMAIL") or "").strip())
+    status_value = str(claim.status.value if hasattr(claim.status, "value") else claim.status)
+    if not _redirect_mode and status_value != "PREPARED":
         raise HTTPException(
             status_code=409,
             detail=(
@@ -1109,7 +1120,14 @@ def admin_claims_queue(
                 ),
             }
         )
-    return {"total": len(rows), "items": rows}
+    # Surface test-mode state so the operator dashboard can enable
+    # re-filing on FILED/IN_REVIEW claims without an extra round-trip.
+    # Real production has XR7_DISPUTE_REDIRECT_EMAIL unset → flag is
+    # false → /ops gates "File via email" to PREPARED-only as before.
+    import os  # noqa: PLC0415
+
+    redirect_mode = bool((os.environ.get("XR7_DISPUTE_REDIRECT_EMAIL") or "").strip())
+    return {"total": len(rows), "items": rows, "redirect_mode": redirect_mode}
 
 
 @router.post("/admin/claims/{claim_id}/file-via-email")
