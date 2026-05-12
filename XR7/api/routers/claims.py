@@ -1356,6 +1356,88 @@ def _render_claim_evidence_pdf(claim: Claim, db: Session) -> bytes:
                     "shown": _shown,
                     "total": len(rows),
                     "subject": "payment",
+                    "columns": [
+                        {"key": "period", "label": "Period", "type": "text"},
+                        {"key": "source", "label": "Source", "type": "text"},
+                        {"key": "amount", "label": "Amount", "type": "currency"},
+                        {"key": "classification", "label": "Classification", "type": "text"},
+                    ],
+                }
+
+        if rule_id == "STREAM_MONTH_NO_PAYMENT":
+            # The most useful line item here is per-month-per-track stream
+            # activity for months the engine flagged as missing payments.
+            # Lets the dispute reviewer SEE "Spotify reported 1,234 streams
+            # of Miyagi in 2024-03, no BMI payment for that period" rather
+            # than just an aggregate dollar figure. Bridges the rule's
+            # `missing_months` evidence to actual source-data rows.
+            from datetime import datetime as _datetime  # noqa: PLC0415
+            from sqlalchemy import func as _func  # noqa: PLC0415
+
+            from XR7.models.event import Event as _Event  # noqa: PLC0415
+
+            missing_months = (snapshot.get("evidence") or {}).get("missing_months") or []
+            # Evidence dict only stores the first 6; the rule's full set is
+            # recomputed if needed. For the packet, the first 6 is enough —
+            # it's the headline material, not the exhaustive listing.
+            month_starts: list[_datetime] = []
+            for m_str in missing_months:
+                try:
+                    y_str, mo_str = m_str.split("-")
+                    month_starts.append(
+                        _datetime(int(y_str), int(mo_str), 1, tzinfo=timezone.utc)
+                    )
+                except (ValueError, AttributeError):
+                    continue
+
+            if month_starts:
+                # One row per (year-month, work_title). Aggregate quantity +
+                # gross (qty × unit_value) so the table shows both the
+                # streaming volume and the unpaid dollar exposure.
+                year_month_expr = _func.to_char(_Event.timestamp, "YYYY-MM")
+                missing_set = {dt.strftime("%Y-%m") for dt in month_starts}
+                rows = (
+                    db.query(
+                        year_month_expr.label("period"),
+                        _Event.work_title,
+                        _Event.platform,
+                        _func.sum(_Event.quantity).label("streams"),
+                        _func.sum(
+                            _Event.quantity * _Event.unit_value
+                        ).label("gross"),
+                    )
+                    .filter(
+                        _Event.artist_id == claim.artist_id,
+                        _Event.event_type == "STREAM",
+                    )
+                    .group_by(year_month_expr, _Event.work_title, _Event.platform)
+                    .all()
+                )
+                aggregated = [
+                    {
+                        "period": r.period,
+                        "work_title": r.work_title or "—",
+                        "platform": r.platform or "—",
+                        "streams": int(r.streams or 0),
+                        "unpaid_amount": float(r.gross or 0.0),
+                    }
+                    for r in rows
+                    if r.period in missing_set
+                ]
+                aggregated.sort(key=lambda x: x["unpaid_amount"], reverse=True)
+                _shown = min(len(aggregated), 30)
+                line_items = aggregated[:_shown]
+                line_items_meta = {
+                    "shown": _shown,
+                    "total": len(aggregated),
+                    "subject": "missing-month stream record",
+                    "columns": [
+                        {"key": "period", "label": "Period", "type": "text"},
+                        {"key": "work_title", "label": "Track", "type": "text"},
+                        {"key": "platform", "label": "Platform", "type": "text"},
+                        {"key": "streams", "label": "Streams", "type": "count"},
+                        {"key": "unpaid_amount", "label": "Unpaid", "type": "currency"},
+                    ],
                 }
 
     pdf_bytes = render_evidence_packet_pdf(

@@ -167,6 +167,11 @@ def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
                     "unit_value": float(e.get("unit_value", 0.0)),
                     "currency": e.get("currency", "USD"),
                     "work_id": None,  # future: match by ISRC lookup
+                    # `work_title` was being dropped by this bulk insert before —
+                    # parsers set it on the event dict but the path here never
+                    # carried it through to the column, so the evidence packet's
+                    # per-track line items came back with `—` everywhere.
+                    "work_title": e.get("work_title"),
                 }
             )
         except Exception:  # noqa: BLE001

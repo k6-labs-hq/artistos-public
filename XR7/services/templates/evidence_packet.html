@@ -306,22 +306,39 @@
       All {{ line_items_meta.total|default(line_items|length) }} {{ line_items_meta.subject|default('payment') }}{% if (line_items_meta.total|default(line_items|length)) != 1 %}s{% endif %} contributing to this finding.
     {% endif %}
   </p>
+  {# Columns are rule-driven — each builder in claims.py supplies its own
+     column descriptor list so different rules can show different shapes
+     (per-payment for HIGH_RETROACTIVE_RATIO, per-track-month for
+     STREAM_MONTH_NO_PAYMENT, etc.) without forking the template. #}
+  {% set cols = line_items_meta.columns or [
+        {'key': 'period', 'label': 'Period', 'type': 'text'},
+        {'key': 'source', 'label': 'Source', 'type': 'text'},
+        {'key': 'amount', 'label': 'Amount', 'type': 'currency'},
+        {'key': 'classification', 'label': 'Classification', 'type': 'text'}
+     ] %}
   <table>
     <thead>
       <tr>
-        <th>Period</th>
-        <th>Source</th>
-        <th class="numeric">Amount</th>
-        <th>Classification</th>
+      {% for col in cols %}
+        <th{% if col.type in ['currency', 'count', 'numeric'] %} class="numeric"{% endif %}>{{ col.label }}</th>
+      {% endfor %}
       </tr>
     </thead>
     <tbody>
       {% for li in line_items %}
         <tr>
-          <td class="numeric small">{{ li.period|default('—') }}</td>
-          <td class="small">{{ li.source|default('—') }}</td>
-          <td class="currency small">{% if li.amount is not none %}${{ "%.2f"|format(li.amount|float) }}{% else %}—{% endif %}</td>
-          <td class="small">{{ li.classification|default('—') }}</td>
+        {% for col in cols %}
+          {% set val = li.get(col.key) %}
+          {% if col.type == 'currency' %}
+            <td class="currency small">{% if val is not none %}${{ "%.2f"|format(val|float) }}{% else %}—{% endif %}</td>
+          {% elif col.type == 'count' %}
+            <td class="numeric small">{% if val is not none %}{{ "{:,}".format(val|int) }}{% else %}—{% endif %}</td>
+          {% elif col.type == 'numeric' %}
+            <td class="numeric small">{{ val|default('—') }}</td>
+          {% else %}
+            <td class="small">{{ val|default('—') }}</td>
+          {% endif %}
+        {% endfor %}
         </tr>
       {% endfor %}
     </tbody>
