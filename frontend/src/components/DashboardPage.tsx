@@ -612,9 +612,11 @@ export function DashboardPage() {
       <header className="site-nav" role="banner">
         <div className="nav-inner">
           <a className="brand" href="/dashboard" aria-label="XR7 dashboard">
-            {/* Use the SVG (transparent) instead of the PNG (RGB w/ baked white background)
-                so the dashboard's dark theme doesn't show a white card behind the logo. */}
-            <img src="/xr7-logo-mark.svg" alt="XR7 logo" />
+            {/* NOTE: xr7-logo-mark.png (the metallic-purple logo) is an RGB
+                PNG with no alpha — it has a baked opaque background that
+                shows as a box on the dark theme. Swap to a transparent
+                export (PNG-with-alpha or SVG) when one is available. */}
+            <img src="/xr7-logo-mark.png" alt="XR7 logo" />
             <span>XR7</span>
           </a>
           <div className="nav-actions">
