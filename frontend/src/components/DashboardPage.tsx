@@ -311,6 +311,11 @@ function EvidencePanel({ evidence }: { evidence: AnomalyEvidence }) {
 
 type LoadState = "loading" | "ready" | "needs_terms" | "error";
 
+// Accepted statement file extensions. Single source of truth shared by the
+// native file input's `accept` attr, the picker onChange filter, and the
+// drag-and-drop handler.
+const ACCEPTED_UPLOAD_EXTENSIONS = [".csv", ".tsv", ".xlsx", ".numbers", ".pdf"] as const;
+
 export function DashboardPage() {
   const [me, setMe] = useState<Me | null>(null);
   const [state, setState] = useState<LoadState>("loading");
@@ -318,6 +323,7 @@ export function DashboardPage() {
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{
     completed: number;
@@ -459,6 +465,39 @@ export function DashboardPage() {
       setState("error");
     }
   };
+
+  // Shared between the file picker's onChange and the drag-and-drop
+  // handler. Filters to accepted extensions and appends with name+size
+  // dedup so re-adding the same file (picker then drop, or two drops)
+  // doesn't double-stage it.
+  const addFiles = useCallback((incoming: File[]) => {
+    const accepted = incoming.filter((f) =>
+      ACCEPTED_UPLOAD_EXTENSIONS.some((ext) => f.name.toLowerCase().endsWith(ext)),
+    );
+    setUploadFiles((prev) => {
+      const seen = new Set(prev.map((f) => f.name + ":" + f.size));
+      return [...prev, ...accepted.filter((f) => !seen.has(f.name + ":" + f.size))];
+    });
+  }, []);
+
+  const handleDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const dropped = Array.from(e.dataTransfer.files ?? []);
+      addFiles(dropped);
+      const rejected = dropped.filter(
+        (f) => !ACCEPTED_UPLOAD_EXTENSIONS.some((ext) => f.name.toLowerCase().endsWith(ext)),
+      );
+      if (rejected.length > 0) {
+        setError(
+          `Skipped ${rejected.length} file(s) with unsupported type. ` +
+            `Accepted: ${ACCEPTED_UPLOAD_EXTENSIONS.join(", ")}.`,
+        );
+      }
+    },
+    [addFiles],
+  );
 
   const handleUpload = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -694,31 +733,19 @@ export function DashboardPage() {
               </p>
               <form onSubmit={handleUpload}>
                 {/*
-                  Hide the native file input — its default "No file chosen"
-                  text is redundant once we have the staged-files list below
-                  and confused early walkthrough users. Trigger the picker
-                  via a styled <label> instead. Input still works for
-                  keyboard nav + screen readers via the label association.
+                  Native file input is visually hidden — its default
+                  "No file chosen" text is redundant given the staged-files
+                  list below. The drop zone wraps the trigger <label> so a
+                  click anywhere in the zone opens the picker, and the same
+                  zone accepts drag-and-drop.
                 */}
                 <input
                   id="upload-files-input"
                   type="file"
                   multiple
-                  accept=".csv,.tsv,.xlsx,.numbers,.pdf"
+                  accept={ACCEPTED_UPLOAD_EXTENSIONS.join(",")}
                   onChange={(e) => {
-                    // Append on every selection rather than replace. Browser
-                    // file dialogs return one batch at a time, so picking
-                    // "MLC.numbers" and then "tunecore-*.csv" used to drop
-                    // the first selection. De-dup by name so re-selecting
-                    // the same file twice doesn't double-stage it.
-                    const incoming = Array.from(e.target.files ?? []);
-                    setUploadFiles((prev) => {
-                      const seen = new Set(prev.map((f) => f.name + ":" + f.size));
-                      return [
-                        ...prev,
-                        ...incoming.filter((f) => !seen.has(f.name + ":" + f.size)),
-                      ];
-                    });
+                    addFiles(Array.from(e.target.files ?? []));
                     // Clear the input so onChange fires again if the user
                     // re-picks the same file (otherwise the browser
                     // suppresses the change event for repeat selections).
@@ -736,23 +763,50 @@ export function DashboardPage() {
                     border: 0,
                   }}
                 />
-                <label
-                  htmlFor="upload-files-input"
-                  className="cta"
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (!isDragging) setIsDragging(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                  }}
+                  onDrop={handleDrop}
                   style={{
-                    display: "inline-block",
-                    cursor: "pointer",
-                    background: "transparent",
-                    border: "1px solid rgba(168, 85, 247, 0.5)",
+                    border: isDragging
+                      ? "2px dashed rgba(168, 85, 247, 0.9)"
+                      : "2px dashed rgba(168, 85, 247, 0.35)",
+                    borderRadius: "10px",
+                    padding: "24px 16px",
+                    textAlign: "center",
+                    background: isDragging
+                      ? "rgba(168, 85, 247, 0.12)"
+                      : "rgba(15, 23, 42, 0.4)",
+                    transition: "background 120ms, border-color 120ms",
                   }}
                 >
-                  Choose files…
-                </label>
+                  <label
+                    htmlFor="upload-files-input"
+                    className="cta"
+                    style={{
+                      display: "inline-block",
+                      cursor: "pointer",
+                      background: "transparent",
+                      border: "1px solid rgba(168, 85, 247, 0.5)",
+                    }}
+                  >
+                    Choose files…
+                  </label>
+                  <div style={{ marginTop: "8px", fontSize: "12px", color: "#94a3b8" }}>
+                    or drag &amp; drop your statements here
+                  </div>
+                </div>
                 <button
                   type="submit"
                   className="cta"
                   disabled={uploadFiles.length === 0 || uploading}
-                  style={{ marginLeft: "12px" }}
+                  style={{ marginTop: "12px" }}
                 >
                   {uploading
                     ? "Uploading…"
