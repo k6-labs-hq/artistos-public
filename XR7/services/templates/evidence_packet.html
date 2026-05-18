@@ -141,9 +141,9 @@
     <dd>{{ artist.name }}</dd>
     {% endif %}
 
-    {% if anomaly.subtype %}
+    {% if anomaly.finding_label %}
     <dt>Finding Type</dt>
-    <dd class="numeric">{{ anomaly.subtype }}</dd>
+    <dd>{{ anomaly.finding_label }}</dd>
     {% endif %}
 
     {% if anomaly.estimated_recoverable is not none %}
@@ -252,18 +252,18 @@
     independent verification by any subsequent reviewer.
   </p>
 
+  {# Recipient-facing: render the plain-English finding label, never the
+     internal rule_id / subtype / category enum. The label is computed in
+     evidence_packet_pdf.render_evidence_packet_pdf via the shared
+     XR7.recovery.finding_labels mapper — same one the dispute email uses.
+     Confidence score is intentionally omitted (see #284): an
+     algorithmic-looking percentage undermines the audit framing. Rule_id
+     and category stay on the anomaly dict for internal callers. #}
   <table>
     <tbody>
-      <tr><th style="width:30%;">Detection timestamp</th><td class="numeric">{{ anomaly.created_at|default('—') }}</td></tr>
-      <tr><th>Rule ID</th><td class="numeric">{{ anomaly.rule_id|default(anomaly.subtype)|default('—') }}</td></tr>
-      <tr><th>Category</th><td>{{ anomaly.category|default('—') }}</td></tr>
-      <tr><th>Subtype</th><td class="numeric">{{ anomaly.subtype|default('—') }}</td></tr>
+      <tr><th style="width:30%;">Detection date</th><td>{{ anomaly.created_at|default('—') }}</td></tr>
+      <tr><th>Finding</th><td>{{ anomaly.finding_label|default('Royalty audit finding') }}</td></tr>
       <tr><th>Severity</th><td>{{ anomaly.severity|default('—') }}</td></tr>
-      {# Confidence score intentionally not rendered. Same rationale as the
-         dispute email body (see XR7.recovery.dispute_delivery): an
-         algorithmic-looking "78%" undermines the audit framing for the
-         recipient. The field is still on the anomaly dict for internal
-         callers (ops dashboard, debug tooling). #}
       <tr><th>Estimated recoverable</th><td class="currency">{% if anomaly.estimated_recoverable is not none %}${{ "%.2f"|format(anomaly.estimated_recoverable|float) }}{% else %}—{% endif %}</td></tr>
     </tbody>
   </table>

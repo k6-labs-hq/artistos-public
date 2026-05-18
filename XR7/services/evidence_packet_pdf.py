@@ -281,6 +281,20 @@ def render_evidence_packet_pdf(
                 payer_claim_deadline["latest_deadline"]
             )
 
+    # Plain-English finding label for the recipient-facing PDF. The packet
+    # used to render raw `rule_id` / `subtype` ("STREAM_MONTH_NO_PAYMENT")
+    # and the internal `category` enum — jargon that reads as algorithmic
+    # output to a payer's investigator. Same mapper the dispute email uses.
+    from XR7.recovery.finding_labels import friendly_finding_label  # noqa: PLC0415
+
+    anomaly["finding_label"] = friendly_finding_label(
+        anomaly.get("rule_id") or anomaly.get("subtype")
+    )
+    # Detection date is recipient-facing — format it like the other dates
+    # rather than leaking a raw ISO timestamp.
+    if anomaly.get("created_at"):
+        anomaly["created_at"] = _format_us_date(anomaly["created_at"])
+
     generated_at = datetime.now(timezone.utc).strftime("%m/%d/%Y %H:%M UTC")
 
     evidence_sections = _format_evidence_sections(anomaly.get("evidence"))

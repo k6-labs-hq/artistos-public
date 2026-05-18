@@ -38,6 +38,7 @@ from typing import Any
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from XR7.recovery.finding_labels import friendly_finding_label as _friendly_finding_label
 from XR7.recovery.payer_config import PayerConfig, get_payer_config
 from XR7.services.postmark_client import (
     PostmarkAttachment,
@@ -52,38 +53,6 @@ _jinja_env = Environment(
     loader=FileSystemLoader(_TEMPLATE_DIR),
     autoescape=select_autoescape(["html", "xml"]),
 )
-
-
-# Plain-English labels for rule IDs surfaced to dispute recipients. Keeping
-# the internal rule_id (e.g. HIGH_RETROACTIVE_PAYMENT_RATIO) in the email
-# body reads as algorithmic / form-letter and undermines the audit framing
-# per docs/runbooks/bmi-dispute-attorney-brief.md §3.6.
-#
-# Both `subtype` and `rule_id` keys are handled because the AnomalyEngine
-# emits both (subtype on the model, rule_id in the feature_snapshot).
-# When a finding's identifier doesn't match any key, fall through to a
-# sentence-case'd version of the underscores.
-_RULE_FRIENDLY_LABELS: dict[str, str] = {
-    "HIGH_RETROACTIVE_PAYMENT_RATIO": "Retroactive Payment Pattern",
-    "HIGH_RETROACTIVE_RATIO": "Retroactive Payment Pattern",
-    "STREAM_MONTH_WITHOUT_PAYMENT": "Stream Activity Without Corresponding Payment",
-    "STREAM_MONTH_NO_PAYMENT": "Stream Activity Without Corresponding Payment",
-    "PAYMENT_GAP_OVER_60_DAYS": "Extended Payment Gap",
-    "PAYMENT_GAP_OVER_60": "Extended Payment Gap",
-    "TRACK_RATE_OUTLIER_UNDERPAYMENT": "Per-Stream Rate Outlier",
-    "TRACK_RATE_OUTLIER": "Per-Stream Rate Outlier",
-}
-
-
-def _friendly_finding_label(rule_or_subtype: str | None) -> str:
-    """Map an internal rule_id / subtype to a human-readable finding label."""
-    if not rule_or_subtype:
-        return "Royalty audit finding"
-    key = str(rule_or_subtype).upper()
-    if key in _RULE_FRIENDLY_LABELS:
-        return _RULE_FRIENDLY_LABELS[key]
-    # Fall back to title-casing the underscores: "FOO_BAR_BAZ" → "Foo Bar Baz"
-    return key.replace("_", " ").title()
 
 
 def _render_email_body(
