@@ -1463,7 +1463,11 @@ def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> Pa
         # Fallback to latin-1, which accepts any byte value.
         text = content.decode("latin-1")
 
-    reader = csv.DictReader(io.StringIO(text))
+    # newline="" is required so the csv module — not StringIO — handles
+    # line endings. Without it, a file with classic-Mac CR-only endings
+    # (some Excel/Numbers exports produce these) raises csv.Error:
+    # "new-line character seen in unquoted field".
+    reader = csv.DictReader(io.StringIO(text, newline=""))
     if reader.fieldnames is None:
         return ParseResult(
             format_detected="unknown",
@@ -1471,7 +1475,15 @@ def parse_csv(content: bytes, artist_id: str, encoding: str = "utf-8-sig") -> Pa
             errors=["CSV file has no header row or is empty."],
         )
 
-    return _parse_table_rows(list(reader), list(reader.fieldnames), artist_id)
+    try:
+        rows = list(reader)
+    except csv.Error as exc:
+        return ParseResult(
+            format_detected="unknown",
+            row_count=0,
+            errors=[f"CSV file could not be parsed: {exc}"],
+        )
+    return _parse_table_rows(rows, list(reader.fieldnames), artist_id)
 
 
 def _parse_table_rows(
@@ -1527,7 +1539,9 @@ def parse_delimited(
     except UnicodeDecodeError:
         text = content.decode("latin-1")
 
-    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
+    # newline="" — see parse_csv. TSV exports with CR-only line endings
+    # (the Tolliver DistroKid .tsv is one) otherwise raise csv.Error.
+    reader = csv.DictReader(io.StringIO(text, newline=""), delimiter=delimiter)
     if reader.fieldnames is None:
         return ParseResult(
             format_detected="unknown",
@@ -1535,7 +1549,14 @@ def parse_delimited(
             errors=["Delimited file has no header row or is empty."],
         )
 
-    rows = list(reader)
+    try:
+        rows = list(reader)
+    except csv.Error as exc:
+        return ParseResult(
+            format_detected="unknown",
+            row_count=0,
+            errors=[f"Delimited file could not be parsed: {exc}"],
+        )
     return _parse_table_rows(rows, list(reader.fieldnames), artist_id)
 
 

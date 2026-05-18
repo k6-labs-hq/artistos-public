@@ -33,17 +33,25 @@ def _parse_tabular(content: bytes, filename: str) -> list[dict[str, str]]:
         return out
 
     raw = content.decode("utf-8", errors="ignore")
+    # newline="" so the csv module handles line endings — a CR-only file
+    # (classic-Mac TSV exports) otherwise raises csv.Error. See the same
+    # fix in statement_parser.parse_csv / parse_delimited.
     if "\t" in raw and lower.endswith(".tsv"):
-        reader = csv.DictReader(io.StringIO(raw), delimiter="\t")
+        reader = csv.DictReader(io.StringIO(raw, newline=""), delimiter="\t")
     else:
-        reader = csv.DictReader(io.StringIO(raw))
+        reader = csv.DictReader(io.StringIO(raw, newline=""))
     out = []
-    for i, row in enumerate(reader):
-        if i >= 300:
-            break
-        normed = {_norm(k): str(v or "").strip() for k, v in row.items() if k is not None}
-        if any(normed.values()):
-            out.append(normed)
+    try:
+        for i, row in enumerate(reader):
+            if i >= 300:
+                break
+            normed = {_norm(k): str(v or "").strip() for k, v in row.items() if k is not None}
+            if any(normed.values()):
+                out.append(normed)
+    except csv.Error:
+        # Signal extraction is best-effort analytics — never block ingestion
+        # on a malformed file. The parser proper reports parse errors.
+        return out
     return out
 
 
