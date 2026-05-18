@@ -97,42 +97,6 @@ function getSystemTheme(): ThemeMode {
   return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
-function XR7WingLogo({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 840 320" role="img" aria-label="XR7 metallic winged emblem" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="wingGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#6520BD" />
-          <stop offset="55%" stopColor="#A855F7" />
-          <stop offset="100%" stopColor="#D6B1FF" />
-        </linearGradient>
-        <linearGradient id="chromeLine" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#B1B7D1" stopOpacity="0.2" />
-        </linearGradient>
-        <filter id="softGlow" x="-40%" y="-60%" width="180%" height="220%">
-          <feGaussianBlur stdDeviation="8" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <g filter="url(#softGlow)">
-        <path d="M30 150C92 118 152 103 232 92L188 141L247 147L175 205L235 212C148 236 89 224 30 195Z" fill="url(#wingGradient)" />
-        <path d="M810 150C748 118 688 103 608 92L652 141L593 147L665 205L605 212C692 236 751 224 810 195Z" fill="url(#wingGradient)" />
-      </g>
-
-      <rect x="214" y="64" width="412" height="192" rx="52" fill="url(#wingGradient)" stroke="url(#chromeLine)" strokeWidth="3" />
-      <path d="M246 222L286 98H324L282 174H323L283 222Z" fill="#F8FAFC" />
-      <path d="M350 98H395L425 142L456 98H500L447 160L503 222H457L425 175L394 222H348L404 160Z" fill="#F8FAFC" />
-      <path d="M533 98H600L562 173H612L560 222H514L553 156H505Z" fill="#F8FAFC" />
-      <path d="M220 84H620" stroke="url(#chromeLine)" strokeOpacity="0.7" strokeWidth="4" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function App() {
   const [theme, setTheme] = useState<ThemeMode>("dark");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -379,7 +343,11 @@ export function App() {
       <main id="main-content">
         <section className="hero" data-reveal="true">
           <div className="hero-bg" aria-hidden="true" />
-          <XR7WingLogo className="hero-logo" />
+          <img
+            className="hero-logo"
+            src="/xr7-logo-mark.png"
+            alt="XR7 metallic winged emblem"
+          />
           <p className="eyebrow">Forensic Royalty Recovery - Powered by K6 Labs</p>
           <h1>Uncover Every Dollar You Are Owed</h1>
           <p className="hero-copy">{heroSubtitle}</p>
