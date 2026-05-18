@@ -808,11 +808,16 @@ export function DashboardPage() {
                   disabled={uploadFiles.length === 0 || uploading}
                   style={{ marginTop: "12px" }}
                 >
-                  {uploading
-                    ? "Uploading…"
-                    : uploadFiles.length > 1
-                      ? `Upload ${uploadFiles.length} files`
-                      : "Upload"}
+                  {uploading ? (
+                    <>
+                      <span className="xr7-spinner" aria-hidden="true" />
+                      Uploading…
+                    </>
+                  ) : uploadFiles.length > 1 ? (
+                    `Upload ${uploadFiles.length} files`
+                  ) : (
+                    "Upload"
+                  )}
                 </button>
                 {uploadFiles.length > 0 ? (
                   <div

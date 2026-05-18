@@ -1474,3 +1474,30 @@ table {
     display: none;
   }
 }
+
+/* Inline upload spinner — shown inside the "Uploading…" button so the
+   user has a live signal that the request is still in flight. Sized in
+   em so it scales with the button's font. */
+@keyframes xr7-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.xr7-spinner {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-right: 0.5em;
+  vertical-align: -0.1em;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: xr7-spin 0.7s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .xr7-spinner {
+    animation-duration: 2s;
+  }
+}
