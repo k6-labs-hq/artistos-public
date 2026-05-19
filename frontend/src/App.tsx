@@ -358,11 +358,14 @@ export function App() {
               </a>
             ) : (
               <a className="cta large pulse" href="/login">
-                Get Started Free
+                Get Started
               </a>
             )}
-            <button type="button" className="ghost large" onClick={() => setDemoOpen(true)}>
-              Watch Demo
+            {/* Demo video isn't ready yet — disabled so the click is a
+                no-op. Re-enable by restoring onClick={() => setDemoOpen(true)}
+                and removing `disabled` once the walkthrough recording exists. */}
+            <button type="button" className="ghost large" disabled aria-disabled="true">
+              Watch Demo (Coming Soon)
             </button>
           </div>
         </section>
