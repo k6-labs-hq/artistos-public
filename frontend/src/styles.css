@@ -175,6 +175,9 @@ html {
   color: var(--text-main);
   background: color-mix(in srgb, var(--bg-elevated) 84%, transparent);
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  /* .cta sits on both <button> and <a>; <a> underlines by default — kill
+     it so anchor-CTAs match button-CTAs and the (un-underlined) nav links. */
+  text-decoration: none;
 }
 
 .theme-toggle:hover,
