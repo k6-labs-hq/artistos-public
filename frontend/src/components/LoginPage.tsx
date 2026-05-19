@@ -118,7 +118,7 @@ export function LoginPage() {
         : "Signing in…"
       : mode === "signup"
         ? "Create account"
-        : "Sign in";
+        : "Sign In";
 
   return (
     <div className="xr7-app">
@@ -230,7 +230,7 @@ export function LoginPage() {
                     textDecoration: "underline",
                   }}
                 >
-                  Sign in
+                  Sign In
                 </button>
               </>
             ) : (

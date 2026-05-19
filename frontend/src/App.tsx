@@ -277,11 +277,11 @@ export function App() {
                   Dashboard
                 </a>
                 <button type="button" className="cta small" onClick={handleSignOut}>
-                  Sign out
+                  Sign Out
                 </button>
               </>
             ) : (
-              <a className="cta small" href="/login">Sign in</a>
+              <a className="cta small" href="/login">Sign In</a>
             )}
             {/* eslint-disable-next-line jsx-a11y/aria-props */}
             <button
@@ -325,7 +325,7 @@ export function App() {
                   handleSignOut();
                 }}
               >
-                Sign out
+                Sign Out
               </button>
             </>
           ) : (
@@ -334,7 +334,7 @@ export function App() {
               href="/login"
               onClick={() => setMobileMenuOpen(false)}
             >
-              Sign in
+              Sign In
             </a>
           )}
         </div>
@@ -354,7 +354,7 @@ export function App() {
           <div className="hero-actions">
             {isAuthed ? (
               <a className="cta large pulse" href="/dashboard">
-                Go to dashboard
+                Go to Dashboard
               </a>
             ) : (
               <a className="cta large pulse" href="/login">

@@ -600,7 +600,7 @@ export function DashboardPage() {
           <h1>Something went wrong</h1>
           <p style={{ color: "#fca5a5" }}>{error}</p>
           <button type="button" className="cta" onClick={handleSignOut}>
-            Sign out
+            Sign Out
           </button>
         </main>
       </div>
@@ -624,7 +624,7 @@ export function DashboardPage() {
               {me?.artist_name ?? me?.artist_email ?? "Signed in"}
             </span>
             <button type="button" className="cta small" onClick={handleSignOut}>
-              Sign out
+              Sign Out
             </button>
           </div>
         </div>
