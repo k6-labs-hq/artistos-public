@@ -34,6 +34,24 @@
 		-Server
 	}
 
+	# Cache strategy — so a new deploy is picked up WITHOUT a hard refresh.
+	#
+	# Vite content-hashes everything under /assets/ (index-AbC123.js); the
+	# filename changes on every build, so a stale one is impossible — cache
+	# those forever.
+	#
+	# Everything else (index.html, the logo, favicon) must revalidate on
+	# every visit. index.html is the lynchpin: it names the current hashed
+	# asset files, so as long as it is never served stale a returning
+	# visitor always boots the latest build. "no-cache" means "cache but
+	# revalidate first" — the ETag turns that into a cheap 304 when nothing
+	# changed, so it is not a full re-download every visit.
+	@hashed path /assets/*
+	header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+	@unhashed not path /assets/*
+	header @unhashed Cache-Control "no-cache"
+
 	root * /srv/app
 	# SPA routing: any path that isn't a real file returns index.html
 	# so the React router handles it client-side.
