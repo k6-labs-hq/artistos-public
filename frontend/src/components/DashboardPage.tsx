@@ -41,6 +41,8 @@ const PAYER_LINKS: Record<PayerCategory, PayerLink[]> = {
       hint: "Sign in → My Earnings → Royalty Statements (PDF or CSV).",
     },
     { name: "ASCAP Member Access", href: "https://www.ascap.com/member-access" },
+    { name: "SESAC", href: "https://affiliates.sesac.com/login" },
+    { name: "GMR", href: "https://clientportal.globalmusicrights.com/" },
   ],
   Mechanical: [
     { name: "The MLC Member Portal", href: "https://portal.themlc.com/" },
@@ -53,7 +55,7 @@ const PAYER_LINKS: Record<PayerCategory, PayerLink[]> = {
     { name: "CD Baby", href: "https://members.cdbaby.com/" },
     { name: "UnitedMasters", href: "https://unitedmasters.com/login" },
     { name: "Vydia", href: "https://dashboard.vydia.com/d2/sign_in" },
-    { name: "Distroauth", href: "https://login.distroauth.com/" },
+    { name: "The Orchard", href: "https://login.distroauth.com/" },
   ],
   International: [],
   Misc: [
