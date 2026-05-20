@@ -17,6 +17,29 @@ import {
   xr7,
 } from "../lib/xr7Client";
 
+function CategoryChip({ label }: { label: string }) {
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        marginRight: "8px",
+        padding: "2px 8px",
+        borderRadius: "999px",
+        background: "rgba(168, 85, 247, 0.15)",
+        border: "1px solid rgba(168, 85, 247, 0.35)",
+        color: "#d6c2ff",
+        fontSize: "10px",
+        fontWeight: 600,
+        letterSpacing: "0.04em",
+        textTransform: "uppercase",
+        verticalAlign: "middle",
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
 /**
  * Rendered when an artist has uploaded data but the engine has no findings to
  * surface. Empty state must NOT read as "engine broken" or "we couldn't find
@@ -987,6 +1010,7 @@ export function DashboardPage() {
                 }}
               >
                 <li>
+                  <CategoryChip label="PRO" />
                   <a
                     href="https://www.bmi.com/login"
                     target="_blank"
@@ -1000,6 +1024,7 @@ export function DashboardPage() {
                   </div>
                 </li>
                 <li>
+                  <CategoryChip label="PRO" />
                   <a
                     href="https://www.ascap.com/member-access"
                     target="_blank"
@@ -1010,6 +1035,7 @@ export function DashboardPage() {
                   </a>
                 </li>
                 <li>
+                  <CategoryChip label="Mechanical" />
                   <a
                     href="https://portal.themlc.com/"
                     target="_blank"
@@ -1020,6 +1046,7 @@ export function DashboardPage() {
                   </a>
                 </li>
                 <li>
+                  <CategoryChip label="Digital Performance" />
                   <a
                     href="https://my.soundexchange.com/"
                     target="_blank"
