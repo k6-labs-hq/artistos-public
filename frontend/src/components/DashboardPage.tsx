@@ -630,11 +630,11 @@ export function DashboardPage() {
         </div>
       </header>
 
-      <main id="main-content" style={{ maxWidth: 920, margin: "0 auto", padding: "48px 24px" }}>
-        <h1 style={{ marginBottom: "8px" }}>
+      <main id="main-content" style={{ maxWidth: 920, margin: "0 auto", padding: "24px 24px 48px" }}>
+        <h1 style={{ marginTop: 0, marginBottom: "8px" }}>
           Welcome{me?.artist_name ? `, ${me.artist_name}` : ""}
         </h1>
-        <p style={{ opacity: 0.8, marginTop: 0 }}>
+        <p style={{ opacity: 0.8, marginTop: 0, marginBottom: 0 }}>
           Upload a royalty statement and XR7 will detect underpayment anomalies in seconds.
         </p>
 
@@ -1034,7 +1034,7 @@ export function DashboardPage() {
             </div>
 
             {statementHistory.length > 0 ? (
-              <section style={{ marginTop: "32px" }}>
+              <section style={{ marginTop: "24px" }}>
                 <h2 style={{ marginBottom: "12px" }}>Upload history</h2>
                 <p style={{ marginTop: 0, opacity: 0.7, fontSize: "14px" }}>
                   Last {statementHistory.length} statement{statementHistory.length === 1 ? "" : "s"}{" "}
@@ -1117,7 +1117,7 @@ export function DashboardPage() {
               </section>
             ) : null}
 
-            <section style={{ marginTop: "32px" }}>
+            <section style={{ marginTop: "24px" }}>
               <h2>Detected anomalies</h2>
               {anomalies.length === 0 ? (
                 <EmptyAnomaliesGuidance />
