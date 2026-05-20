@@ -44,11 +44,16 @@ const PAYER_LINKS: Record<PayerCategory, PayerLink[]> = {
   ],
   Mechanical: [
     { name: "The MLC Member Portal", href: "https://portal.themlc.com/" },
+    { name: "Harry Fox Agency", href: "https://www.harryfox.com/login/" },
+    { name: "Music Reports Inc", href: "https://www.musicreports.com/" },
   ],
   Distributor: [
     { name: "DistroKid", href: "https://distrokid.com/signin/" },
     { name: "TuneCore", href: "https://www.tunecore.com/sign-in" },
     { name: "CD Baby", href: "https://members.cdbaby.com/" },
+    { name: "UnitedMasters", href: "https://unitedmasters.com/login" },
+    { name: "Vydia", href: "https://dashboard.vydia.com/d2/sign_in" },
+    { name: "Distroauth", href: "https://login.distroauth.com/" },
   ],
   International: [],
   Misc: [
