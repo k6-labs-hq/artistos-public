@@ -180,6 +180,11 @@ async def lifespan(app: FastAPI):
         Base.metadata.create_all(bind=engine)
     configure_structured_logging()
     configure_tracing(app)
+    # Sentry error monitoring — no-ops without SENTRY_DSN, so local dev
+    # and tests stay quiet.
+    from XR7.observability.sentry import configure_sentry  # noqa: PLC0415
+
+    configure_sentry(app)
 
     # Ensure the object-storage bucket exists at startup. Lazy-creation on
     # first upload was racy and silently swallowed by the upload handler's
