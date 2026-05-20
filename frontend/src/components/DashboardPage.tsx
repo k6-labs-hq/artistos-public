@@ -725,7 +725,7 @@ export function DashboardPage() {
                 child needs its own. */}
             <div
               style={{
-                marginTop: "32px",
+                marginTop: "16px",
                 display: "grid",
                 gridTemplateColumns:
                   "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
