@@ -17,28 +17,44 @@ import {
   xr7,
 } from "../lib/xr7Client";
 
-function CategoryChip({ label }: { label: string }) {
-  return (
-    <span
-      style={{
-        display: "inline-block",
-        marginRight: "8px",
-        padding: "2px 8px",
-        borderRadius: "999px",
-        background: "rgba(168, 85, 247, 0.15)",
-        border: "1px solid rgba(168, 85, 247, 0.35)",
-        color: "#d6c2ff",
-        fontSize: "10px",
-        fontWeight: 600,
-        letterSpacing: "0.04em",
-        textTransform: "uppercase",
-        verticalAlign: "middle",
-      }}
-    >
-      {label}
-    </span>
-  );
-}
+type PayerCategory = "PRO" | "Mechanical" | "Distributor" | "International" | "Misc";
+
+const PAYER_CATEGORIES: PayerCategory[] = [
+  "PRO",
+  "Mechanical",
+  "Distributor",
+  "International",
+  "Misc",
+];
+
+type PayerLink = {
+  name: string;
+  href: string;
+  hint?: string;
+};
+
+const PAYER_LINKS: Record<PayerCategory, PayerLink[]> = {
+  PRO: [
+    {
+      name: "BMI member portal",
+      href: "https://www.bmi.com/login",
+      hint: "Sign in → My Earnings → Royalty Statements (PDF or CSV).",
+    },
+    { name: "ASCAP Member Access", href: "https://www.ascap.com/member-access" },
+  ],
+  Mechanical: [
+    { name: "The MLC Member Portal", href: "https://portal.themlc.com/" },
+  ],
+  Distributor: [
+    { name: "DistroKid", href: "https://distrokid.com/signin/" },
+    { name: "TuneCore", href: "https://www.tunecore.com/sign-in" },
+    { name: "CD Baby", href: "https://members.cdbaby.com/" },
+  ],
+  International: [],
+  Misc: [
+    { name: "SoundExchange", href: "https://my.soundexchange.com/" },
+  ],
+};
 
 /**
  * Rendered when an artist has uploaded data but the engine has no findings to
@@ -376,6 +392,7 @@ export function DashboardPage() {
   const [evidenceById, setEvidenceById] = useState<
     Record<string, { loading: boolean; error: string | null; data: AnomalyEvidence | null }>
   >({});
+  const [payerCategory, setPayerCategory] = useState<PayerCategory>("PRO");
 
   const toggleEvidence = useCallback(
     async (anomalyId: string) => {
@@ -995,68 +1012,84 @@ export function DashboardPage() {
               }}
             >
               <h2 style={{ marginTop: 0 }}>Get statements</h2>
-              <p style={{ opacity: 0.8, marginBottom: "16px" }}>
+              <p style={{ opacity: 0.8, marginBottom: "12px" }}>
                 Pull the latest statement from each payer's member portal, then
-                drop it on the left. Each link opens in a new tab.
+                drop it on the left.
               </p>
-              <ul
+              <div
+                role="tablist"
+                aria-label="Payer category"
                 style={{
-                  listStyle: "none",
-                  padding: 0,
-                  margin: 0,
                   display: "flex",
-                  flexDirection: "column",
-                  gap: "12px",
+                  flexWrap: "wrap",
+                  gap: "6px",
+                  marginBottom: "16px",
                 }}
               >
-                <li>
-                  <CategoryChip label="PRO" />
-                  <a
-                    href="https://www.bmi.com/login"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#c4a8ff", fontWeight: 600 }}
-                  >
-                    BMI member portal →
-                  </a>
-                  <div style={{ fontSize: "12px", opacity: 0.65, marginTop: "2px" }}>
-                    Sign in → My Earnings → Royalty Statements (PDF or CSV).
-                  </div>
-                </li>
-                <li>
-                  <CategoryChip label="PRO" />
-                  <a
-                    href="https://www.ascap.com/member-access"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#c4a8ff" }}
-                  >
-                    ASCAP Member Access →
-                  </a>
-                </li>
-                <li>
-                  <CategoryChip label="Mechanical" />
-                  <a
-                    href="https://portal.themlc.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#c4a8ff" }}
-                  >
-                    The MLC Member Portal →
-                  </a>
-                </li>
-                <li>
-                  <CategoryChip label="Digital Performance" />
-                  <a
-                    href="https://my.soundexchange.com/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#c4a8ff" }}
-                  >
-                    SoundExchange →
-                  </a>
-                </li>
-              </ul>
+                {PAYER_CATEGORIES.map((cat) => {
+                  const active = cat === payerCategory;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      role="tab"
+                      aria-selected={active}
+                      onClick={() => setPayerCategory(cat)}
+                      style={{
+                        padding: "4px 10px",
+                        borderRadius: "999px",
+                        border: active
+                          ? "1px solid rgba(168, 85, 247, 0.7)"
+                          : "1px solid rgba(168, 85, 247, 0.25)",
+                        background: active
+                          ? "rgba(168, 85, 247, 0.25)"
+                          : "transparent",
+                        color: active ? "#f5edff" : "#d6c2ff",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        letterSpacing: "0.02em",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+              {PAYER_LINKS[payerCategory].length === 0 ? (
+                <p style={{ opacity: 0.6, fontSize: "14px", margin: 0 }}>
+                  Coming soon — tell us which orgs you need.
+                </p>
+              ) : (
+                <ul
+                  style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                  }}
+                >
+                  {PAYER_LINKS[payerCategory].map((link) => (
+                    <li key={link.href}>
+                      <a
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: "#c4a8ff", fontWeight: 600 }}
+                      >
+                        {link.name} →
+                      </a>
+                      {link.hint ? (
+                        <div style={{ fontSize: "12px", opacity: 0.65, marginTop: "2px" }}>
+                          {link.hint}
+                        </div>
+                      ) : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
             </div>
 
