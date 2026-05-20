@@ -1248,3 +1248,253 @@ def admin_download_statement(
         media_type="application/octet-stream",
         headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
+
+
+@router.get("/admin/artists/statements")
+def admin_artists_statements(
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_admin_session),
+):
+    """Cross-artist file browser for the operator dashboard.
+
+    Returns each artist that has any uploaded statements, with a summary
+    block (statement / event / payment / anomaly counts, latest upload)
+    and the full list of their statements. The shape mirrors
+    /admin/claims/queue so the UI can use the same structure.
+
+    The per-statement entries include ``s3_uri_present`` (so the UI can
+    grey out Download for legacy rows without stored bytes) but never
+    the s3_uri itself — the download is gated through
+    /admin/statements/{id}/download which is admin-authenticated.
+    """
+    from XR7.models.artist import Artist  # noqa: PLC0415
+
+    # Pull every artist with at least one statement, plus the artist rows
+    # to attach name/email. Keep it as two queries — the SQL we'd write
+    # to do it in one join + jsonb_agg is more brittle than the per-row
+    # python aggregation, and the operator dashboard only ever has a
+    # handful of artists in the closed-beta phase.
+    statements = (
+        db.query(Statement)
+        .order_by(Statement.artist_id, Statement.uploaded_at.desc())
+        .all()
+    )
+    if not statements:
+        return {"total": 0, "items": []}
+
+    artist_ids = {s.artist_id for s in statements}
+    artists_by_id = {
+        a.id: a for a in db.query(Artist).filter(Artist.id.in_(artist_ids)).all()
+    }
+
+    # Pre-aggregate event / payment / anomaly counts per artist so the
+    # response carries the same numbers the operator sees on the artist's
+    # dashboard.
+    event_counts = dict(
+        db.query(Event.artist_id, func.count(Event.id))
+        .filter(Event.artist_id.in_(artist_ids))
+        .group_by(Event.artist_id)
+        .all()
+    )
+    payment_counts = dict(
+        db.query(Payment.artist_id, func.count(Payment.id))
+        .filter(Payment.artist_id.in_(artist_ids))
+        .group_by(Payment.artist_id)
+        .all()
+    )
+    anomaly_counts = dict(
+        db.query(Anomaly.artist_id, func.count(Anomaly.id))
+        .filter(Anomaly.artist_id.in_(artist_ids))
+        .group_by(Anomaly.artist_id)
+        .all()
+    )
+
+    by_artist: dict[str, dict] = {}
+    for s in statements:
+        bucket = by_artist.setdefault(
+            s.artist_id,
+            {
+                "artist_id": s.artist_id,
+                "artist_name": (
+                    artists_by_id[s.artist_id].name
+                    if s.artist_id in artists_by_id
+                    else None
+                ),
+                "artist_email": (
+                    artists_by_id[s.artist_id].email
+                    if s.artist_id in artists_by_id
+                    else None
+                ),
+                "statements_count": 0,
+                "events_count": int(event_counts.get(s.artist_id, 0)),
+                "payments_count": int(payment_counts.get(s.artist_id, 0)),
+                "anomalies_count": int(anomaly_counts.get(s.artist_id, 0)),
+                "latest_upload_at": None,
+                "statements": [],
+            },
+        )
+        bucket["statements_count"] += 1
+        uploaded = s.uploaded_at.isoformat() if s.uploaded_at else None
+        if uploaded and (bucket["latest_upload_at"] is None or uploaded > bucket["latest_upload_at"]):
+            bucket["latest_upload_at"] = uploaded
+        bucket["statements"].append(
+            {
+                "id": s.id,
+                "filename": s.filename,
+                "format_detected": s.format_detected,
+                "row_count": int(s.row_count or 0),
+                "events_created": int(s.events_created or 0),
+                "payments_created": int(s.payments_created or 0),
+                "skipped_rows": int(s.skipped_rows or 0),
+                "status": s.status,
+                "error_summary": s.error_summary,
+                "s3_uri_present": bool(s.s3_uri),
+                "uploaded_at": uploaded,
+            }
+        )
+
+    items = sorted(
+        by_artist.values(),
+        key=lambda b: b["latest_upload_at"] or "",
+        reverse=True,
+    )
+    return {"total": len(items), "items": items}
+
+
+@router.post("/admin/statements/{statement_id}/reprocess")
+def admin_reprocess_statement(
+    statement_id: str,
+    db: Session = Depends(get_db),
+    _: dict = Depends(require_admin_session),
+):
+    """Re-parse a previously-uploaded statement's bytes through the
+    current parser, persist any new events/payments, and re-run anomaly
+    detection.
+
+    Useful when a parser change has landed and we want the existing
+    corpus reprocessed without asking the artist to re-upload. Original
+    bytes come from object storage (the statement must have ``s3_uri``
+    populated — legacy rows pre-#275 return 409). Dedup is handled by
+    the existing ON CONFLICT DO NOTHING on events + the
+    (artist_id, reference_id) uniqueness on payments, so reprocessing
+    is idempotent — only newly-parseable rows are added.
+    """
+    statement = db.query(Statement).filter(Statement.id == statement_id).first()
+    if statement is None:
+        raise HTTPException(status_code=404, detail="Statement not found")
+    if not statement.s3_uri:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Reprocess requires the original bytes — this statement was "
+                "uploaded before object storage was wired (s3_uri is NULL). "
+                "Re-upload the file to ingest it under the current parser."
+            ),
+        )
+
+    from XR7.services.storage_service import ObjectStorageService  # noqa: PLC0415
+
+    storage = ObjectStorageService()
+    try:
+        key = storage.s3_uri_to_key(statement.s3_uri)
+        original_content = storage.download_bytes(key)
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("Reprocess: download from object storage failed")
+        raise HTTPException(
+            status_code=502,
+            detail=f"Could not retrieve stored statement bytes: {exc}",
+        ) from exc
+
+    filename = statement.filename or "statement.csv"
+    content = original_content
+
+    # Same dispatch the upload paths use — PDF vs Apple Numbers vs
+    # generic delimited. Kept inline rather than extracted so this
+    # endpoint stays self-contained; if a third caller ever needs the
+    # same dispatch, extract then.
+    if filename.lower().endswith(".pdf"):
+        from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
+            bmi_pdf_to_events_and_payments,
+            is_bmi_pdf,
+        )
+
+        if not is_bmi_pdf(original_content):
+            raise HTTPException(
+                status_code=422,
+                detail="Only BMI Royalty Statement PDFs can be reprocessed today.",
+            )
+        events, payments, errors = bmi_pdf_to_events_and_payments(
+            original_content, statement.artist_id
+        )
+        format_detected = "bmi_pdf"
+        row_count = len(events)
+        skipped_rows = 0
+    else:
+        if filename.lower().endswith(".numbers"):
+            try:
+                content = numbers_to_csv_bytes(original_content)
+            except ValueError as exc:
+                raise HTTPException(
+                    status_code=422,
+                    detail=f"Could not read Numbers file: {exc}",
+                ) from exc
+            parse_filename = filename.rsplit(".", 1)[0] + ".csv"
+        else:
+            parse_filename = filename
+        try:
+            result = parse_with_timeout(
+                parse_statement_file, content, statement.artist_id, filename=parse_filename
+            )
+        except StatementParseTimeoutError as timeout_err:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"Reprocess timed out after {timeout_err.timeout_seconds} seconds."
+                ),
+            ) from timeout_err
+        events, payments, errors = result.events, result.payments, result.errors
+        format_detected = result.format_detected
+        row_count = result.row_count
+        skipped_rows = result.skipped_rows
+
+    event_result = _save_events(db, events)
+    events_added = event_result["inserted"]
+    payments_added = _save_payments(db, payments)
+
+    # Refresh the Statement row to reflect the latest parse. The original
+    # upload-time totals stay accurate for that ingestion; we update the
+    # cumulative counts so the operator UI shows the post-reprocess state.
+    statement.format_detected = format_detected
+    statement.row_count = row_count
+    statement.skipped_rows = skipped_rows
+    statement.events_created = (statement.events_created or 0) + events_added
+    statement.payments_created = (statement.payments_created or 0) + payments_added
+    if errors and not events and not payments:
+        statement.status = "FAILED"
+        statement.error_summary = "; ".join(errors[:5])
+    elif events or payments:
+        statement.status = "PROCESSED"
+    db.commit()
+
+    # Re-run anomaly detection if we actually pulled in new rows. Skip
+    # otherwise — detection over an unchanged corpus is wasted work and
+    # would re-fire HubSpot syncs etc.
+    if events_added > 0 or payments_added > 0:
+        try:
+            run_detection_and_persist(statement.artist_id, db)
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "Reprocess: anomaly detection failed (non-blocking)",
+                extra={"statement_id": statement_id, "artist_id": statement.artist_id},
+            )
+
+    return {
+        "statement_id": statement.id,
+        "format_detected": format_detected,
+        "events_added": events_added,
+        "payments_added": payments_added,
+        "row_count": row_count,
+        "skipped_rows": skipped_rows,
+        "errors": errors[:5] if errors else [],
+        "status": statement.status,
+    }

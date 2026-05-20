@@ -2,6 +2,9 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { getXR7Token } from "../lib/supabase";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { OpsFiles } from "./OpsFiles";
+
+type ConsoleView = "queue" | "files";
 
 type Me = {
   role?: string | null;
@@ -89,6 +92,7 @@ export function OpsDashboard() {
   const [me, setMe] = useState<Me | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
+  const [view, setView] = useState<ConsoleView>("queue");
   const [redirectMode, setRedirectMode] = useState(false);
   const [rows, setRows] = useState<ClaimRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -329,11 +333,47 @@ export function OpsDashboard() {
         <section style={styles.shell}>
           <header style={styles.header}>
             <p style={styles.eyebrow}>K6 Labs · Operator Console</p>
-            <h1 style={styles.h1}>Filing Queue</h1>
+            <h1 style={styles.h1}>
+              {view === "queue" ? "Filing Queue" : "Files & Reprocess"}
+            </h1>
             <p style={styles.lede}>
-              Cross-artist claim queue. Click <strong>File via email</strong> to send the dispute
-              packet to the payer. Real action — not a preview.
+              {view === "queue" ? (
+                <>
+                  Cross-artist claim queue. Click <strong>File via email</strong> to send the dispute
+                  packet to the payer. Real action — not a preview.
+                </>
+              ) : (
+                <>
+                  Browse the raw statements uploaded per artist. <strong>Download</strong> to
+                  inspect the original bytes; <strong>Reprocess</strong> to re-parse them through
+                  the current parser and re-run anomaly detection (dedup is automatic).
+                </>
+              )}
             </p>
+            <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+              {(["queue", "files"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setView(mode)}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "999px",
+                    border:
+                      view === mode
+                        ? "1px solid rgba(168,85,247,0.7)"
+                        : "1px solid rgba(168,85,247,0.25)",
+                    background:
+                      view === mode ? "rgba(168,85,247,0.25)" : "transparent",
+                    color: view === mode ? "#fff" : "#cbd5e1",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {mode === "queue" ? "Filing Queue" : "Files & Reprocess"}
+                </button>
+              ))}
+            </div>
           </header>
 
           <section style={styles.card}>
@@ -390,6 +430,7 @@ export function OpsDashboard() {
             {error ? <p style={styles.error}>{error}</p> : null}
           </section>
 
+          {view === "queue" ? (
           <section style={styles.card}>
             <div style={styles.tabs}>
               {TABS.map((tab, i) => (
@@ -610,6 +651,9 @@ export function OpsDashboard() {
               </div>
             ) : null}
           </section>
+          ) : (
+            <OpsFiles isAuthed={isAuthed} basePath={basePath} headers={headers} />
+          )}
         </section>
       </main>
     </ErrorBoundary>
