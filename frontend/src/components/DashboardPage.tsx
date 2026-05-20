@@ -718,9 +718,22 @@ export function DashboardPage() {
 
         {state === "ready" ? (
           <>
-            <section
+            {/* Two-column band: Upload on the left, Get-statements links on
+                the right. Wraps to a single column under ~700px so it stays
+                usable on narrow viewports. Both cards reuse the same card
+                styling — the wrapper provides the top margin so neither
+                child needs its own. */}
+            <div
               style={{
                 marginTop: "32px",
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(min(100%, 320px), 1fr))",
+                gap: "16px",
+              }}
+            >
+            <section
+              style={{
                 padding: "24px",
                 borderRadius: "16px",
                 border: "1px solid rgba(168, 85, 247, 0.3)",
@@ -950,6 +963,75 @@ export function DashboardPage() {
                 </p>
               ) : null}
             </section>
+            <section
+              style={{
+                padding: "24px",
+                borderRadius: "16px",
+                border: "1px solid rgba(168, 85, 247, 0.3)",
+                background: "rgba(16, 16, 28, 0.6)",
+              }}
+            >
+              <h2 style={{ marginTop: 0 }}>Get statements</h2>
+              <p style={{ opacity: 0.8, marginBottom: "16px" }}>
+                Pull the latest statement from each payer's member portal, then
+                drop it on the left. Each link opens in a new tab.
+              </p>
+              <ul
+                style={{
+                  listStyle: "none",
+                  padding: 0,
+                  margin: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "12px",
+                }}
+              >
+                <li>
+                  <a
+                    href="https://www.bmi.com/login"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#c4a8ff", fontWeight: 600 }}
+                  >
+                    BMI member portal →
+                  </a>
+                  <div style={{ fontSize: "12px", opacity: 0.65, marginTop: "2px" }}>
+                    Sign in → My Earnings → Royalty Statements (PDF or CSV).
+                  </div>
+                </li>
+                <li>
+                  <a
+                    href="https://www.ascap.com/member-access"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#c4a8ff" }}
+                  >
+                    ASCAP Member Access →
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://portal.themlc.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#c4a8ff" }}
+                  >
+                    The MLC Member Portal →
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://my.soundexchange.com/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ color: "#c4a8ff" }}
+                  >
+                    SoundExchange →
+                  </a>
+                </li>
+              </ul>
+            </section>
+            </div>
 
             {statementHistory.length > 0 ? (
               <section style={{ marginTop: "32px" }}>
