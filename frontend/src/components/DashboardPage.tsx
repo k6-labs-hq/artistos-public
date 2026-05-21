@@ -17,14 +17,13 @@ import {
   xr7,
 } from "../lib/xr7Client";
 
-type PayerCategory = "PRO" | "Mechanical" | "Distributor" | "International" | "Misc";
+type PayerCategory = "PRO" | "Mechanical" | "Distributor" | "International";
 
 const PAYER_CATEGORIES: PayerCategory[] = [
   "PRO",
   "Mechanical",
   "Distributor",
   "International",
-  "Misc",
 ];
 
 type PayerLink = {
@@ -58,9 +57,6 @@ const PAYER_LINKS: Record<PayerCategory, PayerLink[]> = {
     { name: "The Orchard", href: "https://login.distroauth.com/" },
   ],
   International: [],
-  Misc: [
-    { name: "SoundExchange", href: "https://my.soundexchange.com/" },
-  ],
 };
 
 /**
