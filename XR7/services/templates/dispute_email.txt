@@ -5,6 +5,10 @@ Claim Reference: {{ claim_id }}
 
 We are writing on behalf of {{ artist_name }} to formally notify you of a royalty underpayment identified through our forensic audit of {{ payer_id }} statements. We act under a signed Limited Power of Attorney from {{ artist_name }} and are authorized to receive all correspondence regarding this matter.
 
+PAYEE CONFIRMATION REQUEST
+
+Before processing any payment under this claim, please confirm in writing the current payee of record for the works identified in the attached evidence packet. We require this confirmation to ensure recovered funds are routed to the proper party.
+
 {% if contractual_citation %}{{ contractual_citation }}
 
 {% endif %}UNDERPAYMENT DETERMINATION

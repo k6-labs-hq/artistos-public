@@ -186,6 +186,26 @@
             font-size: 13px;
             color: #7c2d12;
         }
+        .payee-confirm-box {
+            background-color: #fffbeb;
+            border: 2px solid #d97706;
+            border-radius: 4px;
+            padding: 18px 22px;
+            margin: 24px 0;
+        }
+        .payee-confirm-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #92400e;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .payee-confirm-text {
+            font-size: 14px;
+            color: #78350f;
+            line-height: 1.6;
+        }
         @media only screen and (max-width: 600px) {
             body {
                 padding: 10px;
@@ -213,6 +233,13 @@
         <div class="salutation">{{ salutation }}</div>
 
         <p>We are writing on behalf of {{ artist_name }} to formally notify you of a royalty underpayment identified through our forensic audit of {{ payer_id }} statements. We act under a signed Limited Power of Attorney from {{ artist_name }} and are authorized to receive all correspondence regarding this matter.</p>
+
+        <div class="payee-confirm-box">
+            <div class="payee-confirm-label">Payee Confirmation Request</div>
+            <div class="payee-confirm-text">
+                Before processing any payment under this claim, please confirm in writing the current payee of record for the works identified in the attached evidence packet. We require this confirmation to ensure recovered funds are routed to the proper party.
+            </div>
+        </div>
 
         {% if contractual_citation %}
         <div class="citation-block">

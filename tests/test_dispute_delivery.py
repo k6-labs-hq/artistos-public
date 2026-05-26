@@ -107,6 +107,21 @@ class TestRealSend:
 
         assert base64.b64decode(att["Content"]) == b"%PDF-fake-pdf-content"
 
+    def test_payee_confirmation_request_in_email_body(self, monkeypatch):
+        """Every PRO/MLC dispute must ask the payer to confirm the current
+        payee of record before processing. Without this, recovered funds can
+        be routed to a new owner-of-record (publisher buyout, catalog sale)
+        and XR7's 12% contingency is bypassed entirely. See #329."""
+        monkeypatch.setenv("POSTMARK_API_TOKEN", "test-token")
+        with patch(
+            "XR7.services.postmark_client.httpx.post", return_value=self._ok_response()
+        ) as mock_post:
+            deliver_dispute(**_common_inputs(payer_id="BMI"))
+        sent = mock_post.call_args.kwargs["json"]
+        assert "payee of record" in sent["TextBody"].lower()
+        assert "before processing" in sent["TextBody"].lower()
+        assert "payee of record" in sent["HtmlBody"].lower()
+
     def test_metadata_includes_claim_artist_payer_for_reply_correlation(self, monkeypatch):
         """Postmark inbound webhook reads these to match BMI's reply to the right Claim row."""
         monkeypatch.setenv("POSTMARK_API_TOKEN", "test-token")
