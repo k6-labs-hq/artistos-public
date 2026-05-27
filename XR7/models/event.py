@@ -3,7 +3,15 @@ import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, Integer, String
+from sqlalchemy import (
+    DateTime,
+    Enum,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from XR7.models.base import Base
@@ -20,6 +28,22 @@ class EventType(str, enum.Enum):
 
 class Event(Base):
     __tablename__ = "events"
+    __table_args__ = (
+        # Matches the unique constraint added in migration 20260422_0035, used by
+        # ingestion's INSERT...ON CONFLICT DO NOTHING for re-upload dedup. The
+        # constraint was previously only in the migration, not the model, which
+        # broke SQLite-backed tests that exercise the ingestion path.
+        UniqueConstraint(
+            "artist_id",
+            "event_type",
+            "platform",
+            "territory",
+            "timestamp",
+            "quantity",
+            "unit_value",
+            name="uq_events_dedup",
+        ),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     event_type: Mapped[str] = mapped_column(Enum(EventType), nullable=False)
@@ -29,6 +53,10 @@ class Event(Base):
     # Anomaly rules use this for per-track aggregation.
     work_title: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     artist_id: Mapped[str] = mapped_column(String, ForeignKey("artists.id"), nullable=False)
+    # Source statement this event was parsed from. Nullable because (a) the upload
+    # flow commits events before the Statement row exists (see #333) so we don't
+    # enforce DB-level FK, and (b) historical rows pre-dating this column stay NULL.
+    statement_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     platform: Mapped[str | None] = mapped_column(String, nullable=True)
     territory: Mapped[str | None] = mapped_column(String, nullable=True)
     timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
@@ -45,6 +73,7 @@ class EventSchema(BaseModel):
     work_id: str | None = None
     work_title: str | None = None
     artist_id: str
+    statement_id: str | None = None
     platform: str | None = None
     territory: str | None = None
     timestamp: datetime

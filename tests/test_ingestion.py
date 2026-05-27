@@ -578,6 +578,43 @@ class TestUploadEndpoint:
         resp = self._upload("nonexistent-id", csv_bytes)
         assert resp.status_code == 404
 
+    def test_events_payments_carry_statement_id_for_attribution(self, artist_id):
+        """Each event + payment row must be stamped with the source statement's id
+        so reporting can attribute recovered $ to a specific file (#333). Upload
+        two distinct statements and verify the rows partition correctly.
+        """
+        csv1 = _csv(
+            ["Month", "Store", "Country", "Title", "ISRC", "Quantity", "Earnings"],
+            [["2023-09", "Spotify", "US", "Attrib A", "USATR1111111", "5000", "21.00"]],
+        )
+        csv2 = _csv(
+            ["Month", "Store", "Country", "Title", "ISRC", "Quantity", "Earnings"],
+            [["2023-10", "Apple", "GB", "Attrib B", "USATR2222222", "3000", "12.60"]],
+        )
+        sid1 = self._upload(artist_id, csv1, filename="attrib1.csv").json()["id"]
+        sid2 = self._upload(artist_id, csv2, filename="attrib2.csv").json()["id"]
+        assert sid1 != sid2
+
+        from XR7.models.event import Event
+        from XR7.models.payment import Payment
+
+        db = _TestSession()
+        try:
+            events_by_stmt = {
+                e.statement_id
+                for e in db.query(Event).filter(Event.artist_id == artist_id).all()
+            }
+            payments_by_stmt = {
+                p.statement_id
+                for p in db.query(Payment).filter(Payment.artist_id == artist_id).all()
+            }
+        finally:
+            db.close()
+
+        # Both statements' ids should appear; no NULLs from the upload path.
+        assert events_by_stmt == {sid1, sid2}
+        assert payments_by_stmt == {sid1, sid2}
+
     def test_format_detected_recorded(self, artist_id):
         csv_bytes = _csv(
             ["Month", "Store", "Country", "Title", "ISRC", "Quantity", "Earnings"],

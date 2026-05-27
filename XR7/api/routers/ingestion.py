@@ -130,7 +130,9 @@ def supported_formats() -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
+def _save_events(
+    db: Session, events: list[dict], *, statement_id: str | None = None
+) -> dict[str, int]:
     """Persist normalised event dicts to the DB with row-level deduplication.
 
     Uses INSERT...ON CONFLICT DO NOTHING to skip duplicate events based on
@@ -140,6 +142,10 @@ def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
     Returns dict with counts: {"inserted": N, "skipped": M}
 
     Commits in batches of 500 to limit memory pressure for large statements.
+
+    ``statement_id`` is stamped on every event for per-file attribution (#333).
+    Callers from the statement-upload path pass the new statement's id;
+    callers from non-statement code (seed scripts, tests) may omit it.
     """
     _CHUNK = 500
     inserted = 0
@@ -160,6 +166,7 @@ def _save_events(db: Session, events: list[dict]) -> dict[str, int]:
                     "id": str(uuid.uuid4()),
                     "event_type": event_type.value,
                     "artist_id": e["artist_id"],
+                    "statement_id": statement_id,
                     "platform": e.get("platform"),
                     "territory": e.get("territory"),
                     "timestamp": e.get("timestamp") or datetime.now(timezone.utc),
@@ -314,12 +321,16 @@ def _enrich_payments_with_iswc(
     return enriched
 
 
-def _save_payments(db: Session, payments: list[dict]) -> int:
+def _save_payments(
+    db: Session, payments: list[dict], *, statement_id: str | None = None
+) -> int:
     """Persist normalised payment dicts to the DB, returning the count saved.
 
     Uses per-row savepoints so a duplicate (artist_id, reference_id) skips the
     row without aborting the whole transaction. Matches the ingestion
     idempotency contract: re-uploading the same statement is a no-op.
+
+    ``statement_id`` is stamped on every payment for per-file attribution (#333).
     """
     count = 0
     created: list[Payment] = []
@@ -334,6 +345,7 @@ def _save_payments(db: Session, payments: list[dict]) -> int:
             id=str(uuid.uuid4()),
             payment_type=payment_type,
             artist_id=p["artist_id"],
+            statement_id=statement_id,
             amount=float(p.get("amount", 0.0)),
             currency=p.get("currency", "USD"),
             source=p.get("source"),
@@ -610,10 +622,13 @@ async def upload_statement(
             f"{error_summary}; {storage_warning}" if error_summary else storage_warning
         )
 
-    # Persist
-    event_result = _save_events(db, result.events)
+    # Persist. Pre-generate the Statement's UUID so events + payments can be
+    # stamped with it for per-file attribution (#333). The Statement row
+    # itself is created further down.
+    statement_id = str(uuid.uuid4())
+    event_result = _save_events(db, result.events, statement_id=statement_id)
     events_created = event_result["inserted"]
-    payments_created = _save_payments(db, result.payments)
+    payments_created = _save_payments(db, result.payments, statement_id=statement_id)
 
     # Run anomaly detection on newly ingested data and persist findings.
     # Without this, dicts came back from the engine but were never inserted
@@ -682,9 +697,10 @@ async def upload_statement(
                     "Failed to enqueue HubSpot first anomalies sync", extra={"artist_id": artist_id}
                 )
 
-    # Create audit record
+    # Create audit record. Reuses the pre-generated statement_id so the
+    # events + payments rows above point back here.
     statement = Statement(
-        id=str(uuid.uuid4()),
+        id=statement_id,
         artist_id=artist_id,
         filename=file.filename or "unknown.csv",
         file_hash=file_hash,
@@ -960,9 +976,12 @@ async def upload_statement_batch(
                 statement_signals = extract_statement_signals(
                     content, filename, format_detected=result.format_detected
                 )
-            event_result = _save_events(db, result.events)
+            # Pre-generate the Statement id so events + payments can be
+            # stamped with it for per-file attribution (#333).
+            statement_id = str(uuid.uuid4())
+            event_result = _save_events(db, result.events, statement_id=statement_id)
             events_created = event_result["inserted"]
-            payments_created = _save_payments(db, result.payments)
+            payments_created = _save_payments(db, result.payments, statement_id=statement_id)
 
             # Persist source bytes — same path as the single-file endpoint.
             # Batch was previously skipping this entirely, so every BMI corpus
@@ -996,7 +1015,7 @@ async def upload_statement_batch(
             )
 
             statement = Statement(
-                id=str(uuid.uuid4()),
+                id=statement_id,
                 artist_id=artist_id,
                 filename=filename,
                 file_hash=file_hash,
@@ -1457,9 +1476,9 @@ def admin_reprocess_statement(
         row_count = result.row_count
         skipped_rows = result.skipped_rows
 
-    event_result = _save_events(db, events)
+    event_result = _save_events(db, events, statement_id=statement.id)
     events_added = event_result["inserted"]
-    payments_added = _save_payments(db, payments)
+    payments_added = _save_payments(db, payments, statement_id=statement.id)
 
     # Refresh the Statement row to reflect the latest parse. The original
     # upload-time totals stay accurate for that ingestion; we update the
