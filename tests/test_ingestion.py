@@ -578,6 +578,34 @@ class TestUploadEndpoint:
         resp = self._upload("nonexistent-id", csv_bytes)
         assert resp.status_code == 404
 
+    def test_duplicate_content_in_different_wrapper_marks_status_duplicate(self, artist_id):
+        """When the same data is re-uploaded inside a different file (different
+        bytes → different file_hash, but identical rows), the DB-level dedup
+        catches every event + payment. Result must be marked DUPLICATE, not
+        silently PROCESSED 0/0 (which reads as a parser bug). See #336.
+        """
+        rows = [
+            ["2023-11", "Spotify", "US", "DupTest", "USDUP3333333", "1000", "4.20"],
+        ]
+        csv1 = _csv(
+            ["Month", "Store", "Country", "Title", "ISRC", "Quantity", "Earnings"], rows
+        )
+        # Different bytes (trailing newline), identical parsed content.
+        csv2 = csv1 + b"\n"
+        assert csv1 != csv2, "second variant must hash differently"
+
+        r1 = self._upload(artist_id, csv1, filename="first.csv").json()
+        r2 = self._upload(artist_id, csv2, filename="second.csv").json()
+
+        assert r1["status"] == "PROCESSED"
+        assert r1["events_created"] >= 1
+        # Second upload's rows all dedup → status flagged as DUPLICATE,
+        # error_summary surfaces the reason so the dashboard tooltip works.
+        assert r2["status"] == "DUPLICATE", r2
+        assert r2["events_created"] == 0
+        assert r2["payments_created"] == 0
+        assert "already ingested" in (r2.get("error_summary") or "").lower()
+
     def test_events_payments_carry_statement_id_for_attribution(self, artist_id):
         """Each event + payment row must be stamped with the source statement's id
         so reporting can attribute recovered $ to a specific file (#333). Upload

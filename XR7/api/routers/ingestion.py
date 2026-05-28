@@ -630,6 +630,20 @@ async def upload_statement(
     events_created = event_result["inserted"]
     payments_created = _save_payments(db, result.payments, statement_id=statement_id)
 
+    # Duplicate-content detection: parser produced rows but the DB-level
+    # dedup caught all of them (event uniq constraint + payment reference_id
+    # uniq constraint). This commonly happens when an artist re-uploads the
+    # same data wrapped in a different file format (e.g. CSV → .numbers).
+    # Without this signal the row reads as "PROCESSED 0/0" which looks like
+    # a parser failure. Surface it as a distinct state.
+    parser_produced_rows = bool(result.events) or bool(result.payments)
+    if status == "PROCESSED" and parser_produced_rows and events_created == 0 and payments_created == 0:
+        status = "DUPLICATE"
+        dup_msg = (
+            "All rows already ingested from a prior upload — no new data added."
+        )
+        error_summary = f"{error_summary}; {dup_msg}" if error_summary else dup_msg
+
     # Run anomaly detection on newly ingested data and persist findings.
     # Without this, dicts came back from the engine but were never inserted
     # into the anomalies table — so the dashboard / notifications saw nothing.
@@ -982,6 +996,15 @@ async def upload_statement_batch(
             event_result = _save_events(db, result.events, statement_id=statement_id)
             events_created = event_result["inserted"]
             payments_created = _save_payments(db, result.payments, statement_id=statement_id)
+            # Duplicate-content detection — see single-upload path for the
+            # rationale. Surface "all rows deduped" as a distinct state so
+            # the UI doesn't conflate it with a parser failure.
+            parser_produced_rows = bool(result.events) or bool(result.payments)
+            batch_dup = (
+                parser_produced_rows
+                and events_created == 0
+                and payments_created == 0
+            )
 
             # Persist source bytes — same path as the single-file endpoint.
             # Batch was previously skipping this entirely, so every BMI corpus
@@ -1008,11 +1031,21 @@ async def upload_statement_batch(
             base_summary = (
                 "; ".join(result.errors[:5]) if result.errors and not result.events else None
             )
+            if batch_dup:
+                dup_msg = (
+                    "All rows already ingested from a prior upload — no new data added."
+                )
+                base_summary = f"{base_summary}; {dup_msg}" if base_summary else dup_msg
             error_summary = (
                 f"{base_summary}; {storage_warning}"
                 if base_summary and storage_warning
                 else (base_summary or storage_warning)
             )
+
+            if result.events or result.payments:
+                batch_status = "DUPLICATE" if batch_dup else "PROCESSED"
+            else:
+                batch_status = "FAILED"
 
             statement = Statement(
                 id=statement_id,
@@ -1024,7 +1057,7 @@ async def upload_statement_batch(
                 events_created=events_created,
                 payments_created=payments_created,
                 skipped_rows=result.skipped_rows,
-                status="PROCESSED" if result.events or result.payments else "FAILED",
+                status=batch_status,
                 error_summary=error_summary,
                 ingestion_metadata_json=to_json(statement_signals),
                 s3_uri=s3_uri,

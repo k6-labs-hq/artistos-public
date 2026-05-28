@@ -1165,7 +1165,12 @@ export function DashboardPage() {
                                   : s.status === "FAILED"
                                     ? "#fca5a5"
                                     : "#fde68a",
+                              cursor: s.error_summary ? "help" : "default",
+                              textDecoration: s.error_summary
+                                ? "underline dotted"
+                                : "none",
                             }}
+                            title={s.error_summary || undefined}
                           >
                             {s.status}
                           </td>
