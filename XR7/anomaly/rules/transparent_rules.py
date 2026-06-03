@@ -85,39 +85,29 @@ def run_transparent_rules(
     }
 
     # RULE 1: streaming payout under 50% of expected market baseline.
+    #
+    # DEMOTED 2026-05-28 — see #344. The math here is self-referential:
+    # `median_platform_rate` is computed from the artist's own stream rates
+    # (line 60) and then clamped to a hardcoded $0.001 floor, NOT compared
+    # against any external platform/DSP/statutory benchmark. The rule fires
+    # whenever the artist's mean rate is below half their own median rate,
+    # which is a property of the artist's rate distribution (right-skew),
+    # not evidence of underpayment. That's catalog shape — not a claim.
+    #
+    # On David Tolliver this rule produced a $14,775.55 finding that cannot
+    # survive a BMI/MLC audit team's first question ("vs what specific rate?").
+    # Until a defensible replacement ships (per-payer rate-card rules + MLC
+    # registry verification — see #344 for the build plan), the rule is
+    # disabled at the persistence layer.
+    #
+    # The math is preserved in source for reference but does not emit a finding.
     if stream_events:
         observed_rate = _mean(stream_rates) if stream_rates else 0.0
         baseline = max(median_platform_rate, 0.001)
         ratio = observed_rate / baseline if baseline > 0 else 0.0
-        if ratio < 0.5:
-            est_loss = max(
-                (baseline - observed_rate)
-                * sum(float(e.get("quantity") or 0.0) for e in stream_events),
-                0.0,
-            )
-            findings.append(
-                {
-                    "artist_id": artist_id,
-                    "category": "PLATFORM",
-                    "subtype": "STREAM_PAYOUT_BELOW_50PCT",
-                    "severity": "HIGH",
-                    "expected_amount": round(baseline, 6),
-                    "actual_amount": round(observed_rate, 6),
-                    "estimated_recoverable": round(est_loss, 2),
-                    "confidence_score": 0.9,
-                    "status": "OPEN",
-                    "description": "Average stream payout rate is below 50% of recent platform baseline.",
-                    "rule_id": "STREAM_PAYOUT_UNDER_50",
-                    "rule_name": "Stream payout less than 50% baseline",
-                    "identity_key": "",  # fires once per artist
-                    "evidence": {
-                        "observed_rate": round(observed_rate, 6),
-                        "median_platform_rate": round(baseline, 6),
-                        "ratio": round(ratio, 4),
-                        "stream_events_count": len(stream_events),
-                    },
-                }
-            )
+        # Intentional no-op — see header comment. Re-enable only as part of
+        # the replacement-rule landing tracked in #344.
+        _ = (observed_rate, baseline, ratio)
 
     # RULE 2: monthly royalty history has gap > 60 days.
     # Same period-vs-ingestion concern as Rule 4 — if every payment was
