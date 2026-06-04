@@ -291,29 +291,25 @@ def run_transparent_rules(
     # Limits we're honest about in the finding text:
     # - Estimate is BEFORE any publisher splits. Writers with admin deals
     #   may receive their share through their publisher, not direct from MLC.
-    # - Estimate is a STATUTORY FLOOR. Actual recoverable can be higher
-    #   under the Phonorecords IV "greater of revenue / TCC / minimum"
-    #   formula, lower if some streams have already been distributed
-    #   through correct registrations we don't see.
+    # - Estimate is keyed off the artist's DOCUMENTED PRO performance income
+    #   (not raw stream count × statutory floor) so it reflects the writer's
+    #   actual share. A PRO line that paid $X to the writer's share at
+    #   <writer's share %> implies a mechanical pair of X × ratio at the
+    #   same share.
     # - US-only. International streaming mechanicals flow through different
     #   collective management organizations not covered here.
-    _MECHANICAL_RATE_FLOOR_PER_STREAM: dict[int, float] = {
-        # Phonorecords III (2018-2022) — conservative floor estimates from
-        # the percentage-of-revenue formula. Real rates vary by DSP and tier.
-        2015: 0.00060,
-        2016: 0.00065,
-        2017: 0.00070,
-        2018: 0.00081,
-        2019: 0.00090,
-        2020: 0.00096,
-        2021: 0.00103,
-        2022: 0.00110,
-        # Phonorecords IV (2023-2027) — settlement-driven uplift.
-        2023: 0.00155,
-        2024: 0.00165,
-        2025: 0.00177,
-        2026: 0.00177,
-    }
+    #
+    # Mechanical-to-performance ratio for interactive DSPs.
+    # Reference numbers (rough, per-stream, premium tier):
+    #   Spotify performance (to PRO share): ~$0.0006-0.0010
+    #   Spotify mechanical (to MLC share):  ~$0.0010-0.0018
+    # Ratio ≈ 1.5x (conservative; the Phonorecords IV "greater of" formula
+    # tends to push the realized ratio higher, so this floor understates).
+    # Applied per event: artist_mech = quantity × unit_value × ratio. Since
+    # unit_value is the artist's per-stream PRO rate at their work share,
+    # the result is the artist's mechanical share at the same share — no
+    # separate share lookup needed.
+    _MECH_TO_PERF_RATIO = 1.5
     # Platform keywords identifying MLC-eligible interactive DSP streams.
     # Sound-recording-only platforms (radio, TV, satellite) generate
     # different royalty types not administered by The MLC.
@@ -339,20 +335,27 @@ def run_transparent_rules(
     if mlc_eligible_events:
         estimated_mechanical = 0.0
         total_streams = 0
+        total_performance_income = 0.0
         by_year: dict[int, dict[str, float]] = {}
         for e in mlc_eligible_events:
             ts = _to_dt(e.get("timestamp"))
             if ts is None:
                 continue
             streams = int(float(e.get("quantity") or 0.0))
-            if streams <= 0:
+            unit_value = float(e.get("unit_value") or 0.0)
+            if streams <= 0 or unit_value <= 0:
+                # Can't infer artist's share without a non-zero per-stream
+                # PRO rate. Skip rather than fall back to full-rate math
+                # (which over-claims for shared works).
                 continue
-            rate = _MECHANICAL_RATE_FLOOR_PER_STREAM.get(ts.year, 0.001)
-            mech = streams * rate
+            performance_income = streams * unit_value
+            mech = performance_income * _MECH_TO_PERF_RATIO
             estimated_mechanical += mech
             total_streams += streams
-            yb = by_year.setdefault(ts.year, {"streams": 0, "mechanical": 0.0})
+            total_performance_income += performance_income
+            yb = by_year.setdefault(ts.year, {"streams": 0, "mechanical": 0.0, "performance": 0.0})
             yb["streams"] += streams
+            yb["performance"] += performance_income
             yb["mechanical"] += mech
 
         mlc_received = sum(
@@ -386,13 +389,15 @@ def run_transparent_rules(
                     "confidence_score": 0.75,
                     "status": "OPEN",
                     "description": (
-                        f"{total_streams:,} interactive streams documented via PRO "
-                        f"statements imply ~${estimated_mechanical:,.2f} in mechanical "
-                        "royalties owed under 17 U.S.C. § 115 (Phonorecords III / IV). "
-                        f"MLC payments received: ${mlc_received:,.2f} ({coverage_pct}% "
-                        "coverage). The shortfall is most likely sitting in The MLC's "
-                        "Black Box (unmatched-recordings pool) or matched to a different "
-                        "rights holder. Claimable via The MLC's Distributor Unmatched "
+                        f"PRO statements document ~${total_performance_income:,.2f} "
+                        f"in your performance share across {total_streams:,} interactive "
+                        "streams. Mechanical pair (at the same writer share) under 17 "
+                        "U.S.C. § 115 is estimated at ~"
+                        f"${estimated_mechanical:,.2f}. MLC payments received: "
+                        f"${mlc_received:,.2f} ({coverage_pct}% coverage). The "
+                        "shortfall is most likely sitting in The MLC's Black Box "
+                        "(unmatched-recordings pool) or matched to a different rights "
+                        "holder. Claimable via The MLC's Distributor Unmatched "
                         "Recordings Portal (DURP) after verifying registration."
                     ),
                     "rule_id": "PROBABLE_UNCLAIMED_MECHANICALS",
@@ -410,6 +415,8 @@ def run_transparent_rules(
                     ),
                     "evidence": {
                         "mlc_eligible_stream_count": total_streams,
+                        "documented_performance_income": round(total_performance_income, 2),
+                        "mech_to_perf_ratio": _MECH_TO_PERF_RATIO,
                         "estimated_mechanical_owed": round(estimated_mechanical, 2),
                         "mlc_payments_received": round(mlc_received, 2),
                         "mlc_coverage_pct": coverage_pct,
@@ -417,13 +424,19 @@ def run_transparent_rules(
                         "by_year": {
                             str(y): {
                                 "streams": int(v["streams"]),
+                                "documented_performance": round(v["performance"], 2),
                                 "estimated_mechanical": round(v["mechanical"], 2),
                             }
                             for y, v in sorted(by_year.items())
                         },
                         "methodology_notes": (
-                            "Per-stream rate floor from CRB Phonorecords III/IV. "
-                            "Actual claim may exceed under the greater-of formula. "
+                            "Estimate uses the documented PRO performance income × a "
+                            "conservative mechanical-to-performance ratio (1.5x). "
+                            "Because the PRO unit_value already reflects the artist's "
+                            "writer share, the result is the artist's share of "
+                            "mechanicals (no separate share lookup needed). The "
+                            "Phonorecords IV greater-of formula tends to push the "
+                            "realized ratio higher, so this estimate is a floor. "
                             "Estimate is BEFORE any publisher administration splits."
                         ),
                         "remediation": (

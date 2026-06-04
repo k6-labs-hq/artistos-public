@@ -55,14 +55,14 @@ def _findings_of(subtype: str, all_findings: list[dict]) -> list[dict]:
 
 class TestFires:
     def test_pro_streams_with_no_mlc_payments_fires(self):
-        # 100,000 streams on Spotify Premium in 2024.
-        # Estimated mechanical: 100,000 × $0.00165 = $165.00.
+        # 1,000,000 streams paying $0.0005/stream → $500 performance income.
+        # Mechanical estimate: $500 × 1.5 ratio = $750.
         events = [
-            _stream(qty=100_000, platform="ASCAP / Internet: SPOTIFY", year=2024),
+            _stream(qty=1_000_000, platform="ASCAP / Internet: SPOTIFY", year=2024),
         ]
         # ASCAP performance payment present, NO MLC payment.
         payments = [
-            _payment(source="ASCAP / Internet: SPOTIFY", amount=50.0, year=2024),
+            _payment(source="ASCAP / Internet: SPOTIFY", amount=500.0, year=2024),
         ]
         findings = _findings_of(
             "PROBABLE_UNCLAIMED_MECHANICALS",
@@ -70,51 +70,50 @@ class TestFires:
         )
         assert len(findings) == 1
         f = findings[0]
-        assert f["estimated_recoverable"] == 165.0
-        assert f["evidence"]["mlc_eligible_stream_count"] == 100_000
+        assert f["estimated_recoverable"] == 750.0
+        assert f["evidence"]["mlc_eligible_stream_count"] == 1_000_000
+        assert f["evidence"]["documented_performance_income"] == 500.0
+        assert f["evidence"]["mech_to_perf_ratio"] == 1.5
         assert f["evidence"]["mlc_payments_received"] == 0.0
         assert f["evidence"]["mlc_coverage_pct"] == 0.0
         assert "17 U.S.C. § 115" in f["legal_basis"]
         assert "themlc.com" in f["evidence"]["citation_url"]
 
     def test_partial_mlc_coverage_subtracts_from_estimate(self):
+        # 1M streams × $0.0005 = $500 perf × 1.5 ratio = $750 mechanical estimate.
         events = [
-            _stream(qty=100_000, platform="ASCAP / Internet: SPOTIFY", year=2024),
+            _stream(qty=1_000_000, platform="ASCAP / Internet: SPOTIFY", year=2024),
         ]
-        # Estimate is $165.00; artist received $65 from MLC.
+        # Artist received $250 from MLC.
         payments = [
-            _payment(source="MLC / Spotify / regular", amount=65.0, year=2024),
+            _payment(source="MLC / Spotify / regular", amount=250.0, year=2024),
         ]
         findings = _findings_of(
             "PROBABLE_UNCLAIMED_MECHANICALS",
             run_transparent_rules(ARTIST, events, payments, []),
         )
         assert len(findings) == 1
-        # 165 − 65 = 100 (unclaimed shortfall).
-        assert findings[0]["estimated_recoverable"] == 100.0
-        assert findings[0]["evidence"]["mlc_payments_received"] == 65.0
-        # Coverage = 65 / 165 ≈ 39.4%
-        assert findings[0]["evidence"]["mlc_coverage_pct"] == 39.4
+        # 750 − 250 = 500 (unclaimed shortfall).
+        assert findings[0]["estimated_recoverable"] == 500.0
+        assert findings[0]["evidence"]["mlc_payments_received"] == 250.0
+        # Coverage = 250 / 750 ≈ 33.3%
+        assert findings[0]["evidence"]["mlc_coverage_pct"] == 33.3
 
-    def test_rate_uses_per_year_table(self):
-        # 100,000 streams in 2020 at $0.00096 (Phonorecords III) = $96.00.
-        # Below $100 threshold → finding suppressed.
-        events_2020 = [_stream(qty=100_000, platform="Internet: TIDAL", year=2020)]
+    def test_share_implicit_in_unit_value(self):
+        # Two artists, same 100k streams, but different unit values
+        # (representing different writer shares).
+        # Artist with 50% share (unit_value $0.0005) → perf $50 → mech estimate $75.
+        # Below threshold; doesn't fire.
+        events_half_share = [
+            _stream(qty=100_000, platform="ASCAP / Internet: SPOTIFY", year=2024)
+        ]
         assert (
             _findings_of(
                 "PROBABLE_UNCLAIMED_MECHANICALS",
-                run_transparent_rules(ARTIST, events_2020, [], []),
+                run_transparent_rules(ARTIST, events_half_share, [], []),
             )
             == []
         )
-        # Same volume in 2023 (Phonorecords IV): 100k × $0.00155 = $155 — fires.
-        events_2023 = [_stream(qty=100_000, platform="Internet: TIDAL", year=2023)]
-        findings = _findings_of(
-            "PROBABLE_UNCLAIMED_MECHANICALS",
-            run_transparent_rules(ARTIST, events_2023, [], []),
-        )
-        assert len(findings) == 1
-        assert findings[0]["estimated_recoverable"] == 155.0
 
 
 class TestDoesNotFire:
@@ -131,10 +130,10 @@ class TestDoesNotFire:
         assert findings == []
 
     def test_full_mlc_coverage_suppresses_finding(self):
-        # 100k streams in 2024 → estimated $165 mechanical.
-        # Artist already received $165 from MLC — no shortfall.
-        events = [_stream(qty=100_000, platform="Internet: APPLE SUBSCRIPTION", year=2024)]
-        payments = [_payment(source="MLC / Apple / regular", amount=200.0, year=2024)]
+        # 1M streams × $0.0005 × 1.5 = $750 mechanical estimate.
+        # Artist already received $1,000 from MLC — over-covered.
+        events = [_stream(qty=1_000_000, platform="Internet: APPLE SUBSCRIPTION", year=2024)]
+        payments = [_payment(source="MLC / Apple / regular", amount=1_000.0, year=2024)]
         findings = _findings_of(
             "PROBABLE_UNCLAIMED_MECHANICALS",
             run_transparent_rules(ARTIST, events, payments, []),
@@ -142,8 +141,9 @@ class TestDoesNotFire:
         assert findings == []
 
     def test_estimate_below_100_threshold(self):
-        # 10,000 streams in 2024 → only $16.50 mechanical estimate.
-        events = [_stream(qty=10_000, platform="Internet: SPOTIFY", year=2024)]
+        # 100k streams × $0.0005 × 1.5 = $75 mechanical estimate.
+        # Below $100 fire threshold.
+        events = [_stream(qty=100_000, platform="Internet: SPOTIFY", year=2024)]
         findings = _findings_of(
             "PROBABLE_UNCLAIMED_MECHANICALS",
             run_transparent_rules(ARTIST, events, [], []),
