@@ -78,11 +78,45 @@ def run_transparent_rules(
             or _to_dt(p.get("received_at"))
         )
 
-    payout_months = {
-        (_payment_period_dt(p).year, _payment_period_dt(p).month)
-        for p in royalty_payments
-        if _payment_period_dt(p)
-    }
+    def _payment_covered_months(p: dict) -> set[tuple[int, int]]:
+        """Set of (year, month) tuples a payment covers, based on period range.
+
+        Single-month payments → set of one. Quarterly payments (period_start
+        2024-10-01 → period_end 2024-12-31) → {(2024,10),(2024,11),(2024,12)}.
+        Without this, the previous "period_start only" bucketing fired
+        STREAM_MONTH_WITHOUT_PAYMENT on every quarterly PRO statement
+        because event timestamps fall at period midpoints (which are the
+        SECOND month of the quarter) while payments registered only at
+        period_start (the FIRST). See PR demoting the related rules and
+        the conversation around the ASCAP/SESAC parser ship.
+        """
+        start = _to_dt(p.get("period_start"))
+        end = _to_dt(p.get("period_end"))
+        if start is None and end is None:
+            rcv = _to_dt(p.get("received_at"))
+            if rcv is None:
+                return set()
+            return {(rcv.year, rcv.month)}
+        if start is None:
+            start = end
+        if end is None:
+            end = start
+        if end < start:
+            start, end = end, start
+        months: set[tuple[int, int]] = set()
+        cursor_y, cursor_m = start.year, start.month
+        end_y, end_m = end.year, end.month
+        while (cursor_y, cursor_m) <= (end_y, end_m):
+            months.add((cursor_y, cursor_m))
+            if cursor_m == 12:
+                cursor_y, cursor_m = cursor_y + 1, 1
+            else:
+                cursor_m += 1
+        return months
+
+    payout_months: set[tuple[int, int]] = set()
+    for p in royalty_payments:
+        payout_months |= _payment_covered_months(p)
 
     # RULE 1: streaming payout under 50% of expected market baseline.
     #
@@ -110,40 +144,25 @@ def run_transparent_rules(
         _ = (observed_rate, baseline, ratio)
 
     # RULE 2: monthly royalty history has gap > 60 days.
-    # Same period-vs-ingestion concern as Rule 4 — if every payment was
-    # ingested today, received_at-based gaps would be 0 even when the
-    # underlying reporting periods are years apart. Bucket by period.
+    #
+    # DEMOTED 2026-06-04 — see #344. The rule fires whenever the gap
+    # between two consecutive payment-period dates exceeds 60 days, which
+    # is the NORMAL cadence for PROs that pay quarterly. Jerry Flowers'
+    # ASCAP statements register a 92-day gap between Q1 and Q2 of every
+    # year; that's the quarterly cadence, not a missed payment.
+    #
+    # A defensible version of this rule would need per-source cadence
+    # awareness ("BMI pays quarterly so a 90-day gap is normal; DistroKid
+    # pays monthly so a 90-day gap IS a flag"). Without that, the rule
+    # fires on every PRO/MLC artist. Demoted at the persistence layer
+    # until source-aware cadence ships.
     payment_dates = sorted(
         [_payment_period_dt(p) for p in royalty_payments if _payment_period_dt(p)]
     )
     if len(payment_dates) >= 2:
-        largest_gap = max((b - a).days for a, b in zip(payment_dates[:-1], payment_dates[1:]))
-        if largest_gap > 60:
-            findings.append(
-                {
-                    "artist_id": artist_id,
-                    "category": "ROYALTY",
-                    "subtype": "PAYMENT_GAP_OVER_60_DAYS",
-                    "severity": "HIGH",
-                    "expected_amount": None,
-                    "actual_amount": None,
-                    "estimated_recoverable": round(
-                        _mean([float(p.get("amount") or 0.0) for p in royalty_payments]), 2
-                    ),
-                    "confidence_score": 0.88,
-                    "status": "OPEN",
-                    "description": "Detected royalty payment gap greater than 60 days.",
-                    "rule_id": "PAYMENT_GAP_OVER_60",
-                    "rule_name": "Royalty payment gap exceeds 60 days",
-                    "identity_key": "",  # fires once per artist with the current largest gap
-                    "evidence": {
-                        "largest_gap_days": largest_gap,
-                        "payment_count": len(payment_dates),
-                        "first_payment_at": payment_dates[0].isoformat(),
-                        "last_payment_at": payment_dates[-1].isoformat(),
-                    },
-                }
-            )
+        # Math preserved for reference; no finding emitted.
+        _largest_gap = max((b - a).days for a, b in zip(payment_dates[:-1], payment_dates[1:]))
+        _ = _largest_gap
 
     # RULE 3: contract baseline and observed stream rate differ by >20%.
     contract_rates = []
@@ -400,11 +419,27 @@ def run_transparent_rules(
         )
 
     # RULE 8: outlier track underpayment.
-    # For each track with material activity (≥1000 streams), compute
-    # the per-stream rate. If a track's per-stream rate is below 50% of
-    # the artist's median across tracks, flag it as a likely
-    # under-monetised work — could indicate a missing license, wrong
-    # rate card, or platform-side error.
+    #
+    # DEMOTED 2026-06-04 — see #344. Two compounding problems:
+    #
+    # 1. Self-referential math. The threshold (50% of artist's median
+    #    rate across their own tracks) compares the artist's catalog
+    #    against itself. A normal right-skewed earnings distribution
+    #    (some radio hits, lots of long-tail tracks) trips the rule
+    #    every time without any underpayment actually occurring. Same
+    #    family of issue as the already-demoted STREAM_PAYOUT_BELOW_50PCT.
+    #
+    # 2. Title pollution from PRO PDFs. The ASCAP "Additional Categories"
+    #    rows and SESAC two-line rows pull the Music User text into the
+    #    work_title field (e.g. "PLAY NETWORK STRAIGHT LINE" where the
+    #    actual song is "STRAIGHT LINE"). The rule treats these as
+    #    separate tracks and flags them as outliers because the per-stream
+    #    rate for a single user / category appears below the catalog median.
+    #
+    # Demoted at the persistence layer. The track-rate-outlier concept
+    # still has value once the title field is sanitized and the comparison
+    # is against an external rate baseline, not the artist's own median.
+    # Math preserved for reference.
     track_totals: dict[str, dict[str, float]] = {}
     for e in stream_events:
         title = str(e.get("work_title") or e.get("isrc") or "").strip()
@@ -421,7 +456,7 @@ def run_transparent_rules(
         for t, b in track_totals.items()
         if b["quantity"] >= 1000
     ]
-    if len(track_rates) >= 4:
+    if len(track_rates) >= 4 and False:  # DEMOTED — see comment above
         sorted_rates = sorted(r for _, r, _ in track_rates)
         median_rate = sorted_rates[len(sorted_rates) // 2]
         threshold = median_rate * 0.5
