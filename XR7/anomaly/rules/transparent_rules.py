@@ -373,7 +373,11 @@ def run_transparent_rules(
             findings.append(
                 {
                     "artist_id": artist_id,
-                    "category": "REGISTRY",
+                    # No "REGISTRY" enum value exists on AnomalyCategory today
+                    # — this rule conceptually IS a registry-verification
+                    # finding but we file under ROYALTY for now. When the
+                    # AnomalyCategory enum gains a REGISTRY value, switch.
+                    "category": "ROYALTY",
                     "subtype": "PROBABLE_UNCLAIMED_MECHANICALS",
                     "severity": "HIGH",
                     "expected_amount": round(estimated_mechanical, 2),
