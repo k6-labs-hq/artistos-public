@@ -236,6 +236,7 @@ _FORMAT_TO_AFFILIATIONS: dict[str, tuple[str, ...]] = {
     "bmi_real": ("BMI",),
     "bmi_pdf": ("BMI",),
     "mlc": ("MLC",),
+    "sesac_pdf": ("SESAC",),
     "soundexchange": ("SoundExchange",),
 }
 
@@ -556,6 +557,10 @@ async def upload_statement(
             is_bmi_pdf,
             parse_bmi_pdf_bytes,
         )
+        from XR7.ingestion.sesac_pdf import (  # noqa: PLC0415
+            is_sesac_pdf,
+            sesac_pdf_to_events_and_payments,
+        )
         from XR7.ingestion.statement_parser import ParseResult  # noqa: PLC0415
 
         if is_bmi_pdf(original_content):
@@ -581,6 +586,11 @@ async def upload_statement(
                 original_content, artist_id
             )
             format_detected = "ascap_pdf"
+        elif is_sesac_pdf(original_content):
+            events, payments, errors = sesac_pdf_to_events_and_payments(
+                original_content, artist_id
+            )
+            format_detected = "sesac_pdf"
         elif is_ascap_international_pdf(original_content):
             raise HTTPException(
                 status_code=422,
@@ -594,8 +604,8 @@ async def upload_statement(
             raise HTTPException(
                 status_code=422,
                 detail=(
-                    "Only BMI Royalty Statement and ASCAP Writer Domestic "
-                    "Distribution PDFs are supported today."
+                    "Only BMI, ASCAP Writer Domestic Distribution, and "
+                    "SESAC Quarterly Royalty Statement PDFs are supported today."
                 ),
             )
         result = ParseResult(
@@ -964,6 +974,10 @@ async def upload_statement_batch(
                     is_bmi_pdf,
                     parse_bmi_pdf_bytes,
                 )
+                from XR7.ingestion.sesac_pdf import (  # noqa: PLC0415
+                    is_sesac_pdf,
+                    sesac_pdf_to_events_and_payments,
+                )
 
                 if is_bmi_pdf(content):
                     pdf_events, pdf_payments, pdf_errors = bmi_pdf_to_events_and_payments(
@@ -997,14 +1011,25 @@ async def upload_statement_batch(
                     result.errors = pdf_errors
                     result.row_count = len(pdf_events)
                     result.format_detected = "ascap_pdf"
+                elif is_sesac_pdf(content):
+                    pdf_events, pdf_payments, pdf_errors = sesac_pdf_to_events_and_payments(
+                        content, artist_id
+                    )
+                    result = parse_csv(b"", artist_id)
+                    result.events = pdf_events
+                    result.payments = pdf_payments
+                    result.errors = pdf_errors
+                    result.row_count = len(pdf_events)
+                    result.format_detected = "sesac_pdf"
                 else:
                     # Unrecognized PDF: keep the metadata-only stub for now.
                     result = parse_csv(b"", artist_id)
                     result.events = []
                     result.payments = []
                     result.errors = [
-                        "PDF format not recognized; only BMI Royalty Statement and "
-                        "ASCAP Writer Distribution PDFs parse today"
+                        "PDF format not recognized; only BMI, ASCAP Writer "
+                        "Distribution, and SESAC Quarterly Royalty Statement "
+                        "PDFs parse today"
                     ]
                     result.format_detected = "pdf"
             else:
@@ -1516,6 +1541,10 @@ def admin_reprocess_statement(
             bmi_pdf_to_events_and_payments,
             is_bmi_pdf,
         )
+        from XR7.ingestion.sesac_pdf import (  # noqa: PLC0415
+            is_sesac_pdf,
+            sesac_pdf_to_events_and_payments,
+        )
 
         if is_bmi_pdf(original_content):
             events, payments, errors = bmi_pdf_to_events_and_payments(
@@ -1527,12 +1556,18 @@ def admin_reprocess_statement(
                 original_content, statement.artist_id
             )
             format_detected = "ascap_pdf"
+        elif is_sesac_pdf(original_content):
+            events, payments, errors = sesac_pdf_to_events_and_payments(
+                original_content, statement.artist_id
+            )
+            format_detected = "sesac_pdf"
         else:
             raise HTTPException(
                 status_code=422,
                 detail=(
-                    "Only BMI Royalty Statement and ASCAP Writer Distribution "
-                    "PDFs can be reprocessed today."
+                    "Only BMI, ASCAP Writer Domestic Distribution, and "
+                    "SESAC Quarterly Royalty Statement PDFs can be "
+                    "reprocessed today."
                 ),
             )
         row_count = len(events)
