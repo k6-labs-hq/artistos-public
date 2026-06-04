@@ -231,6 +231,7 @@ def _save_events(
 # only PRO/MLC/SoundExchange statements are direct evidence of an affiliation.
 _FORMAT_TO_AFFILIATIONS: dict[str, tuple[str, ...]] = {
     "ascap": ("ASCAP",),
+    "ascap_pdf": ("ASCAP",),
     "bmi": ("BMI",),
     "bmi_real": ("BMI",),
     "bmi_pdf": ("BMI",),
@@ -540,10 +541,16 @@ async def upload_statement(
         else (file.filename or "statement.csv")
     )
 
-    # PDF route: BMI Royalty Statement PDFs go through the dedicated
-    # bmi_pdf parser. Other PDFs aren't currently supported.
+    # PDF route: dispatch by PDF fingerprint. BMI Royalty Statement PDFs
+    # go through `bmi_pdf`; ASCAP Writer Distribution PDFs go through
+    # `ascap_pdf`. Other PDFs aren't yet supported.
     bmi_affiliate_state: str | None = None
     if (file.filename or "").lower().endswith(".pdf"):
+        from XR7.ingestion.ascap_pdf import (  # noqa: PLC0415
+            ascap_pdf_to_events_and_payments,
+            is_ascap_international_pdf,
+            is_ascap_pdf,
+        )
         from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
             bmi_pdf_to_events_and_payments,
             is_bmi_pdf,
@@ -551,24 +558,45 @@ async def upload_statement(
         )
         from XR7.ingestion.statement_parser import ParseResult  # noqa: PLC0415
 
-        if not is_bmi_pdf(original_content):
+        if is_bmi_pdf(original_content):
+            events, payments, errors = bmi_pdf_to_events_and_payments(
+                original_content, artist_id
+            )
+            try:
+                bmi_affiliate_state = parse_bmi_pdf_bytes(original_content).affiliate_state
+            except Exception:  # noqa: BLE001
+                bmi_affiliate_state = None
+            # Optional ISWC enrichment via MusicBrainz. Gated by env flag
+            # so uploads stay self-contained when off. See issue #278.
+            try:
+                _enrich_payments_with_iswc(db, artist, events, payments)
+            except Exception:  # noqa: BLE001
+                logger.exception(
+                    "iswc enrichment failed (non-blocking)",
+                    extra={"artist_id": artist_id},
+                )
+            format_detected = "bmi_pdf"
+        elif is_ascap_pdf(original_content):
+            events, payments, errors = ascap_pdf_to_events_and_payments(
+                original_content, artist_id
+            )
+            format_detected = "ascap_pdf"
+        elif is_ascap_international_pdf(original_content):
             raise HTTPException(
                 status_code=422,
-                detail="Only BMI Royalty Statement PDFs are supported today.",
+                detail=(
+                    "ASCAP International Performance Statements aren't yet "
+                    "supported — only Writer Domestic Distribution PDFs. "
+                    "If you need the International data parsed, let us know."
+                ),
             )
-        events, payments, errors = bmi_pdf_to_events_and_payments(original_content, artist_id)
-        try:
-            bmi_affiliate_state = parse_bmi_pdf_bytes(original_content).affiliate_state
-        except Exception:  # noqa: BLE001
-            bmi_affiliate_state = None
-        # Optional ISWC enrichment via MusicBrainz. Gated by env flag so
-        # uploads stay self-contained when off. See issue #278.
-        try:
-            _enrich_payments_with_iswc(db, artist, events, payments)
-        except Exception:  # noqa: BLE001
-            logger.exception(
-                "iswc enrichment failed (non-blocking)",
-                extra={"artist_id": artist_id},
+        else:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "Only BMI Royalty Statement and ASCAP Writer Domestic "
+                    "Distribution PDFs are supported today."
+                ),
             )
         result = ParseResult(
             events=events,
@@ -576,7 +604,7 @@ async def upload_statement(
             errors=errors,
             row_count=len(events),
             skipped_rows=0,
-            format_detected="bmi_pdf",
+            format_detected=format_detected,
         )
     else:
         try:
@@ -927,6 +955,10 @@ async def upload_statement_batch(
                 continue
 
             if filename.lower().endswith(".pdf"):
+                from XR7.ingestion.ascap_pdf import (  # noqa: PLC0415
+                    ascap_pdf_to_events_and_payments,
+                    is_ascap_pdf,
+                )
                 from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
                     bmi_pdf_to_events_and_payments,
                     is_bmi_pdf,
@@ -955,13 +987,24 @@ async def upload_statement_batch(
                     result.errors = pdf_errors
                     result.row_count = len(pdf_events)
                     result.format_detected = "bmi_pdf"
+                elif is_ascap_pdf(content):
+                    pdf_events, pdf_payments, pdf_errors = ascap_pdf_to_events_and_payments(
+                        content, artist_id
+                    )
+                    result = parse_csv(b"", artist_id)
+                    result.events = pdf_events
+                    result.payments = pdf_payments
+                    result.errors = pdf_errors
+                    result.row_count = len(pdf_events)
+                    result.format_detected = "ascap_pdf"
                 else:
-                    # Non-BMI PDF: keep the metadata-only stub for now.
+                    # Unrecognized PDF: keep the metadata-only stub for now.
                     result = parse_csv(b"", artist_id)
                     result.events = []
                     result.payments = []
                     result.errors = [
-                        "PDF format not recognized; only BMI Royalty Statement PDFs parse today"
+                        "PDF format not recognized; only BMI Royalty Statement and "
+                        "ASCAP Writer Distribution PDFs parse today"
                     ]
                     result.format_detected = "pdf"
             else:
@@ -1465,20 +1508,33 @@ def admin_reprocess_statement(
     # endpoint stays self-contained; if a third caller ever needs the
     # same dispatch, extract then.
     if filename.lower().endswith(".pdf"):
+        from XR7.ingestion.ascap_pdf import (  # noqa: PLC0415
+            ascap_pdf_to_events_and_payments,
+            is_ascap_pdf,
+        )
         from XR7.ingestion.bmi_pdf import (  # noqa: PLC0415
             bmi_pdf_to_events_and_payments,
             is_bmi_pdf,
         )
 
-        if not is_bmi_pdf(original_content):
+        if is_bmi_pdf(original_content):
+            events, payments, errors = bmi_pdf_to_events_and_payments(
+                original_content, statement.artist_id
+            )
+            format_detected = "bmi_pdf"
+        elif is_ascap_pdf(original_content):
+            events, payments, errors = ascap_pdf_to_events_and_payments(
+                original_content, statement.artist_id
+            )
+            format_detected = "ascap_pdf"
+        else:
             raise HTTPException(
                 status_code=422,
-                detail="Only BMI Royalty Statement PDFs can be reprocessed today.",
+                detail=(
+                    "Only BMI Royalty Statement and ASCAP Writer Distribution "
+                    "PDFs can be reprocessed today."
+                ),
             )
-        events, payments, errors = bmi_pdf_to_events_and_payments(
-            original_content, statement.artist_id
-        )
-        format_detected = "bmi_pdf"
         row_count = len(events)
         skipped_rows = 0
     else:
