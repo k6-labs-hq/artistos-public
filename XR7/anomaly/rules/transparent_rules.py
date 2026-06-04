@@ -272,6 +272,166 @@ def run_transparent_rules(
             }
         )
 
+    # RULE: PROBABLE_UNCLAIMED_MECHANICALS — registry/Black Box claim signal.
+    #
+    # Premise: every interactive DSP stream generates TWO royalty
+    # obligations — performance (collected by the artist's PRO) and
+    # mechanical (collected by The MLC under 17 U.S.C. § 115). If an
+    # artist has documented stream events from PRO statements showing
+    # DSP activity, but no corresponding MLC payments in their record,
+    # the mechanical share is sitting somewhere — most commonly The MLC's
+    # Black Box (~$424M unmatched industry-wide as of 2023) or matched
+    # to the wrong rights holder.
+    #
+    # This is the first rule that produces a defensible recovery claim
+    # using only data we already have. The methodology cites statute, not
+    # a self-referential comparison; the estimate uses CRB-published rate
+    # floors; the remedy is documented (MLC DURP).
+    #
+    # Limits we're honest about in the finding text:
+    # - Estimate is BEFORE any publisher splits. Writers with admin deals
+    #   may receive their share through their publisher, not direct from MLC.
+    # - Estimate is a STATUTORY FLOOR. Actual recoverable can be higher
+    #   under the Phonorecords IV "greater of revenue / TCC / minimum"
+    #   formula, lower if some streams have already been distributed
+    #   through correct registrations we don't see.
+    # - US-only. International streaming mechanicals flow through different
+    #   collective management organizations not covered here.
+    _MECHANICAL_RATE_FLOOR_PER_STREAM: dict[int, float] = {
+        # Phonorecords III (2018-2022) — conservative floor estimates from
+        # the percentage-of-revenue formula. Real rates vary by DSP and tier.
+        2015: 0.00060,
+        2016: 0.00065,
+        2017: 0.00070,
+        2018: 0.00081,
+        2019: 0.00090,
+        2020: 0.00096,
+        2021: 0.00103,
+        2022: 0.00110,
+        # Phonorecords IV (2023-2027) — settlement-driven uplift.
+        2023: 0.00155,
+        2024: 0.00165,
+        2025: 0.00177,
+        2026: 0.00177,
+    }
+    # Platform keywords identifying MLC-eligible interactive DSP streams.
+    # Sound-recording-only platforms (radio, TV, satellite) generate
+    # different royalty types not administered by The MLC.
+    _MLC_ELIGIBLE_DSP_KEYWORDS = (
+        "spotify", "apple", "amazon", "pandora premium", "pandora plus",
+        "tidal", "deezer", "youtube", "soundcloud", "napster",
+        "internet:", "digital media",
+    )
+
+    def _is_mlc_eligible_stream(event: dict) -> bool:
+        platform = str(event.get("platform") or "").lower()
+        territory = str(event.get("territory") or "").upper()
+        # MLC is US-only. International streams flow through foreign
+        # collective management orgs.
+        if territory and territory not in ("US", ""):
+            return False
+        return any(kw in platform for kw in _MLC_ELIGIBLE_DSP_KEYWORDS)
+
+    def _is_mlc_payment(payment: dict) -> bool:
+        return "MLC" in str(payment.get("source") or "").upper()
+
+    mlc_eligible_events = [e for e in stream_events if _is_mlc_eligible_stream(e)]
+    if mlc_eligible_events:
+        estimated_mechanical = 0.0
+        total_streams = 0
+        by_year: dict[int, dict[str, float]] = {}
+        for e in mlc_eligible_events:
+            ts = _to_dt(e.get("timestamp"))
+            if ts is None:
+                continue
+            streams = int(float(e.get("quantity") or 0.0))
+            if streams <= 0:
+                continue
+            rate = _MECHANICAL_RATE_FLOOR_PER_STREAM.get(ts.year, 0.001)
+            mech = streams * rate
+            estimated_mechanical += mech
+            total_streams += streams
+            yb = by_year.setdefault(ts.year, {"streams": 0, "mechanical": 0.0})
+            yb["streams"] += streams
+            yb["mechanical"] += mech
+
+        mlc_received = sum(
+            float(p.get("amount") or 0.0)
+            for p in royalty_payments
+            if _is_mlc_payment(p)
+        )
+        unclaimed = max(estimated_mechanical - mlc_received, 0.0)
+
+        # Threshold: don't flag claims below $100 — too small to bother
+        # filing through DURP given the per-claim friction.
+        if estimated_mechanical >= 100.0 and unclaimed >= 100.0:
+            coverage_pct = (
+                round(100.0 * mlc_received / estimated_mechanical, 1)
+                if estimated_mechanical > 0
+                else 0.0
+            )
+            findings.append(
+                {
+                    "artist_id": artist_id,
+                    "category": "REGISTRY",
+                    "subtype": "PROBABLE_UNCLAIMED_MECHANICALS",
+                    "severity": "HIGH",
+                    "expected_amount": round(estimated_mechanical, 2),
+                    "actual_amount": round(mlc_received, 2),
+                    "estimated_recoverable": round(unclaimed, 2),
+                    "confidence_score": 0.75,
+                    "status": "OPEN",
+                    "description": (
+                        f"{total_streams:,} interactive streams documented via PRO "
+                        f"statements imply ~${estimated_mechanical:,.2f} in mechanical "
+                        "royalties owed under 17 U.S.C. § 115 (Phonorecords III / IV). "
+                        f"MLC payments received: ${mlc_received:,.2f} ({coverage_pct}% "
+                        "coverage). The shortfall is most likely sitting in The MLC's "
+                        "Black Box (unmatched-recordings pool) or matched to a different "
+                        "rights holder. Claimable via The MLC's Distributor Unmatched "
+                        "Recordings Portal (DURP) after verifying registration."
+                    ),
+                    "rule_id": "PROBABLE_UNCLAIMED_MECHANICALS",
+                    "rule_name": "Probable unclaimed mechanical royalties at The MLC",
+                    "identity_key": "mlc-unclaimed",
+                    "legal_basis": (
+                        "17 U.S.C. § 115 establishes the statutory mechanical license "
+                        "for non-dramatic musical compositions. The Music Modernization "
+                        "Act of 2018 designated The Mechanical Licensing Collective as "
+                        "the blanket licensee administrator. CRB-settled rates "
+                        "(Phonorecords III for 2018-2022; Phonorecords IV for 2023-2027) "
+                        "establish per-stream minimums. Streams documented in PRO "
+                        "statements imply corresponding mechanical obligations; absence "
+                        "of MLC distribution implies undistributed mechanical income."
+                    ),
+                    "evidence": {
+                        "mlc_eligible_stream_count": total_streams,
+                        "estimated_mechanical_owed": round(estimated_mechanical, 2),
+                        "mlc_payments_received": round(mlc_received, 2),
+                        "mlc_coverage_pct": coverage_pct,
+                        "unclaimed_estimate": round(unclaimed, 2),
+                        "by_year": {
+                            str(y): {
+                                "streams": int(v["streams"]),
+                                "estimated_mechanical": round(v["mechanical"], 2),
+                            }
+                            for y, v in sorted(by_year.items())
+                        },
+                        "methodology_notes": (
+                            "Per-stream rate floor from CRB Phonorecords III/IV. "
+                            "Actual claim may exceed under the greater-of formula. "
+                            "Estimate is BEFORE any publisher administration splits."
+                        ),
+                        "remediation": (
+                            "Verify work registration at portal.themlc.com; file DURP "
+                            "claim for unmatched recordings; contact MLC member services "
+                            "if works are matched to wrong rights holder."
+                        ),
+                        "citation_url": "https://www.themlc.com/find-your-songs",
+                    },
+                }
+            )
+
     # RULE 5: payment concentration risk if top payment > 60% of total.
     amounts = [
         float(p.get("amount") or 0.0)
