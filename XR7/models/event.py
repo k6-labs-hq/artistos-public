@@ -63,6 +63,10 @@ class Event(Base):
     quantity: Mapped[int] = mapped_column(Integer, default=1)
     unit_value: Mapped[float] = mapped_column(Float, default=0.0)
     currency: Mapped[str] = mapped_column(String, default="USD")
+    # Writer share (%) the payer reported for this line, when the statement carries one
+    # (SESAC share%, MLC "Work Payable %"). Nullable: most formats don't. Used by the
+    # share-drift detector.
+    share_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
 
 
 class EventSchema(BaseModel):
@@ -80,3 +84,4 @@ class EventSchema(BaseModel):
     quantity: int
     unit_value: float
     currency: str
+    share_pct: float | None = None

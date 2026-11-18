@@ -36,6 +36,10 @@ _RULE_FRIENDLY_LABELS: dict[str, str] = {
     "METADATA_ISRC_UNRESOLVED": "Recording Not Linked To A Composition",
     "METADATA_PAYEE_NOT_CREDITED": "Payee Not Listed As A Credited Writer",
     "METADATA_INVALID_ISRC_FORMAT": "Invalid Recording Code (ISRC)",
+    "WORK_MISSING_MECHANICAL": "Song Earning Performance Income But Missing At The MLC",
+    "WORK_MISSING_PERFORMANCE": "Song Earning Mechanical Income But Missing At Your PRO",
+    "WORK_INCOME_DROPOUT": "Song Stopped Earning While Payer Kept Paying Other Works",
+    "WORK_SHARE_DRIFT": "Reported Writer Share Dropped For A Song",
 }
 
 

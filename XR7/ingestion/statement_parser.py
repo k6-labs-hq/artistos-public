@@ -1219,6 +1219,7 @@ def _parse_mlc(row: dict, artist_id: str) -> tuple[dict | None, dict | None]:
         "currency": "USD",
         "work_title": title,
         "isrc": _col(row, "isrc"),
+        "share_pct": _parse_amount(_col(row, "work payable %")),
     }
     # MLC distributes monthly so received_at ≈ period_end + a few weeks.
     # Use period_end as a sensible proxy — keeps multi-period analysis honest.

@@ -179,6 +179,9 @@ def _save_events(
                     # carried it through to the column, so the evidence packet's
                     # per-track line items came back with `—` everywhere.
                     "work_title": e.get("work_title"),
+                    "share_pct": (
+                        float(e["share_pct"]) if e.get("share_pct") is not None else None
+                    ),
                 }
             )
         except Exception:  # noqa: BLE001

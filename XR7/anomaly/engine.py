@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from XR7.anomaly.rules import platforms, royalties, touring
 from XR7.anomaly.rules.metadata_rules import run_metadata_rules
 from XR7.anomaly.rules.transparent_rules import run_transparent_rules
+from XR7.anomaly.rules.work_level_rules import run_work_level_rules, work_level_rules_enabled
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
 from XR7.ingestion.metadata_sources.resolver import build_default_resolver
@@ -41,6 +42,7 @@ class AnomalyEngine:
                 "currency": e.currency,
                 "territory": e.territory,
                 "timestamp": e.timestamp,
+                "share_pct": getattr(e, "share_pct", None),
             }
             for e in events
         ]
@@ -136,6 +138,8 @@ class AnomalyEngine:
             artist_id, events=events, payments=payments, contracts=contracts
         )
         findings.extend(self._detect_metadata_anomalies(artist_id, events, db_session))
+        if work_level_rules_enabled():
+            findings.extend(run_work_level_rules(artist_id, events))
         return findings
 
     def _detect_metadata_anomalies(

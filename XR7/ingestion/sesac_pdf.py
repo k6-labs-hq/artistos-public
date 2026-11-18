@@ -477,6 +477,7 @@ def sesac_pdf_to_events_and_payments(
                 "unit_value": unit_value,
                 "currency": "USD",
                 "work_title": r["song_title"],
+                "share_pct": r.get("share_pct"),
             }
         )
         # Stable per-row reference for dedup-on-reupload. Includes section,
