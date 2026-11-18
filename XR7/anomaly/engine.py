@@ -1,18 +1,28 @@
 from sqlalchemy.orm import Session
 
 from XR7.anomaly.rules import platforms, royalties, touring
+from XR7.anomaly.rules.metadata_rules import run_metadata_rules
 from XR7.anomaly.rules.transparent_rules import run_transparent_rules
 from XR7.earnings.engine import EarningsEngine
 from XR7.graph.rights_graph import RightsGraph
+from XR7.ingestion.metadata_sources.resolver import build_default_resolver
 from XR7.models.contract import Contract
 from XR7.models.event import Event
 from XR7.models.payment import Payment
+from XR7.models.work import Work
+from XR7.services.isrc_resolution_cache import DbCachingResolver
 
 
 class AnomalyEngine:
-    def __init__(self, earnings_engine: EarningsEngine, rights_graph: RightsGraph):
+    def __init__(
+        self,
+        earnings_engine: EarningsEngine,
+        rights_graph: RightsGraph,
+        metadata_resolver=None,
+    ):
         self.earnings_engine = earnings_engine
         self.rights_graph = rights_graph
+        self.metadata_resolver = metadata_resolver
 
     @staticmethod
     def _enum_value(value):
@@ -122,6 +132,29 @@ class AnomalyEngine:
         contracts = self._contracts_to_dicts(
             db_session.query(Contract).filter(Contract.artist_id == artist_id).all()
         )
-        return run_transparent_rules(
+        findings = run_transparent_rules(
             artist_id, events=events, payments=payments, contracts=contracts
         )
+        findings.extend(self._detect_metadata_anomalies(artist_id, events, db_session))
+        return findings
+
+    def _detect_metadata_anomalies(
+        self, artist_id: str, events: list[dict], db_session: Session
+    ) -> list[dict]:
+        """ISRC/ISWC cross-check against public metadata. No-op unless a resolver is
+        injected or MUSICBRAINZ_USER_AGENT is set, so default behaviour (and tests)
+        never touch the network."""
+        resolver = self.metadata_resolver or build_default_resolver()
+        if resolver is None:
+            return []
+        if self.metadata_resolver is None:
+            # Env-configured live source: persist answers so re-runs and other
+            # workers don't re-hit MusicBrainz. Injected resolvers are used as-is.
+            resolver = DbCachingResolver(db_session, resolver)
+        works = [
+            {"id": w.id, "title": w.title, "isrc": w.isrc, "iswc": w.iswc}
+            for w in db_session.query(Work)
+            .filter(Work.artist_id == artist_id, Work.deleted_at.is_(None))
+            .all()
+        ]
+        return run_metadata_rules(artist_id, works, events, resolver)

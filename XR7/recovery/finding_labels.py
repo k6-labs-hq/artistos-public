@@ -30,6 +30,12 @@ _RULE_FRIENDLY_LABELS: dict[str, str] = {
     "CONTRACT_RATE_DEVIATION_OVER_20PCT": "Contract Rate Deviation",
     "CONTRACT_RATE_DEVIATION_OVER_20": "Contract Rate Deviation",
     "PAYMENT_CONCENTRATION": "Payment Concentration Risk",
+    "METADATA_ISWC_MISMATCH": "Work Code (ISWC) Differs From Public Registry",
+    "METADATA_STATEMENT_MISSING_ISWC": "Work Code (ISWC) Missing From Catalog",
+    "METADATA_NO_ISWC_ANYWHERE": "No Published Work Code (ISWC) Found",
+    "METADATA_ISRC_UNRESOLVED": "Recording Not Linked To A Composition",
+    "METADATA_PAYEE_NOT_CREDITED": "Payee Not Listed As A Credited Writer",
+    "METADATA_INVALID_ISRC_FORMAT": "Invalid Recording Code (ISRC)",
 }
 
 

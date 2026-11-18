@@ -167,6 +167,7 @@ async def lifespan(app: FastAPI):
     import XR7.models.vip  # noqa: F401
     import XR7.models.webhook_event  # noqa: F401
     import XR7.models.work_identity_cache  # noqa: F401
+    import XR7.models.isrc_resolution_cache  # noqa: F401
     import XR7.models.xr7_idempotency  # noqa: F401
     import XR7.models.xr7_royalty  # noqa: F401
 

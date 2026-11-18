@@ -24,13 +24,12 @@ from __future__ import annotations
 import hashlib
 import os
 import re
-import time
 from datetime import datetime, timedelta, timezone
 from typing import Any, Protocol
 
-import httpx
 from sqlalchemy.orm import Session
 
+from XR7.ingestion.metadata_sources.musicbrainz import MusicBrainzClient
 from XR7.models.work_identity_cache import WorkIdentityCacheEntry
 from xr7_common.logging import get_logger
 
@@ -41,11 +40,10 @@ logger = get_logger(__name__)
 # don't want to cache a negative-result forever.
 _CACHE_TTL = timedelta(days=30)
 
-# Module-level last-request timestamp used to enforce the 1 req/sec floor
-# across MusicBrainz calls within a single worker process. Different
-# workers will independently pace; for now the volumes are low enough
-# that we don't need a Redis-coordinated limiter.
-_MB_LAST_REQUEST_TS: float = 0.0
+# The 1 req/sec floor is enforced process-wide in
+# XR7.ingestion.metadata_sources.musicbrainz.throttle (shared with the ISRC
+# resolver). Different workers still pace independently; volumes are low
+# enough that we don't need a Redis-coordinated limiter.
 _MB_MIN_INTERVAL_SECONDS = 1.0
 
 
@@ -94,14 +92,10 @@ class MusicBrainzSource:
         self.user_agent = (
             user_agent or "XR7/1.0 (https://k6-labs.com; jtrent@k6-labs.com)"
         )
-
-    def _throttle(self) -> None:
-        global _MB_LAST_REQUEST_TS  # noqa: PLW0603
-        now = time.monotonic()
-        wait = _MB_MIN_INTERVAL_SECONDS - (now - _MB_LAST_REQUEST_TS)
-        if wait > 0:
-            time.sleep(wait)
-        _MB_LAST_REQUEST_TS = time.monotonic()
+        # HTTP, retry/backoff and the process-wide 1 req/sec throttle live in the
+        # shared client so this adapter and the ISRC resolver can't exceed the
+        # budget together.
+        self._client = MusicBrainzClient(self.user_agent, min_interval_seconds=_MB_MIN_INTERVAL_SECONDS)
 
     def fetch(self, artist: str, title: str) -> dict[str, str | None]:
         if not (artist and title):
@@ -111,7 +105,6 @@ class MusicBrainzSource:
 
         # First lookup: works (ISWC). We query by artist + work title and
         # take the highest-scoring match's first ISWC if it has any.
-        self._throttle()
         work_resp = self._get(
             "/work",
             {
@@ -136,33 +129,13 @@ class MusicBrainzSource:
         return result
 
     def _get(self, path: str, params: dict[str, str]) -> dict[str, Any] | None:
-        headers = {"User-Agent": self.user_agent, "Accept": "application/json"}
-        url = f"{self._BASE}{path}"
-        try:
-            with httpx.Client(timeout=10.0) as client:
-                resp = client.get(url, params=params, headers=headers)
-        except httpx.HTTPError:
-            logger.warning("musicbrainz request failed", extra={"path": path}, exc_info=True)
-            return None
-        if resp.status_code == 503:
-            # MusicBrainz throttles with 503 + Retry-After when we exceed
-            # the budget. One quick retry; if still 503 give up for now.
-            time.sleep(min(float(resp.headers.get("Retry-After", "1")), 3.0))
-            try:
-                with httpx.Client(timeout=10.0) as client:
-                    resp = client.get(url, params=params, headers=headers)
-            except httpx.HTTPError:
-                return None
-        if resp.status_code >= 400:
-            logger.warning(
-                "musicbrainz non-2xx",
-                extra={"path": path, "status": resp.status_code},
-            )
-            return None
-        try:
-            return resp.json()
-        except ValueError:
-            return None
+        """Return parsed JSON, or None on 404 (a genuine no-match).
+
+        Transport/server failures RAISE (per the ``WorkIdentitySource`` contract) so
+        ``WorkIdentityLookup`` falls back to cache and does NOT write a negative
+        cache row for what was really an outage.
+        """
+        return self._client.get_json(path, params)
 
 
 def is_enabled() -> bool:
